@@ -1,0 +1,135 @@
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div>
+    <div class="stl">Bütçe Değişiklik Geçmişi</div>
+    <div id="logList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div></div>
+    <div class="arow" style="margin-top:8px">
+      <button class="btn sm" onclick="checkBudget()">📊 Performans Kontrolü</button>
+      <button class="btn sm sec" onclick="clearLog()">🗑 Temizle</button>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="chat-msgs" id="optimMsgs" style="height:350px">
+      <div class="msg sys">Bütçe optimizasyonu için yardım isteyebilirsiniz.<br>Önce Reklam Setleri sekmesini yenile.</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="qbtn" onclick="aiSend('optim','En iyi ROAS\'a sahip reklam setine %20 bütçe artışı öner ve uygula.')">🚀 En iyiye artır</button>
+      <button class="qbtn" onclick="aiSend('optim','ROAS 1.5 altındaki reklam setlerinin bütçesini %20 azalt.')">📉 Kötüleri azalt</button>
+      <button class="qbtn" onclick="aiSend('optim','Tüm reklam setleri için composite skor analizi yap (%70 ROAS + %20 CTR + %10 TBM).')">📊 Skor analizi</button>
+      <button class="qbtn" onclick="aiSend('optim','Bütçe değişikliği yapılmış kampanyaların performansını değerlendir.')">📈 Bütçe takibi</button>
+    </div>
+    <div style="display:flex;gap:8px">
+      <textarea id="optimIn" placeholder="Optimizasyon sorusu..." style="flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px;font-family:Inter,sans-serif;font-size:12px;border-radius:4px;resize:none;height:60px"></textarea>
+      <button class="btn" onclick="aiSend('optim',document.getElementById('optimIn').value)">→</button>
+    </div>
+  </div>
+</div>
+
+<script>
+async function aiSend(type, msg) {
+  if(!msg||!msg.trim()) return;
+  const inp = document.getElementById(type+'In');
+  if(inp) inp.value = '';
+  const containerId = type+'Msgs';
+  addMsg(msg, 'user', containerId);
+  const th = addThinking(containerId);
+
+  const adsetList = MX.adsetStore.slice(0,20).map(r=>({
+    id:r._budgetId, name:r.name, type:r._budgetType||'adset',
+    budgetTL:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
+    roas:r.roas, spend:r.spend, ctr:r.ctr, cpc:r.cpc
+  })).filter(r=>r.id&&r.budgetTL>0);
+
+  const sys = `Sen Madmext Meta Ads yöneticisisin. Bu uygulama Meta Graph API\'ye doğrudan bağlı — gerçek bütçe değişikliği YAPABİLİRSİN. Türkçe yanıt ver.
+VERİLER: ${JSON.stringify(adsetList)}
+Bütçe artışı için: <!--ACTION:BUDGET_INCREASE|GERCEK_ID|ADI|TYPE|MEVCUT_TL|YENI_TL|PCT-->
+SADECE listeden gerçek ID kullan.`;
+
+  if(!MX.chatH.optim) MX.chatH.optim = [];
+  MX.chatH.optim.push({role:'user',content:msg});
+  const reply = await claude(MX.chatH.optim.slice(-6), sys);
+  th.remove();
+  MX.chatH.optim.push({role:'assistant',content:reply});
+  const clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
+  addClaudeMsg(clean, containerId);
+  parseAndRenderActions(reply, containerId);
+}
+
+function renderLog(elId='logList') {
+  const el = document.getElementById(elId); if(!el) return;
+  if(!MX.budgetLog.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div>';return;}
+  el.innerHTML = MX.budgetLog.map((e,i) => {
+    const d = new Date(e.time).toLocaleString('tr');
+    const daysSince = (Date.now()-new Date(e.time).getTime())/(1000*60*60*24);
+    const canCheck = daysSince >= 1;
+    const baseH = e.baseline?`<div class="lmeta">Baseline → ROAS: <strong>${e.baseline.roas?.toFixed(2)||'—'}x</strong> · Harcama: <strong>${e.baseline.spend?.toFixed(0)||'—'}₺</strong> · Satış: <strong>${e.baseline.purchase||'—'}</strong></div>`:'';
+    let perfH='',perfDrop=false;
+    if(e.curRoas!=null){
+      const baseRoas=e.baseline?.roas||0;
+      const roasDiff=baseRoas>0?((e.curRoas-baseRoas)/baseRoas*100):0;
+      const diffColor=roasDiff>=-10?'var(--g)':'var(--r)';
+      perfDrop=roasDiff<-15;
+      perfH=`<div class="lmeta">Şu anki → ROAS: <strong style="color:${diffColor}">${e.curRoas.toFixed(2)}x</strong> ${baseRoas>0?`(${roasDiff>=0?'+':''}${roasDiff.toFixed(1)}%)`:''}  </div>`;
+    }
+    const aiH = e.aiNote?`<div style="margin-top:8px;padding:8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--a);font-size:11px;line-height:1.6">${e.aiNote}</div>`:'';
+    const checkBtn = canCheck?`<button class="btn sm sec" onclick="checkSingle(${i})" style="margin-top:6px;width:100%">${e.checking?'⏳ Kontrol ediliyor...':'🔍 Şimdi Kontrol Et'}</button>`:'<div style="font-size:10px;color:var(--m);margin-top:6px">⏳ 24 saat sonra kontrol</div>';
+    const revertBtn = perfDrop?`<button class="btn sm dng" onclick="revertBudget(${i})" style="margin-top:4px;width:100%">↩ Geri Al (${e.old.toFixed(0)}₺)</button>`:'';
+    const cardClass = e.curRoas==null?'neu':perfDrop?'dn':'up';
+    const pctColor = e.pct>0?'var(--g)':'var(--r)';
+    return `<div class="lcard ${cardClass}">
+      <div style="flex:1">
+        <div class="lname">${e.name}</div>
+        <div class="lmeta">${d} · ${e.type==='campaign'?'CBO':'ABO'}</div>
+        <div class="lmeta">${e.old.toFixed(0)}₺ → ${e.new.toFixed(0)}₺/gün</div>
+        ${baseH}${perfH}${aiH}${checkBtn}${revertBtn}
+      </div>
+      <div><div class="lch" style="color:${pctColor}">${e.pct>0?'+':''}%${e.pct}</div></div>
+    </div>`;
+  }).join('');
+}
+
+async function checkSingle(idx) {
+  const e = MX.budgetLog[idx]; if(!e)return;
+  MX.budgetLog[idx].checking=true; renderLog();
+  try {
+    const d = await api(`${AID}/insights`,{fields:'spend,ctr,cpc,purchase_roas,actions',date_preset:'last_3d',
+      level:e.type==='campaign'?'campaign':'adset',
+      filtering:JSON.stringify([{field:e.type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:e.id}]),
+      action_attribution_windows:ATTR});
+    const r = d?.data?.[0];
+    if(r){
+      e.curRoas=groas(r); e.curSpend=parseFloat(r.spend||0);
+      e.curPurchase=gav(r.actions,'purchase'); e.curCtr=parseFloat(r.ctr||0);
+      const baseRoas=e.baseline?.roas||0;
+      const roasChange=baseRoas>0?((e.curRoas-baseRoas)/baseRoas*100):0;
+      const aiPrompt=`Bütçe değişikliği sonrası performans (Türkçe, 2 cümle max):\n${e.name} | ${e.old.toFixed(0)}₺→${e.new.toFixed(0)}₺/gün (+%${e.pct})\nBaseline ROAS: ${baseRoas.toFixed(2)}x → Şu an: ${e.curRoas.toFixed(2)}x (${roasChange>=0?'+':''}${roasChange.toFixed(1)}%)`;
+      e.aiNote = await claude([{role:'user',content:aiPrompt}],'Meta reklam uzmanısın. Net, kısa Türkçe yorum.');
+    }
+  } catch(err){ toast('Hata: '+err.message); }
+  MX.budgetLog[idx].checking=false;
+  saveServerLogs(); renderLog();
+  toast('Kontrol tamamlandı ✓');
+}
+
+async function checkBudget() {
+  if(!MX.budgetLog.length){toast('Değişiklik yok');return;}
+  toast('Kontrol ediliyor...');
+  for(let i=0;i<Math.min(MX.budgetLog.length,10);i++){
+    const daysSince=(Date.now()-new Date(MX.budgetLog[i].time).getTime())/(1000*60*60*24);
+    if(daysSince>=1) await checkSingle(i);
+  }
+  toast('Tamamlandı ✓');
+}
+
+async function revertBudget(idx) {
+  const e=MX.budgetLog[idx]; if(!e||!confirm(`${e.name} bütçesi ${e.old.toFixed(0)}₺'ye geri alınsın mı?`))return;
+  const d=await api(e.id,{daily_budget:Math.round(e.old*100)},'POST');
+  if(d?.success||d?.id){
+    MX.budgetLog.unshift({id:e.id,name:e.name,type:e.type,old:e.new,new:e.old,pct:-(e.pct),time:new Date().toISOString(),baseline:e.baseline||null});
+    saveServerLogs(); toast(`Bütçe ${e.old.toFixed(0)}₺'ye geri alındı ✓`); renderLog();
+  } else toast('Hata: '+(d?.error?.message||'?'));
+}
+
+function clearLog(){if(confirm('Silinsin mi?')){MX.budgetLog=[];saveServerLogs();renderLog();}}
+
+window.addEventListener('mx:connected', () => renderLog());
+</script>
