@@ -1,0 +1,111 @@
+<div class="ai-panel">
+  <div class="ai-panel-title" id="aiModuleTitle">🧠 Strateji <span class="nav-ai">AI</span></div>
+  <div class="ai-panel-sub" id="aiModuleSub">Meta ve GA4 verilerine dayalı strateji önerileri</div>
+</div>
+<div class="chat-layout">
+  <div class="chat-msgs" id="aiMsgs">
+    <div class="msg sys" id="aiWelcome">Bağlan ve veri yükle, ardından soru sor.</div>
+  </div>
+  <div class="chat-side">
+    <div class="stitle">Hızlı Sorular</div>
+    <div id="aiQuickBtns"></div>
+    <div class="cinput">
+      <textarea id="aiInput" placeholder="Sorunuzu yazın..."></textarea>
+      <button class="btn" onclick="aiModuleSend()">Gönder →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // Hangi modüldeyiz?
+  const path = window.location.pathname;
+  const moduleName = document.getElementById('aiModuleTitle')?.closest('.ai-panel')?.dataset?.module
+    || (currentPage || 'strateji');
+
+  const MODULE_CONFIG = {
+    strateji: {
+      title: '🧠 Strateji',
+      sub: 'Meta ve GA4 verilerine dayalı büyüme fırsatları ve kampanya stratejisi',
+      welcome: 'Meta + GA4 verilerinizi analiz ederek strateji önerileri üretebilirim.',
+      sys: () => `Meta+GA4 uzmanı Türkçe yanıt ver. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))}`,
+      questions: [
+        ['🚀 Büyüme fırsatları','Mevcut kampanya verilerine göre büyüme fırsatlarını analiz et. Hangi kampanyalara yatırım artırmalıyım?'],
+        ['📊 Attribution analizi','Meta harcama ve GA4 gelir verilerini karşılaştır. Hangi kanal gerçekten dönüşüm sağlıyor?'],
+        ['💰 30 günlük strateji','Önümüzdeki 30 gün için bütçe dağılımı stratejisi öner.'],
+        ['⏸ Zarar edenler','Düşük ROAS\'lı kampanyaları durdurma veya optimize etme stratejisi öner.'],
+      ]
+    },
+    'hedef-kitle': {
+      title: '🎯 Hedef Kitle',
+      sub: 'GA4 kullanıcı verileri ve Meta audience analizine dayalı öneriler',
+      welcome: 'GA4 ve Meta verilerini kullanarak hedef kitle analizi yapabilirim.',
+      sys: () => `Hedef kitle uzmanı Türkçe. Meta:${JSON.stringify(MX.campStore.slice(0,6).map(r=>({k:r.name?.slice(0,25),roas:r.roas,spend:r.spend})))}`,
+      questions: [
+        ['📊 Kanal dönüşüm analizi','GA4 trafik kaynaklarını analiz et. Hangi kanaldan gelen kullanıcılar daha çok dönüşüm sağlıyor?'],
+        ['👥 Kitle performansı','Meta kampanyalarındaki hedef kitle performansını analiz et. Hangi kitleler daha iyi ROAS veriyor?'],
+        ['✨ Yeni kitle önerileri','Mevcut verilere göre yeni hedef kitle ve lookalike önerileri sun.'],
+        ['📍 Demografik analiz','En iyi dönüşüm sağlayan demografi ve ilgi alanlarını belirle.'],
+      ]
+    },
+    tasarim: {
+      title: '🎨 Tasarım',
+      sub: 'Reklam metni, kreatif öneri ve A/B test fikirleri',
+      welcome: 'Reklam metni, başlık ve kreatif önerileri için yardımcı olabilirim.',
+      sys: () => `Madmext için reklam kreatif uzmanı. Türkçe. Marka: erkek/kadın tekstil e-ticaret. En iyi reklamlar:${JSON.stringify(MX.adStore.slice(0,8).map(r=>({r:r.name?.slice(0,25),ctr:r.ctr,roas:r.roas})))}`,
+      questions: [
+        ['✍️ Reklam metni','En iyi performanslı reklamların ortak özelliklerini analiz et ve yeni reklam metni önerileri sun.'],
+        ['🔬 A/B test fikirleri','Mevcut reklamlar için A/B test fikirleri üret. Başlık, görsel ve CTA varyasyonları öner.'],
+        ['🎯 Hook cümleleri','Madmext marka kimliğine uygun 5 farklı reklam hook cümlesi yaz.'],
+        ['📈 Yüksek CTR başlıklar','Yüksek CTR için dikkat çekici reklam başlıkları öner.'],
+      ]
+    },
+    raporlar: {
+      title: '📊 Raporlar',
+      sub: 'Kapsamlı performans raporları',
+      welcome: 'Kapsamlı performans raporu oluşturmak için hazırım.',
+      sys: () => `Meta+GA4 raporlama uzmanı Türkçe. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))} Adsetler:${JSON.stringify(MX.adsetStore.slice(0,10).map(r=>({rs:r.name?.slice(0,22),h:r.spend,roas:r.roas})))}`,
+      questions: [
+        ['📊 Haftalık rapor','Son 7 günün kapsamlı performans raporu: kampanya ve reklam seti bazında tablo halinde sun.'],
+        ['📈 ROAS analizi','ROAS bazında tüm kampanya ve reklam setlerini analiz et. En iyi ve en kötüleri belirle.'],
+        ['💸 Harcama verimliliği','Harcama başına kazanç analizini yap. En verimli kampanyaları belirle.'],
+        ['📉 Düşüş analizi','Bu hafta performansı düşen kampanya ve reklam setlerini tespit et.'],
+      ]
+    }
+  };
+
+  const cfg = MODULE_CONFIG[currentPage] || MODULE_CONFIG.strateji;
+
+  // Başlık güncelle
+  const titleEl = document.getElementById('aiModuleTitle');
+  const subEl = document.getElementById('aiModuleSub');
+  const welcomeEl = document.getElementById('aiWelcome');
+  if(titleEl) titleEl.innerHTML = `${cfg.title} <span class="nav-ai">AI</span>`;
+  if(subEl) subEl.textContent = cfg.sub;
+  if(welcomeEl) welcomeEl.textContent = cfg.welcome;
+
+  // Hızlı sorular
+  const btnsEl = document.getElementById('aiQuickBtns');
+  if(btnsEl) {
+    btnsEl.innerHTML = cfg.questions.map(([label, q]) =>
+      `<button class="qbtn" onclick="aiModuleSend('${q.replace(/'/g,"\\'")}')">${label}</button>`
+    ).join('');
+  }
+
+  window.aiModuleSend = async function(msg) {
+    if(!msg) msg = document.getElementById('aiInput')?.value;
+    if(!msg||!msg.trim()) return;
+    const inp = document.getElementById('aiInput');
+    if(inp) inp.value = '';
+    addMsg(msg, 'user', 'aiMsgs');
+    const th = addThinking('aiMsgs');
+    const key = currentPage || 'strateji';
+    if(!MX.chatH[key]) MX.chatH[key] = [];
+    MX.chatH[key].push({role:'user',content:msg});
+    const reply = await claude(MX.chatH[key].slice(-6), cfg.sys());
+    th.remove();
+    MX.chatH[key].push({role:'assistant',content:reply});
+    addClaudeMsg(reply, 'aiMsgs');
+  };
+})();
+</script>
