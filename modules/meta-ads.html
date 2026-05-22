@@ -1,0 +1,426 @@
+<!-- Alt sekmeler -->
+<div class="arow" style="border-bottom:1px solid var(--b);padding-bottom:12px;margin-bottom:16px">
+  <button class="btn sm" id="metaTabCamp" onclick="metaTab('camp',this)">Kampanyalar</button>
+  <button class="btn sm sec" id="metaTabAdset" onclick="metaTab('adset',this)">Reklam Setleri</button>
+  <button class="btn sm sec" id="metaTabAd" onclick="metaTab('ad',this)">Reklamlar</button>
+</div>
+
+<!-- Kampanyalar -->
+<div id="metaPanelCamp">
+  <div class="arow">
+    <select class="flt" id="pDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option><option value="last_month">Geçen ay</option></select>
+    <button class="btn sm" onclick="loadCamp()">Yenile</button>
+    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('pPicker')">⚙ Sütunlar</button>
+      <div class="cpicker-dropdown" id="pPicker">
+        <div class="cpicker-section">Temel</div>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('camp')"> Harcama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('camp')"> Gösterim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('camp')"> Tıklama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('camp')"> CTR%</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('camp')"> TBM</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('camp')"> ROAS</label>
+        <div class="cpicker-section">Ek</div>
+        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('camp')"> CPM</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('camp')"> Frekans</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('camp')"> Erişim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('camp')"> Sepet</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('camp')"> Satış</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('camp')"> Gelir</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="budget" onchange="applyCols('camp')"> Bütçe</label>
+      </div>
+    </div>
+  </div>
+  <div class="arow" style="margin-bottom:8px">
+    <select class="flt" id="pDate2"><option value="">Karşılaştırma dönemi seç...</option><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d">Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option></select>
+    <span id="cmpLabel" style="font-size:11px;color:var(--m)"></span>
+  </div>
+  <div class="grid">
+    <div class="sc"><div class="sl">Toplam Harcama</div><div class="sv" id="tSpend">—</div><div class="sdiff" id="dSpend"></div></div>
+    <div class="sc"><div class="sl">Tıklama</div><div class="sv" id="tClick">—</div><div class="sdiff" id="dClick"></div></div>
+    <div class="sc"><div class="sl">Gösterim</div><div class="sv" id="tImpr">—</div><div class="sdiff" id="dImpr"></div></div>
+    <div class="sc"><div class="sl">Ort. CTR</div><div class="sv" id="tCtr">—</div><div class="sdiff" id="dCtr"></div></div>
+    <div class="sc"><div class="sl">Ort. TBM</div><div class="sv" id="tCpc">—</div><div class="sdiff" id="dCpc"></div></div>
+    <div class="sc"><div class="sl">Ort. ROAS</div><div class="sv" id="tRoas">—</div><div class="sdiff" id="dRoas"></div></div>
+  </div>
+  <div class="twrap"><table id="campT"><thead id="campTH"></thead><tbody id="campTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Bağlan ve yenile</td></tr></tbody></table></div>
+</div>
+
+<!-- Reklam Setleri -->
+<div id="metaPanelAdset" style="display:none">
+  <div class="arow">
+    <select class="flt" id="asDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option></select>
+    <select class="flt" id="asCamp" style="max-width:220px"><option value="">Tüm Kampanyalar</option></select>
+    <button class="btn sm" onclick="loadAdsets()">Yenile</button>
+    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('asPicker')">⚙ Sütunlar</button>
+      <div class="cpicker-dropdown" id="asPicker">
+        <div class="cpicker-section">Temel</div>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('adset')"> Harcama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('adset')"> Gösterim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('adset')"> Tıklama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('adset')"> CTR%</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('adset')"> TBM</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('adset')"> ROAS</label>
+        <div class="cpicker-section">Ek</div>
+        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('adset')"> CPM</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('adset')"> Frekans</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('adset')"> Sepet</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('adset')"> Satış</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('adset')"> Gelir</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="budget" onchange="applyCols('adset')"> Bütçe</label>
+      </div>
+    </div>
+  </div>
+  <div class="twrap"><table id="asT"><thead id="asTH"></thead><tbody id="asTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody></table></div>
+</div>
+
+<!-- Reklamlar -->
+<div id="metaPanelAd" style="display:none">
+  <div class="arow">
+    <select class="flt" id="adDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option></select>
+    <select class="flt" id="adCamp" style="max-width:220px"><option value="">Tüm Kampanyalar</option></select>
+    <button class="btn sm" onclick="loadAds()">Yenile</button>
+    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('adPicker')">⚙ Sütunlar</button>
+      <div class="cpicker-dropdown" id="adPicker">
+        <div class="cpicker-section">Temel</div>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('ad')"> Harcama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('ad')"> Gösterim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('ad')"> Tıklama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('ad')"> CTR%</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('ad')"> TBM</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('ad')"> ROAS</label>
+        <div class="cpicker-section">Ek</div>
+        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('ad')"> CPM</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('ad')"> Frekans</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('ad')"> Sepet</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('ad')"> Satış</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('ad')"> Gelir</label>
+      </div>
+    </div>
+  </div>
+  <div class="twrap"><table id="adT"><thead id="adTH"></thead><tbody id="adTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody></table></div>
+</div>
+
+<div id="toast"></div>
+<div class="moverlay" id="bModal" style="display:none">
+  <div class="modal">
+    <h3>💰 Bütçe Artış Onayı</h3>
+    <div class="mdet" id="mDet"></div>
+    <div class="mbtns"><button class="btn sec" onclick="closeModal()">İptal</button><button class="btn yel" onclick="approveB()">Onayla</button></div>
+  </div>
+</div>
+
+<script>
+// ── Tablo kolon tanımları ──────────────────────────────────────────────
+const COLS = {
+  camp: [
+    {key:'name',label:'Kampanya',fixed:true,num:false},
+    {key:'budgetType',label:'Bütçe',fixed:true,num:false},
+    {key:'spend',label:'Harcama ₺',num:true},
+    {key:'impr',label:'Gösterim',num:true},
+    {key:'clicks',label:'Tıklama',num:true},
+    {key:'ctr',label:'CTR%',num:true},
+    {key:'cpc',label:'TBM',num:true},
+    {key:'cpm',label:'CPM',num:true},
+    {key:'freq',label:'Frekans',num:true},
+    {key:'reach',label:'Erişim',num:true},
+    {key:'roas',label:'ROAS',num:true},
+    {key:'cart',label:'Sepet',num:true},
+    {key:'purchase',label:'Satış',num:true},
+    {key:'revenue',label:'Gelir ₺',num:true},
+    {key:'budget',label:'Bütçe ₺',num:true},
+  ],
+  adset: [
+    {key:'campName',label:'Kampanya',fixed:true,num:false},
+    {key:'name',label:'Reklam Seti',fixed:true,num:false},
+    {key:'status',label:'Durum',fixed:true,num:false},
+    {key:'budget',label:'Bütçe',fixed:true,num:false},
+    {key:'spend',label:'Harcama ₺',num:true},
+    {key:'impr',label:'Gösterim',num:true},
+    {key:'clicks',label:'Tıklama',num:true},
+    {key:'ctr',label:'CTR%',num:true},
+    {key:'cpc',label:'TBM',num:true},
+    {key:'cpm',label:'CPM',num:true},
+    {key:'freq',label:'Frekans',num:true},
+    {key:'reach',label:'Erişim',num:true},
+    {key:'roas',label:'ROAS',num:true},
+    {key:'cart',label:'Sepet',num:true},
+    {key:'purchase',label:'Satış',num:true},
+    {key:'revenue',label:'Gelir ₺',num:true},
+  ],
+  ad: [
+    {key:'campName',label:'Kampanya',fixed:true,num:false},
+    {key:'adsetName',label:'Reklam Seti',fixed:true,num:false},
+    {key:'name',label:'Reklam',fixed:true,num:false},
+    {key:'status',label:'Durum',fixed:true,num:false},
+    {key:'spend',label:'Harcama ₺',num:true},
+    {key:'impr',label:'Gösterim',num:true},
+    {key:'clicks',label:'Tıklama',num:true},
+    {key:'ctr',label:'CTR%',num:true},
+    {key:'cpc',label:'TBM',num:true},
+    {key:'cpm',label:'CPM',num:true},
+    {key:'freq',label:'Frekans',num:true},
+    {key:'reach',label:'Erişim',num:true},
+    {key:'roas',label:'ROAS',num:true},
+    {key:'cart',label:'Sepet',num:true},
+    {key:'purchase',label:'Satış',num:true},
+    {key:'revenue',label:'Gelir ₺',num:true},
+  ]
+};
+
+let vis = {
+  camp: new Set(['name','budgetType','spend','impr','clicks','ctr','cpc','roas','cart','purchase']),
+  adset: new Set(['campName','name','status','budget','spend','impr','clicks','ctr','cpc','roas','cart','purchase']),
+  ad: new Set(['campName','adsetName','name','status','spend','impr','clicks','ctr','cpc','roas','cart','purchase'])
+};
+
+function metaTab(tab, btn) {
+  ['Camp','Adset','Ad'].forEach(t => {
+    document.getElementById('metaPanel'+t).style.display = 'none';
+    const b = document.getElementById('metaTab'+t);
+    if(b){b.className='btn sm sec';}
+  });
+  document.getElementById('metaPanel'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display = 'block';
+  if(btn){btn.className='btn sm';}
+}
+
+function togglePicker(id) {
+  document.querySelectorAll('.cpicker-dropdown').forEach(d => { if(d.id!==id) d.classList.remove('open'); });
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click', e => { if(!e.target.closest('.cpicker-wrap')) document.querySelectorAll('.cpicker-dropdown').forEach(d=>d.classList.remove('open')); });
+
+function getChecked(pickerEl, level) {
+  const boxes = pickerEl.querySelectorAll('input[type=checkbox]');
+  const s = new Set(); COLS[level].filter(c=>c.fixed).forEach(c=>s.add(c.key));
+  boxes.forEach(b => { if(b.checked) s.add(b.dataset.col); }); return s;
+}
+
+function applyCols(level) {
+  const pickerMap = {camp:'pPicker',adset:'asPicker',ad:'adPicker'};
+  const picker = document.getElementById(pickerMap[level]);
+  vis[level] = getChecked(picker, level);
+  const store = {camp:MX.campStore,adset:MX.adsetStore,ad:MX.adStore}[level];
+  renderTable(level, store);
+}
+
+function renderTable(level, data) {
+  const tMap = {camp:{th:'campTH',tb:'campTB'},adset:{th:'asTH',tb:'asTB'},ad:{th:'adTH',tb:'adTB'}};
+  const {th:thId,tb:tbId} = tMap[level];
+  const cols = COLS[level].filter(c=>vis[level].has(c.key));
+  const actCol = level !== 'camp';
+  let hHTML = '<tr>';
+  cols.forEach((c,i) => {
+    const st = MX.sortSt[level]||{};
+    const icon = st.key===c.key?(st.dir===-1?'↓':'↑'):'↕';
+    const sorted = st.key===c.key?'sorted':'';
+    hHTML += `<th class="${sorted}" onclick="sortBy('${level}','${c.key}',${c.num})">${c.label} <span>${icon}</span></th>`;
+  });
+  if(actCol) hHTML += '<th>İşlem</th>';
+  hHTML += '</tr>';
+  document.getElementById(thId).innerHTML = hHTML;
+  if(!data||!data.length){document.getElementById(tbId).innerHTML=`<tr><td colspan="${cols.length+(actCol?1:0)}" style="text-align:center;padding:20px;color:var(--m)">Veri yok</td></tr>`;return;}
+  let bHTML = '';
+  data.forEach(row => {
+    bHTML += '<tr>';
+    cols.forEach(c => {
+      let v = row[c.key]??'—';
+      if(c.key==='roas') v=`<span style="color:${roasColor(parseFloat(v)||0)}">${parseFloat(v)?parseFloat(v).toFixed(2)+'x':'—'}</span>`;
+      else if(c.key==='status') v=row.status==='ACTIVE'?'<span class="bge on">AKTİF</span>':'<span class="bge off">DURDU</span>';
+      else if(c.key==='budgetType') v=row.budgetBadge+' '+row.budgetAmt;
+      else if(c.key==='budget') v=row.budgetAmt||'—';
+      else if(c.key==='spend') v=parseFloat(v)?parseFloat(v).toFixed(2)+'₺':'—';
+      else if(c.key==='cpc'||c.key==='cpm') v=parseFloat(v)?parseFloat(v).toFixed(2)+'₺':'—';
+      else if(c.key==='ctr') v=parseFloat(v)?parseFloat(v).toFixed(2)+'%':'—';
+      else if(c.key==='freq') v=parseFloat(v)?parseFloat(v).toFixed(2):'—';
+      else if(c.key==='revenue') v=parseFloat(v)?parseFloat(v).toFixed(0)+'₺':'—';
+      else if(c.key==='impr'||c.key==='reach') v=parseInt(v)?(parseInt(v)/1000).toFixed(0)+'K':'—';
+      else if(typeof v==='number') v=v.toLocaleString('tr');
+      bHTML += `<td>${v}</td>`;
+    });
+    if(actCol) {
+      let btns = '';
+      if(row._id) {
+        const tl=row.status==='ACTIVE'?'Durdur':'Başlat';
+        const tc=row.status==='ACTIVE'?'dng':'grn';
+        const ts=row.status==='ACTIVE'?'PAUSED':'ACTIVE';
+        btns += `<button class="btn sm ${tc}" onclick="toggle('${row._id}','${ts}','${row._type}','${level}')">${tl}</button>`;
+      }
+      if(row._budgetId&&row.budgetAmt&&row.budgetAmt!=='—')
+        btns += ` <button class="btn sm yel" onclick="proposeB('${row._budgetId}','${(row.name||'').replace(/'/g,'')}','${row._budgetType}','${row.budgetAmt}')">+Bütçe</button>`;
+      bHTML += `<td style="display:flex;gap:4px;flex-wrap:wrap">${btns}</td>`;
+    }
+    bHTML += '</tr>';
+  });
+  document.getElementById(tbId).innerHTML = bHTML;
+}
+
+function sortBy(level, key, isNum) {
+  const st = MX.sortSt[level]||{key:null,dir:-1};
+  const dir = st.key===key?-st.dir:-1;
+  MX.sortSt[level] = {key,dir};
+  const store = {camp:MX.campStore,adset:MX.adsetStore,ad:MX.adStore}[level];
+  store.sort((a,b) => {
+    const av=a[key]??'',bv=b[key]??'';
+    if(isNum) return dir*(parseFloat(av||0)-parseFloat(bv||0));
+    return dir*String(av).localeCompare(String(bv),'tr');
+  });
+  renderTable(level, store);
+}
+
+async function loadCamp() {
+  const preset = document.getElementById('pDate').value;
+  document.getElementById('campTB').innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</td></tr>';
+  const [ins,camps] = await Promise.all([
+    api(`${AID}/insights`,{fields:CF,date_preset:preset,level:'campaign',limit:500,action_attribution_windows:ATTR}),
+    api(`${AID}/campaigns`,{fields:'id,name,status,daily_budget,lifetime_budget',limit:500})
+  ]);
+  const cmap={}; (camps?.data||[]).forEach(c=>cmap[c.id]=c);
+  if(!ins||ins.error){document.getElementById('campTB').innerHTML=`<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Hata: ${ins?.error?.message||'?'}</td></tr>`;return;}
+  let tS=0,tC=0,tI=0,cS=0,n=0;
+  MX.campRaw = ins.data||[];
+  const rows = (ins.data||[]).map(r => {
+    const spend=parseFloat(r.spend||0),clicks=parseInt(r.clicks||0),impr=parseInt(r.impressions||0);
+    const ctr=parseFloat(r.ctr||0),cpc=parseFloat(r.cpc||0),cpm=parseFloat(r.cpp||0);
+    const freq=parseFloat(r.frequency||0),reach=parseInt(r.reach||0);
+    const roas=groas(r),cart=gav(r.actions,'add_to_cart'),purchase=gav(r.actions,'purchase'),revenue=grev(r);
+    tS+=spend;tC+=clicks;tI+=impr;if(ctr){cS+=ctr;n++;}
+    const camp=cmap[r.campaign_id]; const bi=getBi(camp);
+    return {name:r.campaign_name,budgetBadge:bi.badge,budgetAmt:bi.amt,spend,impr,clicks,ctr,cpc,cpm,freq,reach,roas,cart,purchase,revenue,
+      budget:parseFloat((camp?.daily_budget||camp?.lifetime_budget||0))/100,
+      _budgetId:bi.type==='CBO'?camp?.id:null,_budgetType:'campaign',budgetType:bi.type};
+  }).sort((a,b)=>b.spend-a.spend);
+  MX.campStore = rows;
+  document.getElementById('tSpend').textContent = tS.toFixed(0)+'₺';
+  document.getElementById('tClick').textContent = tC.toLocaleString('tr');
+  document.getElementById('tImpr').textContent = (tI/1000).toFixed(0)+'K';
+  document.getElementById('tCtr').textContent = n?(cS/n).toFixed(2)+'%':'—';
+  document.getElementById('tCpc').textContent = tC?(tS/tC).toFixed(2)+'₺':'—';
+  let roasSum=0,roasN=0; MX.campRaw.forEach(r=>{const rv=groas(r);if(rv>0){roasSum+=rv;roasN++;}});
+  document.getElementById('tRoas').textContent = roasN?(roasSum/roasN).toFixed(2)+'x':'—';
+  renderTable('camp', MX.campStore);
+  // Kampanya filtrelerini doldur
+  ['asCamp','adCamp'].forEach(id => {
+    const s = document.getElementById(id); if(!s)return;
+    s.innerHTML = '<option value="">Tüm Kampanyalar</option>';
+    (camps?.data||[]).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name.substring(0,50);s.appendChild(o);});
+  });
+}
+
+async function loadAdsets() {
+  const preset = document.getElementById('asDate').value;
+  const campId = document.getElementById('asCamp').value;
+  document.getElementById('asTB').innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</td></tr>';
+  let params = {fields:AF,date_preset:preset,level:'adset',limit:500,action_attribution_windows:ATTR};
+  if(campId) params.filtering = JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campId}]);
+  const [ins,adsets,camps] = await Promise.all([
+    api(`${AID}/insights`,params),
+    api(`${AID}/adsets`,{fields:'id,name,status,daily_budget,lifetime_budget,campaign_id',limit:500}),
+    api(`${AID}/campaigns`,{fields:'id,daily_budget,lifetime_budget',limit:500})
+  ]);
+  const amap={}; (adsets?.data||[]).forEach(a=>amap[a.id]=a);
+  const cmap={}; (camps?.data||[]).forEach(c=>cmap[c.id]=c);
+  if(!ins||ins.error){document.getElementById('asTB').innerHTML=`<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Hata: ${ins?.error?.message||'?'}</td></tr>`;return;}
+  MX.adsetRaw = ins.data||[];
+  const rows = (ins.data||[]).map(r => {
+    const spend=parseFloat(r.spend||0),clicks=parseInt(r.clicks||0),impr=parseInt(r.impressions||0);
+    const ctr=parseFloat(r.ctr||0),cpc=parseFloat(r.cpc||0),cpm=parseFloat(r.cpp||0);
+    const freq=parseFloat(r.frequency||0),reach=parseInt(r.reach||0);
+    const roas=groas(r),cart=gav(r.actions,'add_to_cart'),purchase=gav(r.actions,'purchase'),revenue=grev(r);
+    const adset=amap[r.adset_id]; const camp=cmap[r.campaign_id];
+    const isCBO=camp?.daily_budget||camp?.lifetime_budget;
+    const budgetBadge=isCBO?'<span class="bge cbo">CBO</span>':'<span class="bge abo">ABO</span>';
+    const budgetAmt=isCBO?(camp.daily_budget?(parseInt(camp.daily_budget)/100).toFixed(0)+'₺/gün kamp.':(parseInt(camp.lifetime_budget)/100).toFixed(0)+'₺ toplam'):(adset?.daily_budget?(parseInt(adset.daily_budget)/100).toFixed(0)+'₺/gün':'—');
+    const budgetId=isCBO?camp.id:adset?.id;
+    return {campName:r.campaign_name,name:r.adset_name,status:adset?.status||'—',budgetBadge,budgetAmt,spend,impr,clicks,ctr,cpc,cpm,freq,reach,roas,cart,purchase,revenue,_id:adset?.id,_type:'adset',_budgetId:budgetId,_budgetType:isCBO?'campaign':'adset'};
+  }).sort((a,b)=>b.spend-a.spend);
+  MX.adsetStore = rows;
+  renderTable('adset', MX.adsetStore);
+}
+
+async function loadAds() {
+  const preset = document.getElementById('adDate').value;
+  const campId = document.getElementById('adCamp').value;
+  document.getElementById('adTB').innerHTML = '<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</td></tr>';
+  let params = {fields:DF,date_preset:preset,level:'ad',limit:500,action_attribution_windows:ATTR};
+  if(campId) params.filtering = JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campId}]);
+  const [ins,ads] = await Promise.all([
+    api(`${AID}/insights`,params),
+    api(`${AID}/ads`,{fields:'id,name,status',limit:500})
+  ]);
+  const admap={}; (ads?.data||[]).forEach(a=>admap[a.id]=a);
+  if(!ins||ins.error){document.getElementById('adTB').innerHTML=`<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Hata: ${ins?.error?.message||'?'}</td></tr>`;return;}
+  MX.adRaw = ins.data||[];
+  const rows = (ins.data||[]).map(r => {
+    const spend=parseFloat(r.spend||0),clicks=parseInt(r.clicks||0),impr=parseInt(r.impressions||0);
+    const ctr=parseFloat(r.ctr||0),cpc=parseFloat(r.cpc||0),cpm=parseFloat(r.cpp||0);
+    const freq=parseFloat(r.frequency||0),reach=parseInt(r.reach||0);
+    const roas=groas(r),cart=gav(r.actions,'add_to_cart'),purchase=gav(r.actions,'purchase'),revenue=grev(r);
+    const ad=admap[r.ad_id];
+    return {campName:r.campaign_name,adsetName:r.adset_name,name:r.ad_name,status:ad?.status||'—',spend,impr,clicks,ctr,cpc,cpm,freq,reach,roas,cart,purchase,revenue,_id:ad?.id,_type:'ad'};
+  }).sort((a,b)=>b.spend-a.spend);
+  MX.adStore = rows;
+  renderTable('ad', MX.adStore);
+}
+
+async function toggle(id, status, type, level) {
+  const d = await api(id,{status},'POST');
+  if(d?.success){toast(status==='ACTIVE'?'Başlatıldı ✓':'Durduruldu ✓');if(level==='adset')loadAdsets();else loadAds();}
+  else toast('Hata: '+(d?.error?.message||'?'));
+}
+
+let _pending = null;
+function proposeB(id, name, type, curAmt) {
+  const pct = prompt(`${name}\nMevcut: ${curAmt}\nKaç % artıralım?`);
+  if(!pct)return; const pctN=parseFloat(pct); if(isNaN(pctN)||pctN<=0){toast('Geçersiz');return;}
+  const match=curAmt.match(/[\d.]+/); if(!match){toast('Bütçe okunamadı');return;}
+  const curTL=parseFloat(match[0]); const newTL=curTL*(1+pctN/100);
+  _pending={id,name,type,curTL,newTL,pct:pctN};
+  document.getElementById('mDet').innerHTML=`<strong>Hedef:</strong> ${name}<br><strong>Tip:</strong> ${type==='campaign'?'CBO':'ABO'}<br><strong>Mevcut:</strong> ${curTL.toFixed(0)}₺/gün<br><strong>Artış:</strong> %${pctN}<br><strong>Yeni:</strong> ${newTL.toFixed(0)}₺/gün`;
+  document.getElementById('bModal').style.display='flex';
+}
+function closeModal(){document.getElementById('bModal').style.display='none';_pending=null;}
+async function approveB() {
+  if(!_pending)return;
+  const {id,name,type,curTL,newTL,pct} = _pending;
+  const d = await api(id,{daily_budget:Math.round(newTL*100)},'POST');
+  closeModal();
+  if(d?.success||d?.id){
+    let baseline=null;
+    try{
+      const bd=await api(`${AID}/insights`,{fields:'spend,ctr,cpc,purchase_roas,actions',date_preset:'last_7d',
+        level:type==='campaign'?'campaign':'adset',
+        filtering:JSON.stringify([{field:type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:id}]),
+        action_attribution_windows:ATTR});
+      const br=bd?.data?.[0];
+      if(br)baseline={roas:groas(br),spend:parseFloat(br.spend||0),purchase:gav(br.actions,'purchase'),ctr:parseFloat(br.ctr||0),cpc:parseFloat(br.cpc||0)};
+    }catch(e){}
+    const now=Date.now();
+    MX.budgetLog.unshift({id,name,type,old:curTL,new:newTL,pct,time:new Date().toISOString(),baseline});
+    MX.taskLog.unshift(
+      {id,name,type,baseline,budgetOld:curTL,budgetNew:newTL,pct,createdAt:now,dueAt:now+86400000,period:'1g',done:false},
+      {id,name,type,baseline,budgetOld:curTL,budgetNew:newTL,pct,createdAt:now,dueAt:now+3*86400000,period:'3g',done:false}
+    );
+    saveServerLogs();
+    updateTaskBadge();
+    toast(`${newTL.toFixed(0)}₺'ye güncellendi ✓ · Baseline kaydedildi`);
+  } else toast('Hata: '+(d?.error?.message||'?'));
+}
+
+document.getElementById('pDate2')?.addEventListener('change', loadCampCompare);
+async function loadCampCompare() {
+  const preset2=document.getElementById('pDate2').value; if(!preset2)return;
+  const preset1=document.getElementById('pDate').value;
+  document.getElementById('cmpLabel').textContent=`Karşılaştırma: ${preset1} vs ${preset2}`;
+  const d=await api(`${AID}/insights`,{fields:CF,date_preset:preset2,level:'campaign',limit:500,action_attribution_windows:ATTR});
+  const cmap2={}; (d?.data||[]).forEach(r=>cmap2[r.campaign_id]={spend:parseFloat(r.spend||0),clicks:parseInt(r.clicks||0),roas:groas(r),ctr:parseFloat(r.ctr||0),cpc:parseFloat(r.cpc||0)});
+  function diffHtml(cur,prev,fmt,higherBetter=true){
+    if(!prev)return''; const pct=((cur-prev)/prev*100); const up=higherBetter?pct>0:pct<0;
+    return `<div class="sdiff ${up?'up':'dn'}">${pct>0?'+':''}${pct.toFixed(1)}% vs önceki</div>`;
+  }
+  MX.campStore.forEach(r=>{
+    const p=cmap2[r.campaign_id];if(!p)return;
+  });
+}
+
+window.addEventListener('mx:connected', loadCamp);
+</script>
