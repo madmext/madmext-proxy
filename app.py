@@ -200,7 +200,7 @@ def parse_ticimax_products(xml_text):
 @app.route('/ticimax/products', methods=['GET'])
 def ticimax_products():
     if not TICIMAX_KEY:
-        return jsonify({'error': 'TICIMAX_KEY eksik. Railway Variables'a ekle.'})
+        return jsonify({'error': 'TICIMAX_KEY eksik. Railway Variables ekle.'})
     try:
         all_products = []
         page = 1
