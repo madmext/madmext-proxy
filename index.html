@@ -310,10 +310,15 @@ async function loadModule(page) {
 // Script taglarını yeniden çalıştır (innerHTML scripts çalışmaz)
 function reExecScripts(container) {
   container.querySelectorAll('script').forEach(s => {
-    const ns = document.createElement('script');
-    ns.textContent = s.textContent;
-    document.head.appendChild(ns);
-    document.head.removeChild(ns);
+    try {
+      const fn = new Function(s.textContent);
+      fn();
+    } catch(e) {
+      // Fallback: script tag yöntemi
+      const ns = document.createElement('script');
+      ns.textContent = s.textContent;
+      document.body.appendChild(ns);
+    }
   });
 }
 
