@@ -98,6 +98,23 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#2d2e2f}
 .mdet{background:#1a1a1a;border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .stl{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.dash-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;position:relative;overflow:hidden}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.dash-card.meta::before{background:#1877f2}
+.dash-card.ga4::before{background:#e8710a}
+.dash-card.google-ads::before{background:#34a853}
+.dash-label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.dash-val{font-size:24px;font-weight:700;font-family:'DM Mono',monospace}
+.dash-sub{font-size:11px;color:var(--m);margin-top:3px}
+.dash-src{font-size:9px;position:absolute;top:8px;right:10px;color:var(--b);text-transform:uppercase;letter-spacing:1px}
+.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.channel-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px}
+.channel-title{font-size:11px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.channel-row{display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid #1a1a1a}
+.channel-row:last-child{border-bottom:none}
+.channel-row span:last-child{color:var(--t);font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
@@ -105,12 +122,13 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#2d2e2f}
   <div class="logo">Madmext <span>Ads</span></div>
   <div class="prow">
     <span class="dot" id="dot"></span>
-    <input type="text" id="proxyUrl" value="https://web-production-e5865.up.railway.app" placeholder="Railway URL...">
+    <input type="text" id="proxyUrl" value="https://maybe-unissued-errant.ngrok-free.dev" placeholder="ngrok URL...">
     <button class="btn sm" onclick="connect()">Bağlan</button>
   </div>
 </div>
 
 <div class="tabs">
+  <button class="tab" onclick="sw('dash',this)">🏠 Dashboard</button>
   <button class="tab active" onclick="sw('perf',this)">📊 Kampanyalar</button>
   <button class="tab" onclick="sw('adsets',this)">📁 Reklam Setleri</button>
   <button class="tab" onclick="sw('ads',this)">🎯 Reklamlar</button>
@@ -118,6 +136,46 @@ tr:last-child td{border-bottom:none}tr:hover td{background:#2d2e2f}
   <button class="tab" onclick="sw('blog',this)">📋 Bütçe Takibi</button>
   <button class="tab" onclick="sw('tasks',this)" id="taskTab">⏰ Görevler <span id="taskBadge" style="display:none;background:var(--r);color:#fff;border-radius:10px;padding:1px 6px;font-size:9px;margin-left:3px">0</span></button>
   <button class="tab" onclick="sw('create',this)">➕ Oluştur</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="panel" id="panel-dash">
+  <div class="arow">
+    <button class="btn" onclick="loadDashboard()">🔄 Yenile</button>
+    <span id="dashLastUpdate" style="font-size:11px;color:var(--m)"></span>
+  </div>
+
+  <!-- Özet Kartlar -->
+  <div class="stl">Genel Bakış</div>
+  <div class="dash-grid" id="dashCards">
+    <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Harcama</div><div class="dash-val" id="d-meta-spend">—</div><div class="dash-sub">Son 7 gün</div></div>
+    <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Ort. ROAS</div><div class="dash-val" id="d-meta-roas">—</div><div class="dash-sub">Son 7 gün</div></div>
+    <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Satış</div><div class="dash-val" id="d-meta-sales">—</div><div class="dash-sub">Son 7 gün</div></div>
+    <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Oturum</div><div class="dash-val" id="d-ga4-sessions">—</div><div class="dash-sub">Son 7 gün</div></div>
+    <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Gelir</div><div class="dash-val" id="d-ga4-revenue">—</div><div class="dash-sub">Son 7 gün</div></div>
+    <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Dönüşüm Oranı</div><div class="dash-val" id="d-ga4-cvr">—</div><div class="dash-sub">Son 7 gün</div></div>
+  </div>
+
+  <!-- Kanal Detay -->
+  <div class="channel-grid">
+    <div class="channel-card">
+      <div class="channel-title">📘 Meta Ads</div>
+      <div id="metaChannelDetail"><div style="color:var(--m);font-size:11px">Yükleniyor...</div></div>
+    </div>
+    <div class="channel-card">
+      <div class="channel-title">📊 Google Analytics (GA4)</div>
+      <div id="ga4ChannelDetail"><div style="color:var(--m);font-size:11px">Yükleniyor...</div></div>
+    </div>
+  </div>
+
+  <!-- GA4 Trafik Kaynakları -->
+  <div class="stl">GA4 — Trafik Kaynakları</div>
+  <div class="twrap" style="max-height:300px">
+    <table><thead><tr>
+      <th>Kaynak / Mecra</th><th>Oturum</th><th>Kullanıcı</th><th>Gelir</th><th>Dönüşüm</th>
+    </tr></thead>
+    <tbody id="ga4SourceTable"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--m)">Yükle</td></tr></tbody>
+  </table></div>
 </div>
 
 <!-- KAMPANYALAR -->
@@ -1107,6 +1165,88 @@ function addMsg(txt,type){const w=document.getElementById('chatMsgs');const e=do
 function addClaudeMsg(txt){const w=document.getElementById('chatMsgs');const e=document.createElement('div');e.className='msg claude';e.innerHTML=renderMD(txt);w.appendChild(e);w.scrollTop=w.scrollHeight;return e;}
 function addThinking(){const w=document.getElementById('chatMsgs');const e=document.createElement('div');e.className='thinking';e.innerHTML='<div class="d"></div><div class="d"></div><div class="d"></div>';w.appendChild(e);w.scrollTop=w.scrollHeight;return e;}
 
+// ── GA4 API ──────────────────────────────────────────────────────────────
+async function ga4(body, type='runReport'){
+  try{
+    const r=await fetch(`${px()}/ga4`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type,body})});
+    return await r.json();
+  }catch(e){return null;}
+}
+
+function ga4val(resp, metricIdx=0, rowIdx=0){
+  return resp?.rows?.[rowIdx]?.metricValues?.[metricIdx]?.value||'0';
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────
+async function loadDashboard(){
+  document.getElementById('dashLastUpdate').textContent='Yükleniyor...';
+
+  // META verileri
+  const metaIns=await api(`${AID}/insights`,{fields:'spend,purchase_roas,actions',date_preset:'last_7d',level:'account',action_attribution_windows:ATTR});
+  const mr=metaIns?.data?.[0];
+  if(mr){
+    document.getElementById('d-meta-spend').textContent=(parseFloat(mr.spend||0)).toFixed(0)+'₺';
+    const roas=groas(mr);
+    document.getElementById('d-meta-roas').textContent=roas?roas.toFixed(2)+'x':'—';
+    document.getElementById('d-meta-sales').textContent=gav(mr.actions,'purchase');
+    document.getElementById('metaChannelDetail').innerHTML=`
+      <div class="channel-row"><span>Harcama</span><span>${parseFloat(mr.spend||0).toFixed(0)}₺</span></div>
+      <div class="channel-row"><span>ROAS</span><span style="color:${roasColor(roas)}">${roas?roas.toFixed(2)+'x':'—'}</span></div>
+      <div class="channel-row"><span>Tıklama</span><span>${parseInt(mr.clicks||0).toLocaleString('tr')}</span></div>
+      <div class="channel-row"><span>Satış</span><span>${gav(mr.actions,'purchase')}</span></div>
+      <div class="channel-row"><span>Sepete Ekle</span><span>${gav(mr.actions,'add_to_cart')}</span></div>`;
+  }
+
+  // GA4 — özet
+  const ga4Summary=await ga4({
+    dateRanges:[{startDate:'7daysAgo',endDate:'today'}],
+    metrics:[
+      {name:'sessions'},{name:'totalRevenue'},
+      {name:'conversions'},{name:'activeUsers'},{name:'bounceRate'}
+    ]
+  });
+  if(ga4Summary?.rows){
+    const sessions=parseInt(ga4val(ga4Summary,0));
+    const revenue=parseFloat(ga4val(ga4Summary,1));
+    const conversions=parseInt(ga4val(ga4Summary,2));
+    const users=parseInt(ga4val(ga4Summary,3));
+    const cvr=sessions>0?(conversions/sessions*100).toFixed(2):0;
+    document.getElementById('d-ga4-sessions').textContent=sessions.toLocaleString('tr');
+    document.getElementById('d-ga4-revenue').textContent=revenue.toFixed(0)+'₺';
+    document.getElementById('d-ga4-cvr').textContent=cvr+'%';
+    document.getElementById('ga4ChannelDetail').innerHTML=`
+      <div class="channel-row"><span>Oturum</span><span>${sessions.toLocaleString('tr')}</span></div>
+      <div class="channel-row"><span>Kullanıcı</span><span>${users.toLocaleString('tr')}</span></div>
+      <div class="channel-row"><span>Gelir</span><span>${revenue.toFixed(0)}₺</span></div>
+      <div class="channel-row"><span>Dönüşüm</span><span>${conversions}</span></div>
+      <div class="channel-row"><span>CVR</span><span>${cvr}%</span></div>`;
+  }else{
+    document.getElementById('ga4ChannelDetail').innerHTML='<div style="color:var(--r);font-size:11px">GA4 bağlantı hatası</div>';
+  }
+
+  // GA4 — Trafik kaynakları
+  const ga4Sources=await ga4({
+    dateRanges:[{startDate:'7daysAgo',endDate:'today'}],
+    dimensions:[{name:'sessionSource'},{name:'sessionMedium'}],
+    metrics:[{name:'sessions'},{name:'activeUsers'},{name:'totalRevenue'},{name:'conversions'}],
+    orderBys:[{metric:{metricName:'sessions'},desc:true}],
+    limit:10
+  });
+  if(ga4Sources?.rows){
+    document.getElementById('ga4SourceTable').innerHTML=ga4Sources.rows.map(r=>{
+      const src=r.dimensionValues[0].value;
+      const med=r.dimensionValues[1].value;
+      const sess=parseInt(r.metricValues[0].value||0);
+      const users=parseInt(r.metricValues[1].value||0);
+      const rev=parseFloat(r.metricValues[2].value||0);
+      const conv=parseInt(r.metricValues[3].value||0);
+      return`<tr><td>${src} / ${med}</td><td>${sess.toLocaleString('tr')}</td><td>${users.toLocaleString('tr')}</td><td>${rev.toFixed(0)}₺</td><td>${conv}</td></tr>`;
+    }).join('');
+  }
+
+  document.getElementById('dashLastUpdate').textContent='Son güncelleme: '+new Date().toLocaleTimeString('tr');
+}
+
 async function createCamp(){
   const name=document.getElementById('cName').value;
   const obj=document.getElementById('cObj').value;
@@ -1125,15 +1265,11 @@ function sw(name,btn){
   btn.classList.add('active');
   if(name==='blog')renderLog();
   if(name==='tasks')renderTasks();
+  if(name==='dash')loadDashboard();
 }
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4000);}
 renderLog();
 updateTaskBadge();
-// Railway'de çalışıyorsa otomatik bağlan
-if(window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1') && !window.location.protocol.includes('file')){
-  document.getElementById('proxyUrl').value = window.location.origin;
-  setTimeout(connect, 500);
-}
 setInterval(()=>{updateTaskBadge();},60000); // Her dk badge güncelle
 </script>
 </body>
