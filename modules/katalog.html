@@ -1,8 +1,8 @@
 <!-- Ticimax Katalog Modülü -->
 <div class="arow">
   <button class="btn sm" onclick="loadTicimax()">🔄 Ticimax'tan Yükle</button>
-  <button class="btn sm sec" onclick="matchMeta()" id="matchMetaBtn" style="display:none">🔗 Meta ile Eşleştir</button>
-  <button class="btn sm sec" onclick="showSetBuilder()" id="setBuilderBtn" style="display:none">📦 Set Oluştur</button>
+  <button class="btn sm sec" id="matchMetaBtn" style="display:none" onclick="matchMeta()">🔗 Meta ile Eşleştir</button>
+  <button class="btn sm sec" id="setBuilderBtn" style="display:none" onclick="showSetBuilder()">📦 Set Oluştur</button>
   <span id="ticStatus" style="font-size:11px;color:var(--m)"></span>
 </div>
 
@@ -34,20 +34,20 @@
     <option value="date_desc">Yayın Tarihi (Yeni→Eski)</option>
     <option value="price_desc">Fiyat (Yüksek→Düşük)</option>
   </select>
-  <input type="text" id="ticSearch" placeholder="Ürün/barkod ara..." onkeyup="filterTic()" style="background:var(--bg);border:1px solid var(--b);color:var(--t);padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px;width:180px">
+  <input type="text" id="ticSearch" placeholder="Ürün/barkod ara..." onkeyup="filterTic()" style="background:var(--bg);border:1px solid var(--b);color:var(--t);padding:6px 10px;font-size:12px;border-radius:5px;width:180px">
   <span id="ticCount" style="font-size:11px;color:var(--m)"></span>
 </div>
 
 <div id="ticAI" style="display:none;margin-bottom:14px">
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-    <button class="qbtn" onclick="ticAIChat('Satış performansına göre en iyi ve en kötü ürünleri analiz et. Reklam stratejisi öner.')">🏆 Satış analizi</button>
+    <button class="qbtn" onclick="ticAIChat('Satış performansına göre en iyi ve en kötü ürünleri analiz et.')">🏆 Satış analizi</button>
     <button class="qbtn" onclick="ticAIChat('Stokta olmayan ürünlere reklam veriliyorsa tespit et ve uyar.')">⚠️ Stok uyarıları</button>
-    <button class="qbtn" onclick="ticAIChat('Son 30 günde hiç satmayan ürünleri listele. Bu ürünler için ne yapılmalı?')">📉 Satmayan ürünler</button>
-    <button class="qbtn" onclick="ticAIChat('Yeni eklenen ürünleri tespit et. Bu ürünler için reklam seti önerisi yap.')">✨ Yeni ürünler</button>
+    <button class="qbtn" onclick="ticAIChat('Son 30 günde hiç satmayan ürünleri listele.')">📉 Satmayan ürünler</button>
+    <button class="qbtn" onclick="ticAIChat('Yeni eklenen ürünler için reklam seti önerisi yap.')">✨ Yeni ürünler</button>
     <button class="qbtn" onclick="ticAIChat('Kategorilere göre satış ve reklam performansı analizi yap.')">📊 Kategori analizi</button>
   </div>
   <div class="chat-msgs" id="ticMsgs" style="height:140px">
-    <div class="msg sys">Ticimax verisi yüklendi. AI analizi için yukarıdaki butonları kullanın.</div>
+    <div class="msg sys">Ticimax verisi yüklendi. AI analizi için butonları kullanın.</div>
   </div>
 </div>
 
@@ -57,23 +57,23 @@
     <button class="btn sm sec" onclick="document.getElementById('setBuilder').style.display='none'">✕</button>
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
-    <div class="fg"><label>Set Adı</label><input type="text" id="setName" placeholder="örn: Yeni Sezon Erkek Tişört"></div>
+    <div class="fg"><label>Set Adı</label><input type="text" id="setName" placeholder="örn: Yeni Sezon Erkek"></div>
     <div class="fg"><label>Kategori</label><select id="setFilterCat"><option value="">Tümü</option></select></div>
-    <div class="fg"><label>Stok Durumu</label>
+    <div class="fg"><label>Stok</label>
       <select id="setFilterStock">
         <option value="">Tümü</option>
-        <option value="instock">Sadece Stokta Olanlar</option>
+        <option value="instock">Stokta Olanlar</option>
         <option value="nostock">Stokta Olmayanlar</option>
       </select>
     </div>
     <div class="fg"><label>Min Satış (30g)</label><input type="number" id="setMinSales" placeholder="0"></div>
     <div class="fg"><label>Max Satış (30g)</label><input type="number" id="setMaxSales" placeholder="9999"></div>
-    <div class="fg"><label>Son X Gün İçinde Yayınlanan</label><input type="number" id="setDaysSince" placeholder="örn: 30"></div>
+    <div class="fg"><label>Son X Gün İçinde Yayınlanan</label><input type="number" id="setDaysSince" placeholder="30"></div>
   </div>
   <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
     <button class="btn sm sec" onclick="previewSet()">👁 Önizle</button>
     <button class="btn sm grn" onclick="saveSet()">💾 Kaydet</button>
-    <button class="btn sm" style="background:#a855f7;color:#fff" onclick="sendToMeta()">🚀 Meta'ya Gönder</button>
+    <button class="btn sm" style="background:#a855f7;color:#fff" onclick="sendSetToMeta(null)">🚀 Meta'ya Gönder</button>
     <span id="setPreviewCount" style="font-size:11px;color:var(--m)"></span>
   </div>
   <div id="savedSets"></div>
@@ -82,7 +82,6 @@
 <div class="twrap" id="ticWrap" style="display:none">
   <table>
     <thead><tr>
-      <th><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
       <th>Görsel</th><th>Ürün</th><th>Kategori</th><th>Fiyat</th>
       <th>Stok</th><th>30g Satış</th><th>Yayın Tarihi</th><th>ROAS</th><th>Meta Harcama</th>
     </tr></thead>
@@ -92,206 +91,257 @@
 </div>
 
 <script>
-let ticProducts=[], ticSets=JSON.parse(localStorage.getItem('ticSets')||'[]'), selectedProducts=new Set();
-const TIC_PAGE=100; let ticFiltered=[];
+(function() {
+  // Modül scope - global çakışma önle
+  var ticProducts = [];
+  var ticSets = JSON.parse(localStorage.getItem('ticSets') || '[]');
+  var ticFiltered = [];
+  var TIC_PAGE = 100;
 
-async function loadTicimax(){
-  document.getElementById('ticStatus').textContent='⏳ Ticimax\'tan yükleniyor...';
-  try{
-    const [pr,or]=await Promise.all([
-      fetch(`${px()}/ticimax/products`).then(r=>r.json()),
-      fetch(`${px()}/ticimax/orders`).then(r=>r.json()).catch(()=>({orders:[]}))
-    ]);
-    if(pr.error){toast('Hata: '+pr.error);document.getElementById('ticStatus').textContent='Hata: '+pr.error;return;}
-    const salesMap={};
-    (or.orders||[]).forEach(o=>(o.items||o.urunler||[]).forEach(i=>{
-      const pid=i.product_id||i.urun_id||i.stok_kodu;
-      if(pid) salesMap[pid]=(salesMap[pid]||0)+(parseInt(i.quantity||i.adet||1));
-    }));
-    ticProducts=(pr.products||[]).map(p=>({...p,
-      sales30:salesMap[p.id]||salesMap[p.stok_kodu]||0,
-      roas:null,spend:null
-    }));
-    renderTicSummary();filterTic();
-    document.getElementById('ticAI').style.display='';
-    document.getElementById('matchMetaBtn').style.display='';
-    document.getElementById('setBuilderBtn').style.display='';
-    document.getElementById('ticStatus').textContent=`✓ ${ticProducts.length} ürün yüklendi`;
-    toast(`${ticProducts.length} ürün yüklendi ✓`);
-  }catch(e){toast('Hata: '+e.message);document.getElementById('ticStatus').textContent='Hata: '+e.message;}
-}
-
-async function matchMeta(){
-  document.getElementById('ticStatus').textContent='⏳ Meta ile eşleştiriliyor...';
-  const d=await api(`${AID}/insights`,{fields:'spend,purchase_roas,actions',date_preset:'last_30d',level:'ad',action_attribution_windows:ATTR,limit:500});
-  if(d?.data){
-    const mm={};
-    d.data.forEach(r=>{const n=(r.ad_name||'').toLowerCase();mm[n]={roas:groas(r),spend:parseFloat(r.spend||0),purchase:gav(r.actions,'purchase')};});
-    ticProducts.forEach(p=>{
-      const key=(p.title||p.name||'').toLowerCase().slice(0,15);
-      const match=Object.entries(mm).find(([k])=>k.includes(p.id||(key&&k.includes(key))));
-      if(match){p.roas=match[1].roas;p.spend=match[1].spend;p.purchase=match[1].purchase;}
-    });
-    filterTic();renderTicSummary();
-    toast('Meta eşleştirmesi tamamlandı ✓');
-  }
-  document.getElementById('ticStatus').textContent='✓ Meta eşleştirmesi yapıldı';
-}
-
-function renderTicSummary(){
-  const total=ticProducts.length;
-  const active=ticProducts.filter(p=>p.aktif||p.active||p.durum==='Aktif'||p.status==='active').length;
-  const nostock=ticProducts.filter(p=>(p.stok||p.stock||0)<=0).length;
-  const critical=ticProducts.filter(p=>{const s=p.stok||p.stock||0;return s>0&&s<=5;}).length;
-  const totalSales=ticProducts.reduce((a,p)=>a+(p.sales30||0),0);
-  const withAd=ticProducts.filter(p=>p.spend>0).length;
-  document.getElementById('tic-total').textContent=total.toLocaleString('tr');
-  document.getElementById('tic-active').textContent=active.toLocaleString('tr');
-  document.getElementById('tic-nostock').textContent=nostock.toLocaleString('tr');
-  document.getElementById('tic-critical').textContent=critical.toLocaleString('tr');
-  document.getElementById('tic-sales').textContent=totalSales.toLocaleString('tr');
-  document.getElementById('tic-withad').textContent=withAd>0?withAd.toLocaleString('tr'):'—';
-  document.getElementById('ticCards').style.display='';
-  document.getElementById('ticFilters').style.display='';
-  document.getElementById('ticWrap').style.display='';
-  const cats=[...new Set(ticProducts.map(p=>(p.kategori||p.category||'Diğer').split('>')[0].trim()))].sort();
-  ['ticFilterCat','setFilterCat'].forEach(id=>{
-    const s=document.getElementById(id);if(!s)return;
-    s.innerHTML='<option value="">Tümü</option>'+cats.map(c=>`<option value="${c}">${c}</option>`).join('');
-  });
-}
-
-function filterTic(){
-  const status=document.getElementById('ticFilterStatus').value;
-  const cat=document.getElementById('ticFilterCat').value;
-  const sort=document.getElementById('ticSort').value;
-  const search=document.getElementById('ticSearch').value.toLowerCase();
-  ticFiltered=ticProducts.filter(p=>{
-    const stock=p.stok||p.stock||0;
-    if(status==='active'&&!(p.aktif||p.active||p.durum==='Aktif'))return false;
-    if(status==='nostock'&&stock>0)return false;
-    if(status==='critical'&&!(stock>0&&stock<=5))return false;
-    if(status==='nosales'&&(p.sales30||0)>0)return false;
-    if(cat&&!(p.kategori||p.category||'').startsWith(cat))return false;
-    if(search&&!(p.title||p.name||'').toLowerCase().includes(search)&&!(p.id||'').toLowerCase().includes(search)&&!(p.stok_kodu||'').toLowerCase().includes(search))return false;
-    return true;
-  });
-  ticFiltered.sort((a,b)=>{
-    if(sort==='sales_desc')return(b.sales30||0)-(a.sales30||0);
-    if(sort==='sales_asc')return(a.sales30||0)-(b.sales30||0);
-    if(sort==='stock_asc')return(a.stok||a.stock||0)-(b.stok||b.stock||0);
-    if(sort==='roas_desc')return(b.roas||0)-(a.roas||0);
-    if(sort==='date_desc')return new Date(b.yayin_tarihi||b.publish_date||0)-new Date(a.yayin_tarihi||a.publish_date||0);
-    if(sort==='price_desc')return(b.fiyat||b.price||0)-(a.fiyat||a.price||0);
-    return 0;
-  });
-  document.getElementById('ticCount').textContent=`${ticFiltered.length} ürün`;
-  renderTicTable(ticFiltered,0);
-}
-
-function renderTicTable(data,page=0){
-  const start=page*TIC_PAGE;
-  document.getElementById('ticTB').innerHTML=data.slice(start,start+TIC_PAGE).map(p=>{
-    const stock=p.stok||p.stock||0;
-    const sc=stock<=0?'var(--r)':stock<=5?'var(--y)':'var(--g)';
-    const price=p.fiyat||p.price||0;
-    const img=(p.resim||p.image)?`<img src="${p.resim||p.image}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--b)" onerror="this.style.display='none'">`:'—';
-    const rH=p.roas!=null?`<span style="color:${roasColor(p.roas)}">${p.roas.toFixed(2)}x</span>`:'<span style="color:var(--m)">—</span>';
-    const cat=(p.kategori||p.category||'—').split('>')[0].trim().slice(0,20);
-    const d=p.yayin_tarihi||p.publish_date?new Date(p.yayin_tarihi||p.publish_date).toLocaleDateString('tr'):'—';
-    return`<tr><td><input type="checkbox" ${selectedProducts.has(p.id)?'checked':''} onchange="selectedProducts[this.checked?'add':'delete']('${p.id}')"></td>
-    <td>${img}</td>
-    <td style="max-width:200px;white-space:normal;font-family:'Inter',sans-serif;font-size:12px">${(p.title||p.name||'—').slice(0,55)}</td>
-    <td style="color:var(--m);font-size:11px">${cat}</td>
-    <td>${price>0?price.toFixed(0)+'₺':'—'}</td>
-    <td><span style="color:${sc}">${stock}</span></td>
-    <td style="color:${(p.sales30||0)>0?'var(--g)':'var(--m)'}">${p.sales30||0}</td>
-    <td style="font-size:11px;color:var(--m)">${d}</td>
-    <td>${rH}</td>
-    <td>${p.spend!=null?p.spend.toFixed(0)+'₺':'—'}</td></tr>`;
-  }).join('');
-  const pages=Math.ceil(data.length/TIC_PAGE);
-  const pg=document.getElementById('ticPagination');pg.innerHTML='';
-  if(pages>1){
-    for(let i=0;i<Math.min(pages,20);i++){const b=document.createElement('button');b.className=`btn sm ${i===page?'':'sec'}`;b.textContent=i+1;b.onclick=()=>renderTicTable(data,i);pg.appendChild(b);}
-    const info=document.createElement('span');info.style.cssText='font-size:11px;color:var(--m);margin-left:8px';
-    info.textContent=`${data.length.toLocaleString('tr')} ürün · Sayfa ${page+1}/${pages}`;pg.appendChild(info);
-  }
-}
-
-function toggleSelectAll(cb){document.querySelectorAll('#ticTB input[type=checkbox]').forEach(c=>{c.checked=cb.checked;});}
-function showSetBuilder(){document.getElementById('setBuilder').style.display='';renderSavedSets();}
-
-function getSetProducts(){
-  const cat=document.getElementById('setFilterCat').value;
-  const stockF=document.getElementById('setFilterStock').value;
-  const minS=parseInt(document.getElementById('setMinSales').value||'0');
-  const maxS=parseInt(document.getElementById('setMaxSales').value||'99999');
-  const days=parseInt(document.getElementById('setDaysSince').value||'0');
-  const cutoff=days>0?new Date(Date.now()-days*86400000):null;
-  return ticProducts.filter(p=>{
-    const stock=p.stok||p.stock||0;
-    const sales=p.sales30||0;
-    const pd=p.yayin_tarihi||p.publish_date;
-    if(cat&&!(p.kategori||p.category||'').startsWith(cat))return false;
-    if(stockF==='instock'&&stock<=0)return false;
-    if(stockF==='nostock'&&stock>0)return false;
-    if(sales<minS||sales>maxS)return false;
-    if(cutoff&&pd&&new Date(pd)<cutoff)return false;
-    return true;
-  });
-}
-
-function previewSet(){const p=getSetProducts();document.getElementById('setPreviewCount').textContent=`${p.length} ürün eşleşti`;}
-
-function saveSet(){
-  const name=document.getElementById('setName').value.trim();
-  if(!name){toast('Set adı girin');return;}
-  const products=getSetProducts();
-  if(!products.length){toast('Eşleşen ürün yok');return;}
-  const set={id:Date.now(),name,productIds:products.map(p=>p.id),count:products.length,createdAt:new Date().toISOString(),
-    filters:{cat:document.getElementById('setFilterCat').value,stock:document.getElementById('setFilterStock').value,
-      minSales:document.getElementById('setMinSales').value,maxSales:document.getElementById('setMaxSales').value,
-      daysSince:document.getElementById('setDaysSince').value}};
-  ticSets.unshift(set);localStorage.setItem('ticSets',JSON.stringify(ticSets));
-  renderSavedSets();toast(`"${name}" seti kaydedildi (${products.length} ürün) ✓`);
-}
-
-async function sendToMeta(setId){
-  const set=setId?ticSets.find(s=>s.id===setId):{name:document.getElementById('setName').value,productIds:getSetProducts().map(p=>p.id)};
-  if(!set?.productIds?.length){toast('Önce set oluştur');return;}
-  if(!confirm(`"${set.name}" → Meta'da ürün seti oluşturulsun mu?\n${set.productIds.length} ürün`))return;
-  toast('Meta\'ya gönderiliyor...');
-  const d=await api(`${AID}/product_sets`,{name:set.name,filter:JSON.stringify({retailer_id:{is_any:set.productIds.slice(0,500)}}),'POST');
-  if(d?.id){toast(`Ürün seti oluşturuldu ✓`);addClaudeMsg(`✅ **${set.name}** Meta'ya gönderildi.\nID: \`${d.id}\`\n${set.productIds.length} ürün`,'ticMsgs');}
-  else toast('Hata: '+(d?.error?.message||'Meta kataloğu bağlı değil olabilir'));
-}
-
-function renderSavedSets(){
-  const el=document.getElementById('savedSets');
-  if(!ticSets.length){el.innerHTML='<div style="color:var(--m);font-size:11px;margin-top:8px">Henüz kayıtlı set yok.</div>';return;}
-  el.innerHTML='<div class="stl" style="margin-top:10px">Kayıtlı Setler</div>'+
-    ticSets.map(s=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--b)">
-      <span style="flex:1;font-size:12px"><strong>${s.name}</strong> <span style="color:var(--m)">(${s.count} ürün · ${new Date(s.createdAt).toLocaleDateString('tr')})</span></span>
-      <button class="btn sm" style="background:#a855f7;color:#fff" onclick="sendToMeta(${s.id})">🚀 Meta'ya Gönder</button>
-      <button class="btn sm sec" onclick="ticSets=ticSets.filter(x=>x.id!==${s.id});localStorage.setItem('ticSets',JSON.stringify(ticSets));renderSavedSets()">🗑</button>
-    </div>`).join('');
-}
-
-async function ticAIChat(msg){
-  if(!ticProducts.length){toast('Önce Ticimax\'tan yükle');return;}
-  addMsg(msg,'user','ticMsgs');const th=addThinking('ticMsgs');
-  const stats={total:ticProducts.length,
-    nostock:ticProducts.filter(p=>(p.stok||p.stock||0)<=0).length,
-    totalSales:ticProducts.reduce((a,p)=>a+(p.sales30||0),0),
-    topSellers:ticProducts.sort((a,b)=>(b.sales30||0)-(a.sales30||0)).slice(0,10).map(p=>({name:(p.title||p.name||'').slice(0,30),sales:p.sales30,stock:p.stok||p.stock})),
-    noSales:ticProducts.filter(p=>!p.sales30).length
+  window.loadTicimax = async function() {
+    var statusEl = document.getElementById('ticStatus');
+    if(statusEl) statusEl.textContent = 'Yükleniyor...';
+    try {
+      var pUrl = px() + '/ticimax/products';
+      var oUrl = px() + '/ticimax/orders';
+      var [pr, or] = await Promise.all([
+        fetch(pUrl).then(function(r){return r.json();}),
+        fetch(oUrl).then(function(r){return r.json();}).catch(function(){return {orders:[]};})
+      ]);
+      if(pr.error) { toast('Hata: ' + pr.error); if(statusEl) statusEl.textContent = 'Hata: ' + pr.error; return; }
+      var salesMap = {};
+      (or.orders || []).forEach(function(o) {
+        (o.items || o.urunler || []).forEach(function(i) {
+          var pid = i.urun_id || i.product_id || i.stok_kodu;
+          if(pid) salesMap[pid] = (salesMap[pid] || 0) + (parseInt(i.adet || i.quantity || 1));
+        });
+      });
+      ticProducts = (pr.products || []).map(function(p) {
+        return Object.assign({}, p, {
+          sales30: salesMap[p.id] || salesMap[p.stok_kodu] || 0,
+          roas: null, spend: null
+        });
+      });
+      renderTicSummary();
+      filterTic();
+      var ai = document.getElementById('ticAI');
+      var mb = document.getElementById('matchMetaBtn');
+      var sb = document.getElementById('setBuilderBtn');
+      if(ai) ai.style.display = '';
+      if(mb) mb.style.display = '';
+      if(sb) sb.style.display = '';
+      if(statusEl) statusEl.textContent = ticProducts.length + ' urun yuklendi';
+      toast(ticProducts.length + ' urun yuklendi');
+    } catch(e) {
+      toast('Hata: ' + e.message);
+      if(statusEl) statusEl.textContent = 'Hata: ' + e.message;
+    }
   };
-  const sys=`Madmext e-ticaret uzmanısın. Türkçe kısa yanıt ver. Ürün istatistikleri: ${JSON.stringify(stats)}`;
-  if(!MX.chatH.ticimax)MX.chatH.ticimax=[];
-  MX.chatH.ticimax.push({role:'user',content:msg});
-  const reply=await claude(MX.chatH.ticimax.slice(-4),sys);
-  th.remove();MX.chatH.ticimax.push({role:'assistant',content:reply});
-  addClaudeMsg(reply,'ticMsgs');
-}
+
+  window.matchMeta = async function() {
+    var statusEl = document.getElementById('ticStatus');
+    if(statusEl) statusEl.textContent = 'Meta ile eslestiriliyor...';
+    var d = await api(AID + '/insights', {fields:'spend,purchase_roas,actions', date_preset:'last_30d', level:'ad', action_attribution_windows:ATTR, limit:500});
+    if(d && d.data) {
+      var mm = {};
+      d.data.forEach(function(r) { mm[(r.ad_name||'').toLowerCase()] = {roas:groas(r), spend:parseFloat(r.spend||0), purchase:gav(r.actions,'purchase')}; });
+      ticProducts.forEach(function(p) {
+        var key = (p.title||p.name||'').toLowerCase().slice(0,15);
+        var match = Object.entries(mm).find(function(e) { return e[0].includes(p.id) || (key && e[0].includes(key)); });
+        if(match) { p.roas = match[1].roas; p.spend = match[1].spend; }
+      });
+      filterTic(); renderTicSummary();
+      toast('Meta eslestirmesi tamamlandi');
+    }
+    if(statusEl) statusEl.textContent = 'Meta eslestirmesi yapildi';
+  };
+
+  function renderTicSummary() {
+    var total = ticProducts.length;
+    var active = ticProducts.filter(function(p){return p.aktif||p.active||p.durum==='Aktif';}).length;
+    var nostock = ticProducts.filter(function(p){return (p.stok||p.stock||0)<=0;}).length;
+    var critical = ticProducts.filter(function(p){var s=p.stok||p.stock||0;return s>0&&s<=5;}).length;
+    var totalSales = ticProducts.reduce(function(a,p){return a+(p.sales30||0);},0);
+    var withAd = ticProducts.filter(function(p){return p.spend>0;}).length;
+    var set = function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
+    set('tic-total', total.toLocaleString('tr'));
+    set('tic-active', active.toLocaleString('tr'));
+    set('tic-nostock', nostock.toLocaleString('tr'));
+    set('tic-critical', critical.toLocaleString('tr'));
+    set('tic-sales', totalSales.toLocaleString('tr'));
+    set('tic-withad', withAd>0?withAd.toLocaleString('tr'):'—');
+    var show = function(id){var el=document.getElementById(id);if(el)el.style.display='';};
+    show('ticCards'); show('ticFilters'); show('ticWrap');
+    var cats = [];
+    var seen = {};
+    ticProducts.forEach(function(p){var c=(p.kategori||p.category||'Diger').split('>')[0].trim();if(!seen[c]){seen[c]=1;cats.push(c);}});
+    cats.sort();
+    ['ticFilterCat','setFilterCat'].forEach(function(id){
+      var s=document.getElementById(id);
+      if(!s)return;
+      s.innerHTML='<option value="">Tumu</option>'+cats.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('');
+    });
+  }
+
+  window.filterTic = function() {
+    var status = (document.getElementById('ticFilterStatus')||{}).value || '';
+    var cat = (document.getElementById('ticFilterCat')||{}).value || '';
+    var sort = (document.getElementById('ticSort')||{}).value || 'sales_desc';
+    var search = ((document.getElementById('ticSearch')||{}).value || '').toLowerCase();
+    ticFiltered = ticProducts.filter(function(p) {
+      var stock = p.stok||p.stock||0;
+      if(status==='active' && !(p.aktif||p.active||p.durum==='Aktif')) return false;
+      if(status==='nostock' && stock>0) return false;
+      if(status==='critical' && !(stock>0&&stock<=5)) return false;
+      if(status==='nosales' && (p.sales30||0)>0) return false;
+      if(cat && !(p.kategori||p.category||'').startsWith(cat)) return false;
+      if(search && !(p.title||p.name||'').toLowerCase().includes(search) && !(p.id||'').includes(search)) return false;
+      return true;
+    });
+    ticFiltered.sort(function(a,b){
+      if(sort==='sales_desc') return (b.sales30||0)-(a.sales30||0);
+      if(sort==='sales_asc') return (a.sales30||0)-(b.sales30||0);
+      if(sort==='stock_asc') return (a.stok||a.stock||0)-(b.stok||b.stock||0);
+      if(sort==='roas_desc') return (b.roas||0)-(a.roas||0);
+      if(sort==='date_desc') return new Date(b.yayin_tarihi||b.publish_date||0)-new Date(a.yayin_tarihi||a.publish_date||0);
+      if(sort==='price_desc') return (b.fiyat||b.price||0)-(a.fiyat||a.price||0);
+      return 0;
+    });
+    var cnt = document.getElementById('ticCount');
+    if(cnt) cnt.textContent = ticFiltered.length + ' urun';
+    renderTicTable(ticFiltered, 0);
+  };
+
+  function renderTicTable(data, page) {
+    var start = page * TIC_PAGE;
+    var tbody = document.getElementById('ticTB');
+    if(!tbody) return;
+    tbody.innerHTML = data.slice(start, start+TIC_PAGE).map(function(p) {
+      var stock = p.stok||p.stock||0;
+      var sc = stock<=0?'var(--r)':stock<=5?'var(--y)':'var(--g)';
+      var price = p.fiyat||p.price||0;
+      var img = (p.resim||p.image) ? '<img src="'+(p.resim||p.image)+'" style="width:36px;height:36px;object-fit:cover;border-radius:4px" onerror="this.style.display=\'none\'">' : '—';
+      var rH = p.roas!=null ? '<span style="color:'+roasColor(p.roas)+'">'+p.roas.toFixed(2)+'x</span>' : '<span style="color:var(--m)">—</span>';
+      var cat = (p.kategori||p.category||'—').split('>')[0].trim().slice(0,20);
+      var d = (p.yayin_tarihi||p.publish_date) ? new Date(p.yayin_tarihi||p.publish_date).toLocaleDateString('tr') : '—';
+      return '<tr><td>'+img+'</td><td style="max-width:180px;white-space:normal;font-size:12px">'+((p.title||p.name||'—').slice(0,55))+'</td><td style="color:var(--m);font-size:11px">'+cat+'</td><td>'+(price>0?price.toFixed(0)+'₺':'—')+'</td><td><span style="color:'+sc+'">'+stock+'</span></td><td style="color:'+(( p.sales30||0)>0?'var(--g)':'var(--m)')+'">'+( p.sales30||0)+'</td><td style="font-size:11px;color:var(--m)">'+d+'</td><td>'+rH+'</td><td>'+(p.spend!=null?p.spend.toFixed(0)+'₺':'—')+'</td></tr>';
+    }).join('');
+    var pages = Math.ceil(data.length/TIC_PAGE);
+    var pg = document.getElementById('ticPagination');
+    if(pg) {
+      pg.innerHTML = '';
+      if(pages>1) {
+        for(var i=0;i<Math.min(pages,20);i++) {
+          (function(i){
+            var b = document.createElement('button');
+            b.className = 'btn sm '+(i===page?'':'sec');
+            b.textContent = i+1;
+            b.onclick = function(){renderTicTable(data,i);};
+            pg.appendChild(b);
+          })(i);
+        }
+        var info = document.createElement('span');
+        info.style.cssText = 'font-size:11px;color:var(--m);margin-left:8px';
+        info.textContent = data.length.toLocaleString('tr')+' urun - Sayfa '+(page+1)+'/'+pages;
+        pg.appendChild(info);
+      }
+    }
+  }
+
+  window.showSetBuilder = function() {
+    var el = document.getElementById('setBuilder');
+    if(el) el.style.display = '';
+    renderSavedSets();
+  };
+
+  function getSetProducts() {
+    var cat = (document.getElementById('setFilterCat')||{}).value||'';
+    var stockF = (document.getElementById('setFilterStock')||{}).value||'';
+    var minS = parseInt((document.getElementById('setMinSales')||{}).value||'0');
+    var maxS = parseInt((document.getElementById('setMaxSales')||{}).value||'99999');
+    var days = parseInt((document.getElementById('setDaysSince')||{}).value||'0');
+    var cutoff = days>0 ? new Date(Date.now()-days*86400000) : null;
+    return ticProducts.filter(function(p) {
+      var stock = p.stok||p.stock||0;
+      var sales = p.sales30||0;
+      var pd = p.yayin_tarihi||p.publish_date;
+      if(cat && !(p.kategori||p.category||'').startsWith(cat)) return false;
+      if(stockF==='instock' && stock<=0) return false;
+      if(stockF==='nostock' && stock>0) return false;
+      if(sales<minS||sales>maxS) return false;
+      if(cutoff && pd && new Date(pd)<cutoff) return false;
+      return true;
+    });
+  }
+
+  window.previewSet = function() {
+    var products = getSetProducts();
+    var el = document.getElementById('setPreviewCount');
+    if(el) el.textContent = products.length + ' urun eslesti';
+  };
+
+  window.saveSet = function() {
+    var nameEl = document.getElementById('setName');
+    var name = nameEl ? nameEl.value.trim() : '';
+    if(!name) { toast('Set adi girin'); return; }
+    var products = getSetProducts();
+    if(!products.length) { toast('Eslesen urun yok'); return; }
+    var set = {id:Date.now(), name:name, productIds:products.map(function(p){return p.id;}), count:products.length, createdAt:new Date().toISOString()};
+    ticSets.unshift(set);
+    localStorage.setItem('ticSets', JSON.stringify(ticSets));
+    renderSavedSets();
+    toast('"'+name+'" seti kaydedildi ('+products.length+' urun)');
+  };
+
+  window.sendSetToMeta = async function(setId) {
+    var set = setId ? ticSets.find(function(s){return s.id===setId;}) : {name:(document.getElementById('setName')||{}).value, productIds:getSetProducts().map(function(p){return p.id;})};
+    if(!set||!set.productIds||!set.productIds.length) { toast('Once set olustur'); return; }
+    if(!confirm('"'+set.name+'" Meta\'ya gonderilsin mi? ('+set.productIds.length+' urun)')) return;
+    toast('Meta\'ya gonderiliyor...');
+    var d = await api(AID+'/product_sets', {name:set.name, filter:JSON.stringify({retailer_id:{is_any:set.productIds.slice(0,500)}})}, 'POST');
+    if(d && d.id) {
+      toast('Urun seti olusturuldu: '+d.id);
+      addClaudeMsg('Set Meta\'ya gonderildi. ID: '+d.id, 'ticMsgs');
+    } else {
+      toast('Hata: '+(d&&d.error&&d.error.message||'Meta katalogu bagli degil olabilir'));
+    }
+  };
+
+  function renderSavedSets() {
+    var el = document.getElementById('savedSets');
+    if(!el) return;
+    if(!ticSets.length) { el.innerHTML='<div style="color:var(--m);font-size:11px;margin-top:8px">Kayitli set yok.</div>'; return; }
+    el.innerHTML = '<div class="stl" style="margin-top:10px">Kayitli Setler</div>' +
+      ticSets.map(function(s) {
+        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--b)"><span style="flex:1;font-size:12px"><strong>'+s.name+'</strong> <span style="color:var(--m)">('+s.count+' urun)</span></span><button class="btn sm" style="background:#a855f7;color:#fff" onclick="sendSetToMeta('+s.id+')">Meta\'ya Gonder</button><button class="btn sm sec" onclick="deleteSet('+s.id+')">Sil</button></div>';
+      }).join('');
+  }
+
+  window.deleteSet = function(id) {
+    ticSets = ticSets.filter(function(s){return s.id!==id;});
+    localStorage.setItem('ticSets', JSON.stringify(ticSets));
+    renderSavedSets();
+  };
+
+  window.ticAIChat = async function(msg) {
+    if(!ticProducts.length) { toast('Once Ticimax\'tan yukle'); return; }
+    addMsg(msg, 'user', 'ticMsgs');
+    var th = addThinking('ticMsgs');
+    var stats = {
+      total: ticProducts.length,
+      nostock: ticProducts.filter(function(p){return (p.stok||p.stock||0)<=0;}).length,
+      totalSales: ticProducts.reduce(function(a,p){return a+(p.sales30||0);},0),
+      topSellers: ticProducts.sort(function(a,b){return (b.sales30||0)-(a.sales30||0);}).slice(0,10).map(function(p){return {name:(p.title||p.name||'').slice(0,30),sales:p.sales30,stock:p.stok||p.stock};}),
+      noSales: ticProducts.filter(function(p){return !p.sales30;}).length
+    };
+    var sys = 'Madmext e-ticaret uzmanisin. Turkce kisa yanit ver. Istatistikler: ' + JSON.stringify(stats);
+    if(!MX.chatH.ticimax) MX.chatH.ticimax = [];
+    MX.chatH.ticimax.push({role:'user',content:msg});
+    var reply = await claude(MX.chatH.ticimax.slice(-4), sys);
+    if(th && th.remove) th.remove();
+    MX.chatH.ticimax.push({role:'assistant',content:reply});
+    addClaudeMsg(reply, 'ticMsgs');
+  };
+
+})();
 </script>
