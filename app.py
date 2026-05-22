@@ -48,6 +48,16 @@ def get_ga4_token():
 def home():
     return send_from_directory('.', 'index.html')
 
+@app.route('/proxy-xml', methods=['GET'])
+def proxy_xml():
+    url = request.args.get('url','')
+    if not url: return 'URL gerekli', 400
+    try:
+        r = requests.get(url, timeout=15, headers={'User-Agent':'Mozilla/5.0'})
+        return r.text, 200, {'Content-Type':'application/xml; charset=utf-8'}
+    except Exception as e:
+        return str(e), 500
+
 @app.route('/modules/<path:filename>')
 def serve_module(filename):
     return send_from_directory('modules', filename)
