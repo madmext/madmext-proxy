@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Madmext Ads Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#18191a;--s:#242526;--b:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#b0b3b8;--g:#42b72a;--r:#fa3e3e;--y:#f0b429;--bl:#64b4ff}
+body{background:var(--bg);color:var(--t);font-family:'DM Mono',monospace;min-height:100vh;padding:20px;font-size:13px}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--b);flex-wrap:wrap;gap:10px;background:#242526;padding:16px 20px;border-radius:8px}
+.logo{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;color:var(--t)}.logo span{color:#1877f2;font-weight:700}
+.prow{display:flex;gap:8px;align-items:center}
+.prow input{background:var(--s);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;width:300px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--m);display:inline-block;flex-shrink:0}
+.dot.on{background:var(--g);box-shadow:0 0 8px var(--g)}.dot.err{background:var(--r)}
+.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:8px 16px;background:transparent;border:1px solid var(--b);color:var(--m);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;border-radius:4px;transition:all .2s}
+.tab.active{background:var(--a);border-color:var(--a);color:#fff}
+.tab:hover:not(.active){border-color:var(--a);color:var(--t)}
+.panel{display:none}.panel.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+.sc{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;position:relative;overflow:hidden}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--a)}
+.sl{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.sv{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:-0.5px}
+.sdiff{font-size:11px;margin-top:4px}
+.sdiff.up{color:var(--g)}.sdiff.dn{color:var(--r)}.sdiff.neu{color:var(--m)}
+.btn{background:var(--a);color:#fff;border:none;padding:8px 16px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;border-radius:4px;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn.sec{background:var(--s);border:1px solid var(--b);color:var(--t)}
+.btn.grn{background:var(--g);color:#000}.btn.dng{background:var(--r);color:#fff}
+.btn.yel{background:var(--y);color:#000}.btn.sm{padding:4px 9px;font-size:10px}
+sel,.flt{background:var(--s);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;cursor:pointer}
+.arow{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+/* TABLE */
+.twrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;max-height:65vh}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#18191a;padding:9px 11px;text-align:left;color:var(--m);text-transform:uppercase;letter-spacing:.6px;font-size:9px;border-bottom:1px solid var(--b);white-space:nowrap;position:sticky;top:0;z-index:2;cursor:pointer;user-select:none}
+th:hover{color:var(--a)}th.sorted{color:var(--a)}
+td{padding:9px 11px;border-bottom:1px solid #1a1a1a;white-space:nowrap}
+tr:last-child td{border-bottom:none}tr:hover td{background:#2d2e2f}
+.bge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px}
+.bge.on{background:rgba(0,230,118,.15);color:var(--g);border:1px solid rgba(0,230,118,.3)}
+.bge.off{background:rgba(255,23,68,.1);color:#ff6b6b;border:1px solid rgba(255,23,68,.2)}
+.bge.cbo{background:rgba(255,184,0,.15);color:var(--y);border:1px solid rgba(255,184,0,.3)}
+.bge.abo{background:rgba(100,180,255,.15);color:var(--bl);border:1px solid rgba(100,180,255,.3)}
+/* COL PICKER */
+.cpicker-wrap{position:relative;display:inline-block}
+.cpicker-btn{background:var(--s);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;cursor:pointer}
+.cpicker-dropdown{display:none;position:absolute;top:100%;right:0;background:#1a1a1a;border:1px solid var(--b);border-radius:8px;padding:12px;z-index:100;min-width:220px;max-height:380px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.cpicker-dropdown.open{display:block}
+.cpicker-item{display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:4px;font-size:12px}
+.cpicker-item:hover{background:#222}
+.cpicker-item input{cursor:pointer;accent-color:var(--a)}
+.cpicker-section{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;padding:6px 8px 3px;margin-top:4px}
+/* CHAT */
+.chat-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;height:560px}
+.chat-msgs{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.msg{padding:13px 16px;border-radius:8px;font-size:13px;line-height:1.7;max-width:96%}
+.msg.user{background:var(--a);color:#fff;align-self:flex-end}
+.msg.claude{background:#2d2e2f;border:1px solid var(--b);align-self:flex-start}
+.msg.sys{background:transparent;border:1px solid var(--b);color:var(--m);align-self:center;font-size:11px;text-align:center}
+.msg.claude table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
+.msg.claude th{background:#252525;padding:7px 10px;color:var(--m);font-size:10px;border:1px solid #333;white-space:normal;position:static;cursor:default}
+.msg.claude td{padding:7px 10px;border:1px solid #2a2a2a;white-space:normal}
+.msg.claude h3{color:var(--a);margin:10px 0 5px;font-family:'Syne',sans-serif;font-size:14px}
+.msg.claude h2{color:var(--a);margin:12px 0 6px;font-family:'Syne',sans-serif;font-size:16px}
+.msg.claude strong{color:var(--y)}
+.msg.claude ul{padding-left:18px;margin:6px 0}.msg.claude li{margin-bottom:3px}
+.msg.claude hr{border:none;border-top:1px solid var(--b);margin:10px 0}
+.chat-side{display:flex;flex-direction:column;gap:5px;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:12px;overflow-y:auto}
+.stitle{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.qbtn{background:#1a1a1a;border:1px solid var(--b);color:var(--t);padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;border-radius:4px;text-align:left;transition:all .2s;line-height:1.4}
+.qbtn:hover{border-color:var(--a);color:var(--a)}
+.cinput{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:8px;border-top:1px solid var(--b)}
+.cinput textarea{background:#1a1a1a;border:1px solid var(--b);color:var(--t);padding:10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;resize:none;height:85px}
+.thinking{display:flex;gap:4px;align-items:center;padding:10px 14px;background:#1a1a1a;border:1px solid var(--b);border-radius:6px;align-self:flex-start}
+.d{width:6px;height:6px;border-radius:50%;background:var(--a);animation:pu 1.2s infinite}
+.d:nth-child(2){animation-delay:.2s}.d:nth-child(3){animation-delay:.4s}
+@keyframes pu{0%,80%,100%{opacity:.3}40%{opacity:1}}
+/* BUDGET LOG */
+.lcard{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:9px;display:flex;gap:10px;align-items:flex-start}
+.lcard.neu{border-left:3px solid var(--y)}.lcard.up{border-left:3px solid var(--g)}.lcard.dn{border-left:3px solid var(--r)}
+.lname{font-size:13px;font-weight:500;margin-bottom:3px}.lmeta{font-size:11px;color:var(--m);line-height:1.6}
+.lch{font-family:'DM Mono',monospace;font-size:20px;font-weight:800;text-align:right;white-space:nowrap;min-width:60px}
+/* CREATE */
+.cform{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:680px}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}
+.fg input,.fg select{background:#1a1a1a;border:1px solid var(--b);color:var(--t);padding:10px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px}
+.fg.full{grid-column:1/-1}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--s);border:1px solid var(--b);border-left:3px solid var(--a);padding:12px 18px;border-radius:4px;font-size:12px;opacity:0;transition:opacity .3s;z-index:999;max-width:380px}
+#toast.show{opacity:1}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:#242526;border:1px solid var(--b);border-radius:12px;padding:26px;max-width:460px;width:90%}
+.modal h3{font-family:'Syne',sans-serif;font-size:17px;margin-bottom:14px}
+.mdet{background:#1a1a1a;border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9}
+.mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
+.stl{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">Madmext <span>Ads</span></div>
+  <div class="prow">
+    <span class="dot" id="dot"></span>
+    <input type="text" id="proxyUrl" value="https://web-production-e5865.up.railway.app" placeholder="Railway URL...">
+    <button class="btn sm" onclick="connect()">Bağlan</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="sw('perf',this)">📊 Kampanyalar</button>
+  <button class="tab" onclick="sw('adsets',this)">📁 Reklam Setleri</button>
+  <button class="tab" onclick="sw('ads',this)">🎯 Reklamlar</button>
+  <button class="tab" onclick="sw('chat',this)">🤖 Claude ile Yönet</button>
+  <button class="tab" onclick="sw('blog',this)">📋 Bütçe Takibi</button>
+  <button class="tab" onclick="sw('tasks',this)" id="taskTab">⏰ Görevler <span id="taskBadge" style="display:none;background:var(--r);color:#fff;border-radius:10px;padding:1px 6px;font-size:9px;margin-left:3px">0</span></button>
+  <button class="tab" onclick="sw('create',this)">➕ Oluştur</button>
+</div>
+
+<!-- KAMPANYALAR -->
+<div class="panel active" id="panel-perf">
+  <div class="arow">
+    <select class="flt" id="pDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option><option value="last_month">Geçen ay</option></select>
+    <button class="btn" onclick="loadCamp()">Yenile</button>
+    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('pPicker')">⚙ Sütunlar</button>
+      <div class="cpicker-dropdown" id="pPicker">
+        <div class="cpicker-section">Temel</div>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('camp')"> Harcama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('camp')"> Gösterim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('camp')"> Tıklama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('camp')"> CTR%</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('camp')"> TBM</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('camp')"> ROAS</label>
+        <div class="cpicker-section">Ek Metrikler</div>
+        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('camp')"> CPM</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('camp')"> Frekans</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('camp')"> Erişim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('camp')"> Sepete Ekle</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('camp')"> Satış</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('camp')"> Gelir</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="budget" onchange="applyCols('camp')"> Bütçe</label>
+      </div>
+    </div>
+  </div>
+  <div class="arow" style="margin-bottom:8px">
+    <select class="flt" id="pDate2"><option value="">Karşılaştırma dönemi seç...</option><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d">Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option><option value="last_month">Geçen ay</option></select>
+    <span id="cmpLabel" style="font-size:11px;color:var(--m)"></span>
+  </div>
+  <div class="grid">
+    <div class="sc"><div class="sl">Toplam Harcama</div><div class="sv" id="tSpend">—</div><div class="sdiff" id="dSpend"></div></div>
+    <div class="sc"><div class="sl">Tıklama</div><div class="sv" id="tClick">—</div><div class="sdiff" id="dClick"></div></div>
+    <div class="sc"><div class="sl">Gösterim</div><div class="sv" id="tImpr">—</div><div class="sdiff" id="dImpr"></div></div>
+    <div class="sc"><div class="sl">Ort. CTR</div><div class="sv" id="tCtr">—</div><div class="sdiff" id="dCtr"></div></div>
+    <div class="sc"><div class="sl">Ort. TBM</div><div class="sv" id="tCpc">—</div><div class="sdiff" id="dCpc"></div></div>
+    <div class="sc"><div class="sl">Ort. ROAS</div><div class="sv" id="tRoas">—</div><div class="sdiff" id="dRoas"></div></div>
+  </div>
+  <div class="twrap"><table id="campT">
+    <thead id="campTH"></thead>
+    <tbody id="campTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Bağlan ve yenile</td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- REKLAM SETLERİ -->
+<div class="panel" id="panel-adsets">
+  <div class="arow">
+    <select class="flt" id="asDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option></select>
+    <select class="flt" id="asCamp" style="max-width:240px"><option value="">Tüm Kampanyalar</option></select>
+    <button class="btn" onclick="loadAdsets()">Yenile</button>
+    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('asPicker')">⚙ Sütunlar</button>
+      <div class="cpicker-dropdown" id="asPicker">
+        <div class="cpicker-section">Temel</div>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('adset')"> Harcama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('adset')"> Gösterim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('adset')"> Tıklama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('adset')"> CTR%</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('adset')"> TBM</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('adset')"> ROAS</label>
+        <div class="cpicker-section">Ek Metrikler</div>
+        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('adset')"> CPM</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('adset')"> Frekans</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('adset')"> Erişim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('adset')"> Sepete Ekle</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('adset')"> Satış</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('adset')"> Gelir</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="budget" onchange="applyCols('adset')"> Bütçe</label>
+      </div>
+    </div>
+  </div>
+  <div class="twrap"><table id="asT">
+    <thead id="asTH"></thead>
+    <tbody id="asTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- REKLAMLAR -->
+<div class="panel" id="panel-ads">
+  <div class="arow">
+    <select class="flt" id="adDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option></select>
+    <select class="flt" id="adCamp" style="max-width:240px"><option value="">Tüm Kampanyalar</option></select>
+    <button class="btn" onclick="loadAds()">Yenile</button>
+    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('adPicker')">⚙ Sütunlar</button>
+      <div class="cpicker-dropdown" id="adPicker">
+        <div class="cpicker-section">Temel</div>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('ad')"> Harcama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('ad')"> Gösterim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('ad')"> Tıklama</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('ad')"> CTR%</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('ad')"> TBM</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('ad')"> ROAS</label>
+        <div class="cpicker-section">Ek Metrikler</div>
+        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('ad')"> CPM</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('ad')"> Frekans</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('ad')"> Erişim</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('ad')"> Sepete Ekle</label>
+        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('ad')"> Satış</label>
+        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('ad')"> Gelir</label>
+      </div>
+    </div>
+  </div>
+  <div class="twrap"><table id="adT">
+    <thead id="adTH"></thead>
+    <tbody id="adTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody>
+  </table></div>
+</div>
+
+<!-- CLAUDE -->
+<div class="panel" id="panel-chat">
+  <div class="chat-layout">
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="msg sys">Meta Ads yöneticinizim — veri analizi, bütçe artışı ve otomatik 3 günlük takip yapabilirim.<br>Örnek: "Advantage+ kampanyasına %20 bütçe artışı yap"</div>
+    </div>
+    <div class="chat-side">
+      <div class="stitle">Hızlı Sorular</div>
+      <button class="qbtn" onclick="qa('camp','En iyi performanslı kampanyaları ROAS, CTR, harcama ve satış bazında tablo halinde sırala.')">🏆 En iyi kampanyalar</button>
+      <button class="qbtn" onclick="qa('adset','En iyi performanslı reklam setlerini ROAS, CTR, TBM, harcama bazında tablo halinde sırala.')">📁 En iyi reklam setleri</button>
+      <button class="qbtn" onclick="qa('ad','En iyi performanslı reklamları ROAS, CTR ve harcama bazında tablo halinde sırala.')">🎯 En iyi reklamlar</button>
+      <button class="qbtn" onclick="qa('adset','ROAS 1.5 altında olan ve zarar eden reklam setlerini listele. Duraklatma veya bütçe azaltma öner.')">⏸ Duraklatılacaklar</button>
+      <button class="qbtn" onclick="qa('camp','CBO kampanyaların kampanya metriklerine göre bütçe artış önerisi yap. ABO reklam setlerinin kendi metriklerine göre bütçe artış önerisi yap.')">💰 Bütçe artış önerisi</button>
+      <button class="qbtn" onclick="qa('all','Son 7 günün özet raporu: kampanya, reklam seti ve reklam bazında tablo halinde göster.')">📊 Özet rapor</button>
+      <button class="qbtn" onclick="qa('ad','Frekans ve CPM analizi yap. Reklam yorgunluğu riski olan reklamları listele.')">📉 Frekans & CPM</button>
+      <button class="qbtn" onclick="qa('adset','En iyi ROAS\'a sahip reklam setini analiz et, %20 bütçe artışı öner ve uygula.')">🚀 En iyiye bütçe artır</button>
+      <div class="cinput">
+        <textarea id="chatIn" placeholder="Sorunuzu yazın..."></textarea>
+        <button class="btn" onclick="sendChat('auto')">Gönder →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BÜTÇE TAKİBİ -->
+<div class="panel" id="panel-blog">
+  <div class="arow">
+    <button class="btn" onclick="checkBudget()">📊 Performans Kontrolü</button>
+    <button class="btn sec" onclick="clearLog()">🗑 Temizle</button>
+  </div>
+  <div class="stl">Bütçe Değişiklik Geçmişi</div>
+  <div id="logList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div></div>
+</div>
+
+<!-- GÖREVLER -->
+<div class="panel" id="panel-tasks">
+  <div class="arow">
+    <button class="btn" onclick="checkAllTasks()">🔄 Tümünü Kontrol Et</button>
+    <button class="btn sec" onclick="clearDoneTasks()">🗑 Tamamlananları Sil</button>
+  </div>
+  <div class="stl">Otomatik Takip Görevleri</div>
+  <div id="taskList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz görev yok. Bütçe değişikliği yapıldığında otomatik oluşturulur.</div></div>
+</div>
+
+<!-- OLUŞTUR -->
+<div class="panel" id="panel-create">
+  <div class="stl">Yeni Kampanya Oluştur</div>
+  <div class="cform">
+    <div class="fg full"><label>Kampanya Adı</label><input type="text" id="cName" placeholder="örn: Erkek Tişört Yaz 2026"></div>
+    <div class="fg"><label>Hedef</label><select id="cObj"><option value="OUTCOME_SALES">Satış</option><option value="OUTCOME_TRAFFIC">Trafik</option><option value="OUTCOME_AWARENESS">Farkındalık</option><option value="OUTCOME_ENGAGEMENT">Etkileşim</option><option value="OUTCOME_LEADS">Lead</option></select></div>
+    <div class="fg"><label>Günlük Bütçe (₺)</label><input type="number" id="cBudget" placeholder="500" min="1"></div>
+    <div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div>
+    <div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div class="moverlay" id="bModal" style="display:none">
+  <div class="modal">
+    <h3>💰 Bütçe Artış Onayı</h3>
+    <div class="mdet" id="mDet"></div>
+    <div class="mbtns"><button class="btn sec" onclick="closeModal()">İptal</button><button class="btn yel" onclick="approveB()">Onayla</button></div>
+  </div>
+</div>
+
+<script>
+const AID='act_1346348685568168';
+const ATTR='["7d_click","1d_view"]';
+const CF='campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values';
+const AF='campaign_id,campaign_name,adset_id,adset_name,spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values';
+const DF='campaign_id,campaign_name,adset_id,adset_name,ad_id,ad_name,spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values';
+
+let campStore=[],adsetStore=[],adStore=[];
+let campRaw=[],adsetRaw=[],adRaw=[];
+let budgetLog=JSON.parse(localStorage.getItem('bLog')||'[]');
+let pending=null,chatH=[],sortSt={};
+let taskLog=JSON.parse(localStorage.getItem('tLog')||'[]');
+
+function px(){return document.getElementById('proxyUrl').value.trim().replace(/\/$/,'')}
+async function api(ep,params={},m='GET'){
+  try{const r=await fetch(`${px()}/api`,{method:'POST',headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},body:JSON.stringify({endpoint:ep,params,method:m})});return await r.json();}
+  catch(e){toast('Hata: '+e.message);return null;}
+}
+async function claude(msgs,sys=''){
+  try{const r=await fetch(`${px()}/claude`,{method:'POST',headers:{'Content-Type':'application/json','ngrok-skip-browser-warning':'1'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,system:sys,messages:msgs})});const d=await r.json();return d.content?.[0]?.text||('Hata: '+JSON.stringify(d.error||d));}
+  catch(e){return 'Hata: '+e.message;}
+}
+
+function gav(a,t){if(!a)return 0;const x=a.find(v=>v.action_type===t);return x?parseInt(x.value||0):0;}
+function groas(r){return r.purchase_roas?.[0]?.value?parseFloat(r.purchase_roas[0].value):0;}
+function grev(r){const av=r.action_values;if(!av)return 0;const x=av.find(v=>v.action_type==='purchase');return x?parseFloat(x.value||0):0;}
+function roasColor(v){return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)';}
+function getBi(c){
+  if(!c)return{type:'ABO',badge:'<span class="bge abo">ABO</span>',amt:'—'};
+  if(c.daily_budget)return{type:'CBO',badge:'<span class="bge cbo">CBO</span>',amt:(parseInt(c.daily_budget)/100).toFixed(0)+'₺/gün'};
+  if(c.lifetime_budget)return{type:'CBO',badge:'<span class="bge cbo">CBO</span>',amt:(parseInt(c.lifetime_budget)/100).toFixed(0)+'₺ toplam'};
+  return{type:'ABO',badge:'<span class="bge abo">ABO</span>',amt:'—'};
+}
+
+// COL DEFINITIONS per level
+const COLS={
+  camp:[
+    {key:'name',label:'Kampanya',fixed:true,num:false},
+    {key:'budgetType',label:'Bütçe',fixed:true,num:false},
+    {key:'spend',label:'Harcama ₺',num:true},
+    {key:'impr',label:'Gösterim',num:true},
+    {key:'clicks',label:'Tıklama',num:true},
+    {key:'ctr',label:'CTR%',num:true},
+    {key:'cpc',label:'TBM',num:true},
+    {key:'cpm',label:'CPM',num:true},
+    {key:'freq',label:'Frekans',num:true},
+    {key:'reach',label:'Erişim',num:true},
+    {key:'roas',label:'ROAS',num:true},
+    {key:'cart',label:'Sepet',num:true},
+    {key:'purchase',label:'Satış',num:true},
+    {key:'revenue',label:'Gelir ₺',num:true},
+    {key:'budget',label:'Bütçe ₺',num:true},
+  ],
+  adset:[
+    {key:'campName',label:'Kampanya',fixed:true,num:false},
+    {key:'name',label:'Reklam Seti',fixed:true,num:false},
+    {key:'status',label:'Durum',fixed:true,num:false},
+    {key:'budget',label:'Bütçe',fixed:true,num:false},
+    {key:'spend',label:'Harcama ₺',num:true},
+    {key:'impr',label:'Gösterim',num:true},
+    {key:'clicks',label:'Tıklama',num:true},
+    {key:'ctr',label:'CTR%',num:true},
+    {key:'cpc',label:'TBM',num:true},
+    {key:'cpm',label:'CPM',num:true},
+    {key:'freq',label:'Frekans',num:true},
+    {key:'reach',label:'Erişim',num:true},
+    {key:'roas',label:'ROAS',num:true},
+    {key:'cart',label:'Sepet',num:true},
+    {key:'purchase',label:'Satış',num:true},
+    {key:'revenue',label:'Gelir ₺',num:true},
+  ],
+  ad:[
+    {key:'campName',label:'Kampanya',fixed:true,num:false},
+    {key:'adsetName',label:'Reklam Seti',fixed:true,num:false},
+    {key:'name',label:'Reklam',fixed:true,num:false},
+    {key:'status',label:'Durum',fixed:true,num:false},
+    {key:'spend',label:'Harcama ₺',num:true},
+    {key:'impr',label:'Gösterim',num:true},
+    {key:'clicks',label:'Tıklama',num:true},
+    {key:'ctr',label:'CTR%',num:true},
+    {key:'cpc',label:'TBM',num:true},
+    {key:'cpm',label:'CPM',num:true},
+    {key:'freq',label:'Frekans',num:true},
+    {key:'reach',label:'Erişim',num:true},
+    {key:'roas',label:'ROAS',num:true},
+    {key:'cart',label:'Sepet',num:true},
+    {key:'purchase',label:'Satış',num:true},
+    {key:'revenue',label:'Gelir ₺',num:true},
+  ]
+};
+
+// Which cols are visible per level
+let vis={
+  camp:new Set(['name','budgetType','spend','impr','clicks','ctr','cpc','roas','cart','purchase']),
+  adset:new Set(['campName','name','status','budget','spend','impr','clicks','ctr','cpc','roas','cart','purchase']),
+  ad:new Set(['campName','adsetName','name','status','spend','impr','clicks','ctr','cpc','roas','cart','purchase'])
+};
+
+function getChecked(pickerEl,level){
+  const boxes=pickerEl.querySelectorAll('input[type=checkbox]');
+  const s=new Set();
+  COLS[level].filter(c=>c.fixed).forEach(c=>s.add(c.key));
+  boxes.forEach(b=>{if(b.checked)s.add(b.dataset.col);});
+  return s;
+}
+
+function applyCols(level){
+  const pickerMap={camp:'pPicker',adset:'asPicker',ad:'adPicker'};
+  const picker=document.getElementById(pickerMap[level]);
+  vis[level]=getChecked(picker,level);
+  const store={camp:campStore,adset:adsetStore,ad:adStore}[level];
+  renderTable(level,store);
+}
+
+function togglePicker(id){
+  document.querySelectorAll('.cpicker-dropdown').forEach(d=>{if(d.id!==id)d.classList.remove('open');});
+  document.getElementById(id).classList.toggle('open');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.cpicker-wrap'))document.querySelectorAll('.cpicker-dropdown').forEach(d=>d.classList.remove('open'));});
+
+function renderTable(level,data){
+  const tMap={camp:{th:'campTH',tb:'campTB'},adset:{th:'asTH',tb:'asTB'},ad:{th:'adTH',tb:'adTB'}};
+  const{th:thId,tb:tbId}=tMap[level];
+  const cols=COLS[level].filter(c=>vis[level].has(c.key));
+  const actCol=level==='camp'?false:true; // action col for adset/ad
+
+  // Header
+  let hHTML='<tr>';
+  cols.forEach((c,i)=>{
+    const st=sortSt[level]||{};
+    const icon=st.key===c.key?(st.dir===-1?'↓':'↑'):'↕';
+    const sorted=st.key===c.key?'sorted':'';
+    hHTML+=`<th class="${sorted}" onclick="sortBy('${level}','${c.key}',${c.num})">${c.label} <span>${icon}</span></th>`;
+  });
+  if(actCol) hHTML+='<th>İşlem</th>';
+  hHTML+='</tr>';
+  document.getElementById(thId).innerHTML=hHTML;
+
+  // Body
+  if(!data||!data.length){document.getElementById(tbId).innerHTML=`<tr><td colspan="${cols.length+(actCol?1:0)}" style="text-align:center;padding:20px;color:var(--m)">Veri yok</td></tr>`;return;}
+  let bHTML='';
+  data.forEach(row=>{
+    bHTML+='<tr>';
+    cols.forEach(c=>{
+      let v=row[c.key]??'—';
+      if(c.key==='roas')v=`<span style="color:${roasColor(parseFloat(v)||0)}">${parseFloat(v)?parseFloat(v).toFixed(2)+'x':'—'}</span>`;
+      else if(c.key==='status')v=row.status==='ACTIVE'?'<span class="bge on">AKTİF</span>':'<span class="bge off">DURDU</span>';
+      else if(c.key==='budgetType')v=row.budgetBadge+' '+row.budgetAmt;
+      else if(c.key==='budget')v=row.budgetAmt||'—';
+      else if(c.key==='spend')v=parseFloat(v)?parseFloat(v).toFixed(2)+'₺':'—';
+      else if(c.key==='cpc'||c.key==='cpm')v=parseFloat(v)?parseFloat(v).toFixed(2)+'₺':'—';
+      else if(c.key==='ctr')v=parseFloat(v)?parseFloat(v).toFixed(2)+'%':'—';
+      else if(c.key==='freq')v=parseFloat(v)?parseFloat(v).toFixed(2):'—';
+      else if(c.key==='revenue')v=parseFloat(v)?parseFloat(v).toFixed(0)+'₺':'—';
+      else if(c.key==='impr'||c.key==='reach')v=parseInt(v)?(parseInt(v)/1000).toFixed(0)+'K':'—';
+      else if(typeof v==='number')v=v.toLocaleString('tr');
+      bHTML+=`<td>${v}</td>`;
+    });
+    if(actCol){
+      let btns='';
+      if(row._id){
+        const toggleLabel=row.status==='ACTIVE'?'Durdur':'Başlat';
+        const toggleClass=row.status==='ACTIVE'?'dng':'grn';
+        const toggleStatus=row.status==='ACTIVE'?'PAUSED':'ACTIVE';
+        btns+=`<button class="btn sm ${toggleClass}" onclick="toggle('${row._id}','${toggleStatus}','${row._type}','${level}')">${toggleLabel}</button>`;
+      }
+      if(row._budgetId&&row.budgetAmt&&row.budgetAmt!=='—')
+        btns+=` <button class="btn sm yel" onclick="proposeB('${row._budgetId}','${(row.name||'').replace(/'/g,'')}','${row._budgetType}','${row.budgetAmt}')">+Bütçe</button>`;
+      bHTML+=`<td style="display:flex;gap:4px;flex-wrap:wrap">${btns}</td>`;
+    }
+    bHTML+='</tr>';
+  });
+  document.getElementById(tbId).innerHTML=bHTML;
+}
+
+function sortBy(level,key,isNum){
+  const st=sortSt[level]||{key:null,dir:-1};
+  const dir=st.key===key?-st.dir:-1;
+  sortSt[level]={key,dir};
+  const store={camp:campStore,adset:adsetStore,ad:adStore}[level];
+  store.sort((a,b)=>{
+    const av=a[key]??'',bv=b[key]??'';
+    if(isNum)return dir*(parseFloat(av||0)-parseFloat(bv||0));
+    return dir*String(av).localeCompare(String(bv),'tr');
+  });
+  renderTable(level,store);
+}
+
+async function connect(){
+  const dot=document.getElementById('dot');dot.className='dot';
+  const d=await api('me',{fields:'name'});
+  if(d&&!d.error){dot.className='dot on';toast('Bağlandı ✓');loadCamp();loadCampFilter();
+    document.getElementById('pDate2').addEventListener('change',()=>loadCampCompare());
+  }
+  else{dot.className='dot err';toast('Hata: '+(d?.error?.message||'?'));}
+}
+
+async function loadCampFilter(){
+  const d=await api(`${AID}/campaigns`,{fields:'id,name,status,daily_budget,lifetime_budget',limit:500});
+  campStore=[];
+  if(!d||d.error)return;
+  campStore=d.data||[];
+  ['asCamp','adCamp'].forEach(id=>{
+    const s=document.getElementById(id);
+    s.innerHTML='<option value="">Tüm Kampanyalar</option>';
+    (d.data||[]).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name.substring(0,50);s.appendChild(o);});
+  });
+}
+
+async function loadCamp(){
+  const preset=document.getElementById('pDate').value;
+  document.getElementById('campTB').innerHTML='<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</td></tr>';
+  const [ins,camps]=await Promise.all([
+    api(`${AID}/insights`,{fields:CF,date_preset:preset,level:'campaign',limit:500,action_attribution_windows:ATTR}),
+    api(`${AID}/campaigns`,{fields:'id,name,status,daily_budget,lifetime_budget',limit:500})
+  ]);
+  const cmap={};(camps?.data||[]).forEach(c=>cmap[c.id]=c);
+  if(!ins||ins.error){document.getElementById('campTB').innerHTML=`<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Hata: ${ins?.error?.message||'?'}</td></tr>`;return;}
+  let tS=0,tC=0,tI=0,cS=0,n=0;
+  campRaw=ins.data||[];
+  // Compute avg ROAS
+  let roasSum=0,roasN=0;
+  campRaw.forEach(r=>{const rv=groas(r);if(rv>0){roasSum+=rv;roasN++;}});
+  document.getElementById('tRoas').textContent=roasN?(roasSum/roasN).toFixed(2)+'x':'—';
+  const rows=(ins.data||[]).map(r=>{
+    const spend=parseFloat(r.spend||0),clicks=parseInt(r.clicks||0),impr=parseInt(r.impressions||0);
+    const ctr=parseFloat(r.ctr||0),cpc=parseFloat(r.cpc||0),cpm=parseFloat(r.cpp||0);
+    const freq=parseFloat(r.frequency||0),reach=parseInt(r.reach||0);
+    const roas=groas(r),cart=gav(r.actions,'add_to_cart'),purchase=gav(r.actions,'purchase'),revenue=grev(r);
+    tS+=spend;tC+=clicks;tI+=impr;if(ctr){cS+=ctr;n++;}
+    const camp=cmap[r.campaign_id];const bi=getBi(camp);
+    return{name:r.campaign_name,budgetBadge:bi.badge,budgetAmt:bi.amt,spend,impr,clicks,ctr,cpc,cpm,freq,reach,roas,cart,purchase,revenue,budget:parseFloat((camp?.daily_budget||camp?.lifetime_budget||0))/100,_budgetId:bi.type==='CBO'?camp?.id:null,_budgetType:'campaign',budgetType:bi.type};
+  }).sort((a,b)=>b.spend-a.spend);
+  campStore=rows;
+  document.getElementById('tSpend').textContent=tS.toFixed(0)+'₺';
+  document.getElementById('tClick').textContent=tC.toLocaleString('tr');
+  document.getElementById('tImpr').textContent=(tI/1000).toFixed(0)+'K';
+  document.getElementById('tCtr').textContent=n?(cS/n).toFixed(2)+'%':'—';
+  document.getElementById('tCpc').textContent=tC?(tS/tC).toFixed(2)+'₺':'—';
+  renderTable('camp',campStore);
+}
+
+async function loadCampCompare(){
+  const preset2=document.getElementById('pDate2').value;
+  if(!preset2)return;
+  const preset1=document.getElementById('pDate').value;
+  document.getElementById('cmpLabel').textContent=`Karşılaştırma: ${preset1} vs ${preset2}`;
+  const d=await api(`${AID}/insights`,{fields:CF,date_preset:preset2,level:'campaign',limit:500,action_attribution_windows:ATTR});
+  const cmap2={};
+  (d?.data||[]).forEach(r=>cmap2[r.campaign_id]={spend:parseFloat(r.spend||0),clicks:parseInt(r.clicks||0),roas:groas(r),ctr:parseFloat(r.ctr||0),cpc:parseFloat(r.cpc||0)});
+  // Compare with current campRaw
+  const curr={};campRaw.forEach(r=>{curr[r.campaign_id]={spend:parseFloat(r.spend||0),clicks:parseInt(r.clicks||0),roas:groas(r),ctr:parseFloat(r.ctr||0),cpc:parseFloat(r.cpc||0)};});
+  // Update diff indicators
+  function diffHtml(cur,prev,fmt,higherBetter=true){
+    if(!prev||prev===0)return '';
+    const pct=((cur-prev)/prev*100);
+    const sign=pct>0?'+':'';
+    const cls=pct>0?(higherBetter?'up':'dn'):(higherBetter?'dn':'up');
+    return `<div class="sdiff ${cls}">${sign}${pct.toFixed(1)}% vs ${fmt(prev)}</div>`;
+  }
+  // Total metrics
+  let tS1=0,tC1=0,tI1=0,rSum1=0,ctrSum1=0,cpcSum1=0,n1=0;
+  campRaw.forEach(r=>{tS1+=parseFloat(r.spend||0);tC1+=parseInt(r.clicks||0);tI1+=parseInt(r.impressions||0);const roas=groas(r);if(roas){rSum1+=roas;n1++;}const ctr=parseFloat(r.ctr||0);if(ctr)ctrSum1+=ctr;cpcSum1+=parseFloat(r.cpc||0);});
+  let tS2=0,tC2=0,n2=0,rSum2=0;
+  (d?.data||[]).forEach(r=>{tS2+=parseFloat(r.spend||0);tC2+=parseInt(r.clicks||0);const roas=groas(r);if(roas){rSum2+=roas;n2++;}});
+  document.getElementById('dSpend').innerHTML=diffHtml(tS1,tS2,v=>v.toFixed(0)+'₺',false);
+  document.getElementById('dClick').innerHTML=diffHtml(tC1,tC2,v=>v.toLocaleString('tr'));
+  document.getElementById('dRoas').innerHTML=diffHtml(n1?(rSum1/n1):0,n2?(rSum2/n2):0,v=>v.toFixed(2)+'x');
+}
+
+async function loadAdsets(){
+  const preset=document.getElementById('asDate').value;
+  const campId=document.getElementById('asCamp').value;
+  document.getElementById('asTB').innerHTML='<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</td></tr>';
+  let params={fields:AF,date_preset:preset,level:'adset',limit:500,action_attribution_windows:ATTR};
+  if(campId)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campId}]);
+  const [ins,adsets,camps]=await Promise.all([
+    api(`${AID}/insights`,params),
+    api(`${AID}/adsets`,{fields:'id,name,status,daily_budget,lifetime_budget,campaign_id',limit:500}),
+    api(`${AID}/campaigns`,{fields:'id,daily_budget,lifetime_budget',limit:500})
+  ]);
+  const amap={};(adsets?.data||[]).forEach(a=>amap[a.id]=a);
+  const cmap={};(camps?.data||[]).forEach(c=>cmap[c.id]=c);
+  if(!ins||ins.error){document.getElementById('asTB').innerHTML=`<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Hata: ${ins?.error?.message||'?'}</td></tr>`;return;}
+  adsetRaw=ins.data||[];
+  const rows=(ins.data||[]).map(r=>{
+    const spend=parseFloat(r.spend||0),clicks=parseInt(r.clicks||0),impr=parseInt(r.impressions||0);
+    const ctr=parseFloat(r.ctr||0),cpc=parseFloat(r.cpc||0),cpm=parseFloat(r.cpp||0);
+    const freq=parseFloat(r.frequency||0),reach=parseInt(r.reach||0);
+    const roas=groas(r),cart=gav(r.actions,'add_to_cart'),purchase=gav(r.actions,'purchase'),revenue=grev(r);
+    const adset=amap[r.adset_id];const camp=cmap[r.campaign_id];
+    const isCBO=camp?.daily_budget||camp?.lifetime_budget;
+    const budgetBadge=isCBO?'<span class="bge cbo">CBO</span>':'<span class="bge abo">ABO</span>';
+    const budgetAmt=isCBO?(camp.daily_budget?(parseInt(camp.daily_budget)/100).toFixed(0)+'₺/gün kamp.':(parseInt(camp.lifetime_budget)/100).toFixed(0)+'₺ toplam'):(adset?.daily_budget?(parseInt(adset.daily_budget)/100).toFixed(0)+'₺/gün':'—');
+    const budgetId=isCBO?camp.id:adset?.id;
+    const budgetType=isCBO?'campaign':'adset';
+    return{campName:r.campaign_name,name:r.adset_name,status:adset?.status||'—',budgetBadge,budgetAmt,spend,impr,clicks,ctr,cpc,cpm,freq,reach,roas,cart,purchase,revenue,_id:adset?.id,_type:'adset',_budgetId:budgetId,_budgetType:budgetType};
+  }).sort((a,b)=>b.spend-a.spend);
+  adsetStore=rows;
+  renderTable('adset',adsetStore);
+}
+
+async function loadAds(){
+  const preset=document.getElementById('adDate').value;
+  const campId=document.getElementById('adCamp').value;
+  document.getElementById('adTB').innerHTML='<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</td></tr>';
+  let params={fields:DF,date_preset:preset,level:'ad',limit:500,action_attribution_windows:ATTR};
+  if(campId)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campId}]);
+  const [ins,ads]=await Promise.all([
+    api(`${AID}/insights`,params),
+    api(`${AID}/ads`,{fields:'id,name,status',limit:500})
+  ]);
+  const admap={};(ads?.data||[]).forEach(a=>admap[a.id]=a);
+  if(!ins||ins.error){document.getElementById('adTB').innerHTML=`<tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Hata: ${ins?.error?.message||'?'}</td></tr>`;return;}
+  adRaw=ins.data||[];
+  const rows=(ins.data||[]).map(r=>{
+    const spend=parseFloat(r.spend||0),clicks=parseInt(r.clicks||0),impr=parseInt(r.impressions||0);
+    const ctr=parseFloat(r.ctr||0),cpc=parseFloat(r.cpc||0),cpm=parseFloat(r.cpp||0);
+    const freq=parseFloat(r.frequency||0),reach=parseInt(r.reach||0);
+    const roas=groas(r),cart=gav(r.actions,'add_to_cart'),purchase=gav(r.actions,'purchase'),revenue=grev(r);
+    const ad=admap[r.ad_id];
+    return{campName:r.campaign_name,adsetName:r.adset_name,name:r.ad_name,status:ad?.status||'—',spend,impr,clicks,ctr,cpc,cpm,freq,reach,roas,cart,purchase,revenue,_id:ad?.id,_type:'ad'};
+  }).sort((a,b)=>b.spend-a.spend);
+  adStore=rows;
+  renderTable('ad',adStore);
+}
+
+async function toggle(id,status,type,level){
+  const d=await api(id,{status},'POST');
+  if(d?.success){toast(status==='ACTIVE'?'Başlatıldı ✓':'Durduruldu ✓');if(level==='adset')loadAdsets();else loadAds();}
+  else toast('Hata: '+(d?.error?.message||'?'));
+}
+
+function proposeB(id,name,type,curAmt){
+  const pct=prompt(`${name}\nMevcut: ${curAmt}\nKaç % artıralım?`);
+  if(!pct)return;const pctN=parseFloat(pct);if(isNaN(pctN)||pctN<=0){toast('Geçersiz');return;}
+  const match=curAmt.match(/[\d.]+/);if(!match){toast('Bütçe okunamadı');return;}
+  const curTL=parseFloat(match[0]);const newTL=curTL*(1+pctN/100);
+  pending={id,name,type,curTL,newTL,pct:pctN,time:new Date().toISOString()};
+  document.getElementById('mDet').innerHTML=`<strong>Hedef:</strong> ${name}<br><strong>Tip:</strong> ${type==='campaign'?'CBO':'ABO'}<br><strong>Mevcut:</strong> ${curTL.toFixed(0)}₺/gün<br><strong>Artış:</strong> %${pctN}<br><strong>Yeni:</strong> ${newTL.toFixed(0)}₺/gün`;
+  document.getElementById('bModal').style.display='flex';
+}
+function closeModal(){document.getElementById('bModal').style.display='none';pending=null;}
+async function approveB(){
+  if(!pending)return;
+  const{id,name,type,curTL,newTL,pct}=pending;
+  const d=await api(id,{daily_budget:Math.round(newTL*100)},'POST');
+  closeModal();
+  if(d?.success||d?.id){
+    // Baseline snapshot: mevcut performansı kaydet
+    let baseline=null;
+    try{
+      const bd=await api(`${AID}/insights`,{
+        fields:'spend,ctr,cpc,purchase_roas,actions',
+        date_preset:'last_7d',
+        level:type==='campaign'?'campaign':'adset',
+        filtering:JSON.stringify([{field:type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:id}]),
+        action_attribution_windows:ATTR
+      });
+      const br=bd?.data?.[0];
+      if(br){baseline={roas:groas(br),spend:parseFloat(br.spend||0),purchase:gav(br.actions,'purchase'),ctr:parseFloat(br.ctr||0),cpc:parseFloat(br.cpc||0)};}
+    }catch(e){}
+    budgetLog.unshift({id,name,type,old:curTL,new:newTL,pct,time:new Date().toISOString(),baseline});
+    localStorage.setItem('bLog',JSON.stringify(budgetLog));
+    toast(`${newTL.toFixed(0)}₺'ye güncellendi ✓ · Baseline kaydedildi`);renderLog();
+  }else toast('Hata: '+(d?.error?.message||'?'));
+}
+
+async function checkBudget(){
+  if(!budgetLog.length){toast('Değişiklik yok');return;}
+  toast('Tüm kayıtlar kontrol ediliyor...');
+  for(let i=0;i<Math.min(budgetLog.length,10);i++){
+    const daysSince=(Date.now()-new Date(budgetLog[i].time).getTime())/(1000*60*60*24);
+    if(daysSince>=1) await checkSingle(i);
+  }
+  toast('Tüm kontroller tamamlandı ✓');
+}
+// ── GÖREV SİSTEMİ ──────────────────────────────────────────────────────
+function updateTaskBadge(){
+  const due=taskLog.filter(t=>!t.done&&Date.now()>=t.dueAt);
+  const badge=document.getElementById('taskBadge');
+  if(!badge)return;
+  if(due.length){badge.style.display='inline';badge.textContent=due.length;}
+  else{badge.style.display='none';}
+}
+
+function renderTasks(){
+  const el=document.getElementById('taskList');
+  if(!el)return;
+  updateTaskBadge();
+  if(!taskLog.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--m)">Henüz görev yok.</div>';return;}
+  el.innerHTML=taskLog.map((t,i)=>{
+    const now=Date.now();
+    const isDue=now>=t.dueAt;
+    const timeLeft=t.dueAt-now;
+    const hoursLeft=Math.max(0,Math.floor(timeLeft/3600000));
+    const dueStr=isDue?'<span style="color:var(--r)">⚡ Kontrol zamanı!</span>':`<span style="color:var(--m)">⏳ ${hoursLeft}s sonra</span>`;
+    const statusBg=t.done?'border-left:3px solid var(--m)':isDue?'border-left:3px solid var(--r)':'border-left:3px solid var(--y)';
+    const roasChg=t.curRoas!=null&&t.baseline?.roas>0?((t.curRoas-t.baseline.roas)/t.baseline.roas*100):null;
+    const roasColor=roasChg!=null?(roasChg>=-10?'var(--g)':'var(--r)'):'var(--m)';
+    const resultH=t.done&&t.curRoas!=null?`
+      <div style="margin-top:6px;padding:8px;background:#1a1a1a;border-radius:4px;font-size:11px">
+        <div>ROAS: <strong style="color:${roasColor}">${t.curRoas.toFixed(2)}x</strong> ${roasChg!=null?`(${roasChg>=0?'+':''}${roasChg.toFixed(1)}% baseline'den)`:''}</div>
+        <div>Harcama: <strong>${t.curSpend?.toFixed(0)||'—'}₺</strong> · Satış: <strong>${t.curPurchase||'—'}</strong></div>
+        ${t.aiNote?`<div style="margin-top:4px;color:var(--t)">${t.aiNote}</div>`:''}
+      </div>`:'';
+    const checkBtn=isDue&&!t.done?`<button class="btn sm" style="margin-top:6px;width:100%" onclick="runTask(${i})">🔍 Kontrol Et & Raporla</button>`:'';
+    const doneLabel=t.done?'<span style="color:var(--m);font-size:10px">✓ Tamamlandı</span>':'';
+    return`<div class="lcard" style="${statusBg}">
+      <div style="flex:1">
+        <div class="lname">${t.name} <span style="font-size:10px;color:var(--m)">[${t.period} kontrolü]</span></div>
+        <div class="lmeta">${new Date(t.createdAt).toLocaleString('tr')} · ${t.type==='campaign'?'CBO':'ABO'} · ${t.budgetOld.toFixed(0)}₺→${t.budgetNew.toFixed(0)}₺</div>
+        <div class="lmeta">${dueStr} ${doneLabel}</div>
+        ${t.baseline?`<div class="lmeta">Baseline: ROAS ${t.baseline.roas?.toFixed(2)||'—'}x · Harcama ${t.baseline.spend?.toFixed(0)||'—'}₺ · Satış ${t.baseline.purchase||'—'}</div>`:''}
+        ${resultH}${checkBtn}
+      </div>
+      <div><div class="lch" style="color:var(--y)">+%${t.pct}</div></div>
+    </div>`;
+  }).join('');
+}
+
+async function runTask(idx){
+  const t=taskLog[idx];if(!t)return;
+  const btn=document.querySelector(`[onclick="runTask(${idx})"]`);
+  if(btn){btn.disabled=true;btn.textContent='⏳ Analiz ediliyor...';}
+  try{
+    const d=await api(`${AID}/insights`,{
+      fields:'spend,ctr,cpc,purchase_roas,actions',
+      date_preset:t.period==='1g'?'yesterday':'last_3d',
+      level:t.type==='campaign'?'campaign':'adset',
+      filtering:JSON.stringify([{field:t.type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:t.id}]),
+      action_attribution_windows:ATTR
+    });
+    const r=d?.data?.[0];
+    if(r){
+      t.curRoas=groas(r);t.curSpend=parseFloat(r.spend||0);
+      t.curPurchase=gav(r.actions,'purchase');t.curCtr=parseFloat(r.ctr||0);
+      const baseRoas=t.baseline?.roas||0;
+      const roasChange=baseRoas>0?((t.curRoas-baseRoas)/baseRoas*100):0;
+      const aiPrompt=`Bütçe değişikliği ${t.period} sonrası performans (Türkçe, 2 cümle):
+${t.name} | ${t.budgetOld.toFixed(0)}₺→${t.budgetNew.toFixed(0)}₺/gün (+%${t.pct})
+Baseline ROAS: ${baseRoas.toFixed(2)}x → Şu an: ${t.curRoas.toFixed(2)}x (${roasChange>=0?'+':''}${roasChange.toFixed(1)}%)
+Harcama: ${t.curSpend.toFixed(0)}₺ · Satış: ${t.curPurchase}`;
+      t.aiNote=await claude([{role:'user',content:aiPrompt}],'Meta reklam uzmanısın. Net, kısa Türkçe yorum.');
+    }
+  }catch(e){t.aiNote='Veri alınamadı: '+e.message;}
+  t.done=true;
+  localStorage.setItem('tLog',JSON.stringify(taskLog));
+  updateTaskBadge();renderTasks();
+  toast(`${t.name} [${t.period}] raporu hazır ✓`);
+}
+
+async function checkAllTasks(){
+  const due=taskLog.map((t,i)=>({t,i})).filter(({t})=>!t.done&&Date.now()>=t.dueAt);
+  if(!due.length){toast('Zamanı gelen görev yok');return;}
+  toast(`${due.length} görev kontrol ediliyor...`);
+  for(const {i} of due) await runTask(i);
+  toast('Tüm görevler tamamlandı ✓');
+}
+
+function clearDoneTasks(){
+  if(!confirm('Tamamlanan görevler silinsin mi?'))return;
+  taskLog=taskLog.filter(t=>!t.done);
+  localStorage.setItem('tLog',JSON.stringify(taskLog));
+  renderTasks();
+}
+
+// ── BÜTÇE LOG ───────────────────────────────────────────────────────────
+function renderLog(){
+  const el=document.getElementById('logList');
+  if(!budgetLog.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div>';return;}
+  el.innerHTML=budgetLog.map((e,i)=>{
+    const d=new Date(e.time).toLocaleString('tr');
+    const daysSince=(Date.now()-new Date(e.time).getTime())/(1000*60*60*24);
+    const canCheck=daysSince>=1;
+
+    // Baseline bilgileri
+    const baseH=e.baseline?`<div class="lmeta">Baseline → ROAS: <strong>${e.baseline.roas!=null?e.baseline.roas.toFixed(2)+'x':'—'}</strong> · Harcama: <strong>${e.baseline.spend!=null?e.baseline.spend.toFixed(0)+'₺':'—'}</strong> · Satış: <strong>${e.baseline.purchase!=null?e.baseline.purchase:'—'}</strong></div>`:'';
+
+    // Mevcut performans
+    let perfH='',perfDrop=false;
+    if(e.curRoas!=null){
+      const baseRoas=e.baseline?.roas||0;
+      const roasDiff=baseRoas>0?((e.curRoas-baseRoas)/baseRoas*100):0;
+      const diffColor=roasDiff>=-10?'var(--g)':'var(--r)';
+      perfDrop=roasDiff<-15;
+      perfH=`<div class="lmeta">Şu anki → ROAS: <strong style="color:${diffColor}">${e.curRoas.toFixed(2)}x</strong>${baseRoas>0?` <span style="font-size:10px;color:${diffColor}">(${roasDiff>=0?'+':''}${roasDiff.toFixed(1)}%)</span>`:''}</div>`;
+    }
+
+    // AI yorum
+    const aiH=e.aiNote?`<div style="margin-top:8px;padding:8px;background:#1a1a1a;border-radius:4px;border-left:2px solid var(--a);font-size:11px;color:var(--t);line-height:1.6">${e.aiNote}</div>`:'';
+
+    // Butonlar
+    const checkBtn=`<button class="btn sm sec" onclick="checkSingle(${i})" style="margin-top:6px;width:100%">${e.checking?'⏳ Kontrol ediliyor...':'🔍 Şimdi Kontrol Et'}</button>`;
+    const revertBtn=perfDrop?`<button class="btn sm dng" onclick="revertBudget(${i})" style="margin-top:4px;width:100%">↩ Bütçeyi Geri Al (${e.old.toFixed(0)}₺)</button>`:'';
+
+    // Kart rengi
+    const cardClass=e.curRoas==null?'neu':perfDrop?'dn':'up';
+    const pctColor=e.pct>0?'var(--g)':'var(--r)';
+
+    return`<div class="lcard ${cardClass}" id="lcard-${i}">
+      <div style="flex:1">
+        <div class="lname">${e.name}</div>
+        <div class="lmeta">${d} · ${e.type==='campaign'?'CBO':'ABO'}</div>
+        <div class="lmeta">${e.old.toFixed(0)}₺ → ${e.new.toFixed(0)}₺/gün</div>
+        ${baseH}${perfH}${aiH}
+        ${canCheck?checkBtn:'<div style="font-size:10px;color:var(--m);margin-top:6px">⏳ 24 saat sonra kontrol edilebilir</div>'}
+        ${revertBtn}
+      </div>
+      <div><div class="lch" style="color:${pctColor}">${e.pct>0?'+':''}%${e.pct}</div></div>
+    </div>`;
+  }).join('');
+}
+
+async function checkSingle(idx){
+  const e=budgetLog[idx];
+  if(!e)return;
+  budgetLog[idx].checking=true;renderLog();
+  toast('Kontrol ediliyor...');
+  try{
+    const d=await api(`${AID}/insights`,{
+      fields:'spend,ctr,cpc,purchase_roas,actions',
+      date_preset:'last_3d',
+      level:e.type==='campaign'?'campaign':'adset',
+      filtering:JSON.stringify([{field:e.type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:e.id}]),
+      action_attribution_windows:ATTR
+    });
+    const r=d?.data?.[0];
+    if(r){
+      e.curRoas=groas(r);
+      e.curSpend=parseFloat(r.spend||0);
+      e.curPurchase=gav(r.actions,'purchase');
+      e.curCtr=parseFloat(r.ctr||0);
+      e.curCpc=parseFloat(r.cpc||0);
+      // AI yorum al
+      const baseRoas=e.baseline?.roas||0;
+      const roasChange=baseRoas>0?((e.curRoas-baseRoas)/baseRoas*100):0;
+      const aiPrompt=`Bütçe değişikliği sonrası performans analizi (Türkçe, 2 cümle max):
+Kampanya/Adset: ${e.name}
+Bütçe: ${e.old.toFixed(0)}₺ → ${e.new.toFixed(0)}₺/gün (+%${e.pct})
+Baseline ROAS: ${baseRoas.toFixed(2)}x | Şu anki ROAS: ${e.curRoas.toFixed(2)}x (${roasChange>=0?'+':''}${roasChange.toFixed(1)}%)
+Öneri: ${roasChange<-15?'Bütçeyi geri almayı değerlendir.':roasChange>10?'Bütçe artışı işe yarıyor, artırmayı düşünebilirsin.':'İzlemeye devam et.'}`;
+      const aiReply=await claude([{role:'user',content:aiPrompt}],'Meta reklam uzmanısın. Kısa, net Türkçe yorum yap.');
+      e.aiNote=aiReply;
+    }
+  }catch(err){toast('Hata: '+err.message);}
+  budgetLog[idx].checking=false;
+  localStorage.setItem('bLog',JSON.stringify(budgetLog));
+  renderLog();toast('Kontrol tamamlandı ✓');
+}
+
+async function revertBudget(idx){
+  const e=budgetLog[idx];
+  if(!e||!confirm(`${e.name} bütçesi ${e.old.toFixed(0)}₺'ye geri alınsın mı?`))return;
+  const d=await api(e.id,{daily_budget:Math.round(e.old*100)},'POST');
+  if(d?.success||d?.id){
+    // Geri alma kaydı ekle
+    budgetLog.unshift({id:e.id,name:e.name,type:e.type,old:e.new,new:e.old,pct:-(e.pct),time:new Date().toISOString(),baseline:e.baseline||null,_reverted:true});
+    localStorage.setItem('bLog',JSON.stringify(budgetLog));
+    toast(`Bütçe ${e.old.toFixed(0)}₺'ye geri alındı ✓`);renderLog();
+  }else toast('Hata: '+(d?.error?.message||'?'));
+}
+
+function clearLog(){if(confirm('Silinsin mi?')){budgetLog=[];localStorage.setItem('bLog','[]');renderLog();}}
+
+// CHAT
+function qa(level,q){document.getElementById('chatIn').value=q;sendChat(level);}
+
+async function sendChat(levelHint='auto'){
+  const input=document.getElementById('chatIn');
+  const msg=input.value.trim();if(!msg)return;
+  input.value='';addMsg(msg,'user');
+  const th=addThinking();
+
+  // Seviye tespiti
+  let level=levelHint;
+  if(level==='auto'){
+    const low=msg.toLowerCase();
+    if(low.match(/reklam seti|adset/)) level='adset';
+    else if(low.match(/\breklam\b/) && !low.includes('kampanya')) level='ad';
+    else if(low.match(/kampanya/)) level='camp';
+    else level='camp'; // default
+  }
+
+  // Sadece ilgili veriyi çek
+  let perfData=[],campInfo=[];
+  const preset='last_7d';
+  campInfo=campStore.map(c=>({id:c.id,name:c.name,...getBi(c)}));
+  const cmap={};campStore.forEach(c=>cmap[c.id]=c);
+
+  if(level==='camp'||level==='all'){
+    const d=await api(`${AID}/insights`,{fields:CF,date_preset:preset,level:'campaign',limit:500,action_attribution_windows:ATTR});
+    perfData=(d?.data||[]).map(r=>({
+      seviye:'KAMPANYA',
+      kampanya:r.campaign_name,
+      harcama:parseFloat(r.spend||0).toFixed(2)+'₺',
+      gosurim:parseInt(r.impressions||0).toLocaleString('tr'),
+      tiklama:parseInt(r.clicks||0),
+      ctr:parseFloat(r.ctr||0).toFixed(2)+'%',
+      tbm:parseFloat(r.cpc||0).toFixed(2)+'₺',
+      cpm:parseFloat(r.cpp||0).toFixed(2)+'₺',
+      frekans:parseFloat(r.frequency||0).toFixed(2),
+      roas:groas(r)?groas(r).toFixed(2)+'x':'—',
+      sepet:gav(r.actions,'add_to_cart'),
+      satis:gav(r.actions,'purchase'),
+      gelir:grev(r).toFixed(0)+'₺',
+      butceTipi:cmap[r.campaign_id]?(getBi(cmap[r.campaign_id]).type):'—'
+    }));
+  } else if(level==='adset'){
+    const [d,adsets,camps]=await Promise.all([
+      api(`${AID}/insights`,{fields:AF,date_preset:preset,level:'adset',limit:500,action_attribution_windows:ATTR}),
+      api(`${AID}/adsets`,{fields:'id,daily_budget,lifetime_budget,campaign_id',limit:500}),
+      api(`${AID}/campaigns`,{fields:'id,daily_budget,lifetime_budget',limit:500})
+    ]);
+    const am={};(adsets?.data||[]).forEach(a=>am[a.id]=a);
+    const cm={};(camps?.data||[]).forEach(c=>cm[c.id]=c);
+    perfData=(d?.data||[]).map(r=>{
+      const camp=cm[r.campaign_id];const adset=am[r.adset_id];
+      const isCBO=camp?.daily_budget||camp?.lifetime_budget;
+      const butce=isCBO?(camp.daily_budget?(parseInt(camp.daily_budget)/100).toFixed(0)+'₺/gün (kamp.)':(parseInt(camp.lifetime_budget)/100).toFixed(0)+'₺ toplam'):(adset?.daily_budget?(parseInt(adset.daily_budget)/100).toFixed(0)+'₺/gün':'—');
+      return{
+        seviye:'REKLAM SETİ',
+        kampanya:r.campaign_name,
+        reklamSeti:r.adset_name,
+        butceTipi:isCBO?'CBO':'ABO',
+        butce,
+        harcama:parseFloat(r.spend||0).toFixed(2)+'₺',
+        tiklama:parseInt(r.clicks||0),
+        ctr:parseFloat(r.ctr||0).toFixed(2)+'%',
+        tbm:parseFloat(r.cpc||0).toFixed(2)+'₺',
+        cpm:parseFloat(r.cpp||0).toFixed(2)+'₺',
+        frekans:parseFloat(r.frequency||0).toFixed(2),
+        roas:groas(r)?groas(r).toFixed(2)+'x':'—',
+        sepet:gav(r.actions,'add_to_cart'),
+        satis:gav(r.actions,'purchase')
+      };
+    });
+  } else if(level==='ad'){
+    const d=await api(`${AID}/insights`,{fields:DF,date_preset:preset,level:'ad',limit:500,action_attribution_windows:ATTR});
+    perfData=(d?.data||[]).map(r=>({
+      seviye:'REKLAM',
+      kampanya:r.campaign_name,
+      reklamSeti:r.adset_name,
+      reklam:r.ad_name,
+      harcama:parseFloat(r.spend||0).toFixed(2)+'₺',
+      tiklama:parseInt(r.clicks||0),
+      ctr:parseFloat(r.ctr||0).toFixed(2)+'%',
+      tbm:parseFloat(r.cpc||0).toFixed(2)+'₺',
+      cpm:parseFloat(r.cpp||0).toFixed(2)+'₺',
+      frekans:parseFloat(r.frequency||0).toFixed(2),
+      roas:groas(r)?groas(r).toFixed(2)+'x':'—',
+      sepet:gav(r.actions,'add_to_cart'),
+      satis:gav(r.actions,'purchase')
+    }));
+  }
+
+  const levelNote={
+    camp:'Kullanıcı KAMPANYA düzeyinde analiz istiyor. Sadece kampanya metriklerini kullan. CBO kampanyalarda içerideki reklam setlerinin veya reklamların metriklerini baz alma.',
+    adset:'Kullanıcı REKLAM SETİ düzeyinde analiz istiyor. CBO reklam setleri için bütçe önerisi kampanya seviyesinde yapılır. ABO reklam setleri için direkt reklam seti bütçesi önerilir.',
+    ad:'Kullanıcı REKLAM (creative) düzeyinde analiz istiyor. Sadece reklam metriklerini kullan.',
+    all:'Kapsamlı analiz.'
+  }[level]||'';
+
+  const slim=perfData.filter(r=>parseFloat(r.harcama)>1).sort((a,b)=>parseFloat(b.harcama)-parseFloat(a.harcama)).slice(0,15).map(r=>{const o={};if(r.kampanya)o.k=r.kampanya.slice(0,28);if(r.reklamSeti)o.rs=r.reklamSeti.slice(0,22);if(r.reklam)o.r=r.reklam.slice(0,22);if(r.butceTipi)o.bt=r.butceTipi;o.h=r.harcama;o.roas=r.roas;o.ctr=r.ctr;o.tbm=r.tbm;o.satis=r.satis;o.sepet=r.sepet;return o;});
+  const note={camp:'Kampanya seviyesi analiz. Sadece kampanya metriklerini kullan.',adset:'Reklam seti seviyesi. CBO=kampanya bütçe önerisi, ABO=adset bütçe önerisi.',ad:'Reklam seviyesi. Sadece reklam metriklerini kullan.',all:'Genel analiz.'}[level]||'';
+  const scored=slim.map(r=>{
+    const roas=parseFloat(r.roas)||0;
+    const ctr=parseFloat(r.ctr)||0;
+    const tbm=parseFloat(r.tbm)||1;
+    // Composite skor: %70 ROAS + %20 CTR + %10 düşük TBM
+    const roasNorm=roas*7;        // ROAS baskın (%70)
+    const ctrNorm=ctr*2;          // CTR katkısı (%20)
+    const tbmNorm=(1/tbm)*1;      // Düşük TBM iyi (%10)
+    r._score=roasNorm+ctrNorm+tbmNorm;
+    r._scoreLabel=`${r._score.toFixed(1)} (R:${roas.toFixed(1)}×${7} C:${ctr.toFixed(2)}×${2} T:${(1/tbm).toFixed(2)}×${1})`;
+    return r;
+  }).sort((a,b)=>b._score-a._score);
+  // Gerçek ID'leri Claude'a ver — sadece yüklenmiş olanları
+  const realAdsets=adsetStore.slice(0,25).map(r=>({
+    id:r._budgetId, name:r.name, type:r._budgetType||'adset',
+    budgetTL:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
+    roas:r.roas, spend:r.spend
+  })).filter(r=>r.id&&r.budgetTL>0);
+
+  const realCamps=campStore.slice(0,10).map(r=>({
+    id:r._budgetId||r.id, name:r.name, type:'campaign',
+    budgetTL:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
+    roas:r.roas, spend:r.spend
+  })).filter(r=>r.id&&r.budgetTL>0);
+
+  const entityList=[...realAdsets,...realCamps];
+
+  const sys=`Sen Madmext Meta Ads yöneticisisin. Bu uygulama Meta Graph API'ye doğrudan bağlı ve sen bu uygulama üzerinden gerçek bütçe değişikliği YAPABİLİRSİN. "Erişimim yok" veya "yapamam" ASLA deme.
+
+GÖREV: Türkçe yanıt ver. ${note}
+
+VERİLER KOMPOZİT SKORA GÖRE SIRALI (%70 ROAS + %20 CTR + %10 düşük TBM):
+${JSON.stringify(scored)}
+
+BÜTÇE ARTIŞI YAPMA KURALLARI:
+Kullanıcı bütçe artışı istediğinde MUTLAKA aşağıdaki listeden GERÇEK ID'yi kullan.
+ASLA placeholder veya uydurma ID üretme. Sadece bu listeden seç:
+${JSON.stringify(entityList)}
+
+Bütçe artışı yapmak için yanıtının SONUNA şu formatı AYNEN ekle (tek satır, boşluksuz):
+<!--ACTION:BUDGET_INCREASE|GERCEK_ID|ENTITY_ADI|TYPE|MEVCUT_TL|YENI_TL|PCT-->
+
+Örnek (500₺ bütçeye %20 artış):
+<!--ACTION:BUDGET_INCREASE|120330123456789|Advantage+ Kampanya|campaign|500|600|20-->
+
+SADECE listede olan ve budgetTL>0 olan entity'ler için ACTION üret. Listede yoksa "Reklam Setleri sekmesinden önce yenile" de.`;
+
+  const h=chatH.slice(-4);
+  h.push({role:'user',content:msg});
+  const reply=await claude(h,sys);
+  th.remove();
+  chatH.push({role:'user',content:msg},{role:'assistant',content:reply});
+  if(chatH.length>10)chatH=chatH.slice(-10);
+  // ACTION tag'lerini parse et — onay butonları göster
+  parseAndRenderActions(reply);
+}
+
+// ACTION tag parse + onay butonları
+function parseAndRenderActions(reply){
+  const w=document.getElementById('chatMsgs');
+  // Temizlenmiş metni göster
+  const cleanReply=reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
+  addClaudeMsg(cleanReply);
+
+  // ACTION tag'lerini bul
+  const re=/<!--ACTION:BUDGET_INCREASE\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)\|([^|]+)-->/g;
+  let m;
+  const actions=[];
+  while((m=re.exec(reply))!==null){
+    const [,id,name,type,curTL,newTL,pct]=m;
+    if(!id||id.includes('ID')||id.length<5)continue; // uydurma ID engelle
+    actions.push({id,name,type,curTL:parseFloat(curTL),newTL:parseFloat(newTL),pct:parseFloat(pct)});
+  }
+  if(!actions.length)return;
+
+  // Onay satırı ekle
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;gap:6px;margin:-4px 0 8px;align-self:flex-start;width:100%;max-width:96%';
+  actions.forEach(a=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;gap:6px;align-items:center;background:#1a1a1a;padding:8px 12px;border-radius:6px;border-left:3px solid var(--y)';
+    row.innerHTML=`<span style="flex:1;font-size:11px">💰 <strong>${a.name.slice(0,30)}</strong>: ${a.curTL.toFixed(0)}₺ → ${a.newTL.toFixed(0)}₺/gün (+%${a.pct})</span>`;
+    const okBtn=document.createElement('button');
+    okBtn.className='btn sm grn';okBtn.textContent='✓ Onayla';
+    okBtn.onclick=async()=>{
+      okBtn.disabled=true;okBtn.textContent='⏳...';
+      await chatApproveB(a.id,a.name,a.type,a.curTL,a.newTL,a.pct);
+      row.remove();
+    };
+    const noBtn=document.createElement('button');
+    noBtn.className='btn sm dng';noBtn.textContent='✗ İptal';
+    noBtn.onclick=()=>row.remove();
+    row.appendChild(okBtn);row.appendChild(noBtn);
+    wrap.appendChild(row);
+  });
+  w.appendChild(wrap);w.scrollTop=w.scrollHeight;
+}
+
+// Bütçe artışını uygula + görev oluştur
+async function chatApproveB(id,name,type,curTL,newTL,pct){
+  const d=await api(id,{daily_budget:Math.round(newTL*100)},'POST');
+  if(d?.success||d?.id){
+    let baseline=null;
+    try{
+      const bd=await api(`${AID}/insights`,{fields:'spend,ctr,cpc,purchase_roas,actions',date_preset:'last_7d',
+        level:type==='campaign'?'campaign':'adset',
+        filtering:JSON.stringify([{field:type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:id}]),
+        action_attribution_windows:ATTR});
+      const br=bd?.data?.[0];
+      if(br)baseline={roas:groas(br),spend:parseFloat(br.spend||0),purchase:gav(br.actions,'purchase'),ctr:parseFloat(br.ctr||0),cpc:parseFloat(br.cpc||0)};
+    }catch(e){}
+    // budgetLog'a ekle
+    budgetLog.unshift({id,name,type,old:curTL,new:newTL,pct,time:new Date().toISOString(),baseline});
+    localStorage.setItem('bLog',JSON.stringify(budgetLog));
+    // Görev oluştur: 1g, 3g kontrol
+    const now=Date.now();
+    taskLog.unshift(
+      {id,name,type,baseline,budgetOld:curTL,budgetNew:newTL,pct,createdAt:now,dueAt:now+1*24*60*60*1000,period:'1g',done:false},
+      {id,name,type,baseline,budgetOld:curTL,budgetNew:newTL,pct,createdAt:now,dueAt:now+3*24*60*60*1000,period:'3g',done:false}
+    );
+    localStorage.setItem('tLog',JSON.stringify(taskLog));
+    updateTaskBadge();
+    addClaudeMsg(`✅ **${name}** bütçesi **${curTL.toFixed(0)}₺ → ${newTL.toFixed(0)}₺/gün** (+%${pct}) güncellendi.\n\nBaseline: ROAS ${baseline?.roas?.toFixed(2)||'—'}x · Harcama ${baseline?.spend?.toFixed(0)||'—'}₺ · Satış ${baseline?.purchase||'—'}\n\n⏰ **Görevler** sekmesinde 1g ve 3g sonra otomatik kontrol görevi oluşturuldu.`);
+    toast(`${newTL.toFixed(0)}₺'ye güncellendi ✓`);
+    renderLog();renderTasks();
+  }else{
+    addClaudeMsg(`❌ Hata: ${d?.error?.message||'Bilinmeyen hata'}`);
+    toast('Hata: '+(d?.error?.message||'?'));
+  }
+}
+
+function renderMD(t){
+  t=t.replace(/\|(.+)\|\r?\n\|[-| :]+\|\r?\n((?:\|.+\|\r?\n?)*)/g,(m,h,b)=>{
+    const ths=h.split('|').filter(c=>c.trim()).map(c=>`<th>${c.trim()}</th>`).join('');
+    const trs=b.trim().split('\n').map(r=>{const tds=r.split('|').filter(c=>c.trim()).map(c=>`<td>${c.trim()}</td>`).join('');return`<tr>${tds}</tr>`;}).join('');
+    return`<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+  });
+  t=t.replace(/^### (.+)$/gm,'<h3>$1</h3>');
+  t=t.replace(/^## (.+)$/gm,'<h2>$1</h2>');
+  t=t.replace(/^# (.+)$/gm,'<h2>$1</h2>');
+  t=t.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  t=t.replace(/^---+$/gm,'<hr>');
+  t=t.replace(/^[-*] (.+)$/gm,'<li>$1</li>');
+  t=t.replace(/(<li>.*?<\/li>\n?)+/gs,m=>`<ul>${m}</ul>`);
+  t=t.replace(/\n\n/g,'<br><br>');
+  return t;
+}
+function addMsg(txt,type){const w=document.getElementById('chatMsgs');const e=document.createElement('div');e.className=`msg ${type}`;e.textContent=txt;w.appendChild(e);w.scrollTop=w.scrollHeight;return e;}
+function addClaudeMsg(txt){const w=document.getElementById('chatMsgs');const e=document.createElement('div');e.className='msg claude';e.innerHTML=renderMD(txt);w.appendChild(e);w.scrollTop=w.scrollHeight;return e;}
+function addThinking(){const w=document.getElementById('chatMsgs');const e=document.createElement('div');e.className='thinking';e.innerHTML='<div class="d"></div><div class="d"></div><div class="d"></div>';w.appendChild(e);w.scrollTop=w.scrollHeight;return e;}
+
+async function createCamp(){
+  const name=document.getElementById('cName').value;
+  const obj=document.getElementById('cObj').value;
+  const budget=document.getElementById('cBudget').value;
+  const status=document.getElementById('cStatus').value;
+  if(!name||!budget){toast('Ad ve bütçe zorunlu');return;}
+  const d=await api(`${AID}/campaigns`,{name,objective:obj,daily_budget:Math.round(parseFloat(budget)*100),status,special_ad_categories:'[]'},'POST');
+  if(d?.id){toast('Oluşturuldu: '+d.id);document.getElementById('cName').value='';document.getElementById('cBudget').value='';}
+  else toast('Hata: '+(d?.error?.message||'?'));
+}
+
+function sw(name,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='blog')renderLog();
+  if(name==='tasks')renderTasks();
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4000);}
+renderLog();
+updateTaskBadge();
+// Railway'de çalışıyorsa otomatik bağlan
+if(window.location.hostname !== 'localhost' && !window.location.hostname.includes('127.0.0.1') && !window.location.protocol.includes('file')){
+  document.getElementById('proxyUrl').value = window.location.origin;
+  setTimeout(connect, 500);
+}
+setInterval(()=>{updateTaskBadge();},60000); // Her dk badge güncelle
+</script>
+</body>
+</html>
