@@ -139,6 +139,133 @@ def meta_proxy():
 
 # ── CLAUDE ────────────────────────────────────────────────────────────────
 
+
+import xml.etree.ElementTree as ET
+
+TICIMAX_KEY = os.environ.get('TICIMAX_KEY', '')
+TICIMAX_URL = os.environ.get('TICIMAX_URL', 'https://www.madmext.com')
+
+def ticimax_soap(action, body_inner):
+    """Ticimax SOAP API çağrısı"""
+    soap = f'''<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <{action} xmlns="http://tempuri.org/">
+      <yetki_kodu>{TICIMAX_KEY}</yetki_kodu>
+      {body_inner}
+    </{action}>
+  </soap:Body>
+</soap:Envelope>'''
+    r = requests.post(
+        f"{TICIMAX_URL}/servis/ticimax.svc",
+        data=soap.encode('utf-8'),
+        headers={'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': f'http://tempuri.org/ITicimaxServis/{action}'},
+        timeout=30
+    )
+    return r.text
+
+def parse_ticimax_products(xml_text):
+    """Ticimax ürün XML yanıtını parse et"""
+    try:
+        root = ET.fromstring(xml_text)
+        ns = {'s': 'http://schemas.xmlsoap.org/soap/envelope/',
+              'a': 'http://tempuri.org/',
+              'b': 'http://schemas.datacontract.org/2004/07/Ticimax.Model'}
+        products = []
+        for p in root.iter():
+            tag = p.tag.split('}')[-1] if '}' in p.tag else p.tag
+            if tag in ['UrunModel', 'Urun', 'urun']:
+                prod = {}
+                for child in p:
+                    ctag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+                    prod[ctag.lower()] = child.text or ''
+                if prod:
+                    products.append({
+                        'id': prod.get('id', prod.get('urunid', '')),
+                        'title': prod.get('adi', prod.get('ad', prod.get('urunadi', ''))),
+                        'name': prod.get('adi', prod.get('ad', '')),
+                        'stok_kodu': prod.get('stokkodu', prod.get('stok_kodu', '')),
+                        'stok': int(prod.get('stok', prod.get('stokmiktari', 0)) or 0),
+                        'fiyat': float(prod.get('fiyat', prod.get('satisfiyati', 0)) or 0),
+                        'resim': prod.get('resim', prod.get('resimurl', prod.get('gorselurl', ''))),
+                        'kategori': prod.get('kategori', prod.get('kategoriadi', 'Diğer')),
+                        'aktif': prod.get('aktif', 'true').lower() == 'true',
+                        'yayin_tarihi': prod.get('eklemetarihi', prod.get('yayintarihi', '')),
+                        'marka': prod.get('marka', prod.get('markaadi', '')),
+                    })
+        return products
+    except Exception as e:
+        return []
+
+@app.route('/ticimax/products', methods=['GET'])
+def ticimax_products():
+    if not TICIMAX_KEY:
+        return jsonify({'error': 'TICIMAX_KEY eksik. Railway Variables'a ekle.'})
+    try:
+        all_products = []
+        page = 1
+        while True:
+            xml = ticimax_soap('UrunListele', f'<sayfa_no>{page}</sayfa_no><sayfa_satir_sayisi>500</sayfa_satir_sayisi>')
+            products = parse_ticimax_products(xml)
+            if not products:
+                break
+            all_products.extend(products)
+            if len(products) < 500:
+                break
+            page += 1
+            if page > 20:  # Max 10K ürün (20*500)
+                break
+        return jsonify({'products': all_products, 'total': len(all_products)})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/ticimax/orders', methods=['GET'])
+def ticimax_orders():
+    if not TICIMAX_KEY:
+        return jsonify({'error': 'TICIMAX_KEY eksik'})
+    try:
+        from datetime import datetime, timedelta
+        date_from = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%dT00:00:00')
+        date_to = datetime.now().strftime('%Y-%m-%dT23:59:59')
+        xml = ticimax_soap('SiparisListele',
+            f'<baslangic_tarihi>{date_from}</baslangic_tarihi><bitis_tarihi>{date_to}</bitis_tarihi><sayfa_no>1</sayfa_no><sayfa_satir_sayisi>1000</sayfa_satir_sayisi>')
+        # Basit parse - sipariş items
+        root = ET.fromstring(xml)
+        orders = []
+        for o in root.iter():
+            tag = o.tag.split('}')[-1] if '}' in o.tag else o.tag
+            if tag in ['SiparisModel', 'Siparis', 'siparis']:
+                order = {'items': []}
+                for child in o:
+                    ctag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+                    if ctag.lower() in ['urunler', 'siparisdetay', 'items']:
+                        for item in child:
+                            item_data = {}
+                            for ic in item:
+                                ictag = ic.tag.split('}')[-1] if '}' in ic.tag else ic.tag
+                                item_data[ictag.lower()] = ic.text or ''
+                            if item_data:
+                                order['items'].append({
+                                    'urun_id': item_data.get('urunid', item_data.get('urun_id', '')),
+                                    'stok_kodu': item_data.get('stokkodu', ''),
+                                    'adet': int(item_data.get('adet', item_data.get('miktar', 1)) or 1)
+                                })
+                orders.append(order)
+        return jsonify({'orders': orders, 'total': len(orders)})
+    except Exception as e:
+        return jsonify({'error': str(e), 'orders': []})
+
+@app.route('/ticimax/test', methods=['GET'])
+def ticimax_test():
+    """Bağlantı testi"""
+    if not TICIMAX_KEY:
+        return jsonify({'ok': False, 'error': 'TICIMAX_KEY eksik'})
+    try:
+        xml = ticimax_soap('UrunListele', '<sayfa_no>1</sayfa_no><sayfa_satir_sayisi>1</sayfa_satir_sayisi>')
+        return jsonify({'ok': True, 'response_length': len(xml), 'preview': xml[:200]})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)})
+
 @app.route('/claude', methods=['POST'])
 def claude_proxy():
     data = request.json
