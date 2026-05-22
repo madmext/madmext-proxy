@@ -256,7 +256,11 @@ function filterCatalog() {
 function renderCatalogTable(data) {
   const products = data || catalogProducts;
   const tbody = document.getElementById('catalogTB');
-  tbody.innerHTML = products.slice(0,200).map(p => {
+  const page = parseInt(document.getElementById('catPage')?.value||0);
+  const pageSize = 100;
+  const start = page*pageSize;
+  const paged = products.slice(start, start+pageSize);
+  tbody.innerHTML = paged.map(p => {
     const stockColor = p.availability==='in stock'?'var(--g)':p.availability==='out of stock'?'var(--r)':'var(--y)';
     const stockLabel = p.availability==='in stock'?'Stokta':'Stokta Yok';
     const roasHtml = p.roas!=null ? `<span style="color:${roasColor(p.roas)}">${p.roas.toFixed(2)}x</span>` : '<span style="color:var(--m)">—</span>';
@@ -277,9 +281,26 @@ function renderCatalogTable(data) {
       <td>${adStatus}</td>
     </tr>`;
   }).join('');
-  if(products.length>200) {
-    tbody.innerHTML += `<tr><td colspan="9" style="text-align:center;padding:12px;color:var(--m)">+ ${products.length-200} ürün daha (filtrele daraltmak için)</td></tr>`;
+  // Pagination kontrol
+  const total2 = products.length;
+  const pages = Math.ceil(total2/pageSize);
+  let pgHtml = total2>pageSize ? `<div style='display:flex;gap:6px;align-items:center;padding:10px;justify-content:center'>` : '';
+  if(total2>pageSize){
+    for(let i=0;i<pages&&i<20;i++) pgHtml+=`<button class='btn sm ${i===page?'':'sec'}' onclick="goPage(${i})">${i+1}</button>`;
+    pgHtml+=`<span style='font-size:11px;color:var(--m);margin-left:8px'>${total2.toLocaleString('tr')} ürün · Sayfa ${page+1}/${pages}</span></div>`;
+    tbody.innerHTML += pgHtml;
   }
+}
+
+function goPage(p){
+  const inp = document.getElementById('catPage');
+  if(inp) inp.value = p; else {
+    const h = document.createElement('input');
+    h.id='catPage';h.type='hidden';h.value=p;
+    document.body.appendChild(h);
+  }
+  filterCatalog();
+  document.getElementById('catalogWrap').scrollIntoView({behavior:'smooth'});
 }
 
 async function catalogAIChat(msg) {
