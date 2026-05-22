@@ -1,347 +1,279 @@
-<!-- Ticimax Katalog Modülü -->
-<div class="arow">
-  <button class="btn sm" onclick="loadTicimax()">🔄 Ticimax'tan Yükle</button>
-  <button class="btn sm sec" id="matchMetaBtn" style="display:none" onclick="matchMeta()">🔗 Meta ile Eşleştir</button>
-  <button class="btn sm sec" id="setBuilderBtn" style="display:none" onclick="showSetBuilder()">📦 Set Oluştur</button>
-  <span id="ticStatus" style="font-size:11px;color:var(--m)"></span>
-</div>
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
+import requests
+import os
+import json
+import threading
+from datetime import datetime
 
-<div class="dash-grid" id="ticCards" style="display:none">
-  <div class="dash-card" style="border-top:2px solid var(--a)"><div class="dash-label">Toplam Ürün</div><div class="dash-val" id="tic-total">—</div></div>
-  <div class="dash-card" style="border-top:2px solid var(--g)"><div class="dash-label">Aktif</div><div class="dash-val" id="tic-active">—</div></div>
-  <div class="dash-card" style="border-top:2px solid var(--r)"><div class="dash-label">Stokta Yok</div><div class="dash-val" id="tic-nostock">—</div></div>
-  <div class="dash-card" style="border-top:2px solid var(--y)"><div class="dash-label">Kritik Stok</div><div class="dash-val" id="tic-critical">—</div></div>
-  <div class="dash-card" style="border-top:2px solid #a855f7"><div class="dash-label">30g Toplam Satış</div><div class="dash-val" id="tic-sales">—</div></div>
-  <div class="dash-card" style="border-top:2px solid var(--bl)"><div class="dash-label">Reklam Alan</div><div class="dash-val" id="tic-withad">—</div></div>
-</div>
+app = Flask(__name__, static_folder='.')
+CORS(app)
 
-<div class="arow" id="ticFilters" style="display:none">
-  <select class="flt" id="ticFilterStatus" onchange="filterTic()">
-    <option value="">Tüm Durumlar</option>
-    <option value="active">Aktif</option>
-    <option value="nostock">Stokta Yok</option>
-    <option value="critical">Kritik Stok</option>
-    <option value="nosales">0 Satış</option>
-  </select>
-  <select class="flt" id="ticFilterCat" onchange="filterTic()" style="max-width:200px">
-    <option value="">Tüm Kategoriler</option>
-  </select>
-  <select class="flt" id="ticSort" onchange="filterTic()">
-    <option value="sales_desc">Satış (Çok→Az)</option>
-    <option value="sales_asc">Satış (Az→Çok)</option>
-    <option value="stock_asc">Stok (Az→Çok)</option>
-    <option value="roas_desc">ROAS (Yüksek→Düşük)</option>
-    <option value="date_desc">Yayın Tarihi (Yeni→Eski)</option>
-    <option value="price_desc">Fiyat (Yüksek→Düşük)</option>
-  </select>
-  <input type="text" id="ticSearch" placeholder="Ürün/barkod ara..." onkeyup="filterTic()" style="background:var(--bg);border:1px solid var(--b);color:var(--t);padding:6px 10px;font-size:12px;border-radius:5px;width:180px">
-  <span id="ticCount" style="font-size:11px;color:var(--m)"></span>
-</div>
+META_TOKEN = os.environ.get('META_TOKEN', '')
+ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
+GA4_PROPERTY_ID = os.environ.get('GA4_PROPERTY_ID', '')
+GA4_REFRESH_TOKEN = os.environ.get('GA4_REFRESH_TOKEN', '')
+GA4_CLIENT_ID = os.environ.get('GA4_CLIENT_ID', '')
+GA4_CLIENT_SECRET = os.environ.get('GA4_CLIENT_SECRET', '')
 
-<div id="ticAI" style="display:none;margin-bottom:14px">
-  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-    <button class="qbtn" onclick="ticAIChat('Satış performansına göre en iyi ve en kötü ürünleri analiz et.')">🏆 Satış analizi</button>
-    <button class="qbtn" onclick="ticAIChat('Stokta olmayan ürünlere reklam veriliyorsa tespit et ve uyar.')">⚠️ Stok uyarıları</button>
-    <button class="qbtn" onclick="ticAIChat('Son 30 günde hiç satmayan ürünleri listele.')">📉 Satmayan ürünler</button>
-    <button class="qbtn" onclick="ticAIChat('Yeni eklenen ürünler için reklam seti önerisi yap.')">✨ Yeni ürünler</button>
-    <button class="qbtn" onclick="ticAIChat('Kategorilere göre satış ve reklam performansı analizi yap.')">📊 Kategori analizi</button>
-  </div>
-  <div class="chat-msgs" id="ticMsgs" style="height:140px">
-    <div class="msg sys">Ticimax verisi yüklendi. AI analizi için butonları kullanın.</div>
-  </div>
-</div>
+LOG_FILE = 'madmext_logs.json'
+log_lock = threading.Lock()
 
-<div id="setBuilder" style="display:none;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;margin-bottom:14px">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div style="font-size:13px;font-weight:600">📦 Ürün Seti Oluştur → Meta'ya Gönder</div>
-    <button class="btn sm sec" onclick="document.getElementById('setBuilder').style.display='none'">✕</button>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
-    <div class="fg"><label>Set Adı</label><input type="text" id="setName" placeholder="örn: Yeni Sezon Erkek"></div>
-    <div class="fg"><label>Kategori</label><select id="setFilterCat"><option value="">Tümü</option></select></div>
-    <div class="fg"><label>Stok</label>
-      <select id="setFilterStock">
-        <option value="">Tümü</option>
-        <option value="instock">Stokta Olanlar</option>
-        <option value="nostock">Stokta Olmayanlar</option>
-      </select>
-    </div>
-    <div class="fg"><label>Min Satış (30g)</label><input type="number" id="setMinSales" placeholder="0"></div>
-    <div class="fg"><label>Max Satış (30g)</label><input type="number" id="setMaxSales" placeholder="9999"></div>
-    <div class="fg"><label>Son X Gün İçinde Yayınlanan</label><input type="number" id="setDaysSince" placeholder="30"></div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
-    <button class="btn sm sec" onclick="previewSet()">👁 Önizle</button>
-    <button class="btn sm grn" onclick="saveSet()">💾 Kaydet</button>
-    <button class="btn sm" style="background:#a855f7;color:#fff" onclick="sendSetToMeta(null)">🚀 Meta'ya Gönder</button>
-    <span id="setPreviewCount" style="font-size:11px;color:var(--m)"></span>
-  </div>
-  <div id="savedSets"></div>
-</div>
+def read_logs():
+    try:
+        if os.path.exists(LOG_FILE):
+            with open(LOG_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except:
+        pass
+    return {'budgetLog': [], 'taskLog': [], 'actionLog': []}
 
-<div class="twrap" id="ticWrap" style="display:none">
-  <table>
-    <thead><tr>
-      <th>Görsel</th><th>Ürün</th><th>Kategori</th><th>Fiyat</th>
-      <th>Stok</th><th>30g Satış</th><th>Yayın Tarihi</th><th>ROAS</th><th>Meta Harcama</th>
-    </tr></thead>
-    <tbody id="ticTB"></tbody>
-  </table>
-  <div id="ticPagination" style="padding:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>
-</div>
+def write_logs(data):
+    with log_lock:
+        with open(LOG_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
 
-<script>
-(function() {
-  // Modül scope - global çakışma önle
-  var ticProducts = [];
-  var ticSets = JSON.parse(localStorage.getItem('ticSets') || '[]');
-  var ticFiltered = [];
-  var TIC_PAGE = 100;
+def get_ga4_token():
+    r = requests.post('https://oauth2.googleapis.com/token', data={
+        'client_id': GA4_CLIENT_ID,
+        'client_secret': GA4_CLIENT_SECRET,
+        'refresh_token': GA4_REFRESH_TOKEN,
+        'grant_type': 'refresh_token'
+    })
+    return r.json().get('access_token')
 
-  window.loadTicimax = async function() {
-    var statusEl = document.getElementById('ticStatus');
-    if(statusEl) statusEl.textContent = 'Yükleniyor...';
-    try {
-      var pUrl = px() + '/ticimax/products';
-      var oUrl = px() + '/ticimax/orders';
-      var [pr, or] = await Promise.all([
-        fetch(pUrl).then(function(r){return r.json();}),
-        fetch(oUrl).then(function(r){return r.json();}).catch(function(){return {orders:[]};})
-      ]);
-      if(pr.error) { toast('Hata: ' + pr.error); if(statusEl) statusEl.textContent = 'Hata: ' + pr.error; return; }
-      var salesMap = {};
-      (or.orders || []).forEach(function(o) {
-        (o.items || o.urunler || []).forEach(function(i) {
-          var pid = i.urun_id || i.product_id || i.stok_kodu;
-          if(pid) salesMap[pid] = (salesMap[pid] || 0) + (parseInt(i.adet || i.quantity || 1));
-        });
-      });
-      ticProducts = (pr.products || []).map(function(p) {
-        return Object.assign({}, p, {
-          sales30: salesMap[p.id] || salesMap[p.stok_kodu] || 0,
-          roas: null, spend: null
-        });
-      });
-      renderTicSummary();
-      filterTic();
-      var ai = document.getElementById('ticAI');
-      var mb = document.getElementById('matchMetaBtn');
-      var sb = document.getElementById('setBuilderBtn');
-      if(ai) ai.style.display = '';
-      if(mb) mb.style.display = '';
-      if(sb) sb.style.display = '';
-      if(statusEl) statusEl.textContent = ticProducts.length + ' urun yuklendi';
-      toast(ticProducts.length + ' urun yuklendi');
-    } catch(e) {
-      toast('Hata: ' + e.message);
-      if(statusEl) statusEl.textContent = 'Hata: ' + e.message;
-    }
-  };
+# ── STATIC FILES ──────────────────────────────────────────────────────────
 
-  window.matchMeta = async function() {
-    var statusEl = document.getElementById('ticStatus');
-    if(statusEl) statusEl.textContent = 'Meta ile eslestiriliyor...';
-    var d = await api(AID + '/insights', {fields:'spend,purchase_roas,actions', date_preset:'last_30d', level:'ad', action_attribution_windows:ATTR, limit:500});
-    if(d && d.data) {
-      var mm = {};
-      d.data.forEach(function(r) { mm[(r.ad_name||'').toLowerCase()] = {roas:groas(r), spend:parseFloat(r.spend||0), purchase:gav(r.actions,'purchase')}; });
-      ticProducts.forEach(function(p) {
-        var key = (p.title||p.name||'').toLowerCase().slice(0,15);
-        var match = Object.entries(mm).find(function(e) { return e[0].includes(p.id) || (key && e[0].includes(key)); });
-        if(match) { p.roas = match[1].roas; p.spend = match[1].spend; }
-      });
-      filterTic(); renderTicSummary();
-      toast('Meta eslestirmesi tamamlandi');
-    }
-    if(statusEl) statusEl.textContent = 'Meta eslestirmesi yapildi';
-  };
+@app.route('/')
+def home():
+    return send_from_directory('.', 'index.html')
 
-  function renderTicSummary() {
-    var total = ticProducts.length;
-    var active = ticProducts.filter(function(p){return p.aktif||p.active||p.durum==='Aktif';}).length;
-    var nostock = ticProducts.filter(function(p){return (p.stok||p.stock||0)<=0;}).length;
-    var critical = ticProducts.filter(function(p){var s=p.stok||p.stock||0;return s>0&&s<=5;}).length;
-    var totalSales = ticProducts.reduce(function(a,p){return a+(p.sales30||0);},0);
-    var withAd = ticProducts.filter(function(p){return p.spend>0;}).length;
-    var set = function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
-    set('tic-total', total.toLocaleString('tr'));
-    set('tic-active', active.toLocaleString('tr'));
-    set('tic-nostock', nostock.toLocaleString('tr'));
-    set('tic-critical', critical.toLocaleString('tr'));
-    set('tic-sales', totalSales.toLocaleString('tr'));
-    set('tic-withad', withAd>0?withAd.toLocaleString('tr'):'—');
-    var show = function(id){var el=document.getElementById(id);if(el)el.style.display='';};
-    show('ticCards'); show('ticFilters'); show('ticWrap');
-    var cats = [];
-    var seen = {};
-    ticProducts.forEach(function(p){var c=(p.kategori||p.category||'Diger').split('>')[0].trim();if(!seen[c]){seen[c]=1;cats.push(c);}});
-    cats.sort();
-    ['ticFilterCat','setFilterCat'].forEach(function(id){
-      var s=document.getElementById(id);
-      if(!s)return;
-      s.innerHTML='<option value="">Tumu</option>'+cats.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('');
-    });
-  }
+@app.route('/proxy-xml', methods=['GET'])
+def proxy_xml():
+    url = request.args.get('url','')
+    if not url: return 'URL gerekli', 400
+    try:
+        r = requests.get(url, timeout=15, headers={'User-Agent':'Mozilla/5.0'})
+        return r.text, 200, {'Content-Type':'application/xml; charset=utf-8'}
+    except Exception as e:
+        return str(e), 500
 
-  window.filterTic = function() {
-    var status = (document.getElementById('ticFilterStatus')||{}).value || '';
-    var cat = (document.getElementById('ticFilterCat')||{}).value || '';
-    var sort = (document.getElementById('ticSort')||{}).value || 'sales_desc';
-    var search = ((document.getElementById('ticSearch')||{}).value || '').toLowerCase();
-    ticFiltered = ticProducts.filter(function(p) {
-      var stock = p.stok||p.stock||0;
-      if(status==='active' && !(p.aktif||p.active||p.durum==='Aktif')) return false;
-      if(status==='nostock' && stock>0) return false;
-      if(status==='critical' && !(stock>0&&stock<=5)) return false;
-      if(status==='nosales' && (p.sales30||0)>0) return false;
-      if(cat && !(p.kategori||p.category||'').startsWith(cat)) return false;
-      if(search && !(p.title||p.name||'').toLowerCase().includes(search) && !(p.id||'').includes(search)) return false;
-      return true;
-    });
-    ticFiltered.sort(function(a,b){
-      if(sort==='sales_desc') return (b.sales30||0)-(a.sales30||0);
-      if(sort==='sales_asc') return (a.sales30||0)-(b.sales30||0);
-      if(sort==='stock_asc') return (a.stok||a.stock||0)-(b.stok||b.stock||0);
-      if(sort==='roas_desc') return (b.roas||0)-(a.roas||0);
-      if(sort==='date_desc') return new Date(b.yayin_tarihi||b.publish_date||0)-new Date(a.yayin_tarihi||a.publish_date||0);
-      if(sort==='price_desc') return (b.fiyat||b.price||0)-(a.fiyat||a.price||0);
-      return 0;
-    });
-    var cnt = document.getElementById('ticCount');
-    if(cnt) cnt.textContent = ticFiltered.length + ' urun';
-    renderTicTable(ticFiltered, 0);
-  };
+@app.route('/modules/<path:filename>')
+def serve_module(filename):
+    return send_from_directory('modules', filename)
 
-  function renderTicTable(data, page) {
-    var start = page * TIC_PAGE;
-    var tbody = document.getElementById('ticTB');
-    if(!tbody) return;
-    tbody.innerHTML = data.slice(start, start+TIC_PAGE).map(function(p) {
-      var stock = p.stok||p.stock||0;
-      var sc = stock<=0?'var(--r)':stock<=5?'var(--y)':'var(--g)';
-      var price = p.fiyat||p.price||0;
-      var img = (p.resim||p.image) ? '<img src="'+(p.resim||p.image)+'" style="width:36px;height:36px;object-fit:cover;border-radius:4px" onerror="this.style.display=\'none\'">' : '—';
-      var rH = p.roas!=null ? '<span style="color:'+roasColor(p.roas)+'">'+p.roas.toFixed(2)+'x</span>' : '<span style="color:var(--m)">—</span>';
-      var cat = (p.kategori||p.category||'—').split('>')[0].trim().slice(0,20);
-      var d = (p.yayin_tarihi||p.publish_date) ? new Date(p.yayin_tarihi||p.publish_date).toLocaleDateString('tr') : '—';
-      return '<tr><td>'+img+'</td><td style="max-width:180px;white-space:normal;font-size:12px">'+((p.title||p.name||'—').slice(0,55))+'</td><td style="color:var(--m);font-size:11px">'+cat+'</td><td>'+(price>0?price.toFixed(0)+'₺':'—')+'</td><td><span style="color:'+sc+'">'+stock+'</span></td><td style="color:'+(( p.sales30||0)>0?'var(--g)':'var(--m)')+'">'+( p.sales30||0)+'</td><td style="font-size:11px;color:var(--m)">'+d+'</td><td>'+rH+'</td><td>'+(p.spend!=null?p.spend.toFixed(0)+'₺':'—')+'</td></tr>';
-    }).join('');
-    var pages = Math.ceil(data.length/TIC_PAGE);
-    var pg = document.getElementById('ticPagination');
-    if(pg) {
-      pg.innerHTML = '';
-      if(pages>1) {
-        for(var i=0;i<Math.min(pages,20);i++) {
-          (function(i){
-            var b = document.createElement('button');
-            b.className = 'btn sm '+(i===page?'':'sec');
-            b.textContent = i+1;
-            b.onclick = function(){renderTicTable(data,i);};
-            pg.appendChild(b);
-          })(i);
-        }
-        var info = document.createElement('span');
-        info.style.cssText = 'font-size:11px;color:var(--m);margin-left:8px';
-        info.textContent = data.length.toLocaleString('tr')+' urun - Sayfa '+(page+1)+'/'+pages;
-        pg.appendChild(info);
-      }
-    }
-  }
+@app.route('/madmext-ads.html')
+def serve_old():
+    # Eski URL'ye girenler için yönlendirme
+    return send_from_directory('.', 'index.html')
 
-  window.showSetBuilder = function() {
-    var el = document.getElementById('setBuilder');
-    if(el) el.style.display = '';
-    renderSavedSets();
-  };
+# ── GA4 ───────────────────────────────────────────────────────────────────
 
-  function getSetProducts() {
-    var cat = (document.getElementById('setFilterCat')||{}).value||'';
-    var stockF = (document.getElementById('setFilterStock')||{}).value||'';
-    var minS = parseInt((document.getElementById('setMinSales')||{}).value||'0');
-    var maxS = parseInt((document.getElementById('setMaxSales')||{}).value||'99999');
-    var days = parseInt((document.getElementById('setDaysSince')||{}).value||'0');
-    var cutoff = days>0 ? new Date(Date.now()-days*86400000) : null;
-    return ticProducts.filter(function(p) {
-      var stock = p.stok||p.stock||0;
-      var sales = p.sales30||0;
-      var pd = p.yayin_tarihi||p.publish_date;
-      if(cat && !(p.kategori||p.category||'').startsWith(cat)) return false;
-      if(stockF==='instock' && stock<=0) return false;
-      if(stockF==='nostock' && stock>0) return false;
-      if(sales<minS||sales>maxS) return false;
-      if(cutoff && pd && new Date(pd)<cutoff) return false;
-      return true;
-    });
-  }
+@app.route('/ga4', methods=['POST'])
+def ga4_proxy():
+    try:
+        data = request.json
+        token = get_ga4_token()
+        if not token:
+            return jsonify({'error': 'GA4 token alınamadı'})
+        report_type = data.get('type', 'runReport')
+        url = f'https://analyticsdata.googleapis.com/v1beta/properties/{GA4_PROPERTY_ID}:{report_type}'
+        r = requests.post(url,
+            headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
+            json=data.get('body', {})
+        )
+        return jsonify(r.json())
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
-  window.previewSet = function() {
-    var products = getSetProducts();
-    var el = document.getElementById('setPreviewCount');
-    if(el) el.textContent = products.length + ' urun eslesti';
-  };
+# ── LOGS ──────────────────────────────────────────────────────────────────
 
-  window.saveSet = function() {
-    var nameEl = document.getElementById('setName');
-    var name = nameEl ? nameEl.value.trim() : '';
-    if(!name) { toast('Set adi girin'); return; }
-    var products = getSetProducts();
-    if(!products.length) { toast('Eslesen urun yok'); return; }
-    var set = {id:Date.now(), name:name, productIds:products.map(function(p){return p.id;}), count:products.length, createdAt:new Date().toISOString()};
-    ticSets.unshift(set);
-    localStorage.setItem('ticSets', JSON.stringify(ticSets));
-    renderSavedSets();
-    toast('"'+name+'" seti kaydedildi ('+products.length+' urun)');
-  };
+@app.route('/logs', methods=['GET'])
+def get_logs():
+    return jsonify(read_logs())
 
-  window.sendSetToMeta = async function(setId) {
-    var set = setId ? ticSets.find(function(s){return s.id===setId;}) : {name:(document.getElementById('setName')||{}).value, productIds:getSetProducts().map(function(p){return p.id;})};
-    if(!set||!set.productIds||!set.productIds.length) { toast('Once set olustur'); return; }
-    if(!confirm('"'+set.name+'" Meta\'ya gonderilsin mi? ('+set.productIds.length+' urun)')) return;
-    toast('Meta\'ya gonderiliyor...');
-    var d = await api(AID+'/product_sets', {name:set.name, filter:JSON.stringify({retailer_id:{is_any:set.productIds.slice(0,500)}})}, 'POST');
-    if(d && d.id) {
-      toast('Urun seti olusturuldu: '+d.id);
-      addClaudeMsg('Set Meta\'ya gonderildi. ID: '+d.id, 'ticMsgs');
-    } else {
-      toast('Hata: '+(d&&d.error&&d.error.message||'Meta katalogu bagli degil olabilir'));
-    }
-  };
+@app.route('/logs/save', methods=['POST'])
+def save_logs():
+    data = request.json
+    current = read_logs()
+    if 'budgetLog' in data: current['budgetLog'] = data['budgetLog']
+    if 'taskLog' in data: current['taskLog'] = data['taskLog']
+    write_logs(current)
+    return jsonify({'ok': True})
 
-  function renderSavedSets() {
-    var el = document.getElementById('savedSets');
-    if(!el) return;
-    if(!ticSets.length) { el.innerHTML='<div style="color:var(--m);font-size:11px;margin-top:8px">Kayitli set yok.</div>'; return; }
-    el.innerHTML = '<div class="stl" style="margin-top:10px">Kayitli Setler</div>' +
-      ticSets.map(function(s) {
-        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--b)"><span style="flex:1;font-size:12px"><strong>'+s.name+'</strong> <span style="color:var(--m)">('+s.count+' urun)</span></span><button class="btn sm" style="background:#a855f7;color:#fff" onclick="sendSetToMeta('+s.id+')">Meta\'ya Gonder</button><button class="btn sm sec" onclick="deleteSet('+s.id+')">Sil</button></div>';
-      }).join('');
-  }
+@app.route('/logs/action', methods=['POST'])
+def log_action():
+    data = request.json
+    current = read_logs()
+    current.setdefault('actionLog', []).insert(0, {**data, 'serverTime': datetime.utcnow().isoformat()})
+    current['actionLog'] = current['actionLog'][:500]
+    write_logs(current)
+    return jsonify({'ok': True})
 
-  window.deleteSet = function(id) {
-    ticSets = ticSets.filter(function(s){return s.id!==id;});
-    localStorage.setItem('ticSets', JSON.stringify(ticSets));
-    renderSavedSets();
-  };
+# ── META ──────────────────────────────────────────────────────────────────
 
-  window.ticAIChat = async function(msg) {
-    if(!ticProducts.length) { toast('Once Ticimax\'tan yukle'); return; }
-    addMsg(msg, 'user', 'ticMsgs');
-    var th = addThinking('ticMsgs');
-    var stats = {
-      total: ticProducts.length,
-      nostock: ticProducts.filter(function(p){return (p.stok||p.stock||0)<=0;}).length,
-      totalSales: ticProducts.reduce(function(a,p){return a+(p.sales30||0);},0),
-      topSellers: ticProducts.sort(function(a,b){return (b.sales30||0)-(a.sales30||0);}).slice(0,10).map(function(p){return {name:(p.title||p.name||'').slice(0,30),sales:p.sales30,stock:p.stok||p.stock};}),
-      noSales: ticProducts.filter(function(p){return !p.sales30;}).length
-    };
-    var sys = 'Madmext e-ticaret uzmanisin. Turkce kisa yanit ver. Istatistikler: ' + JSON.stringify(stats);
-    if(!MX.chatH.ticimax) MX.chatH.ticimax = [];
-    MX.chatH.ticimax.push({role:'user',content:msg});
-    var reply = await claude(MX.chatH.ticimax.slice(-4), sys);
-    if(th && th.remove) th.remove();
-    MX.chatH.ticimax.push({role:'assistant',content:reply});
-    addClaudeMsg(reply, 'ticMsgs');
-  };
+@app.route('/api', methods=['POST'])
+def meta_proxy():
+    data = request.json
+    endpoint = data['endpoint']
+    params = {**data.get('params', {}), 'access_token': META_TOKEN}
+    method = data.get('method', 'GET')
+    url = f"https://graph.facebook.com/v19.0/{endpoint}"
+    if method == 'POST':
+        r = requests.post(url, params=params)
+    else:
+        r = requests.get(url, params=params)
+    result = r.json()
+    if method == 'POST' and (result.get('success') or result.get('id')):
+        try:
+            current = read_logs()
+            current.setdefault('actionLog', []).insert(0, {
+                'type': 'budget_change', 'endpoint': endpoint,
+                'params': {k: v for k, v in data.get('params', {}).items() if k != 'access_token'},
+                'serverTime': datetime.utcnow().isoformat()
+            })
+            current['actionLog'] = current['actionLog'][:500]
+            write_logs(current)
+        except: pass
+    return jsonify(result)
 
-})();
-</script>
+# ── CLAUDE ────────────────────────────────────────────────────────────────
+
+
+import xml.etree.ElementTree as ET
+
+TICIMAX_KEY = os.environ.get('TICIMAX_KEY', '')
+TICIMAX_URL = os.environ.get('TICIMAX_URL', 'https://www.madmext.com')
+
+def ticimax_soap(action, body_inner):
+    """Ticimax SOAP API çağrısı"""
+    soap = f'''<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <{action} xmlns="http://tempuri.org/">
+      <yetki_kodu>{TICIMAX_KEY}</yetki_kodu>
+      {body_inner}
+    </{action}>
+  </soap:Body>
+</soap:Envelope>'''
+    r = requests.post(
+        f"{TICIMAX_URL}/servis/ticimax.svc",
+        data=soap.encode('utf-8'),
+        headers={'Content-Type': 'text/xml; charset=utf-8', 'SOAPAction': f'http://tempuri.org/ITicimaxServis/{action}'},
+        timeout=30
+    )
+    return r.text
+
+def parse_ticimax_products(xml_text):
+    """Ticimax ürün XML yanıtını parse et"""
+    try:
+        root = ET.fromstring(xml_text)
+        ns = {'s': 'http://schemas.xmlsoap.org/soap/envelope/',
+              'a': 'http://tempuri.org/',
+              'b': 'http://schemas.datacontract.org/2004/07/Ticimax.Model'}
+        products = []
+        for p in root.iter():
+            tag = p.tag.split('}')[-1] if '}' in p.tag else p.tag
+            if tag in ['UrunModel', 'Urun', 'urun']:
+                prod = {}
+                for child in p:
+                    ctag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+                    prod[ctag.lower()] = child.text or ''
+                if prod:
+                    products.append({
+                        'id': prod.get('id', prod.get('urunid', '')),
+                        'title': prod.get('adi', prod.get('ad', prod.get('urunadi', ''))),
+                        'name': prod.get('adi', prod.get('ad', '')),
+                        'stok_kodu': prod.get('stokkodu', prod.get('stok_kodu', '')),
+                        'stok': int(prod.get('stok', prod.get('stokmiktari', 0)) or 0),
+                        'fiyat': float(prod.get('fiyat', prod.get('satisfiyati', 0)) or 0),
+                        'resim': prod.get('resim', prod.get('resimurl', prod.get('gorselurl', ''))),
+                        'kategori': prod.get('kategori', prod.get('kategoriadi', 'Diğer')),
+                        'aktif': prod.get('aktif', 'true').lower() == 'true',
+                        'yayin_tarihi': prod.get('eklemetarihi', prod.get('yayintarihi', '')),
+                        'marka': prod.get('marka', prod.get('markaadi', '')),
+                    })
+        return products
+    except Exception as e:
+        return []
+
+@app.route('/ticimax/products', methods=['GET'])
+def ticimax_products():
+    if not TICIMAX_KEY:
+        return jsonify({'error': 'TICIMAX_KEY eksik. Railway Variables ekle.'})
+    try:
+        all_products = []
+        page = 1
+        while True:
+            xml = ticimax_soap('UrunListele', f'<sayfa_no>{page}</sayfa_no><sayfa_satir_sayisi>500</sayfa_satir_sayisi>')
+            products = parse_ticimax_products(xml)
+            if not products:
+                break
+            all_products.extend(products)
+            if len(products) < 500:
+                break
+            page += 1
+            if page > 20:  # Max 10K ürün (20*500)
+                break
+        return jsonify({'products': all_products, 'total': len(all_products)})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+@app.route('/ticimax/orders', methods=['GET'])
+def ticimax_orders():
+    if not TICIMAX_KEY:
+        return jsonify({'error': 'TICIMAX_KEY eksik'})
+    try:
+        from datetime import datetime, timedelta
+        date_from = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%dT00:00:00')
+        date_to = datetime.now().strftime('%Y-%m-%dT23:59:59')
+        xml = ticimax_soap('SiparisListele',
+            f'<baslangic_tarihi>{date_from}</baslangic_tarihi><bitis_tarihi>{date_to}</bitis_tarihi><sayfa_no>1</sayfa_no><sayfa_satir_sayisi>1000</sayfa_satir_sayisi>')
+        # Basit parse - sipariş items
+        root = ET.fromstring(xml)
+        orders = []
+        for o in root.iter():
+            tag = o.tag.split('}')[-1] if '}' in o.tag else o.tag
+            if tag in ['SiparisModel', 'Siparis', 'siparis']:
+                order = {'items': []}
+                for child in o:
+                    ctag = child.tag.split('}')[-1] if '}' in child.tag else child.tag
+                    if ctag.lower() in ['urunler', 'siparisdetay', 'items']:
+                        for item in child:
+                            item_data = {}
+                            for ic in item:
+                                ictag = ic.tag.split('}')[-1] if '}' in ic.tag else ic.tag
+                                item_data[ictag.lower()] = ic.text or ''
+                            if item_data:
+                                order['items'].append({
+                                    'urun_id': item_data.get('urunid', item_data.get('urun_id', '')),
+                                    'stok_kodu': item_data.get('stokkodu', ''),
+                                    'adet': int(item_data.get('adet', item_data.get('miktar', 1)) or 1)
+                                })
+                orders.append(order)
+        return jsonify({'orders': orders, 'total': len(orders)})
+    except Exception as e:
+        return jsonify({'error': str(e), 'orders': []})
+
+@app.route('/ticimax/test', methods=['GET'])
+def ticimax_test():
+    """Bağlantı testi"""
+    if not TICIMAX_KEY:
+        return jsonify({'ok': False, 'error': 'TICIMAX_KEY eksik'})
+    try:
+        xml = ticimax_soap('UrunListele', '<sayfa_no>1</sayfa_no><sayfa_satir_sayisi>1</sayfa_satir_sayisi>')
+        return jsonify({'ok': True, 'response_length': len(xml), 'preview': xml[:200]})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)})
+
+@app.route('/claude', methods=['POST'])
+def claude_proxy():
+    data = request.json
+    r = requests.post('https://api.anthropic.com/v1/messages',
+        headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+        json=data)
+    return jsonify(r.json())
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
