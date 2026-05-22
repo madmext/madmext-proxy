@@ -42,11 +42,22 @@ def get_ga4_token():
     })
     return r.json().get('access_token')
 
+# ── STATIC FILES ──────────────────────────────────────────────────────────
+
 @app.route('/')
 def home():
-    return send_from_directory('.', 'madmext-ads.html')
+    return send_from_directory('.', 'index.html')
 
-# ── GA4 ENDPOINTS ─────────────────────────────────────────────────────────
+@app.route('/modules/<path:filename>')
+def serve_module(filename):
+    return send_from_directory('modules', filename)
+
+@app.route('/madmext-ads.html')
+def serve_old():
+    # Eski URL'ye girenler için yönlendirme
+    return send_from_directory('.', 'index.html')
+
+# ── GA4 ───────────────────────────────────────────────────────────────────
 
 @app.route('/ga4', methods=['POST'])
 def ga4_proxy():
@@ -54,11 +65,9 @@ def ga4_proxy():
         data = request.json
         token = get_ga4_token()
         if not token:
-            return jsonify({'error': 'Token alınamadı'})
-        
+            return jsonify({'error': 'GA4 token alınamadı'})
         report_type = data.get('type', 'runReport')
         url = f'https://analyticsdata.googleapis.com/v1beta/properties/{GA4_PROPERTY_ID}:{report_type}'
-        
         r = requests.post(url,
             headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
             json=data.get('body', {})
@@ -67,7 +76,7 @@ def ga4_proxy():
     except Exception as e:
         return jsonify({'error': str(e)})
 
-# ── LOG ENDPOINTS ─────────────────────────────────────────────────────────
+# ── LOGS ──────────────────────────────────────────────────────────────────
 
 @app.route('/logs', methods=['GET'])
 def get_logs():
@@ -77,12 +86,8 @@ def get_logs():
 def save_logs():
     data = request.json
     current = read_logs()
-    if 'budgetLog' in data:
-        current['budgetLog'] = data['budgetLog']
-    if 'taskLog' in data:
-        current['taskLog'] = data['taskLog']
-    if 'actionLog' in data:
-        current['actionLog'] = data['actionLog']
+    if 'budgetLog' in data: current['budgetLog'] = data['budgetLog']
+    if 'taskLog' in data: current['taskLog'] = data['taskLog']
     write_logs(current)
     return jsonify({'ok': True})
 
@@ -90,15 +95,12 @@ def save_logs():
 def log_action():
     data = request.json
     current = read_logs()
-    current.setdefault('actionLog', []).insert(0, {
-        **data,
-        'serverTime': datetime.utcnow().isoformat()
-    })
+    current.setdefault('actionLog', []).insert(0, {**data, 'serverTime': datetime.utcnow().isoformat()})
     current['actionLog'] = current['actionLog'][:500]
     write_logs(current)
     return jsonify({'ok': True})
 
-# ── META PROXY ────────────────────────────────────────────────────────────
+# ── META ──────────────────────────────────────────────────────────────────
 
 @app.route('/api', methods=['POST'])
 def meta_proxy():
@@ -112,37 +114,27 @@ def meta_proxy():
     else:
         r = requests.get(url, params=params)
     result = r.json()
-
     if method == 'POST' and (result.get('success') or result.get('id')):
         try:
             current = read_logs()
             current.setdefault('actionLog', []).insert(0, {
-                'type': 'budget_change',
-                'endpoint': endpoint,
+                'type': 'budget_change', 'endpoint': endpoint,
                 'params': {k: v for k, v in data.get('params', {}).items() if k != 'access_token'},
                 'serverTime': datetime.utcnow().isoformat()
             })
             current['actionLog'] = current['actionLog'][:500]
             write_logs(current)
-        except:
-            pass
-
+        except: pass
     return jsonify(result)
 
-# ── CLAUDE PROXY ──────────────────────────────────────────────────────────
+# ── CLAUDE ────────────────────────────────────────────────────────────────
 
 @app.route('/claude', methods=['POST'])
 def claude_proxy():
     data = request.json
-    r = requests.post(
-        'https://api.anthropic.com/v1/messages',
-        headers={
-            'x-api-key': ANTHROPIC_KEY,
-            'anthropic-version': '2023-06-01',
-            'content-type': 'application/json'
-        },
-        json=data
-    )
+    r = requests.post('https://api.anthropic.com/v1/messages',
+        headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+        json=data)
     return jsonify(r.json())
 
 if __name__ == '__main__':
