@@ -1,0 +1,83 @@
+<div class="arow">
+  <button class="btn sm" onclick="checkAllTasks()">🔄 Tümünü Kontrol Et</button>
+  <button class="btn sm sec" onclick="clearDoneTasks()">🗑 Tamamlananları Sil</button>
+</div>
+<div class="stl">Otomatik Takip Görevleri</div>
+<div id="taskList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz görev yok.</div></div>
+
+<script>
+function renderTasks() {
+  const el = document.getElementById('taskList'); if(!el)return;
+  updateTaskBadge();
+  if(!MX.taskLog.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--m)">Henüz görev yok. Bütçe değişikliği yapıldığında otomatik oluşturulur.</div>';return;}
+  el.innerHTML = MX.taskLog.map((t,i) => {
+    const now=Date.now(), isDue=now>=t.dueAt;
+    const hoursLeft=Math.max(0,Math.floor((t.dueAt-now)/3600000));
+    const dueStr=isDue?'<span style="color:var(--r)">⚡ Kontrol zamanı!</span>':`<span style="color:var(--m)">⏳ ${hoursLeft}s sonra</span>`;
+    const statusBg=t.done?'border-left:3px solid var(--m)':isDue?'border-left:3px solid var(--r)':'border-left:3px solid var(--y)';
+    const roasChg=t.curRoas!=null&&t.baseline?.roas>0?((t.curRoas-t.baseline.roas)/t.baseline.roas*100):null;
+    const roasColor=roasChg!=null?(roasChg>=-10?'var(--g)':'var(--r)'):'var(--m)';
+    const resultH=t.done&&t.curRoas!=null?`
+      <div style="margin-top:6px;padding:8px;background:var(--bg);border-radius:4px;font-size:11px">
+        <div>ROAS: <strong style="color:${roasColor}">${t.curRoas.toFixed(2)}x</strong> ${roasChg!=null?`(${roasChg>=0?'+':''}${roasChg.toFixed(1)}%)`:''}</div>
+        <div>Harcama: <strong>${t.curSpend?.toFixed(0)||'—'}₺</strong> · Satış: <strong>${t.curPurchase||'—'}</strong></div>
+        ${t.aiNote?`<div style="margin-top:4px;color:var(--t)">${t.aiNote}</div>`:''}
+      </div>`:'';
+    const checkBtn=isDue&&!t.done?`<button class="btn sm" style="margin-top:6px;width:100%" onclick="runTask(${i})">🔍 Kontrol Et & Raporla</button>`:'';
+    const doneLabel=t.done?'<span style="color:var(--m);font-size:10px">✓ Tamamlandı</span>':'';
+    return `<div class="lcard" style="${statusBg}">
+      <div style="flex:1">
+        <div class="lname">${t.name} <span style="font-size:10px;color:var(--m)">[${t.period} kontrolü]</span></div>
+        <div class="lmeta">${new Date(t.createdAt).toLocaleString('tr')} · ${t.type==='campaign'?'CBO':'ABO'} · ${t.budgetOld.toFixed(0)}₺→${t.budgetNew.toFixed(0)}₺</div>
+        <div class="lmeta">${dueStr} ${doneLabel}</div>
+        ${t.baseline?`<div class="lmeta">Baseline: ROAS ${t.baseline.roas?.toFixed(2)||'—'}x · Harcama ${t.baseline.spend?.toFixed(0)||'—'}₺</div>`:''}
+        ${resultH}${checkBtn}
+      </div>
+      <div><div class="lch" style="color:var(--y)">+%${t.pct}</div></div>
+    </div>`;
+  }).join('');
+}
+
+async function runTask(idx) {
+  const t=MX.taskLog[idx]; if(!t)return;
+  const btn=document.querySelector(`[onclick="runTask(${idx})"]`);
+  if(btn){btn.disabled=true;btn.textContent='⏳ Analiz ediliyor...';}
+  try {
+    const d=await api(`${AID}/insights`,{
+      fields:'spend,ctr,cpc,purchase_roas,actions',
+      date_preset:t.period==='1g'?'yesterday':'last_3d',
+      level:t.type==='campaign'?'campaign':'adset',
+      filtering:JSON.stringify([{field:t.type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:t.id}]),
+      action_attribution_windows:ATTR
+    });
+    const r=d?.data?.[0];
+    if(r){
+      t.curRoas=groas(r); t.curSpend=parseFloat(r.spend||0);
+      t.curPurchase=gav(r.actions,'purchase');
+      const baseRoas=t.baseline?.roas||0;
+      const roasChange=baseRoas>0?((t.curRoas-baseRoas)/baseRoas*100):0;
+      const aiPrompt=`Bütçe değişikliği ${t.period} sonrası performans (Türkçe, 2 cümle):\n${t.name} | ${t.budgetOld.toFixed(0)}₺→${t.budgetNew.toFixed(0)}₺/gün (+%${t.pct})\nBaseline ROAS: ${baseRoas.toFixed(2)}x → Şu an: ${t.curRoas.toFixed(2)}x (${roasChange>=0?'+':''}${roasChange.toFixed(1)}%)\nHarcama: ${t.curSpend.toFixed(0)}₺ · Satış: ${t.curPurchase}`;
+      t.aiNote=await claude([{role:'user',content:aiPrompt}],'Meta reklam uzmanısın. Net, kısa Türkçe yorum.');
+    }
+  } catch(e){ t.aiNote='Veri alınamadı: '+e.message; }
+  t.done=true;
+  saveServerLogs(); updateTaskBadge(); renderTasks();
+  toast(`${t.name} [${t.period}] raporu hazır ✓`);
+}
+
+async function checkAllTasks() {
+  const due=MX.taskLog.map((t,i)=>({t,i})).filter(({t})=>!t.done&&Date.now()>=t.dueAt);
+  if(!due.length){toast('Zamanı gelen görev yok');return;}
+  toast(`${due.length} görev kontrol ediliyor...`);
+  for(const {i} of due) await runTask(i);
+  toast('Tüm görevler tamamlandı ✓');
+}
+
+function clearDoneTasks(){
+  if(!confirm('Tamamlanan görevler silinsin mi?'))return;
+  MX.taskLog=MX.taskLog.filter(t=>!t.done);
+  saveServerLogs(); renderTasks();
+}
+
+window.addEventListener('mx:connected', renderTasks);
+</script>
