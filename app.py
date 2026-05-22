@@ -1,9 +1,9 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import requests
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='.')
 CORS(app)
 
 META_TOKEN = os.environ.get('META_TOKEN', '')
@@ -11,7 +11,7 @@ ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
 
 @app.route('/')
 def home():
-    return jsonify({'status': 'Madmext Proxy çalışıyor ✓'})
+    return send_from_directory('.', 'madmext-ads.html')
 
 @app.route('/api', methods=['POST'])
 def meta_proxy():
