@@ -1,0 +1,102 @@
+<div class="arow">
+  <button class="btn sm" onclick="loadDashboard()">🔄 Yenile</button>
+  <span id="dashLastUpdate" style="font-size:11px;color:var(--m)"></span>
+</div>
+
+<div class="stl">Genel Bakış — Son 7 Gün</div>
+<div class="dash-grid">
+  <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Harcama</div><div class="dash-val" id="d-meta-spend">—</div><div class="dash-sub">Son 7 gün</div></div>
+  <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Ort. ROAS</div><div class="dash-val" id="d-meta-roas">—</div><div class="dash-sub">Son 7 gün</div></div>
+  <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Satış</div><div class="dash-val" id="d-meta-sales">—</div><div class="dash-sub">Son 7 gün</div></div>
+  <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Oturum</div><div class="dash-val" id="d-ga4-sessions">—</div><div class="dash-sub">Son 7 gün</div></div>
+  <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Gelir</div><div class="dash-val" id="d-ga4-revenue">—</div><div class="dash-sub">Son 7 gün</div></div>
+  <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Dönüşüm Oranı</div><div class="dash-val" id="d-ga4-cvr">—</div><div class="dash-sub">Son 7 gün</div></div>
+</div>
+
+<div class="channel-grid">
+  <div class="channel-card">
+    <div class="channel-title">📘 Meta Ads</div>
+    <div id="metaChannelDetail"><div style="color:var(--m);font-size:11px">Bağlan ve yenile</div></div>
+  </div>
+  <div class="channel-card">
+    <div class="channel-title">📊 Google Analytics (GA4)</div>
+    <div id="ga4ChannelDetail"><div style="color:var(--m);font-size:11px">Bağlan ve yenile</div></div>
+  </div>
+</div>
+
+<div class="stl">GA4 — Trafik Kaynakları</div>
+<div class="twrap" style="max-height:280px">
+  <table><thead><tr>
+    <th>Kaynak / Mecra</th><th>Oturum</th><th>Kullanıcı</th><th>Gelir</th><th>Dönüşüm</th>
+  </tr></thead>
+  <tbody id="ga4SourceTable"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--m)">Bağlan ve yenile</td></tr></tbody>
+</table></div>
+
+<script>
+async function loadDashboard() {
+  document.getElementById('dashLastUpdate').textContent = 'Yükleniyor...';
+
+  // META
+  const metaIns = await api(`${AID}/insights`, { fields: 'spend,clicks,purchase_roas,actions', date_preset: 'last_7d', level: 'account', action_attribution_windows: ATTR });
+  const mr = metaIns?.data?.[0];
+  if (mr) {
+    document.getElementById('d-meta-spend').textContent = parseFloat(mr.spend || 0).toFixed(0) + '₺';
+    const roas = groas(mr);
+    document.getElementById('d-meta-roas').textContent = roas ? roas.toFixed(2) + 'x' : '—';
+    document.getElementById('d-meta-sales').textContent = gav(mr.actions, 'purchase');
+    document.getElementById('metaChannelDetail').innerHTML = `
+      <div class="channel-row"><span>Harcama</span><span>${parseFloat(mr.spend || 0).toFixed(0)}₺</span></div>
+      <div class="channel-row"><span>ROAS</span><span style="color:${roasColor(roas)}">${roas ? roas.toFixed(2) + 'x' : '—'}</span></div>
+      <div class="channel-row"><span>Tıklama</span><span>${parseInt(mr.clicks || 0).toLocaleString('tr')}</span></div>
+      <div class="channel-row"><span>Satış</span><span>${gav(mr.actions, 'purchase')}</span></div>
+      <div class="channel-row"><span>Sepete Ekle</span><span>${gav(mr.actions, 'add_to_cart')}</span></div>`;
+  }
+
+  // GA4
+  const ga4Sum = await ga4({
+    dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+    metrics: [{ name: 'sessions' }, { name: 'totalRevenue' }, { name: 'conversions' }, { name: 'activeUsers' }]
+  });
+  if (ga4Sum?.rows) {
+    const sessions = parseInt(ga4val(ga4Sum, 0));
+    const revenue = parseFloat(ga4val(ga4Sum, 1));
+    const conversions = parseInt(ga4val(ga4Sum, 2));
+    const users = parseInt(ga4val(ga4Sum, 3));
+    const cvr = sessions > 0 ? (conversions / sessions * 100).toFixed(2) : 0;
+    document.getElementById('d-ga4-sessions').textContent = sessions.toLocaleString('tr');
+    document.getElementById('d-ga4-revenue').textContent = revenue.toFixed(0) + '₺';
+    document.getElementById('d-ga4-cvr').textContent = cvr + '%';
+    document.getElementById('ga4ChannelDetail').innerHTML = `
+      <div class="channel-row"><span>Oturum</span><span>${sessions.toLocaleString('tr')}</span></div>
+      <div class="channel-row"><span>Kullanıcı</span><span>${users.toLocaleString('tr')}</span></div>
+      <div class="channel-row"><span>Gelir</span><span>${revenue.toFixed(0)}₺</span></div>
+      <div class="channel-row"><span>Dönüşüm</span><span>${conversions}</span></div>
+      <div class="channel-row"><span>CVR</span><span>${cvr}%</span></div>`;
+  } else {
+    document.getElementById('ga4ChannelDetail').innerHTML = '<div style="color:var(--r);font-size:11px">GA4 bağlantı hatası</div>';
+  }
+
+  // GA4 Sources
+  const ga4Src = await ga4({
+    dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+    dimensions: [{ name: 'sessionSource' }, { name: 'sessionMedium' }],
+    metrics: [{ name: 'sessions' }, { name: 'activeUsers' }, { name: 'totalRevenue' }, { name: 'conversions' }],
+    orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+    limit: 10
+  });
+  if (ga4Src?.rows) {
+    document.getElementById('ga4SourceTable').innerHTML = ga4Src.rows.map(r => {
+      const src = r.dimensionValues[0].value, med = r.dimensionValues[1].value;
+      const sess = parseInt(r.metricValues[0].value || 0);
+      const users = parseInt(r.metricValues[1].value || 0);
+      const rev = parseFloat(r.metricValues[2].value || 0);
+      const conv = parseInt(r.metricValues[3].value || 0);
+      return `<tr><td>${src} / ${med}</td><td>${sess.toLocaleString('tr')}</td><td>${users.toLocaleString('tr')}</td><td>${rev.toFixed(0)}₺</td><td>${conv}</td></tr>`;
+    }).join('');
+  }
+
+  document.getElementById('dashLastUpdate').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
+}
+
+window.addEventListener('mx:connected', loadDashboard);
+</script>
