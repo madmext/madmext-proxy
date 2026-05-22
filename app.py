@@ -199,25 +199,60 @@ def parse_ticimax_products(xml_text):
 
 @app.route('/ticimax/products', methods=['GET'])
 def ticimax_products():
-    if not TICIMAX_KEY:
-        return jsonify({'error': 'TICIMAX_KEY eksik. Railway Variables ekle.'})
+    xml_url = 'https://www.madmext.com/XMLExport/42A973EAEE504FE1A0700803233D1FAB'
     try:
-        all_products = []
-        page = 1
-        while True:
-            xml = ticimax_soap('UrunListele', f'<sayfa_no>{page}</sayfa_no><sayfa_satir_sayisi>500</sayfa_satir_sayisi>')
-            products = parse_ticimax_products(xml)
-            if not products:
-                break
-            all_products.extend(products)
-            if len(products) < 500:
-                break
-            page += 1
-            if page > 20:  # Max 10K ürün (20*500)
-                break
-        return jsonify({'products': all_products, 'total': len(all_products)})
+        r = requests.get(xml_url, timeout=60, headers={'User-Agent': 'MadmextAds/1.0'})
+        if r.status_code != 200:
+            return jsonify({'error': 'XML feed hatasi: ' + str(r.status_code)})
+        products = parse_xml_feed(r.text)
+        return jsonify({'products': products, 'total': len(products)})
     except Exception as e:
         return jsonify({'error': str(e)})
+
+def parse_xml_feed(xml_text):
+    import xml.etree.ElementTree as ET
+    G_NS = 'http://base.google.com/ns/1.0'
+    try:
+        root = ET.fromstring(xml_text.encode('utf-8'))
+    except:
+        try:
+            root = ET.fromstring(xml_text)
+        except Exception as e:
+            return []
+    entries = list(root.iter('{http://www.w3.org/2005/Atom}entry')) or list(root.iter('entry')) or list(root.iter('item'))
+    def gns(el, tag):
+        v = el.find('{'+G_NS+'}'+tag)
+        if v is not None and v.text: return v.text.strip()
+        v = el.find(tag)
+        if v is not None and v.text: return v.text.strip()
+        return ''
+    products = []
+    for entry in entries:
+        pid = gns(entry, 'id')
+        title_el = entry.find('{http://www.w3.org/2005/Atom}title') or entry.find('title')
+        title = title_el.text.strip() if title_el is not None and title_el.text else ''
+        price_str = gns(entry, 'sale_price') or gns(entry, 'price') or '0'
+        try:
+            price = float(price_str.replace('TRY','').replace('TL','').replace(',','.').strip().split()[0])
+        except:
+            price = 0
+        link_el = entry.find('{http://www.w3.org/2005/Atom}link')
+        link = link_el.get('href','') if link_el is not None else ''
+        avail = gns(entry, 'availability')
+        stok = 99 if avail == 'in stock' else 0
+        products.append({
+            'id': pid, 'title': title, 'name': title,
+            'stok': stok, 'fiyat': price,
+            'resim': gns(entry, 'image_link'),
+            'kategori': gns(entry, 'product_type') or gns(entry, 'google_product_category') or 'Diger',
+            'aktif': avail == 'in stock',
+            'marka': gns(entry, 'brand'),
+            'availability': avail,
+            'item_group_id': gns(entry, 'item_group_id'),
+            'link': link
+        })
+    return products
+
 
 @app.route('/ticimax/orders', methods=['GET'])
 def ticimax_orders():
