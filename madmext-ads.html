@@ -2,343 +2,557 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<title>Madmext Ads Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Madmext Ads</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#18191a;--s:#242526;--b:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#b0b3b8;--g:#42b72a;--r:#fa3e3e;--y:#f0b429;--bl:#64b4ff}
-body{background:var(--bg);color:var(--t);font-family:'DM Mono',monospace;min-height:100vh;padding:20px;font-size:13px}
-.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--b);flex-wrap:wrap;gap:10px;background:#242526;padding:16px 20px;border-radius:8px}
-.logo{font-family:'Inter',sans-serif;font-size:22px;font-weight:800;letter-spacing:-0.5px;color:var(--t)}.logo span{color:#1877f2;font-weight:700}
-.prow{display:flex;gap:8px;align-items:center}
-.prow input{background:var(--s);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;width:300px}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--m);display:inline-block;flex-shrink:0}
-.dot.on{background:var(--g);box-shadow:0 0 8px var(--g)}.dot.err{background:var(--r)}
-.tabs{display:flex;gap:4px;margin-bottom:20px;flex-wrap:wrap}
-.tab{padding:8px 16px;background:transparent;border:1px solid var(--b);color:var(--m);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;border-radius:4px;transition:all .2s}
-.tab.active{background:var(--a);border-color:var(--a);color:#fff}
-.tab:hover:not(.active){border-color:var(--a);color:var(--t)}
+:root{--bg:#0f1011;--s:#1a1b1d;--s2:#242526;--b:#2d2e30;--b2:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#8a8d91;--g:#42b72a;--r:#fa3e3e;--y:#f0b429;--bl:#64b4ff;--sidebar:220px}
+body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;min-height:100vh;font-size:13px;display:flex;flex-direction:column}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:var(--sidebar);background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:var(--s);border-bottom:1px solid var(--b);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:12px}
+.content{flex:1;overflow-y:auto;padding:20px}
+
+/* ── SIDEBAR ── */
+.sidebar-logo{padding:16px 16px 8px;border-bottom:1px solid var(--b);margin-bottom:8px}
+.logo{font-family:'Inter',sans-serif;font-size:18px;font-weight:800;letter-spacing:-0.5px;color:var(--t)}.logo span{color:#1877f2}
+.sidebar-section{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1.5px;padding:12px 16px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;border-radius:0;font-size:13px;color:var(--m);transition:all .15s;border-left:2px solid transparent;position:relative}
+.nav-item:hover{background:var(--s2);color:var(--t)}
+.nav-item.active{background:var(--s2);color:var(--t);border-left-color:var(--a)}
+.nav-item .nav-icon{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px}
+.nav-item .nav-label{flex:1}
+.nav-badge{font-size:9px;background:var(--r);color:#fff;border-radius:10px;padding:1px 6px;font-family:'DM Mono',monospace}
+.nav-soon{font-size:9px;background:rgba(100,180,255,.15);color:var(--bl);border:1px solid rgba(100,180,255,.2);border-radius:4px;padding:1px 5px}
+.nav-ai{font-size:9px;background:rgba(24,119,242,.15);color:var(--a);border:1px solid rgba(24,119,242,.2);border-radius:4px;padding:1px 5px}
+.nav-sub{padding-left:42px;font-size:12px}
+.nav-group{margin-bottom:4px}
+.nav-group-header{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;font-size:13px;color:var(--m);transition:all .15s}
+.nav-group-header:hover{color:var(--t)}
+.nav-group-items{display:none}
+.nav-group.open .nav-group-items{display:block}
+.nav-group.open .nav-group-header{color:var(--t)}
+
+/* ── TOPBAR ── */
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.conn-row{display:flex;align-items:center;gap:8px}
+.conn-input{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:4px;width:260px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--m);display:inline-block;flex-shrink:0}
+.dot.on{background:var(--g);box-shadow:0 0 6px var(--g)}.dot.err{background:var(--r)}
+.page-title{font-size:15px;font-weight:600;color:var(--t)}
+.page-sub{font-size:11px;color:var(--m)}
+
+/* ── PANELS ── */
 .panel{display:none}.panel.active{display:block}
+
+/* ── BUTTONS ── */
+.btn{background:var(--a);color:#fff;border:none;padding:7px 14px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;border-radius:5px;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn.sec{background:var(--s2);border:1px solid var(--b2);color:var(--t)}
+.btn.grn{background:var(--g);color:#000}.btn.dng{background:var(--r);color:#fff}
+.btn.yel{background:var(--y);color:#000}.btn.sm{padding:4px 9px;font-size:10px}
+select,.flt{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:7px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px;cursor:pointer}
+.arow{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+
+/* ── STAT CARDS ── */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
 .sc{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;position:relative;overflow:hidden}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--a)}
 .sl{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
-.sv{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:-0.5px}
+.sv{font-family:'DM Mono',monospace;font-size:22px;font-weight:500}
 .sdiff{font-size:11px;margin-top:4px}
 .sdiff.up{color:var(--g)}.sdiff.dn{color:var(--r)}.sdiff.neu{color:var(--m)}
-.btn{background:var(--a);color:#fff;border:none;padding:8px 16px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;border-radius:4px;transition:opacity .2s}
-.btn:hover{opacity:.85}
-.btn.sec{background:var(--s);border:1px solid var(--b);color:var(--t)}
-.btn.grn{background:var(--g);color:#000}.btn.dng{background:var(--r);color:#fff}
-.btn.yel{background:var(--y);color:#000}.btn.sm{padding:4px 9px;font-size:10px}
-sel,.flt{background:var(--s);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;cursor:pointer}
-.arow{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-/* TABLE */
-.twrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;max-height:65vh}
+
+/* ── TABLE ── */
+.twrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;max-height:calc(100vh - 280px)}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:#18191a;padding:9px 11px;text-align:left;color:var(--m);text-transform:uppercase;letter-spacing:.6px;font-size:9px;border-bottom:1px solid var(--b);white-space:nowrap;position:sticky;top:0;z-index:2;cursor:pointer;user-select:none}
+th{background:var(--bg);padding:9px 11px;text-align:left;color:var(--m);text-transform:uppercase;letter-spacing:.6px;font-size:9px;border-bottom:1px solid var(--b);white-space:nowrap;position:sticky;top:0;z-index:2;cursor:pointer;user-select:none}
 th:hover{color:var(--a)}th.sorted{color:var(--a)}
-td{padding:9px 11px;border-bottom:1px solid #1a1a1a;white-space:nowrap}
-tr:last-child td{border-bottom:none}tr:hover td{background:#2d2e2f}
-.bge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px}
-.bge.on{background:rgba(0,230,118,.15);color:var(--g);border:1px solid rgba(0,230,118,.3)}
-.bge.off{background:rgba(255,23,68,.1);color:#ff6b6b;border:1px solid rgba(255,23,68,.2)}
-.bge.cbo{background:rgba(255,184,0,.15);color:var(--y);border:1px solid rgba(255,184,0,.3)}
-.bge.abo{background:rgba(100,180,255,.15);color:var(--bl);border:1px solid rgba(100,180,255,.3)}
-/* COL PICKER */
+td{padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;font-family:'DM Mono',monospace;font-size:12px}
+tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
+.bge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-family:'DM Mono',monospace}
+.bge.on{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3)}
+.bge.off{background:rgba(250,62,62,.1);color:#ff6b6b;border:1px solid rgba(250,62,62,.2)}
+.bge.cbo{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
+.bge.abo{background:rgba(100,180,255,.12);color:var(--bl);border:1px solid rgba(100,180,255,.3)}
+
+/* ── COL PICKER ── */
 .cpicker-wrap{position:relative;display:inline-block}
-.cpicker-btn{background:var(--s);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;cursor:pointer}
-.cpicker-dropdown{display:none;position:absolute;top:100%;right:0;background:#1a1a1a;border:1px solid var(--b);border-radius:8px;padding:12px;z-index:100;min-width:220px;max-height:380px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.cpicker-btn{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:7px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px;cursor:pointer}
+.cpicker-dropdown{display:none;position:absolute;top:100%;right:0;background:#111;border:1px solid var(--b);border-radius:8px;padding:12px;z-index:100;min-width:220px;max-height:380px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.6)}
 .cpicker-dropdown.open{display:block}
 .cpicker-item{display:flex;align-items:center;gap:8px;padding:6px 8px;cursor:pointer;border-radius:4px;font-size:12px}
-.cpicker-item:hover{background:#222}
+.cpicker-item:hover{background:#1a1a1a}
 .cpicker-item input{cursor:pointer;accent-color:var(--a)}
 .cpicker-section{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;padding:6px 8px 3px;margin-top:4px}
-/* CHAT */
-.chat-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;height:560px}
+
+/* ── CHAT ── */
+.chat-layout{display:grid;grid-template-columns:1fr 280px;gap:16px;height:calc(100vh - 160px)}
 .chat-msgs{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
-.msg{padding:13px 16px;border-radius:8px;font-size:13px;line-height:1.7;max-width:96%}
+.msg{padding:13px 16px;border-radius:8px;font-size:13px;line-height:1.7;max-width:96%;font-family:'Inter',sans-serif}
 .msg.user{background:var(--a);color:#fff;align-self:flex-end}
-.msg.claude{background:#2d2e2f;border:1px solid var(--b);align-self:flex-start}
+.msg.claude{background:var(--s2);border:1px solid var(--b);align-self:flex-start}
 .msg.sys{background:transparent;border:1px solid var(--b);color:var(--m);align-self:center;font-size:11px;text-align:center}
 .msg.claude table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12px}
-.msg.claude th{background:#252525;padding:7px 10px;color:var(--m);font-size:10px;border:1px solid #333;white-space:normal;position:static;cursor:default}
-.msg.claude td{padding:7px 10px;border:1px solid #2a2a2a;white-space:normal}
-.msg.claude h3{color:var(--a);margin:10px 0 5px;font-family:'Syne',sans-serif;font-size:14px}
-.msg.claude h2{color:var(--a);margin:12px 0 6px;font-family:'Syne',sans-serif;font-size:16px}
+.msg.claude th{background:#1a1a1a;padding:7px 10px;color:var(--m);font-size:10px;border:1px solid #333;white-space:normal;position:static;cursor:default}
+.msg.claude td{padding:7px 10px;border:1px solid #222;white-space:normal;font-family:'Inter',sans-serif}
+.msg.claude h3{color:var(--a);margin:10px 0 5px;font-size:14px;font-weight:600}
+.msg.claude h2{color:var(--a);margin:12px 0 6px;font-size:16px;font-weight:700}
 .msg.claude strong{color:var(--y)}
 .msg.claude ul{padding-left:18px;margin:6px 0}.msg.claude li{margin-bottom:3px}
 .msg.claude hr{border:none;border-top:1px solid var(--b);margin:10px 0}
 .chat-side{display:flex;flex-direction:column;gap:5px;background:var(--s);border:1px solid var(--b);border-radius:8px;padding:12px;overflow-y:auto}
 .stitle{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
-.qbtn{background:#1a1a1a;border:1px solid var(--b);color:var(--t);padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;border-radius:4px;text-align:left;transition:all .2s;line-height:1.4}
+.qbtn{background:var(--bg);border:1px solid var(--b);color:var(--t);padding:8px 10px;font-family:'Inter',sans-serif;font-size:11px;cursor:pointer;border-radius:4px;text-align:left;transition:all .2s;line-height:1.4}
 .qbtn:hover{border-color:var(--a);color:var(--a)}
 .cinput{display:flex;flex-direction:column;gap:7px;margin-top:auto;padding-top:8px;border-top:1px solid var(--b)}
-.cinput textarea{background:#1a1a1a;border:1px solid var(--b);color:var(--t);padding:10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px;resize:none;height:85px}
-.thinking{display:flex;gap:4px;align-items:center;padding:10px 14px;background:#1a1a1a;border:1px solid var(--b);border-radius:6px;align-self:flex-start}
+.cinput textarea{background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px;font-family:'Inter',sans-serif;font-size:12px;border-radius:4px;resize:none;height:80px}
+.thinking{display:flex;gap:4px;align-items:center;padding:10px 14px;background:var(--s2);border:1px solid var(--b);border-radius:6px;align-self:flex-start}
 .d{width:6px;height:6px;border-radius:50%;background:var(--a);animation:pu 1.2s infinite}
 .d:nth-child(2){animation-delay:.2s}.d:nth-child(3){animation-delay:.4s}
 @keyframes pu{0%,80%,100%{opacity:.3}40%{opacity:1}}
-/* BUDGET LOG */
-.lcard{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:9px;display:flex;gap:10px;align-items:flex-start}
-.lcard.neu{border-left:3px solid var(--y)}.lcard.up{border-left:3px solid var(--g)}.lcard.dn{border-left:3px solid var(--r)}
-.lname{font-size:13px;font-weight:500;margin-bottom:3px}.lmeta{font-size:11px;color:var(--m);line-height:1.6}
-.lch{font-family:'DM Mono',monospace;font-size:20px;font-weight:800;text-align:right;white-space:nowrap;min-width:60px}
-/* CREATE */
-.cform{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:680px}
-.fg{display:flex;flex-direction:column;gap:6px}
-.fg label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}
-.fg input,.fg select{background:#1a1a1a;border:1px solid var(--b);color:var(--t);padding:10px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:4px}
-.fg.full{grid-column:1/-1}
-#toast{position:fixed;bottom:20px;right:20px;background:var(--s);border:1px solid var(--b);border-left:3px solid var(--a);padding:12px 18px;border-radius:4px;font-size:12px;opacity:0;transition:opacity .3s;z-index:999;max-width:380px}
-#toast.show{opacity:1}
-.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:1000}
-.modal{background:#242526;border:1px solid var(--b);border-radius:12px;padding:26px;max-width:460px;width:90%}
-.modal h3{font-family:'Syne',sans-serif;font-size:17px;margin-bottom:14px}
-.mdet{background:#1a1a1a;border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9}
-.mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
-.stl{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
-/* DASHBOARD */
-.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+
+/* ── DASHBOARD ── */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
 .dash-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;position:relative;overflow:hidden}
 .dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
 .dash-card.meta::before{background:#1877f2}
 .dash-card.ga4::before{background:#e8710a}
-.dash-card.google-ads::before{background:#34a853}
-.dash-label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
-.dash-val{font-size:24px;font-weight:700;font-family:'DM Mono',monospace}
-.dash-sub{font-size:11px;color:var(--m);margin-top:3px}
-.dash-src{font-size:9px;position:absolute;top:8px;right:10px;color:var(--b);text-transform:uppercase;letter-spacing:1px}
+.dash-label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.dash-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-0.5px}
+.dash-sub{font-size:10px;color:var(--m);margin-top:4px}
+.dash-src{font-size:9px;position:absolute;top:8px;right:10px;color:var(--b2);text-transform:uppercase;letter-spacing:1px}
 .channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
-.channel-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px}
-.channel-title{font-size:11px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.channel-row{display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid #1a1a1a}
+.channel-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px}
+.channel-title{font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--t)}
+.channel-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 .channel-row:last-child{border-bottom:none}
+.channel-row span:first-child{color:var(--m)}
 .channel-row span:last-child{color:var(--t);font-family:'DM Mono',monospace}
+
+/* ── BUDGET LOG ── */
+.lcard{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:9px;display:flex;gap:10px;align-items:flex-start}
+.lcard.neu{border-left:3px solid var(--y)}.lcard.up{border-left:3px solid var(--g)}.lcard.dn{border-left:3px solid var(--r)}
+.lname{font-size:13px;font-weight:600;margin-bottom:3px}.lmeta{font-size:11px;color:var(--m);line-height:1.6}
+.lch{font-family:'DM Mono',monospace;font-size:20px;font-weight:800;text-align:right;white-space:nowrap;min-width:60px}
+
+/* ── CREATE ── */
+.cform{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:680px}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}
+.fg input,.fg select{background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:10px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px}
+.fg.full{grid-column:1/-1}
+
+/* ── AI PANELS ── */
+.ai-panel{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:20px;margin-bottom:16px}
+.ai-panel-title{font-size:14px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.ai-panel-sub{font-size:11px;color:var(--m);margin-bottom:16px}
+.ai-chat-wrap{height:calc(100vh - 300px);display:flex;flex-direction:column;gap:12px}
+
+/* ── MISC ── */
+.stl{font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b);border-left:3px solid var(--a);padding:12px 18px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .3s;z-index:999;max-width:380px;font-family:'Inter',sans-serif}
+#toast.show{opacity:1}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000}
+.modal{background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:26px;max-width:460px;width:90%}
+.modal h3{font-size:17px;font-weight:700;margin-bottom:14px}
+.mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
+.mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 </style>
 </head>
 <body>
-<div class="hdr">
-  <div class="logo">Madmext <span>Ads</span></div>
-  <div class="prow">
-    <span class="dot" id="dot"></span>
-    <input type="text" id="proxyUrl" value="https://maybe-unissued-errant.ngrok-free.dev" placeholder="ngrok URL...">
-    <button class="btn sm" onclick="connect()">Bağlan</button>
-  </div>
-</div>
+<div class="app">
 
-<div class="tabs">
-  <button class="tab" onclick="sw('dash',this)">🏠 Dashboard</button>
-  <button class="tab active" onclick="sw('perf',this)">📊 Kampanyalar</button>
-  <button class="tab" onclick="sw('adsets',this)">📁 Reklam Setleri</button>
-  <button class="tab" onclick="sw('ads',this)">🎯 Reklamlar</button>
-  <button class="tab" onclick="sw('chat',this)">🤖 Claude ile Yönet</button>
-  <button class="tab" onclick="sw('blog',this)">📋 Bütçe Takibi</button>
-  <button class="tab" onclick="sw('tasks',this)" id="taskTab">⏰ Görevler <span id="taskBadge" style="display:none;background:var(--r);color:#fff;border-radius:10px;padding:1px 6px;font-size:9px;margin-left:3px">0</span></button>
-  <button class="tab" onclick="sw('create',this)">➕ Oluştur</button>
-</div>
-
-<!-- DASHBOARD -->
-<div class="panel" id="panel-dash">
-  <div class="arow">
-    <button class="btn" onclick="loadDashboard()">🔄 Yenile</button>
-    <span id="dashLastUpdate" style="font-size:11px;color:var(--m)"></span>
+<!-- ── SIDEBAR ── -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo">Madmext <span>Ads</span></div>
   </div>
 
-  <!-- Özet Kartlar -->
-  <div class="stl">Genel Bakış</div>
-  <div class="dash-grid" id="dashCards">
-    <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Harcama</div><div class="dash-val" id="d-meta-spend">—</div><div class="dash-sub">Son 7 gün</div></div>
-    <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Ort. ROAS</div><div class="dash-val" id="d-meta-roas">—</div><div class="dash-sub">Son 7 gün</div></div>
-    <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Satış</div><div class="dash-val" id="d-meta-sales">—</div><div class="dash-sub">Son 7 gün</div></div>
-    <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Oturum</div><div class="dash-val" id="d-ga4-sessions">—</div><div class="dash-sub">Son 7 gün</div></div>
-    <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Gelir</div><div class="dash-val" id="d-ga4-revenue">—</div><div class="dash-sub">Son 7 gün</div></div>
-    <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Dönüşüm Oranı</div><div class="dash-val" id="d-ga4-cvr">—</div><div class="dash-sub">Son 7 gün</div></div>
+  <div class="sidebar-section">Ana Menü</div>
+  <div class="nav-item active" onclick="sw('dash',this)" data-panel="dash">
+    <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
   </div>
 
-  <!-- Kanal Detay -->
-  <div class="channel-grid">
-    <div class="channel-card">
-      <div class="channel-title">📘 Meta Ads</div>
-      <div id="metaChannelDetail"><div style="color:var(--m);font-size:11px">Yükleniyor...</div></div>
+  <div class="sidebar-section">Reklam</div>
+  <div class="nav-group open" id="navReklam">
+    <div class="nav-group-header" onclick="toggleNavGroup('navReklam')">
+      <span class="nav-icon">📢</span><span style="flex:1">Reklam</span>
+      <span style="font-size:10px;color:var(--m)">▾</span>
     </div>
-    <div class="channel-card">
-      <div class="channel-title">📊 Google Analytics (GA4)</div>
-      <div id="ga4ChannelDetail"><div style="color:var(--m);font-size:11px">Yükleniyor...</div></div>
-    </div>
-  </div>
-
-  <!-- GA4 Trafik Kaynakları -->
-  <div class="stl">GA4 — Trafik Kaynakları</div>
-  <div class="twrap" style="max-height:300px">
-    <table><thead><tr>
-      <th>Kaynak / Mecra</th><th>Oturum</th><th>Kullanıcı</th><th>Gelir</th><th>Dönüşüm</th>
-    </tr></thead>
-    <tbody id="ga4SourceTable"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--m)">Yükle</td></tr></tbody>
-  </table></div>
-</div>
-
-<!-- KAMPANYALAR -->
-<div class="panel active" id="panel-perf">
-  <div class="arow">
-    <select class="flt" id="pDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option><option value="last_month">Geçen ay</option></select>
-    <button class="btn" onclick="loadCamp()">Yenile</button>
-    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('pPicker')">⚙ Sütunlar</button>
-      <div class="cpicker-dropdown" id="pPicker">
-        <div class="cpicker-section">Temel</div>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('camp')"> Harcama</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('camp')"> Gösterim</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('camp')"> Tıklama</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('camp')"> CTR%</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('camp')"> TBM</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('camp')"> ROAS</label>
-        <div class="cpicker-section">Ek Metrikler</div>
-        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('camp')"> CPM</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('camp')"> Frekans</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('camp')"> Erişim</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('camp')"> Sepete Ekle</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('camp')"> Satış</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('camp')"> Gelir</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="budget" onchange="applyCols('camp')"> Bütçe</label>
+    <div class="nav-group-items">
+      <div class="nav-item nav-sub" onclick="sw('meta',this)" data-panel="meta">
+        <span class="nav-icon" style="font-size:11px">●</span><span class="nav-label">Meta Ads</span>
+      </div>
+      <div class="nav-item nav-sub" style="opacity:.5;cursor:default">
+        <span class="nav-icon" style="font-size:11px">●</span><span class="nav-label">Google Ads</span><span class="nav-soon">Yakında</span>
+      </div>
+      <div class="nav-item nav-sub" style="opacity:.5;cursor:default">
+        <span class="nav-icon" style="font-size:11px">●</span><span class="nav-label">TikTok</span><span class="nav-soon">Yakında</span>
       </div>
     </div>
   </div>
-  <div class="arow" style="margin-bottom:8px">
-    <select class="flt" id="pDate2"><option value="">Karşılaştırma dönemi seç...</option><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d">Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option><option value="last_month">Geçen ay</option></select>
-    <span id="cmpLabel" style="font-size:11px;color:var(--m)"></span>
+
+  <div class="sidebar-section">AI Araçlar</div>
+  <div class="nav-item" onclick="sw('strateji',this)" data-panel="strateji">
+    <span class="nav-icon">🧠</span><span class="nav-label">Strateji</span><span class="nav-ai">AI</span>
   </div>
-  <div class="grid">
-    <div class="sc"><div class="sl">Toplam Harcama</div><div class="sv" id="tSpend">—</div><div class="sdiff" id="dSpend"></div></div>
-    <div class="sc"><div class="sl">Tıklama</div><div class="sv" id="tClick">—</div><div class="sdiff" id="dClick"></div></div>
-    <div class="sc"><div class="sl">Gösterim</div><div class="sv" id="tImpr">—</div><div class="sdiff" id="dImpr"></div></div>
-    <div class="sc"><div class="sl">Ort. CTR</div><div class="sv" id="tCtr">—</div><div class="sdiff" id="dCtr"></div></div>
-    <div class="sc"><div class="sl">Ort. TBM</div><div class="sv" id="tCpc">—</div><div class="sdiff" id="dCpc"></div></div>
-    <div class="sc"><div class="sl">Ort. ROAS</div><div class="sv" id="tRoas">—</div><div class="sdiff" id="dRoas"></div></div>
+  <div class="nav-item" onclick="sw('optimizasyon',this)" data-panel="optimizasyon">
+    <span class="nav-icon">⚙️</span><span class="nav-label">Optimizasyon</span><span class="nav-ai">AI</span>
   </div>
-  <div class="twrap"><table id="campT">
-    <thead id="campTH"></thead>
-    <tbody id="campTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Bağlan ve yenile</td></tr></tbody>
-  </table></div>
+  <div class="nav-item" onclick="sw('hedefkitle',this)" data-panel="hedefkitle">
+    <span class="nav-icon">🎯</span><span class="nav-label">Hedef Kitle</span><span class="nav-ai">AI</span>
+  </div>
+  <div class="nav-item" onclick="sw('tasarim',this)" data-panel="tasarim">
+    <span class="nav-icon">🎨</span><span class="nav-label">Tasarım</span><span class="nav-ai">AI</span>
+  </div>
+
+  <div class="sidebar-section">Raporlama</div>
+  <div class="nav-item" onclick="sw('raporlar',this)" data-panel="raporlar">
+    <span class="nav-icon">📊</span><span class="nav-label">Raporlar</span>
+  </div>
+  <div class="nav-item" onclick="sw('tasks',this)" data-panel="tasks" id="navTasks">
+    <span class="nav-icon">⏰</span><span class="nav-label">Görevler</span>
+    <span class="nav-badge" id="taskBadge" style="display:none">0</span>
+  </div>
+
+  <div class="sidebar-section">Diğer</div>
+  <div class="nav-item" onclick="sw('create',this)" data-panel="create">
+    <span class="nav-icon">➕</span><span class="nav-label">Oluştur</span>
+  </div>
+  <div class="nav-item" onclick="sw('ayarlar',this)" data-panel="ayarlar">
+    <span class="nav-icon">⚙️</span><span class="nav-label">Ayarlar</span>
+  </div>
 </div>
 
-<!-- REKLAM SETLERİ -->
-<div class="panel" id="panel-adsets">
-  <div class="arow">
-    <select class="flt" id="asDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option></select>
-    <select class="flt" id="asCamp" style="max-width:240px"><option value="">Tüm Kampanyalar</option></select>
-    <button class="btn" onclick="loadAdsets()">Yenile</button>
-    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('asPicker')">⚙ Sütunlar</button>
-      <div class="cpicker-dropdown" id="asPicker">
-        <div class="cpicker-section">Temel</div>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('adset')"> Harcama</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('adset')"> Gösterim</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('adset')"> Tıklama</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('adset')"> CTR%</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('adset')"> TBM</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('adset')"> ROAS</label>
-        <div class="cpicker-section">Ek Metrikler</div>
-        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('adset')"> CPM</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('adset')"> Frekans</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('adset')"> Erişim</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('adset')"> Sepete Ekle</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('adset')"> Satış</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('adset')"> Gelir</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="budget" onchange="applyCols('adset')"> Bütçe</label>
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSub">Genel bakış</div>
       </div>
     </div>
+    <div class="topbar-right">
+      <span class="dot" id="dot"></span>
+      <input type="text" class="conn-input" id="proxyUrl" value="https://web-production-e5865.up.railway.app" placeholder="Railway URL...">
+      <button class="btn sm" onclick="connect()">Bağlan</button>
+    </div>
   </div>
-  <div class="twrap"><table id="asT">
-    <thead id="asTH"></thead>
-    <tbody id="asTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody>
-  </table></div>
-</div>
 
-<!-- REKLAMLAR -->
-<div class="panel" id="panel-ads">
-  <div class="arow">
-    <select class="flt" id="adDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option></select>
-    <select class="flt" id="adCamp" style="max-width:240px"><option value="">Tüm Kampanyalar</option></select>
-    <button class="btn" onclick="loadAds()">Yenile</button>
-    <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('adPicker')">⚙ Sütunlar</button>
-      <div class="cpicker-dropdown" id="adPicker">
-        <div class="cpicker-section">Temel</div>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('ad')"> Harcama</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('ad')"> Gösterim</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('ad')"> Tıklama</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('ad')"> CTR%</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('ad')"> TBM</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('ad')"> ROAS</label>
-        <div class="cpicker-section">Ek Metrikler</div>
-        <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('ad')"> CPM</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('ad')"> Frekans</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('ad')"> Erişim</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('ad')"> Sepete Ekle</label>
-        <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('ad')"> Satış</label>
-        <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('ad')"> Gelir</label>
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ── DASHBOARD ── -->
+    <div class="panel active" id="panel-dash">
+      <div class="arow">
+        <button class="btn sm" onclick="loadDashboard()">🔄 Yenile</button>
+        <span id="dashLastUpdate" style="font-size:11px;color:var(--m)"></span>
+      </div>
+      <div class="stl">Genel Bakış — Son 7 Gün</div>
+      <div class="dash-grid">
+        <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Harcama</div><div class="dash-val" id="d-meta-spend">—</div><div class="dash-sub">Son 7 gün</div></div>
+        <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Ort. ROAS</div><div class="dash-val" id="d-meta-roas">—</div><div class="dash-sub">Son 7 gün</div></div>
+        <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Satış</div><div class="dash-val" id="d-meta-sales">—</div><div class="dash-sub">Son 7 gün</div></div>
+        <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Oturum</div><div class="dash-val" id="d-ga4-sessions">—</div><div class="dash-sub">Son 7 gün</div></div>
+        <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Gelir</div><div class="dash-val" id="d-ga4-revenue">—</div><div class="dash-sub">Son 7 gün</div></div>
+        <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Dönüşüm Oranı</div><div class="dash-val" id="d-ga4-cvr">—</div><div class="dash-sub">Son 7 gün</div></div>
+      </div>
+      <div class="channel-grid">
+        <div class="channel-card">
+          <div class="channel-title">📘 Meta Ads</div>
+          <div id="metaChannelDetail"><div style="color:var(--m);font-size:11px">Bağlan ve yenile</div></div>
+        </div>
+        <div class="channel-card">
+          <div class="channel-title">📊 Google Analytics (GA4)</div>
+          <div id="ga4ChannelDetail"><div style="color:var(--m);font-size:11px">Bağlan ve yenile</div></div>
+        </div>
+      </div>
+      <div class="stl">GA4 — Trafik Kaynakları</div>
+      <div class="twrap" style="max-height:280px">
+        <table><thead><tr>
+          <th>Kaynak / Mecra</th><th>Oturum</th><th>Kullanıcı</th><th>Gelir</th><th>Dönüşüm</th>
+        </tr></thead>
+        <tbody id="ga4SourceTable"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--m)">Bağlan ve yenile</td></tr></tbody>
+      </table></div>
+    </div>
+
+    <!-- ── META ADS ── -->
+    <div class="panel" id="panel-meta">
+      <!-- Alt sekmeler -->
+      <div class="arow" style="border-bottom:1px solid var(--b);padding-bottom:12px;margin-bottom:16px">
+        <button class="btn sm" id="metaTabCamp" onclick="metaTab('camp',this)" style="background:var(--a)">Kampanyalar</button>
+        <button class="btn sm sec" id="metaTabAdset" onclick="metaTab('adset',this)">Reklam Setleri</button>
+        <button class="btn sm sec" id="metaTabAd" onclick="metaTab('ad',this)">Reklamlar</button>
+      </div>
+
+      <!-- Kampanyalar -->
+      <div id="metaPanelCamp">
+        <div class="arow">
+          <select class="flt" id="pDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option><option value="last_month">Geçen ay</option></select>
+          <button class="btn sm" onclick="loadCamp()">Yenile</button>
+          <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('pPicker')">⚙ Sütunlar</button>
+            <div class="cpicker-dropdown" id="pPicker">
+              <div class="cpicker-section">Temel</div>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('camp')"> Harcama</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('camp')"> Gösterim</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('camp')"> Tıklama</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('camp')"> CTR%</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('camp')"> TBM</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('camp')"> ROAS</label>
+              <div class="cpicker-section">Ek</div>
+              <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('camp')"> CPM</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('camp')"> Frekans</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('camp')"> Erişim</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('camp')"> Sepet</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('camp')"> Satış</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('camp')"> Gelir</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="budget" onchange="applyCols('camp')"> Bütçe</label>
+            </div>
+          </div>
+        </div>
+        <div class="arow" style="margin-bottom:8px">
+          <select class="flt" id="pDate2"><option value="">Karşılaştırma dönemi seç...</option><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d">Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option></select>
+          <span id="cmpLabel" style="font-size:11px;color:var(--m)"></span>
+        </div>
+        <div class="grid">
+          <div class="sc"><div class="sl">Toplam Harcama</div><div class="sv" id="tSpend">—</div><div class="sdiff" id="dSpend"></div></div>
+          <div class="sc"><div class="sl">Tıklama</div><div class="sv" id="tClick">—</div><div class="sdiff" id="dClick"></div></div>
+          <div class="sc"><div class="sl">Gösterim</div><div class="sv" id="tImpr">—</div><div class="sdiff" id="dImpr"></div></div>
+          <div class="sc"><div class="sl">Ort. CTR</div><div class="sv" id="tCtr">—</div><div class="sdiff" id="dCtr"></div></div>
+          <div class="sc"><div class="sl">Ort. TBM</div><div class="sv" id="tCpc">—</div><div class="sdiff" id="dCpc"></div></div>
+          <div class="sc"><div class="sl">Ort. ROAS</div><div class="sv" id="tRoas">—</div><div class="sdiff" id="dRoas"></div></div>
+        </div>
+        <div class="twrap"><table id="campT"><thead id="campTH"></thead><tbody id="campTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Bağlan ve yenile</td></tr></tbody></table></div>
+      </div>
+
+      <!-- Reklam Setleri -->
+      <div id="metaPanelAdset" style="display:none">
+        <div class="arow">
+          <select class="flt" id="asDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option></select>
+          <select class="flt" id="asCamp" style="max-width:220px"><option value="">Tüm Kampanyalar</option></select>
+          <button class="btn sm" onclick="loadAdsets()">Yenile</button>
+          <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('asPicker')">⚙ Sütunlar</button>
+            <div class="cpicker-dropdown" id="asPicker">
+              <div class="cpicker-section">Temel</div>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('adset')"> Harcama</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('adset')"> Gösterim</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('adset')"> Tıklama</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('adset')"> CTR%</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('adset')"> TBM</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('adset')"> ROAS</label>
+              <div class="cpicker-section">Ek</div>
+              <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('adset')"> CPM</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('adset')"> Frekans</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('adset')"> Erişim</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('adset')"> Sepet</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('adset')"> Satış</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('adset')"> Gelir</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="budget" onchange="applyCols('adset')"> Bütçe</label>
+            </div>
+          </div>
+        </div>
+        <div class="twrap"><table id="asT"><thead id="asTH"></thead><tbody id="asTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody></table></div>
+      </div>
+
+      <!-- Reklamlar -->
+      <div id="metaPanelAd" style="display:none">
+        <div class="arow">
+          <select class="flt" id="adDate"><option value="today">Bugün</option><option value="yesterday">Dün</option><option value="last_7d" selected>Son 7 gün</option><option value="last_14d">Son 14 gün</option><option value="last_30d">Son 30 gün</option><option value="this_month">Bu ay</option></select>
+          <select class="flt" id="adCamp" style="max-width:220px"><option value="">Tüm Kampanyalar</option></select>
+          <button class="btn sm" onclick="loadAds()">Yenile</button>
+          <div class="cpicker-wrap"><button class="cpicker-btn" onclick="togglePicker('adPicker')">⚙ Sütunlar</button>
+            <div class="cpicker-dropdown" id="adPicker">
+              <div class="cpicker-section">Temel</div>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="spend" onchange="applyCols('ad')"> Harcama</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="impr" onchange="applyCols('ad')"> Gösterim</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="clicks" onchange="applyCols('ad')"> Tıklama</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="ctr" onchange="applyCols('ad')"> CTR%</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="cpc" onchange="applyCols('ad')"> TBM</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="roas" onchange="applyCols('ad')"> ROAS</label>
+              <div class="cpicker-section">Ek</div>
+              <label class="cpicker-item"><input type="checkbox" data-col="cpm" onchange="applyCols('ad')"> CPM</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="freq" onchange="applyCols('ad')"> Frekans</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="reach" onchange="applyCols('ad')"> Erişim</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="cart" onchange="applyCols('ad')"> Sepet</label>
+              <label class="cpicker-item"><input type="checkbox" checked data-col="purchase" onchange="applyCols('ad')"> Satış</label>
+              <label class="cpicker-item"><input type="checkbox" data-col="revenue" onchange="applyCols('ad')"> Gelir</label>
+            </div>
+          </div>
+        </div>
+        <div class="twrap"><table id="adT"><thead id="adTH"></thead><tbody id="adTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody></table></div>
       </div>
     </div>
-  </div>
-  <div class="twrap"><table id="adT">
-    <thead id="adTH"></thead>
-    <tbody id="adTB"><tr><td colspan="20" style="text-align:center;padding:20px;color:var(--m)">Yenile</td></tr></tbody>
-  </table></div>
-</div>
 
-<!-- CLAUDE -->
-<div class="panel" id="panel-chat">
-  <div class="chat-layout">
-    <div class="chat-msgs" id="chatMsgs">
-      <div class="msg sys">Meta Ads yöneticinizim — veri analizi, bütçe artışı ve otomatik 3 günlük takip yapabilirim.<br>Örnek: "Advantage+ kampanyasına %20 bütçe artışı yap"</div>
-    </div>
-    <div class="chat-side">
-      <div class="stitle">Hızlı Sorular</div>
-      <button class="qbtn" onclick="qa('camp','En iyi performanslı kampanyaları ROAS, CTR, harcama ve satış bazında tablo halinde sırala.')">🏆 En iyi kampanyalar</button>
-      <button class="qbtn" onclick="qa('adset','En iyi performanslı reklam setlerini ROAS, CTR, TBM, harcama bazında tablo halinde sırala.')">📁 En iyi reklam setleri</button>
-      <button class="qbtn" onclick="qa('ad','En iyi performanslı reklamları ROAS, CTR ve harcama bazında tablo halinde sırala.')">🎯 En iyi reklamlar</button>
-      <button class="qbtn" onclick="qa('adset','ROAS 1.5 altında olan ve zarar eden reklam setlerini listele. Duraklatma veya bütçe azaltma öner.')">⏸ Duraklatılacaklar</button>
-      <button class="qbtn" onclick="qa('camp','CBO kampanyaların kampanya metriklerine göre bütçe artış önerisi yap. ABO reklam setlerinin kendi metriklerine göre bütçe artış önerisi yap.')">💰 Bütçe artış önerisi</button>
-      <button class="qbtn" onclick="qa('all','Son 7 günün özet raporu: kampanya, reklam seti ve reklam bazında tablo halinde göster.')">📊 Özet rapor</button>
-      <button class="qbtn" onclick="qa('ad','Frekans ve CPM analizi yap. Reklam yorgunluğu riski olan reklamları listele.')">📉 Frekans & CPM</button>
-      <button class="qbtn" onclick="qa('adset','En iyi ROAS\'a sahip reklam setini analiz et, %20 bütçe artışı öner ve uygula.')">🚀 En iyiye bütçe artır</button>
-      <div class="cinput">
-        <textarea id="chatIn" placeholder="Sorunuzu yazın..."></textarea>
-        <button class="btn" onclick="sendChat('auto')">Gönder →</button>
+    <!-- ── STRATEJİ ── -->
+    <div class="panel" id="panel-strateji">
+      <div class="ai-panel">
+        <div class="ai-panel-title">🧠 Strateji <span class="nav-ai">AI</span></div>
+        <div class="ai-panel-sub">Meta ve GA4 verilerine dayanarak kampanya stratejisi, büyüme fırsatları ve öncelik önerileri</div>
+      </div>
+      <div class="chat-layout" style="height:calc(100vh - 280px)">
+        <div class="chat-msgs" id="stratejiMsgs">
+          <div class="msg sys">Meta + GA4 verilerinizi analiz ederek strateji önerileri üretebilirim.<br>Önce Bağlan'a bas ve verilerin yüklenmesini bekle.</div>
+        </div>
+        <div class="chat-side">
+          <div class="stitle">Hızlı Sorular</div>
+          <button class="qbtn" onclick="aiChat('strateji','Mevcut kampanya verilerine göre büyüme fırsatlarını analiz et. Hangi kampanyalara yatırım artırmalıyım?')">🚀 Büyüme fırsatları</button>
+          <button class="qbtn" onclick="aiChat('strateji','Meta harcama dağılımı ve GA4 gelir verilerini karşılaştır. Attribution analizi yap.')">📊 Attribution analizi</button>
+          <button class="qbtn" onclick="aiChat('strateji','Önümüzdeki 30 gün için bütçe dağılımı stratejisi öner. Hangi kampanyalara ne kadar yatırım yapmalıyım?')">💰 30 günlük strateji</button>
+          <button class="qbtn" onclick="aiChat('strateji','Düşük ROAS'lı kampanyaları durdurma veya optimize etme stratejisi öner.')">⏸ Zarar eden kampanyalar</button>
+          <button class="qbtn" onclick="aiChat('strateji','Sezonsal trendleri ve geçmiş performansı göz önünde bulundurarak önümüzdeki dönem için önerilerde bulun.')">📅 Sezonsal strateji</button>
+          <div class="cinput">
+            <textarea id="stratejiIn" placeholder="Strateji sorusu yazın..."></textarea>
+            <button class="btn" onclick="aiChat('strateji',document.getElementById('stratejiIn').value)">Gönder →</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- BÜTÇE TAKİBİ -->
-<div class="panel" id="panel-blog">
-  <div class="arow">
-    <button class="btn" onclick="checkBudget()">📊 Performans Kontrolü</button>
-    <button class="btn sec" onclick="clearLog()">🗑 Temizle</button>
-  </div>
-  <div class="stl">Bütçe Değişiklik Geçmişi</div>
-  <div id="logList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div></div>
-</div>
+    <!-- ── OPTİMİZASYON ── -->
+    <div class="panel" id="panel-optimizasyon">
+      <div class="ai-panel">
+        <div class="ai-panel-title">⚙️ Optimizasyon <span class="nav-ai">AI</span></div>
+        <div class="ai-panel-sub">Bütçe optimizasyonu, performans takibi ve otomatik öneri sistemi</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div>
+          <div class="stl">Bütçe Değişiklik Geçmişi</div>
+          <div id="logList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div></div>
+          <div class="arow" style="margin-top:8px">
+            <button class="btn sm" onclick="checkBudget()">📊 Performans Kontrolü</button>
+            <button class="btn sm sec" onclick="clearLog()">🗑 Temizle</button>
+          </div>
+        </div>
+        <div class="chat-msgs" id="optimMsgs" style="height:400px">
+          <div class="msg sys">Bütçe optimizasyonu için yardım isteyebilirsiniz.</div>
+        </div>
+      </div>
+      <div class="cinput" style="border-top:1px solid var(--b);padding-top:12px">
+        <div style="display:flex;gap:8px">
+          <textarea id="optimIn" placeholder="Optimizasyon sorusu..." style="flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px;font-family:Inter,sans-serif;font-size:12px;border-radius:4px;resize:none;height:60px"></textarea>
+          <button class="btn" onclick="aiChat('optim',document.getElementById('optimIn').value)">Gönder →</button>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+          <button class="qbtn" style="flex:0 0 auto" onclick="aiChat('optim','En iyi performanslı reklam setlerine bütçe artışı öner ve uygula.')">🚀 En iyiye artır</button>
+          <button class="qbtn" style="flex:0 0 auto" onclick="aiChat('optim','ROAS 1.5 altındaki setlerin bütçesini azalt.')">📉 Kötüleri azalt</button>
+          <button class="qbtn" style="flex:0 0 auto" onclick="aiChat('optim','Tüm reklam setleri için composite skor analizi yap.')">📊 Skor analizi</button>
+        </div>
+      </div>
+    </div>
 
-<!-- GÖREVLER -->
-<div class="panel" id="panel-tasks">
-  <div class="arow">
-    <button class="btn" onclick="checkAllTasks()">🔄 Tümünü Kontrol Et</button>
-    <button class="btn sec" onclick="clearDoneTasks()">🗑 Tamamlananları Sil</button>
-  </div>
-  <div class="stl">Otomatik Takip Görevleri</div>
-  <div id="taskList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz görev yok. Bütçe değişikliği yapıldığında otomatik oluşturulur.</div></div>
-</div>
+    <!-- ── HEDEF KİTLE ── -->
+    <div class="panel" id="panel-hedefkitle">
+      <div class="ai-panel">
+        <div class="ai-panel-title">🎯 Hedef Kitle <span class="nav-ai">AI</span></div>
+        <div class="ai-panel-sub">GA4 kullanıcı verileri ve Meta audience analizine dayalı hedef kitle önerileri</div>
+      </div>
+      <div class="chat-layout" style="height:calc(100vh - 280px)">
+        <div class="chat-msgs" id="hedefMsgs">
+          <div class="msg sys">GA4 ve Meta verilerini kullanarak hedef kitle analizi yapabilirim.</div>
+        </div>
+        <div class="chat-side">
+          <div class="stitle">Analizler</div>
+          <button class="qbtn" onclick="aiChat('hedef','GA4 trafik kaynaklarını analiz et. Hangi kanaldan gelen kullanıcılar daha çok dönüşüm sağlıyor?')">📊 Kanal dönüşüm analizi</button>
+          <button class="qbtn" onclick="aiChat('hedef','Meta kampanyalarındaki hedef kitle performansını analiz et. Hangi kitleler daha iyi ROAS veriyor?')">👥 Kitle performansı</button>
+          <button class="qbtn" onclick="aiChat('hedef','Yeni hedef kitle önerileri sun. Mevcut verilere göre benzer kitleler (lookalike) için öneriler yap.')">✨ Yeni kitle önerileri</button>
+          <div class="cinput">
+            <textarea id="hedefIn" placeholder="Hedef kitle sorusu..."></textarea>
+            <button class="btn" onclick="aiChat('hedef',document.getElementById('hedefIn').value)">Gönder →</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- OLUŞTUR -->
-<div class="panel" id="panel-create">
-  <div class="stl">Yeni Kampanya Oluştur</div>
-  <div class="cform">
-    <div class="fg full"><label>Kampanya Adı</label><input type="text" id="cName" placeholder="örn: Erkek Tişört Yaz 2026"></div>
-    <div class="fg"><label>Hedef</label><select id="cObj"><option value="OUTCOME_SALES">Satış</option><option value="OUTCOME_TRAFFIC">Trafik</option><option value="OUTCOME_AWARENESS">Farkındalık</option><option value="OUTCOME_ENGAGEMENT">Etkileşim</option><option value="OUTCOME_LEADS">Lead</option></select></div>
-    <div class="fg"><label>Günlük Bütçe (₺)</label><input type="number" id="cBudget" placeholder="500" min="1"></div>
-    <div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div>
-    <div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div>
-  </div>
-</div>
+    <!-- ── TASARIM ── -->
+    <div class="panel" id="panel-tasarim">
+      <div class="ai-panel">
+        <div class="ai-panel-title">🎨 Tasarım <span class="nav-ai">AI</span></div>
+        <div class="ai-panel-sub">Reklam metni, kreatif öneri ve A/B test fikirleri</div>
+      </div>
+      <div class="chat-layout" style="height:calc(100vh - 280px)">
+        <div class="chat-msgs" id="tasarimMsgs">
+          <div class="msg sys">Reklam metni, başlık ve kreatif önerileri için yardımcı olabilirim.</div>
+        </div>
+        <div class="chat-side">
+          <div class="stitle">Hızlı Araçlar</div>
+          <button class="qbtn" onclick="aiChat('tasarim','En iyi performanslı reklamların ortak özelliklerini analiz et ve yeni reklam metni önerileri sun.')">✍️ Reklam metni önerileri</button>
+          <button class="qbtn" onclick="aiChat('tasarim','Mevcut reklamlar için A/B test fikirleri üret. Başlık, görsel ve CTA varyasyonları öner.')">🔬 A/B test fikirleri</button>
+          <button class="qbtn" onclick="aiChat('tasarim','Madmext marka kimliğine uygun reklam hook cümleleri yaz. 5 farklı seçenek sun.')">🎯 Hook cümleleri</button>
+          <button class="qbtn" onclick="aiChat('tasarim','Yüksek CTR için dikkat çekici reklam başlıkları öner. Her kampanya türü için ayrı öneriler sun.')">📈 Yüksek CTR başlıklar</button>
+          <div class="cinput">
+            <textarea id="tasarimIn" placeholder="Kreatif sorusu..."></textarea>
+            <button class="btn" onclick="aiChat('tasarim',document.getElementById('tasarimIn').value)">Gönder →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RAPORLAR ── -->
+    <div class="panel" id="panel-raporlar">
+      <div class="arow">
+        <button class="btn sm" onclick="aiChat('rapor','Son 7 günün kapsamlı performans raporu: Meta kampanya, reklam seti ve GA4 verileriyle birlikte tablo halinde sun.')">📊 AI Rapor Oluştur</button>
+      </div>
+      <div class="chat-msgs" id="raporMsgs" style="height:300px;margin-bottom:16px">
+        <div class="msg sys">Kapsamlı performans raporu için "AI Rapor Oluştur" butonuna tıklayın.</div>
+      </div>
+      <div class="stl">Bütçe Takibi</div>
+      <div id="logListRapor"><div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div></div>
+    </div>
+
+    <!-- ── GÖREVLER ── -->
+    <div class="panel" id="panel-tasks">
+      <div class="arow">
+        <button class="btn sm" onclick="checkAllTasks()">🔄 Tümünü Kontrol Et</button>
+        <button class="btn sm sec" onclick="clearDoneTasks()">🗑 Tamamlananları Sil</button>
+      </div>
+      <div class="stl">Otomatik Takip Görevleri</div>
+      <div id="taskList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz görev yok.</div></div>
+    </div>
+
+    <!-- ── OLUŞTUR ── -->
+    <div class="panel" id="panel-create">
+      <div class="stl">Yeni Kampanya Oluştur</div>
+      <div class="cform">
+        <div class="fg full"><label>Kampanya Adı</label><input type="text" id="cName" placeholder="örn: Erkek Tişört Yaz 2026"></div>
+        <div class="fg"><label>Hedef</label><select id="cObj"><option value="OUTCOME_SALES">Satış</option><option value="OUTCOME_TRAFFIC">Trafik</option><option value="OUTCOME_AWARENESS">Farkındalık</option><option value="OUTCOME_ENGAGEMENT">Etkileşim</option><option value="OUTCOME_LEADS">Lead</option></select></div>
+        <div class="fg"><label>Günlük Bütçe (₺)</label><input type="number" id="cBudget" placeholder="500" min="1"></div>
+        <div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div>
+        <div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div>
+      </div>
+    </div>
+
+    <!-- ── AYARLAR ── -->
+    <div class="panel" id="panel-ayarlar">
+      <div class="stl">Bağlantılar & Ayarlar</div>
+      <div class="ai-panel">
+        <div class="ai-panel-title">🔗 API Bağlantıları</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+          <div class="channel-card">
+            <div class="channel-title">📘 Meta Ads</div>
+            <div class="channel-row"><span>Hesap ID</span><span id="set-meta-aid" style="font-size:10px">act_1346348685568168</span></div>
+            <div class="channel-row"><span>Durum</span><span id="set-meta-status">—</span></div>
+          </div>
+          <div class="channel-card">
+            <div class="channel-title">📊 Google Analytics</div>
+            <div class="channel-row"><span>Mülk ID</span><span>263117748</span></div>
+            <div class="channel-row"><span>Durum</span><span id="set-ga4-status">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
 
 <div id="toast"></div>
 <div class="moverlay" id="bModal" style="display:none">
@@ -358,9 +572,94 @@ const DF='campaign_id,campaign_name,adset_id,adset_name,ad_id,ad_name,spend,impr
 
 let campStore=[],adsetStore=[],adStore=[];
 let campRaw=[],adsetRaw=[],adRaw=[];
-let budgetLog=JSON.parse(localStorage.getItem('bLog')||'[]');
-let pending=null,chatH=[],sortSt={};
-let taskLog=JSON.parse(localStorage.getItem('tLog')||'[]');
+let budgetLog=[],taskLog=[];
+let pending=null,chatH={},sortSt={};
+
+// ── Sayfa navigasyonu ──────────────────────────────────────────────────
+const PAGE_META={
+  dash:{title:'Dashboard',sub:'Genel bakış'},
+  meta:{title:'Meta Ads',sub:'Kampanya, reklam seti ve reklam yönetimi'},
+  strateji:{title:'Strateji',sub:'AI destekli kampanya stratejisi'},
+  optimizasyon:{title:'Optimizasyon',sub:'Bütçe optimizasyonu ve takip'},
+  hedefkitle:{title:'Hedef Kitle',sub:'Audience analizi'},
+  tasarim:{title:'Tasarım',sub:'Reklam metni ve kreatif öneriler'},
+  raporlar:{title:'Raporlar',sub:'Performans raporları ve bütçe takibi'},
+  tasks:{title:'Görevler',sub:'Otomatik takip görevleri'},
+  create:{title:'Oluştur',sub:'Yeni kampanya oluştur'},
+  ayarlar:{title:'Ayarlar',sub:'Bağlantılar ve yapılandırma'}
+};
+
+function sw(name, el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const panel=document.getElementById('panel-'+name);
+  if(panel)panel.classList.add('active');
+  if(el)el.classList.add('active');
+  const meta=PAGE_META[name]||{title:name,sub:''};
+  document.getElementById('pageTitle').textContent=meta.title;
+  document.getElementById('pageSub').textContent=meta.sub;
+  if(name==='dash')loadDashboard();
+  if(name==='raporlar'){renderLog('logListRapor');renderLog('logList');}
+  if(name==='optimizasyon')renderLog('logList');
+  if(name==='tasks')renderTasks();
+}
+
+function toggleNavGroup(id){
+  document.getElementById(id).classList.toggle('open');
+}
+
+function metaTab(tab, btn){
+  ['Camp','Adset','Ad'].forEach(t=>{
+    document.getElementById('metaPanel'+t).style.display='none';
+    document.getElementById('metaTab'+t).className='btn sm sec';
+  });
+  document.getElementById('metaPanel'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='block';
+  btn.style.background='var(--a)';btn.style.color='#fff';btn.style.border='none';
+}
+
+// ── AI Chat (çok amaçlı) ────────────────────────────────────────────────
+const chatPanels={
+  strateji:{msgs:'stratejiMsgs',input:'stratejiIn',level:'all'},
+  optim:{msgs:'optimMsgs',input:'optimIn',level:'adset'},
+  hedef:{msgs:'hedefMsgs',input:'hedefIn',level:'all'},
+  tasarim:{msgs:'tasarimMsgs',input:'tasarimIn',level:'ad'},
+  rapor:{msgs:'raporMsgs',input:null,level:'all'}
+};
+
+async function aiChat(type, msg){
+  if(!msg||!msg.trim())return;
+  const cp=chatPanels[type];
+  if(!cp)return;
+  const inp=cp.input?document.getElementById(cp.input):null;
+  if(inp)inp.value='';
+  const w=document.getElementById(cp.msgs);
+  // User mesaj
+  const um=document.createElement('div');um.className='msg user';um.textContent=msg;w.appendChild(um);
+  // Thinking
+  const th=document.createElement('div');th.className='thinking';th.innerHTML='<div class="d"></div><div class="d"></div><div class="d"></div>';w.appendChild(th);w.scrollTop=w.scrollHeight;
+  // Veri hazırla
+  const metaSum=campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase}));
+  const adsetSum=adsetStore.slice(0,10).map(r=>({rs:r.name?.slice(0,22),h:r.spend,roas:r.roas,bt:r._budgetType}));
+  const sysParts={
+    strateji:`Meta+GA4 uzmanı Türkçe yanıt ver. Veri: Kampanyalar:${JSON.stringify(metaSum)} Adsetler:${JSON.stringify(adsetSum)}`,
+    optim:`Meta bütçe optimizasyon uzmanı. Türkçe. Gerçek ID'lerle ACTION üret. Adsetler:${JSON.stringify(adsetStore.slice(0,15).map(r=>({id:r._budgetId,name:r.name,type:r._budgetType,budgetTL:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),roas:r.roas,spend:r.spend})).filter(r=>r.id&&r.budgetTL>0))}`,
+    hedef:`Hedef kitle uzmanı Türkçe. Meta kampanya verileri: ${JSON.stringify(metaSum)}`,
+    tasarim:`Madmext için reklam kreatif uzmanı. Türkçe. Marka: erkek/kadın tekstil e-ticaret. En iyi reklamlar: ${JSON.stringify(adStore.slice(0,8).map(r=>({r:r.name?.slice(0,25),ctr:r.ctr,roas:r.roas})))}`,
+    rapor:`Meta+GA4 raporlama uzmanı Türkçe. Kapsamlı rapor sun. Kampanyalar:${JSON.stringify(metaSum)} Adsetler:${JSON.stringify(adsetSum)}`
+  };
+  if(!chatH[type])chatH[type]=[];
+  chatH[type].push({role:'user',content:msg});
+  const reply=await claude(chatH[type].slice(-6),sysParts[type]||'Meta uzmanı. Türkçe yanıt ver.');
+  th.remove();
+  chatH[type].push({role:'assistant',content:reply});
+  if(chatH[type].length>12)chatH[type]=chatH[type].slice(-12);
+  const rm=document.createElement('div');rm.className='msg claude';rm.innerHTML=renderMD(reply);w.appendChild(rm);w.scrollTop=w.scrollHeight;
+  if(type==='optim')parseAndRenderActions(reply);
+}
+
+// ── Eski sendChat → optimizasyon chat'e yönlendir ──────────────────────
+function qa(level,q){aiChat('optim',q);}
+async function sendChat(level){const v=document.getElementById('chatIn')?.value;if(v)aiChat('optim',v);}
 
 function px(){return document.getElementById('proxyUrl').value.trim().replace(/\/$/,'')}
 async function api(ep,params={},m='GET'){
@@ -817,8 +1116,8 @@ function clearDoneTasks(){
 }
 
 // ── BÜTÇE LOG ───────────────────────────────────────────────────────────
-function renderLog(){
-  const el=document.getElementById('logList');
+function renderLog(elId='logList'){
+  const el=document.getElementById(elId);if(!el)return;
   if(!budgetLog.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div>';return;}
   el.innerHTML=budgetLog.map((e,i)=>{
     const d=new Date(e.time).toLocaleString('tr');
@@ -1258,19 +1557,22 @@ async function createCamp(){
   else toast('Hata: '+(d?.error?.message||'?'));
 }
 
-function sw(name,btn){
+// sw replaced above
+function _sw_old(name,btn){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   btn.classList.add('active');
-  if(name==='blog')renderLog();
-  if(name==='tasks')renderTasks();
-  if(name==='dash')loadDashboard();
+  
 }
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),4000);}
 renderLog();
 updateTaskBadge();
 setInterval(()=>{updateTaskBadge();},60000); // Her dk badge güncelle
+</script>
+</body>
+</html>
+
 </script>
 </body>
 </html>
