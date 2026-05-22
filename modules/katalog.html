@@ -1,0 +1,314 @@
+<div class="arow">
+  <label class="btn sm" style="cursor:pointer">
+    📂 XML Feed Yükle
+    <input type="file" id="xmlFile" accept=".xml" style="display:none" onchange="loadXML(this)">
+  </label>
+  <input type="text" id="xmlUrl" placeholder="veya XML URL girin..." style="background:var(--bg);border:1px solid var(--b);color:var(--t);padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px;width:300px">
+  <button class="btn sm sec" onclick="loadXMLFromUrl()">URL'den Yükle</button>
+  <button class="btn sm sec" onclick="matchWithMeta()" id="matchBtn" style="display:none">🔗 Meta ile Eşleştir</button>
+  <span id="catalogStatus" style="font-size:11px;color:var(--m)"></span>
+</div>
+
+<!-- Özet kartlar -->
+<div class="dash-grid" id="catalogCards" style="display:none">
+  <div class="dash-card" style="border-top:2px solid var(--a)">
+    <div class="dash-label">Toplam Ürün</div>
+    <div class="dash-val" id="cat-total">—</div>
+  </div>
+  <div class="dash-card" style="border-top:2px solid var(--g)">
+    <div class="dash-label">Reklama Çıkan</div>
+    <div class="dash-val" id="cat-active">—</div>
+  </div>
+  <div class="dash-card" style="border-top:2px solid var(--y)">
+    <div class="dash-label">Stokta Yok</div>
+    <div class="dash-val" id="cat-outofstock">—</div>
+  </div>
+  <div class="dash-card" style="border-top:2px solid var(--r)">
+    <div class="dash-label">Reklam Yok</div>
+    <div class="dash-val" id="cat-noad">—</div>
+  </div>
+  <div class="dash-card" style="border-top:2px solid var(--bl)">
+    <div class="dash-label">Ort. Fiyat</div>
+    <div class="dash-val" id="cat-avgprice">—</div>
+  </div>
+  <div class="dash-card" style="border-top:2px solid #a855f7">
+    <div class="dash-label">Kategori Sayısı</div>
+    <div class="dash-val" id="cat-cats">—</div>
+  </div>
+</div>
+
+<!-- Filtreler -->
+<div class="arow" id="catalogFilters" style="display:none">
+  <select class="flt" id="catFilterStock" onchange="filterCatalog()">
+    <option value="">Tüm Stok Durumu</option>
+    <option value="in stock">Stokta Var</option>
+    <option value="out of stock">Stokta Yok</option>
+  </select>
+  <select class="flt" id="catFilterCat" onchange="filterCatalog()" style="max-width:220px">
+    <option value="">Tüm Kategoriler</option>
+  </select>
+  <input type="text" id="catSearch" placeholder="Ürün ara..." onkeyup="filterCatalog()" style="background:var(--bg);border:1px solid var(--b);color:var(--t);padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px;width:200px">
+  <select class="flt" id="catSort" onchange="filterCatalog()">
+    <option value="title">İsme Göre</option>
+    <option value="price_asc">Fiyat (Düşük→Yüksek)</option>
+    <option value="price_desc">Fiyat (Yüksek→Düşük)</option>
+    <option value="roas_desc">ROAS (Yüksek→Düşük)</option>
+  </select>
+  <span id="catCount" style="font-size:11px;color:var(--m)"></span>
+</div>
+
+<!-- AI Analiz -->
+<div id="catalogAI" style="display:none;margin-bottom:14px">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+    <button class="qbtn" onclick="catalogAIChat('En iyi ve en kötü performanslı ürünleri analiz et. Hangi ürünlere daha fazla bütçe verilmeli?')">🏆 En iyi/kötü ürünler</button>
+    <button class="qbtn" onclick="catalogAIChat('Stokta olmayan ürünlere reklam veriliyorsa bunları tespit et ve öneride bulun.')">⚠️ Stok uyarıları</button>
+    <button class="qbtn" onclick="catalogAIChat('Kategorilere göre performans analizi yap. Hangi kategoriler daha iyi ROAS üretiyor?')">📊 Kategori analizi</button>
+    <button class="qbtn" onclick="catalogAIChat('Reklam almayan yüksek potansiyelli ürünleri tespit et ve neden reklam alması gerektiğini açıkla.')">✨ Fırsat ürünler</button>
+  </div>
+  <div class="chat-msgs" id="catalogMsgs" style="height:150px">
+    <div class="msg sys">Katalog verisi yüklendi. AI analizi için yukarıdaki butonları kullanın.</div>
+  </div>
+</div>
+
+<!-- Ürün Tablosu -->
+<div class="twrap" id="catalogWrap" style="display:none">
+  <table>
+    <thead>
+      <tr>
+        <th>Görsel</th>
+        <th>Ürün Adı</th>
+        <th>Kategori</th>
+        <th>Fiyat</th>
+        <th>Stok</th>
+        <th>ROAS</th>
+        <th>Harcama</th>
+        <th>Satış</th>
+        <th>Durum</th>
+      </tr>
+    </thead>
+    <tbody id="catalogTB"></tbody>
+  </table>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let catalogProducts = [];
+let metaProducts = {};
+
+async function loadXML(input) {
+  const file = input.files[0];
+  if(!file) return;
+  document.getElementById('catalogStatus').textContent = '⏳ XML okunuyor...';
+  const text = await file.text();
+  parseXML(text, file.name);
+}
+
+async function loadXMLFromUrl() {
+  const url = document.getElementById('xmlUrl').value.trim();
+  if(!url) { toast('URL girin'); return; }
+  document.getElementById('catalogStatus').textContent = '⏳ Yükleniyor...';
+  try {
+    const r = await fetch(`${px()}/proxy-xml?url=${encodeURIComponent(url)}`);
+    const text = await r.text();
+    parseXML(text, url);
+  } catch(e) {
+    toast('URL yüklenemedi: ' + e.message);
+    document.getElementById('catalogStatus').textContent = '';
+  }
+}
+
+function parseXML(text, source) {
+  try {
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'text/xml');
+
+    // Google Shopping / Meta feed formatı
+    const items = xml.querySelectorAll('item, entry, product');
+    if(!items.length) { toast('Ürün bulunamadı. XML formatını kontrol edin.'); return; }
+
+    catalogProducts = Array.from(items).map(item => {
+      const get = (tag) => {
+        const el = item.querySelector(tag) ||
+          item.getElementsByTagNameNS('http://base.google.com/ns/1.0', tag.replace('g:',''))[0] ||
+          item.getElementsByTagName(tag)[0] ||
+          item.getElementsByTagName('g:'+tag)[0];
+        return el?.textContent?.trim() || '';
+      };
+
+      const priceStr = get('price') || get('sale_price') || get('g:price') || '0';
+      const price = parseFloat(priceStr.replace(/[^\d.]/g,'')) || 0;
+
+      return {
+        id: get('id') || get('g:id') || get('product_id'),
+        title: get('title') || get('g:title') || get('name'),
+        description: (get('description') || get('g:description') || '').slice(0,100),
+        link: get('link') || get('g:link'),
+        image: get('image_link') || get('g:image_link') || get('image'),
+        price,
+        priceStr,
+        brand: get('brand') || get('g:brand'),
+        category: get('product_type') || get('g:product_type') || get('google_product_category') || get('category') || 'Diğer',
+        availability: (get('availability') || get('g:availability') || 'unknown').toLowerCase(),
+        condition: get('condition') || get('g:condition') || '',
+        gtin: get('gtin') || get('g:gtin') || '',
+        mpn: get('mpn') || get('g:mpn') || '',
+        // Meta performance (boş, eşleştirme sonrası dolar)
+        roas: null, spend: null, purchase: null, impressions: null
+      };
+    }).filter(p => p.title);
+
+    document.getElementById('catalogStatus').textContent = `✓ ${catalogProducts.length} ürün yüklendi — ${source}`;
+    document.getElementById('matchBtn').style.display = '';
+    renderCatalogSummary();
+    renderCatalogTable();
+    document.getElementById('catalogAI').style.display = '';
+    toast(`${catalogProducts.length} ürün yüklendi ✓`);
+  } catch(e) {
+    toast('XML parse hatası: ' + e.message);
+    document.getElementById('catalogStatus').textContent = 'Hata: ' + e.message;
+  }
+}
+
+async function matchWithMeta() {
+  document.getElementById('catalogStatus').textContent = '⏳ Meta katalog verisi çekiliyor...';
+  try {
+    // Meta Product Catalog insights
+    const d = await api(`${AID}/insights`, {
+      fields: 'product_id,spend,purchase_roas,actions,impressions',
+      date_preset: 'last_30d',
+      level: 'ad',
+      action_attribution_windows: ATTR,
+      limit: 500
+    });
+    if(d?.data) {
+      d.data.forEach(r => {
+        // Ürün ID'ye göre eşleştir
+        const pid = r.product_id || r.ad_name;
+        if(pid) metaProducts[pid] = {
+          roas: groas(r),
+          spend: parseFloat(r.spend||0),
+          purchase: gav(r.actions,'purchase'),
+          impressions: parseInt(r.impressions||0)
+        };
+      });
+      catalogProducts.forEach(p => {
+        const match = metaProducts[p.id] || metaProducts[p.gtin] || metaProducts[p.mpn];
+        if(match) { p.roas=match.roas; p.spend=match.spend; p.purchase=match.purchase; p.impressions=match.impressions; }
+      });
+      toast('Meta eşleştirmesi tamamlandı ✓');
+    }
+  } catch(e) { toast('Meta verisi alınamadı'); }
+  renderCatalogSummary();
+  renderCatalogTable();
+  document.getElementById('catalogStatus').textContent = `✓ ${catalogProducts.length} ürün — Meta eşleştirmesi yapıldı`;
+}
+
+function renderCatalogSummary() {
+  const total = catalogProducts.length;
+  const outOfStock = catalogProducts.filter(p => p.availability === 'out of stock' || p.availability === 'preorder').length;
+  const withAd = catalogProducts.filter(p => p.spend > 0).length;
+  const noAd = total - withAd;
+  const prices = catalogProducts.map(p=>p.price).filter(p=>p>0);
+  const avgPrice = prices.length ? (prices.reduce((a,b)=>a+b,0)/prices.length).toFixed(0) : '—';
+  const cats = new Set(catalogProducts.map(p=>p.category.split('>')[0].trim())).size;
+
+  document.getElementById('cat-total').textContent = total.toLocaleString('tr');
+  document.getElementById('cat-active').textContent = withAd.toLocaleString('tr');
+  document.getElementById('cat-outofstock').textContent = outOfStock.toLocaleString('tr');
+  document.getElementById('cat-noad').textContent = noAd.toLocaleString('tr');
+  document.getElementById('cat-avgprice').textContent = avgPrice + '₺';
+  document.getElementById('cat-cats').textContent = cats;
+  document.getElementById('catalogCards').style.display = '';
+
+  // Kategori filtresi doldur
+  const cats2 = [...new Set(catalogProducts.map(p=>p.category.split('>')[0].trim()))].sort();
+  const catSel = document.getElementById('catFilterCat');
+  catSel.innerHTML = '<option value="">Tüm Kategoriler</option>' + cats2.map(c=>`<option value="${c}">${c}</option>`).join('');
+  document.getElementById('catalogFilters').style.display = '';
+  document.getElementById('catalogWrap').style.display = '';
+}
+
+function filterCatalog() {
+  const stock = document.getElementById('catFilterStock').value.toLowerCase();
+  const cat = document.getElementById('catFilterCat').value;
+  const search = document.getElementById('catSearch').value.toLowerCase();
+  const sort = document.getElementById('catSort').value;
+
+  let filtered = catalogProducts.filter(p => {
+    if(stock && !p.availability.includes(stock)) return false;
+    if(cat && !p.category.startsWith(cat)) return false;
+    if(search && !p.title.toLowerCase().includes(search) && !p.id.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  filtered.sort((a,b) => {
+    if(sort==='price_asc') return a.price-b.price;
+    if(sort==='price_desc') return b.price-a.price;
+    if(sort==='roas_desc') return (b.roas||0)-(a.roas||0);
+    return a.title.localeCompare(b.title,'tr');
+  });
+
+  document.getElementById('catCount').textContent = `${filtered.length} ürün gösteriliyor`;
+  renderCatalogTable(filtered);
+}
+
+function renderCatalogTable(data) {
+  const products = data || catalogProducts;
+  const tbody = document.getElementById('catalogTB');
+  tbody.innerHTML = products.slice(0,200).map(p => {
+    const stockColor = p.availability==='in stock'?'var(--g)':p.availability==='out of stock'?'var(--r)':'var(--y)';
+    const stockLabel = p.availability==='in stock'?'Stokta':'Stokta Yok';
+    const roasHtml = p.roas!=null ? `<span style="color:${roasColor(p.roas)}">${p.roas.toFixed(2)}x</span>` : '<span style="color:var(--m)">—</span>';
+    const spendHtml = p.spend!=null ? p.spend.toFixed(0)+'₺' : '—';
+    const purchaseHtml = p.purchase!=null ? p.purchase : '—';
+    const img = p.image ? `<img src="${p.image}" style="width:36px;height:36px;object-fit:cover;border-radius:4px;border:1px solid var(--b)" onerror="this.style.display='none'">` : '—';
+    const cat = p.category ? p.category.split('>')[0].trim().slice(0,25) : '—';
+    const adStatus = p.spend>0 ? '<span class="bge on">Reklam Var</span>' : '<span class="bge off">Reklam Yok</span>';
+    return `<tr>
+      <td>${img}</td>
+      <td style="max-width:220px;white-space:normal;font-family:'Inter',sans-serif">${p.title.slice(0,60)}${p.title.length>60?'...':''}</td>
+      <td style="color:var(--m);font-size:11px">${cat}</td>
+      <td>${p.price>0?p.price.toFixed(0)+'₺':'—'}</td>
+      <td><span style="color:${stockColor};font-size:11px">${stockLabel}</span></td>
+      <td>${roasHtml}</td>
+      <td>${spendHtml}</td>
+      <td>${purchaseHtml}</td>
+      <td>${adStatus}</td>
+    </tr>`;
+  }).join('');
+  if(products.length>200) {
+    tbody.innerHTML += `<tr><td colspan="9" style="text-align:center;padding:12px;color:var(--m)">+ ${products.length-200} ürün daha (filtrele daraltmak için)</td></tr>`;
+  }
+}
+
+async function catalogAIChat(msg) {
+  if(!catalogProducts.length){toast('Önce XML yükle');return;}
+  addMsg(msg,'user','catalogMsgs');
+  const th = addThinking('catalogMsgs');
+
+  // Özet veri hazırla (token tasarrufu)
+  const sample = catalogProducts.slice(0,30).map(p=>({
+    id:p.id, title:p.title.slice(0,40), cat:p.category.split('>')[0].trim().slice(0,25),
+    price:p.price, avail:p.availability, roas:p.roas, spend:p.spend, purchase:p.purchase
+  }));
+  const stats = {
+    total: catalogProducts.length,
+    inStock: catalogProducts.filter(p=>p.availability==='in stock').length,
+    outOfStock: catalogProducts.filter(p=>p.availability==='out of stock').length,
+    withAd: catalogProducts.filter(p=>p.spend>0).length,
+    topRoas: catalogProducts.filter(p=>p.roas>0).sort((a,b)=>b.roas-a.roas).slice(0,5).map(p=>({title:p.title.slice(0,30),roas:p.roas,spend:p.spend}))
+  };
+
+  const sys = `Madmext ürün kataloğu uzmanısın. Türkçe yanıt ver. Markalar: tekstil/giyim e-ticaret.
+İstatistikler: ${JSON.stringify(stats)}
+Örnek ürünler: ${JSON.stringify(sample)}`;
+
+  if(!MX.chatH.katalog) MX.chatH.katalog = [];
+  MX.chatH.katalog.push({role:'user',content:msg});
+  const reply = await claude(MX.chatH.katalog.slice(-4), sys);
+  th.remove();
+  MX.chatH.katalog.push({role:'assistant',content:reply});
+  addClaudeMsg(reply,'catalogMsgs');
+}
+</script>
