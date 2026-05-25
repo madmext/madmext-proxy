@@ -66,9 +66,9 @@
 
 <!-- Tabs -->
 <div class="meta-tabs">
-  <button class="meta-tab active" id="mtCamp" onclick="mTab('camp',this)">📊 Kampanyalar</button>
-  <button class="meta-tab" id="mtAdset" onclick="mTab('adset',this)">📁 Reklam Setleri</button>
-  <button class="meta-tab" id="mtAd" onclick="mTab('ad',this)">🖼 Reklamlar</button>
+  <button class="meta-tab active" id="mtCamp" onclick="metaTabSwitch('camp',this)">📊 Kampanyalar</button>
+  <button class="meta-tab" id="mtAdset" onclick="metaTabSwitch('adset',this)">📁 Reklam Setleri</button>
+  <button class="meta-tab" id="mtAd" onclick="metaTabSwitch('ad',this)">🖼 Reklamlar</button>
 </div>
 
 <!-- Toolbar -->
@@ -168,7 +168,7 @@
 
 <script>
 (function(){
-var mTab = 'camp';
+var currentMetaTab = 'camp';
 var mData = {camp:[],adset:[],ad:[]};
 var mPending = null;
 var mSort = {};
@@ -213,8 +213,8 @@ document.querySelectorAll('#mColPicker input').forEach(function(cb){
 });
 
 // Tab
-window.mTab = function(tab,btn){
-  mTab=tab; mPage=0;
+window.metaTabSwitch = function(tab,btn){
+  currentMetaTab=tab; mPage=0;
   ['Camp','Adset','Ad'].forEach(function(t){var b=document.getElementById('mt'+t);if(b)b.className='meta-tab';});
   if(btn)btn.className='meta-tab active';
   var cf=document.getElementById('mCampFlt');
@@ -459,8 +459,8 @@ function mapR(r,camp,adset){
 
 // Veri yükle
 window.mLoad=function(){
-  if(mTab==='camp')loadMetaCamp();
-  else if(mTab==='adset')loadMetaAdsets();
+  if(currentMetaTab==='camp')loadMetaCamp();
+  else if(currentMetaTab==='adset')loadMetaAdsets();
   else loadMetaAds();
 };
 
