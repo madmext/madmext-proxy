@@ -1,0 +1,349 @@
+<style>
+.ay-tabs{display:flex;gap:2px;background:var(--bg);border-radius:6px;padding:3px;margin-bottom:16px;width:fit-content}
+.ay-tab{padding:6px 16px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500;color:var(--m);border:none;background:transparent;transition:all .15s}
+.ay-tab.active{background:var(--a);color:#fff}
+.ay-tab:hover:not(.active){color:var(--t);background:var(--b)}
+.ay-section{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:18px;margin-bottom:14px}
+.ay-section-title{font-size:12px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ay-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ay-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.ay-row:last-child{border-bottom:none}
+.ay-label{font-size:12px;color:var(--m)}
+.ay-val{font-size:11px;font-family:'DM Mono',monospace;color:var(--t)}
+.color-pick{display:flex;align-items:center;gap:8px}
+.color-pick input[type=color]{width:32px;height:24px;border:1px solid var(--b);border-radius:4px;cursor:pointer;background:none;padding:0}
+.color-pick input[type=text]{background:var(--bg);border:1px solid var(--b);color:var(--t);padding:4px 8px;font-family:'DM Mono',monospace;font-size:11px;border-radius:4px;width:80px}
+.theme-btn{background:var(--s2);border:1px solid var(--b);color:var(--t);padding:8px 14px;font-size:11px;border-radius:6px;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif}
+.theme-btn:hover{border-color:var(--a);color:var(--a)}
+.theme-btn.active{border-color:var(--a);background:rgba(24,119,242,.1);color:var(--a)}
+.slider-row{display:flex;align-items:center;gap:10px}
+.slider-row input[type=range]{flex:1;accent-color:var(--a)}
+.slider-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--t);min-width:40px;text-align:right}
+/* Önizleme */
+.preview-wrap{background:#0f1011;border:1px solid #2d2e30;border-radius:8px;padding:12px;min-height:120px}
+.prev-sidebar{width:100px;background:#1a1b1d;border-radius:4px;padding:8px;font-size:10px}
+.prev-card{background:#1a1b1d;border:1px solid #2d2e30;border-radius:4px;padding:8px;margin-top:8px;font-size:10px}
+.prev-btn{background:#1877f2;color:#fff;border:none;border-radius:3px;padding:3px 8px;font-size:9px;cursor:default}
+.status-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.status-dot{width:8px;height:8px;border-radius:50%}
+</style>
+
+<!-- Sekme başlıkları -->
+<div class="ay-tabs">
+  <button class="ay-tab active" onclick="ayTab('baglanti',this)">🔗 Bağlantılar</button>
+  <button class="ay-tab" onclick="ayTab('tasarim',this)">🎨 Tasarım</button>
+  <button class="ay-tab" onclick="ayTab('hakkinda',this)">ℹ️ Hakkında</button>
+</div>
+
+<!-- BAĞLANTI SEKMESİ -->
+<div id="ayPanelBaglanti">
+  <div class="ay-section">
+    <div class="ay-section-title">📘 Meta Ads</div>
+    <div class="ay-row"><span class="ay-label">Hesap ID</span><span class="ay-val">act_1346348685568168</span></div>
+    <div class="ay-row"><span class="ay-label">API Durumu</span>
+      <span id="ay-meta-status" style="font-size:11px;color:var(--m)">—</span>
+    </div>
+    <div class="ay-row"><span class="ay-label">Attribution</span><span class="ay-val">7d_click, 1d_view</span></div>
+  </div>
+  <div class="ay-section">
+    <div class="ay-section-title">📊 Google Analytics (GA4)</div>
+    <div class="ay-row"><span class="ay-label">Mülk ID</span><span class="ay-val">263117748</span></div>
+    <div class="ay-row"><span class="ay-label">Servis Hesabı</span><span class="ay-val" style="font-size:10px">madmext-analytics@ticimaxmadmext.iam.gserviceaccount.com</span></div>
+    <div class="ay-row"><span class="ay-label">Durum</span>
+      <span id="ay-ga4-status" style="font-size:11px;color:var(--m)">—</span>
+    </div>
+  </div>
+  <div class="ay-section">
+    <div class="ay-section-title">⚙️ Railway Sunucu</div>
+    <div class="ay-row"><span class="ay-label">URL</span>
+      <input type="text" id="ay-proxy-url" style="background:var(--bg);border:1px solid var(--b);color:var(--t);padding:4px 8px;font-family:'DM Mono',monospace;font-size:11px;border-radius:4px;width:280px" placeholder="https://...railway.app">
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button class="btn sm" onclick="ayTestConn()">🔌 Bağlantıyı Test Et</button>
+      <button class="btn sm sec" onclick="aySaveUrl()">💾 Kaydet</button>
+    </div>
+    <div id="ay-conn-result" style="margin-top:8px;font-size:11px;color:var(--m)"></div>
+  </div>
+</div>
+
+<!-- TASARIM SEKMESİ -->
+<div id="ayPanelTasarim" style="display:none">
+  <!-- Hazır Temalar -->
+  <div class="ay-section">
+    <div class="ay-section-title">🎨 Hazır Temalar</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="theme-btn" onclick="applyTheme('dark')">🌑 Koyu (Varsayılan)</button>
+      <button class="theme-btn" onclick="applyTheme('light')">☀️ Açık</button>
+      <button class="theme-btn" onclick="applyTheme('purple')">🟣 Gece Moru</button>
+      <button class="theme-btn" onclick="applyTheme('ocean')">🌊 Okyanus</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:14px">
+    <div>
+      <!-- Renkler -->
+      <div class="ay-section">
+        <div class="ay-section-title">🎨 Renkler</div>
+        <div id="colorRows"></div>
+      </div>
+      <!-- Font & Boyutlar -->
+      <div class="ay-section">
+        <div class="ay-section-title">Aa Font & Boyutlar</div>
+        <div class="ay-row">
+          <span class="ay-label">Font Ailesi</span>
+          <select id="fontSelect" class="flt" style="font-size:11px;padding:4px 8px" onchange="updateVar('--font-ui',this.value+', sans-serif');renderPreview()">
+            <option value="Inter">Inter</option>
+            <option value="Poppins">Poppins</option>
+            <option value="DM Sans">DM Sans</option>
+            <option value="Roboto">Roboto</option>
+            <option value="Nunito">Nunito</option>
+          </select>
+        </div>
+        <div class="ay-row">
+          <span class="ay-label">Temel Font Boyutu</span>
+          <div class="slider-row" style="width:200px">
+            <input type="range" min="11" max="16" value="13" id="fzBase" oninput="updateVar('--fz-base',this.value+'px');document.getElementById('fzBaseVal').textContent=this.value+'px';renderPreview()">
+            <span class="slider-val" id="fzBaseVal">13px</span>
+          </div>
+        </div>
+        <div class="ay-row">
+          <span class="ay-label">Sidebar Genişliği</span>
+          <div class="slider-row" style="width:200px">
+            <input type="range" min="180" max="280" value="220" id="sidebarW" oninput="updateVar('--sidebar',this.value+'px');document.getElementById('sidebarWVal').textContent=this.value+'px';renderPreview()">
+            <span class="slider-val" id="sidebarWVal">220px</span>
+          </div>
+        </div>
+        <div class="ay-row">
+          <span class="ay-label">Köşe Yuvarlama</span>
+          <div class="slider-row" style="width:200px">
+            <input type="range" min="0" max="16" value="8" id="borderR" oninput="updateRadii(this.value);document.getElementById('borderRVal').textContent=this.value+'px';renderPreview()">
+            <span class="slider-val" id="borderRVal">8px</span>
+          </div>
+        </div>
+      </div>
+      <!-- Aksiyon butonları -->
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="saveTheme()">💾 Kaydet & Uygula</button>
+        <button class="btn sec" onclick="copyCss()">📋 CSS Kopyala</button>
+        <button class="btn sec" onclick="resetTheme()">↩ Sıfırla</button>
+      </div>
+    </div>
+
+    <!-- Canlı Önizleme -->
+    <div>
+      <div class="ay-section-title">👁 Canlı Önizleme</div>
+      <div class="preview-wrap" id="themePreview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- HAKKINDA SEKMESİ -->
+<div id="ayPanelHakkinda" style="display:none">
+  <div class="ay-section">
+    <div class="ay-section-title">ℹ️ Madmext Ads</div>
+    <div class="ay-row"><span class="ay-label">Versiyon</span><span class="ay-val">2.0.0</span></div>
+    <div class="ay-row"><span class="ay-label">Platform</span><span class="ay-val">Railway (Web)</span></div>
+    <div class="ay-row"><span class="ay-label">Meta API</span><span class="ay-val">Graph API v19.0</span></div>
+    <div class="ay-row"><span class="ay-label">GA4 API</span><span class="ay-val">Analytics Data API v1beta</span></div>
+    <div class="ay-row"><span class="ay-label">AI</span><span class="ay-val">Claude Sonnet (Anthropic)</span></div>
+  </div>
+  <div class="ay-section">
+    <div class="ay-section-title">📊 Log İstatistikleri</div>
+    <div id="ayLogStats"><div style="color:var(--m);font-size:11px">Yükleniyor...</div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+var COLOR_VARS = [
+  {k:'--bg',  l:'Arka Plan (Ana)',      desc:'En koyu arka plan'},
+  {k:'--s',   l:'Yüzey (Kartlar)',      desc:'Sidebar, kartlar, paneller'},
+  {k:'--s2',  l:'Yüzey 2 (Hover)',      desc:'Hover arka planı'},
+  {k:'--b',   l:'Kenarlık',             desc:'Border rengi'},
+  {k:'--t',   l:'Ana Metin',            desc:'Başlık ve içerik metni'},
+  {k:'--m',   l:'İkincil Metin',        desc:'Etiket, açıklama'},
+  {k:'--a',   l:'Vurgu (Mavi)',         desc:'Buton, aktif menü'},
+  {k:'--g',   l:'Başarı (Yeşil)',       desc:'Aktif, ROAS iyi'},
+  {k:'--r',   l:'Hata (Kırmızı)',       desc:'Hata, durdur'},
+  {k:'--y',   l:'Uyarı (Sarı)',         desc:'Uyarı, orta ROAS'},
+  {k:'--bl',  l:'Açık Mavi',            desc:'Badge, ABO'},
+];
+
+var THEMES = {
+  dark:   {bg:'#0f1011',s:'#1a1b1d',s2:'#242526',b:'#2d2e30',t:'#e4e6eb',m:'#8a8d91',a:'#1877f2',g:'#42b72a',r:'#fa3e3e',y:'#f0b429',bl:'#64b4ff'},
+  light:  {bg:'#f0f2f5',s:'#ffffff',s2:'#e4e6eb',b:'#ccd0d5',t:'#1c1e21',m:'#65676b',a:'#1877f2',g:'#31a24c',r:'#fa3e3e',y:'#f0b429',bl:'#1877f2'},
+  purple: {bg:'#0d0d1a',s:'#13132b',s2:'#1e1e3a',b:'#2a2a4a',t:'#e8e8ff',m:'#8888bb',a:'#7c6cfc',g:'#42b72a',r:'#fa3e3e',y:'#f0b429',bl:'#64b4ff'},
+  ocean:  {bg:'#071015',s:'#0d1f2d',s2:'#132637',b:'#1e3a4a',t:'#d0eaf8',m:'#6a9ab0',a:'#0ea5e9',g:'#22c55e',r:'#ef4444',y:'#f59e0b',bl:'#38bdf8'},
+};
+
+function getCSSVar(k){return getComputedStyle(document.documentElement).getPropertyValue(k).trim();}
+window.updateVar = function(k,v){document.documentElement.style.setProperty(k,v);}
+window.updateRadii = function(v){
+  var base=parseInt(v);
+  updateVar('--r-sm', Math.max(2,base-4)+'px');
+  updateVar('--r-md', Math.max(2,base-2)+'px');
+  updateVar('--r-lg', base+'px');
+  updateVar('--r-xl', (base+4)+'px');
+};
+
+// Renk satırları oluştur
+function buildColorRows(){
+  var el=document.getElementById('colorRows'); if(!el) return;
+  el.innerHTML=COLOR_VARS.map(function(c){
+    var cur=getCSSVar(c.k)||'#000000';
+    return '<div class="ay-row"><span class="ay-label">'+c.l+'<br><span style="font-size:9px;color:var(--m)">'+c.desc+'</span></span>'+
+      '<div class="color-pick">'+
+      '<input type="color" id="cp_'+c.k.replace(/-/g,'_')+'" value="'+cur+'" oninput="syncColor(\''+c.k+'\',this.value)">'+
+      '<input type="text" id="ct_'+c.k.replace(/-/g,'_')+'" value="'+cur+'" onchange="syncColor(\''+c.k+'\',this.value)" maxlength="7">'+
+      '</div></div>';
+  }).join('');
+}
+
+window.syncColor = function(varName, val){
+  updateVar(varName, val);
+  var key=varName.replace(/-/g,'_');
+  var cp=document.getElementById('cp'+key); if(cp) cp.value=val;
+  var ct=document.getElementById('ct'+key); if(ct) ct.value=val;
+  renderPreview();
+};
+
+// Önizleme
+window.renderPreview = function(){
+  var el=document.getElementById('themePreview'); if(!el) return;
+  var bg=getCSSVar('--bg'), s=getCSSVar('--s'), b=getCSSVar('--b');
+  var t=getCSSVar('--t'), m=getCSSVar('--m'), a=getCSSVar('--a');
+  var g=getCSSVar('--g'), r=getCSSVar('--r'), y=getCSSVar('--y');
+  var rLg=getCSSVar('--r-lg')||'8px';
+  el.style.background=bg;
+  el.innerHTML='<div style="display:flex;gap:6px;height:90px">'+
+    '<div style="width:70px;background:'+s+';border:1px solid '+b+';border-radius:'+rLg+';padding:6px">'+
+      '<div style="font-size:8px;font-weight:700;color:'+a+'">Madmext</div>'+
+      '<div style="margin-top:6px;background:rgba(24,119,242,.15);border-left:2px solid '+a+';padding:2px 4px;border-radius:2px;font-size:7px;color:'+t+'">Dashboard</div>'+
+      '<div style="margin-top:3px;padding:2px 4px;font-size:7px;color:'+m+'">Meta Ads</div>'+
+      '<div style="margin-top:3px;padding:2px 4px;font-size:7px;color:'+m+'">Strateji</div>'+
+    '</div>'+
+    '<div style="flex:1;display:flex;flex-direction:column;gap:5px">'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">'+
+        '<div style="background:'+s+';border:1px solid '+b+';border-top:2px solid '+a+';border-radius:'+rLg+';padding:5px;font-size:8px;color:'+m+'">Harcama<div style="font-size:11px;font-weight:600;color:'+t+'">42.500₺</div></div>'+
+        '<div style="background:'+s+';border:1px solid '+b+';border-top:2px solid '+g+';border-radius:'+rLg+';padding:5px;font-size:8px;color:'+m+'">ROAS<div style="font-size:11px;font-weight:600;color:'+g+'">4.55x</div></div>'+
+        '<div style="background:'+s+';border:1px solid '+b+';border-top:2px solid '+y+';border-radius:'+rLg+';padding:5px;font-size:8px;color:'+m+'">Satış<div style="font-size:11px;font-weight:600;color:'+t+'">952</div></div>'+
+      '</div>'+
+      '<div style="background:'+s+';border:1px solid '+b+';border-radius:'+rLg+';padding:5px;font-size:7px">'+
+        '<div style="display:flex;justify-content:space-between;padding:2px 0;color:'+m+'"><span>Advantage+ Kampanya</span><span style="color:'+g+'">4.55x</span></div>'+
+        '<div style="display:flex;justify-content:space-between;padding:2px 0;color:'+m+'"><span>Erkek Tişört 99,9</span><span style="color:'+y+'">2.16x</span></div>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+};
+
+// Tema uygula
+window.applyTheme = function(name){
+  var theme=THEMES[name]; if(!theme) return;
+  Object.keys(theme).forEach(function(k){
+    updateVar('--'+k, theme[k]);
+    var key=('--'+k).replace(/-/g,'_');
+    var cp=document.getElementById('cp'+key); if(cp) cp.value=theme[k];
+    var ct=document.getElementById('ct'+key); if(ct) ct.value=theme[k];
+  });
+  renderPreview();
+  document.querySelectorAll('.theme-btn').forEach(function(b){b.classList.remove('active');});
+  // Aktif butonu bul
+  var idx={'dark':0,'light':1,'purple':2,'ocean':3}[name];
+  var btns=document.querySelectorAll('.theme-btn');
+  if(btns[idx]) btns[idx].classList.add('active');
+};
+
+// Kaydet
+window.saveTheme = function(){
+  var saved={};
+  COLOR_VARS.forEach(function(c){saved[c.k]=getCSSVar(c.k);});
+  saved['--font-ui']=(document.getElementById('fontSelect')||{}).value||'Inter';
+  saved['--fz-base']=getCSSVar('--fz-base');
+  saved['--sidebar']=getCSSVar('--sidebar');
+  saved['--r-lg']=getCSSVar('--r-lg');
+  localStorage.setItem('mxTheme', JSON.stringify(saved));
+  toast('Tema kaydedildi ✓');
+};
+
+// CSS kopyala
+window.copyCss = function(){
+  var lines=[':root {'];
+  COLOR_VARS.forEach(function(c){lines.push('  '+c.k+': '+getCSSVar(c.k)+';');});
+  lines.push('  --font-ui: '+getCSSVar('--font-ui')+';');
+  lines.push('  --font-mono: '+getCSSVar('--font-mono')+';');
+  lines.push('  --fz-base: '+getCSSVar('--fz-base')+';');
+  lines.push('  --sidebar: '+getCSSVar('--sidebar')+';');
+  ['--r-sm','--r-md','--r-lg','--r-xl'].forEach(function(k){lines.push('  '+k+': '+getCSSVar(k)+';');});
+  lines.push('}');
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){toast('CSS kopyalandı ✓');});
+};
+
+// Sıfırla
+window.resetTheme = function(){
+  if(!confirm('Tema varsayılana dönsün mü?')) return;
+  localStorage.removeItem('mxTheme');
+  applyTheme('dark');
+  toast('Varsayılan tema yüklendi');
+};
+
+// Sekme geçişi
+window.ayTab = function(name, btn){
+  ['Baglanti','Tasarim','Hakkinda'].forEach(function(t){
+    var el=document.getElementById('ayPanel'+t); if(el) el.style.display='none';
+  });
+  document.querySelectorAll('.ay-tab').forEach(function(b){b.className='ay-tab';});
+  var panel=document.getElementById('ayPanel'+name.charAt(0).toUpperCase()+name.slice(1));
+  if(panel) panel.style.display='';
+  if(btn) btn.className='ay-tab active';
+  if(name==='tasarim'){buildColorRows();renderPreview();}
+  if(name==='hakkinda'){ayLoadStats();}
+};
+
+// Bağlantı test
+window.ayTestConn = async function(){
+  var url=(document.getElementById('ay-proxy-url')||{}).value||px();
+  var res=document.getElementById('ay-conn-result');
+  if(res) res.textContent='Test ediliyor...';
+  try{
+    var r=await fetch(url+'/api',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({endpoint:'me',params:{fields:'name'},method:'GET'})});
+    var d=await r.json();
+    if(d&&!d.error){
+      if(res) res.innerHTML='<span style="color:var(--g)">✓ Bağlantı başarılı — '+( d.name||'Meta API')+'</span>';
+      document.getElementById('ay-meta-status').innerHTML='<span style="color:var(--g)">● Bağlı</span>';
+    } else {
+      if(res) res.innerHTML='<span style="color:var(--r)">✗ Hata: '+(d&&d.error&&d.error.message||'?')+'</span>';
+    }
+  }catch(e){
+    if(res) res.innerHTML='<span style="color:var(--r)">✗ Bağlanamadı: '+e.message+'</span>';
+  }
+};
+
+window.aySaveUrl = function(){
+  var url=(document.getElementById('ay-proxy-url')||{}).value||'';
+  if(url){
+    localStorage.setItem('proxyUrl',url.replace(/\/$/,''));
+    var el=document.getElementById('proxyUrl');
+    if(el) el.value=url;
+    toast('URL kaydedildi ✓');
+  }
+};
+
+// Log istatistikleri
+function ayLoadStats(){
+  var el=document.getElementById('ayLogStats'); if(!el) return;
+  var bl=MX.budgetLog||[], tl=MX.taskLog||[];
+  var done=tl.filter(function(t){return t.done;}).length;
+  var pending=tl.filter(function(t){return !t.done&&Date.now()>=t.dueAt;}).length;
+  el.innerHTML='<div class="ay-row"><span class="ay-label">Bütçe Değişikliği</span><span class="ay-val">'+bl.length+' kayıt</span></div>'+
+    '<div class="ay-row"><span class="ay-label">Görevler (Toplam)</span><span class="ay-val">'+tl.length+'</span></div>'+
+    '<div class="ay-row"><span class="ay-label">Tamamlanan Görev</span><span class="ay-val">'+done+'</span></div>'+
+    '<div class="ay-row"><span class="ay-label">Bekleyen Görev</span><span class="ay-val" style="color:'+(pending>0?'var(--y)':'var(--m)')+'">'+pending+'</span></div>';
+}
+
+// Init
+var urlEl=document.getElementById('ay-proxy-url');
+if(urlEl) urlEl.value=px();
+
+})();
+</script>
