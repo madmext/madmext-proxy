@@ -210,9 +210,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   </div>
 
   <div class="sidebar-section">Diğer</div>
-  <div class="nav-item" onclick="nav('katalog',this)">
-    <span class="nav-icon">📦</span><span>Katalog</span>
-  </div>
   <div class="nav-item" onclick="nav('create',this)">
     <span class="nav-icon">➕</span><span>Oluştur</span>
   </div>
@@ -243,6 +240,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 
 <div id="toast"></div>
 
+<link rel="stylesheet" href="/theme.css">
 <script src="/modules/shared.js"></script>
 <script>
 // ── Sayfa meta ──────────────────────────────────────────────────────────
@@ -251,11 +249,9 @@ const PAGES = {
   'meta-ads':   {title:'Meta Ads',     sub:'Kampanya ve reklam yönetimi',    module:'meta-ads'},
   strateji:     {title:'Strateji',     sub:'AI destekli kampanya stratejisi',module:'strateji'},
   optimizasyon: {title:'Optimizasyon', sub:'Bütçe optimizasyonu ve takip',   module:'optimizasyon'},
-  katalog:     {title:'Katalog',      sub:'Ürün feed analizi ve reklam performansı',  module:'katalog'},
   'hedef-kitle':{title:'Hedef Kitle',  sub:'Audience analizi',               module:'hedef-kitle'},
   tasarim:      {title:'Tasarım',      sub:'Reklam metni ve kreatif',        module:'tasarim'},
   raporlar:     {title:'Raporlar',     sub:'Performans raporları',           module:'raporlar'},
-  katalog:      {title:'Katalog',      sub:'Ticimax ürün yönetimi ve Meta reklam setleri',   module:'katalog'},
   gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri',       module:'gorevler'},
   create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',          module:'create'},
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma',    module:'ayarlar'},
@@ -337,23 +333,6 @@ const INLINE_MODULES = {
       <div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div>
       <div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div>
     </div>`,
-  ayarlar: `
-    <div class="stl">Bağlantılar & Ayarlar</div>
-    <div class="ai-panel">
-      <div class="ai-panel-title">🔗 API Bağlantıları</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
-        <div class="channel-card">
-          <div class="channel-title">📘 Meta Ads</div>
-          <div class="channel-row"><span>Hesap ID</span><span style="font-size:10px">act_1346348685568168</span></div>
-          <div class="channel-row"><span>Durum</span><span id="set-meta-status" style="color:var(--m)">—</span></div>
-        </div>
-        <div class="channel-card">
-          <div class="channel-title">📊 Google Analytics</div>
-          <div class="channel-row"><span>Mülk ID</span><span>263117748</span></div>
-          <div class="channel-row"><span>Durum</span><span id="set-ga4-status" style="color:var(--m)">—</span></div>
-        </div>
-      </div>
-    </div>`
 };
 
 // Inline modülleri cache'e al
