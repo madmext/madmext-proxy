@@ -244,3 +244,22 @@ async function connect() {
 
 console.log('✓ Madmext shared.js yüklendi');
 
+// ── TEMA YÜKLEYİCİ ────────────────────────────────────────────────────────
+(function loadSavedTheme(){
+  try {
+    var saved = JSON.parse(localStorage.getItem('mxTheme') || 'null');
+    if(!saved) return;
+    Object.keys(saved).forEach(function(k){
+      document.documentElement.style.setProperty(k, saved[k]);
+    });
+    // Font varsa Google Fonts'tan yükle
+    var font = saved['--font-ui'] || '';
+    var fontName = font.replace(/[',\s]+sans-serif/g,'').trim();
+    if(fontName && fontName !== 'Inter') {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family='+encodeURIComponent(fontName)+':wght@400;500;600;700;800&display=swap';
+      document.head.appendChild(link);
+    }
+  } catch(e) {}
+})();
