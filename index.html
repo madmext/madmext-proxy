@@ -379,6 +379,14 @@ nav('dashboard', document.querySelector('.nav-item.active'));
 
 // Her dakika badge güncelle
 setInterval(updateTaskBadge, 60000);
+
+// Railway veya localhost'tan açılıyorsa otomatik bağlan
+(function(){
+  var host = window.location.hostname;
+  if(host.indexOf('railway.app')>-1 || host.indexOf('up.railway')>-1 || host==='localhost' || host==='127.0.0.1') {
+    setTimeout(connect, 800);
+  }
+})();
 </script>
 </body>
 </html>
