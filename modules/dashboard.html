@@ -34,7 +34,9 @@
 
 <script>
 async function loadDashboard() {
-  document.getElementById('dashLastUpdate').textContent = 'Yükleniyor...';
+  var upEl = document.getElementById('dashLastUpdate');
+  if(!upEl) return; // Farklı sayfadaysa çalışma
+  upEl.textContent = 'Yükleniyor...';
 
   // META
   const metaIns = await api(`${AID}/insights`, { fields: 'spend,clicks,purchase_roas,actions', date_preset: 'last_7d', level: 'account', action_attribution_windows: ATTR });
@@ -95,7 +97,7 @@ async function loadDashboard() {
     }).join('');
   }
 
-  document.getElementById('dashLastUpdate').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
+  if(document.getElementById('dashLastUpdate')) document.getElementById('dashLastUpdate').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
 }
 
 window.addEventListener('mx:connected', loadDashboard);
