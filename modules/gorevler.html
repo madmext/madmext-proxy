@@ -79,5 +79,5 @@ function clearDoneTasks(){
   saveServerLogs(); renderTasks();
 }
 
-window.addEventListener('mx:connected', renderTasks);
+window.onConnected(renderTasks);
 </script>
