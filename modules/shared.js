@@ -224,21 +224,24 @@ function updateTaskBadge() {
 
 // ── Connect ────────────────────────────────────────────────────────────
 async function connect() {
-  const urlEl = document.getElementById('proxyUrl');
-  if (urlEl) localStorage.setItem('proxyUrl', urlEl.value.trim().replace(/\/$/, ''));
-  const dot = document.getElementById('dot');
-  if (dot) dot.className = 'dot';
-  const d = await api('me', { fields: 'name' });
-  if (d && !d.error) {
-    if (dot) dot.className = 'dot on';
-    toast('Bağlandı ✓');
-    await loadServerLogs();
-    updateTaskBadge();
-    // Her açık modülü bilgilendir
-    window.dispatchEvent(new CustomEvent('mx:connected'));
-  } else {
-    if (dot) dot.className = 'dot err';
-    toast('Hata: ' + (d?.error?.message || '?'));
+  try {
+    const urlEl = document.getElementById('proxyUrl');
+    if (urlEl) localStorage.setItem('proxyUrl', urlEl.value.trim().replace(/\/$/, ''));
+    const dot = document.getElementById('dot');
+    if (dot) dot.className = 'dot';
+    const d = await api('me', { fields: 'name' });
+    if (d && !d.error) {
+      if (dot) dot.className = 'dot on';
+      toast('Bağlandı ✓');
+      await loadServerLogs();
+      updateTaskBadge();
+      window.dispatchEvent(new CustomEvent('mx:connected'));
+    } else {
+      if (dot) dot.className = 'dot err';
+      toast('Hata: ' + (d?.error?.message || '?'));
+    }
+  } catch(e) {
+    console.error('Connect error:', e);
   }
 }
 
