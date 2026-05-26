@@ -100,5 +100,5 @@ async function loadDashboard() {
   if(document.getElementById('dashLastUpdate')) document.getElementById('dashLastUpdate').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
 }
 
-window.addEventListener('mx:connected', loadDashboard);
+window.onConnected(loadDashboard);
 </script>
