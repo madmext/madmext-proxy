@@ -162,7 +162,6 @@ async function chatApproveB(id, name, type, curTL, newTL, pct, containerId = 'ch
         fields: 'spend,ctr,cpc,purchase_roas,actions', date_preset: 'last_7d',
         level: type === 'campaign' ? 'campaign' : 'adset',
         filtering: JSON.stringify([{ field: type === 'campaign' ? 'campaign.id' : 'adset.id', operator: 'EQUAL', value: id }]),
-        action_attribution_windows: ATTR
       });
       const br = bd?.data?.[0];
       if (br) baseline = { roas: groas(br), spend: parseFloat(br.spend || 0), purchase: gav(br.actions, 'purchase'), ctr: parseFloat(br.ctr || 0), cpc: parseFloat(br.cpc || 0) };
