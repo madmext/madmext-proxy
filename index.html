@@ -5,21 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Madmext Ads</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/theme.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0f1011;--s:#1a1b1d;--s2:#242526;--b:#2d2e30;--b2:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#8a8d91;--g:#42b72a;--r:#fa3e3e;--y:#f0b429;--bl:#64b4ff}
 body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;font-size:13px;overflow:hidden}
-
-/* ── LAYOUT ── */
 .app{display:flex;height:100vh}
 .sidebar{width:220px;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{background:var(--s);border-bottom:1px solid var(--b);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .content{flex:1;overflow-y:auto;padding:20px}
-
-/* ── SIDEBAR ── */
 .sidebar-logo{padding:14px 16px 10px;border-bottom:1px solid var(--b);margin-bottom:6px}
-.logo{font-family:'Inter',sans-serif;font-size:17px;font-weight:800;letter-spacing:-0.5px;color:var(--t)}.logo span{color:#1877f2}
+.logo{font-size:17px;font-weight:800;letter-spacing:-0.5px;color:var(--t)}.logo span{color:#1877f2}
 .sidebar-section{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1.5px;padding:10px 16px 3px}
 .nav-item{display:flex;align-items:center;gap:10px;padding:7px 16px;cursor:pointer;font-size:13px;color:var(--m);transition:all .15s;border-left:2px solid transparent}
 .nav-item:hover{background:var(--s2);color:var(--t)}
@@ -34,15 +31,11 @@ body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;font-siz
 .nav-group-items{display:none}
 .nav-group.open .nav-group-items{display:block}
 .nav-group.open .nav-group-header{color:var(--t)}
-
-/* ── TOPBAR ── */
 .page-title{font-size:14px;font-weight:600;color:var(--t)}
 .page-sub{font-size:11px;color:var(--m)}
 .conn-input{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:4px;width:260px}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--m);display:inline-block;flex-shrink:0}
 .dot.on{background:var(--g);box-shadow:0 0 6px var(--g)}.dot.err{background:var(--r)}
-
-/* ── BUTTONS ── */
 .btn{background:var(--a);color:#fff;border:none;padding:7px 14px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;border-radius:5px;transition:opacity .2s}
 .btn:hover{opacity:.85}
 .btn.sec{background:var(--s2);border:1px solid var(--b2);color:var(--t)}
@@ -50,16 +43,12 @@ body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;font-siz
 .btn.yel{background:var(--y);color:#000}.btn.sm{padding:4px 9px;font-size:10px}
 select,.flt{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 10px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px;cursor:pointer}
 .arow{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
-
-/* ── STAT CARDS ── */
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
 .sc{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;position:relative;overflow:hidden}
 .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--a)}
 .sl{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
 .sv{font-family:'DM Mono',monospace;font-size:22px;font-weight:500}
 .sdiff{font-size:11px;margin-top:4px}.sdiff.up{color:var(--g)}.sdiff.dn{color:var(--r)}.sdiff.neu{color:var(--m)}
-
-/* ── TABLE ── */
 .twrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;max-height:calc(100vh - 260px)}
 table{width:100%;border-collapse:collapse;font-size:12px}
 th{background:var(--bg);padding:9px 11px;text-align:left;color:var(--m);text-transform:uppercase;letter-spacing:.6px;font-size:9px;border-bottom:1px solid var(--b);white-space:nowrap;position:sticky;top:0;z-index:2;cursor:pointer;user-select:none}
@@ -71,8 +60,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .bge.off{background:rgba(250,62,62,.1);color:#ff6b6b;border:1px solid rgba(250,62,62,.2)}
 .bge.cbo{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
 .bge.abo{background:rgba(100,180,255,.12);color:var(--bl);border:1px solid rgba(100,180,255,.3)}
-
-/* ── COL PICKER ── */
 .cpicker-wrap{position:relative;display:inline-block}
 .cpicker-btn{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:5px;cursor:pointer}
 .cpicker-dropdown{display:none;position:absolute;top:100%;right:0;background:#111;border:1px solid var(--b);border-radius:8px;padding:12px;z-index:100;min-width:200px;max-height:360px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.6)}
@@ -81,8 +68,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .cpicker-item:hover{background:#1a1a1a}
 .cpicker-item input{cursor:pointer;accent-color:var(--a)}
 .cpicker-section{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;padding:5px 8px 2px;margin-top:4px}
-
-/* ── CHAT ── */
 .chat-layout{display:grid;grid-template-columns:1fr 260px;gap:16px;height:calc(100vh - 180px)}
 .chat-msgs{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
 .msg{padding:12px 16px;border-radius:8px;font-size:13px;line-height:1.7;max-width:96%;font-family:'Inter',sans-serif}
@@ -106,8 +91,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .d{width:6px;height:6px;border-radius:50%;background:var(--a);animation:pu 1.2s infinite}
 .d:nth-child(2){animation-delay:.2s}.d:nth-child(3){animation-delay:.4s}
 @keyframes pu{0%,80%,100%{opacity:.3}40%{opacity:1}}
-
-/* ── DASHBOARD ── */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:20px}
 .dash-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;position:relative;overflow:hidden}
 .dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
@@ -123,14 +106,10 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .channel-row:last-child{border-bottom:none}
 .channel-row span:first-child{color:var(--m)}
 .channel-row span:last-child{color:var(--t);font-family:'DM Mono',monospace}
-
-/* ── BUDGET LOG ── */
 .lcard{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:9px;display:flex;gap:10px;align-items:flex-start}
 .lcard.neu{border-left:3px solid var(--y)}.lcard.up{border-left:3px solid var(--g)}.lcard.dn{border-left:3px solid var(--r)}
 .lname{font-size:13px;font-weight:600;margin-bottom:3px}.lmeta{font-size:11px;color:var(--m);line-height:1.6}
 .lch{font-family:'DM Mono',monospace;font-size:20px;font-weight:800;text-align:right;white-space:nowrap;min-width:60px}
-
-/* ── CREATE / FORMS ── */
 .cform{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:680px}
 .fg{display:flex;flex-direction:column;gap:6px}
 .fg label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}
@@ -140,8 +119,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .ai-panel-title{font-size:14px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
 .ai-panel-sub{font-size:11px;color:var(--m);margin-bottom:0}
 .stl{font-size:11px;font-weight:700;color:var(--m);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
-
-/* ── TOAST / MODAL ── */
 #toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b);border-left:3px solid var(--a);padding:12px 18px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .3s;z-index:9999;max-width:360px}
 #toast.show{opacity:1}
 .moverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:10000}
@@ -149,76 +126,36 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .modal h3{font-size:16px;font-weight:700;margin-bottom:14px}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
-
-/* ── MODULE LOADING ── */
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
 </style>
 </head>
 <body>
 <div class="app">
-
-<!-- ── SIDEBAR ── -->
 <div class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo">Madmext <span>Ads</span></div>
-  </div>
-
+  <div class="sidebar-logo"><div class="logo">Madmext <span>Ads</span></div></div>
   <div class="sidebar-section">Ana Menü</div>
-  <div class="nav-item active" onclick="nav('dashboard',this)">
-    <span class="nav-icon">🏠</span><span>Dashboard</span>
-  </div>
-
+  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
   <div class="sidebar-section">Reklam</div>
   <div class="nav-group open" id="navGrupReklam">
-    <div class="nav-group-header" onclick="toggleGroup('navGrupReklam')">
-      <span class="nav-icon">📢</span><span style="flex:1">Reklam</span><span style="font-size:10px">▾</span>
-    </div>
+    <div class="nav-group-header" onclick="toggleGroup('navGrupReklam')"><span class="nav-icon">📢</span><span style="flex:1">Reklam</span><span style="font-size:10px">▾</span></div>
     <div class="nav-group-items">
-      <div class="nav-item nav-sub" onclick="nav('meta-ads',this)">
-        <span class="nav-icon" style="font-size:10px">●</span><span>Meta Ads</span>
-      </div>
-      <div class="nav-item nav-sub" style="opacity:.45;cursor:default">
-        <span class="nav-icon" style="font-size:10px">●</span><span>Google Ads</span><span class="nav-soon">Yakında</span>
-      </div>
-      <div class="nav-item nav-sub" style="opacity:.45;cursor:default">
-        <span class="nav-icon" style="font-size:10px">●</span><span>TikTok</span><span class="nav-soon">Yakında</span>
-      </div>
+      <div class="nav-item nav-sub" onclick="nav('meta-ads',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Meta Ads</span></div>
+      <div class="nav-item nav-sub" style="opacity:.45;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>Google Ads</span><span class="nav-soon">Yakında</span></div>
+      <div class="nav-item nav-sub" style="opacity:.45;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>TikTok</span><span class="nav-soon">Yakında</span></div>
     </div>
   </div>
-
   <div class="sidebar-section">AI Araçlar</div>
-  <div class="nav-item" onclick="nav('strateji',this)">
-    <span class="nav-icon">🧠</span><span>Strateji</span><span class="nav-ai">AI</span>
-  </div>
-  <div class="nav-item" onclick="nav('optimizasyon',this)">
-    <span class="nav-icon">⚙️</span><span>Optimizasyon</span><span class="nav-ai">AI</span>
-  </div>
-  <div class="nav-item" onclick="nav('hedef-kitle',this)">
-    <span class="nav-icon">🎯</span><span>Hedef Kitle</span><span class="nav-ai">AI</span>
-  </div>
-  <div class="nav-item" onclick="nav('tasarim',this)">
-    <span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span>
-  </div>
-
+  <div class="nav-item" onclick="nav('strateji',this)"><span class="nav-icon">🧠</span><span>Strateji</span><span class="nav-ai">AI</span></div>
+  <div class="nav-item" onclick="nav('optimizasyon',this)"><span class="nav-icon">⚙️</span><span>Optimizasyon</span><span class="nav-ai">AI</span></div>
+  <div class="nav-item" onclick="nav('hedef-kitle',this)"><span class="nav-icon">🎯</span><span>Hedef Kitle</span><span class="nav-ai">AI</span></div>
+  <div class="nav-item" onclick="nav('tasarim',this)"><span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span></div>
   <div class="sidebar-section">Raporlama</div>
-  <div class="nav-item" onclick="nav('raporlar',this)">
-    <span class="nav-icon">📊</span><span>Raporlar</span>
-  </div>
-  <div class="nav-item" onclick="nav('gorevler',this)" id="navGorevler">
-    <span class="nav-icon">⏰</span><span>Görevler</span>
-    <span class="nav-badge" id="taskBadge" style="display:none">0</span>
-  </div>
-
+  <div class="nav-item" onclick="nav('raporlar',this)"><span class="nav-icon">📊</span><span>Raporlar</span></div>
+  <div class="nav-item" onclick="nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Diğer</div>
-  <div class="nav-item" onclick="nav('create',this)">
-    <span class="nav-icon">➕</span><span>Oluştur</span>
-  </div>
-  <div class="nav-item" onclick="nav('ayarlar',this)">
-    <span class="nav-icon">⚙️</span><span>Ayarlar</span>
-  </div>
+  <div class="nav-item" onclick="nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
+  <div class="nav-item" onclick="nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
 </div>
-
-<!-- ── MAIN ── -->
 <div class="main">
   <div class="topbar">
     <div>
@@ -231,42 +168,36 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
       <button class="btn sm" onclick="connect()">Bağlan</button>
     </div>
   </div>
-  <div class="content" id="mainContent">
-    <div class="module-loading">Yükleniyor...</div>
-  </div>
+  <div class="content" id="mainContent"><div class="module-loading">Yükleniyor...</div></div>
 </div>
-
-</div><!-- /app -->
-
+</div>
 <div id="toast"></div>
 
 <script src="/modules/shared.js"></script>
 <script>
-// ── Sayfa meta ──────────────────────────────────────────────────────────
 const PAGES = {
-  dashboard:    {title:'Dashboard',    sub:'Genel bakış',                    module:'dashboard'},
-  'meta-ads':   {title:'Meta Ads',     sub:'Kampanya ve reklam yönetimi',    module:'meta-ads'},
-  strateji:     {title:'Strateji',     sub:'AI destekli kampanya stratejisi',module:'strateji'},
-  optimizasyon: {title:'Optimizasyon', sub:'Bütçe optimizasyonu ve takip',   module:'optimizasyon'},
-  'hedef-kitle':{title:'Hedef Kitle',  sub:'Audience analizi',               module:'hedef-kitle'},
-  tasarim:      {title:'Tasarım',      sub:'Reklam metni ve kreatif',        module:'tasarim'},
-  raporlar:     {title:'Raporlar',     sub:'Performans raporları',           module:'raporlar'},
-  gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri',       module:'gorevler'},
-  create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',          module:'create'},
-  ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma',    module:'ayarlar'},
+  dashboard:    {title:'Dashboard',    sub:'Genel bakış',             module:'dashboard'},
+  'meta-ads':   {title:'Meta Ads',     sub:'Kampanya ve reklam yönetimi', module:'meta-ads'},
+  strateji:     {title:'Strateji',     sub:'AI destekli kampanya stratejisi', module:'strateji'},
+  optimizasyon: {title:'Optimizasyon', sub:'Bütçe optimizasyonu ve takip', module:'optimizasyon'},
+  'hedef-kitle':{title:'Hedef Kitle',  sub:'Audience analizi',        module:'hedef-kitle'},
+  tasarim:      {title:'Tasarım',      sub:'Reklam metni ve kreatif', module:'tasarim'},
+  raporlar:     {title:'Raporlar',     sub:'Performans raporları',    module:'raporlar'},
+  gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri', module:'gorevler'},
+  create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',   module:'create'},
+  ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
 };
 
-// currentPage global - modüller window.currentPage ile okur
 window.currentPage = '';
-
-// Modül listener yönetimi - her modül geçişinde temizlenir
 window.__moduleListeners = [];
+
+// Modül listener kayıt - her nav'da temizlenir
 window.onConnected = function(fn) {
   window.__moduleListeners.push(fn);
   window.addEventListener('mx:connected', fn);
 };
 
-let _navBusy = false;
+var _navBusy = false;
 
 async function nav(page, el) {
   if(page === window.currentPage) return;
@@ -281,125 +212,85 @@ async function nav(page, el) {
 
   window.currentPage = page;
 
-  // Sidebar aktif
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
   if(el) el.classList.add('active');
 
-  // Başlık
-  const meta = PAGES[page] || {title:page, sub:''};
+  var meta = PAGES[page] || {title:page, sub:''};
   document.getElementById('pageTitle').textContent = meta.title;
   document.getElementById('pageSub').textContent = meta.sub;
 
-  // Modül yükle
   await loadModule(page);
   _navBusy = false;
 }
 
 async function loadModule(page) {
-  const el = document.getElementById('mainContent');
+  var el = document.getElementById('mainContent');
 
-  // Inline: create
   if(page === 'create') {
-    el.innerHTML = `
-    <div class="stl">Yeni Kampanya Oluştur</div>
-    <div class="cform">
-      <div class="fg full"><label>Kampanya Adı</label><input type="text" id="cName" placeholder="örn: Erkek Tişört Yaz 2026"></div>
-      <div class="fg"><label>Hedef</label><select id="cObj"><option value="OUTCOME_SALES">Satış</option><option value="OUTCOME_TRAFFIC">Trafik</option><option value="OUTCOME_AWARENESS">Farkındalık</option><option value="OUTCOME_ENGAGEMENT">Etkileşim</option><option value="OUTCOME_LEADS">Lead</option></select></div>
-      <div class="fg"><label>Günlük Bütçe (₺)</label><input type="number" id="cBudget" placeholder="500" min="1"></div>
-      <div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div>
-      <div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div>
-    </div>`;
+    el.innerHTML = '<div class="stl">Yeni Kampanya Oluştur</div><div class="cform"><div class="fg full"><label>Kampanya Adı</label><input type="text" id="cName" placeholder="örn: Erkek Tişört Yaz 2026"></div><div class="fg"><label>Hedef</label><select id="cObj"><option value="OUTCOME_SALES">Satış</option><option value="OUTCOME_TRAFFIC">Trafik</option><option value="OUTCOME_AWARENESS">Farkındalık</option><option value="OUTCOME_ENGAGEMENT">Etkileşim</option><option value="OUTCOME_LEADS">Lead</option></select></div><div class="fg"><label>Günlük Bütçe (₺)</label><input type="number" id="cBudget" placeholder="500" min="1"></div><div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div><div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div></div>';
     return;
   }
 
-  const meta = PAGES[page];
-  if(!meta) {
-    el.innerHTML = `<div class="module-loading" style="color:var(--r)">❌ Sayfa bulunamadı: ${page}</div>`;
-    return;
-  }
+  var meta = PAGES[page];
+  if(!meta){ el.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Sayfa bulunamadı</div>'; return; }
 
   el.innerHTML = '<div class="module-loading">⏳ Yükleniyor...</div>';
 
   try {
-    // Cache yok - her seferinde taze yükle (script birikimini önler)
-    const r = await fetch('/modules/' + meta.module + '.html?v=' + Date.now());
+    var r = await fetch('/modules/' + meta.module + '.html?v=' + Date.now());
     if(!r.ok) throw new Error('HTTP ' + r.status);
-    const html = await r.text();
+    var html = await r.text();
 
-    // HTML içindeki scriptleri ayır
-    const tmp = document.createElement('div');
+    // Script'leri DOM'dan ayır
+    var tmp = document.createElement('div');
     tmp.innerHTML = html;
-    const scripts = Array.from(tmp.querySelectorAll('script')).map(s => {
-      const code = s.textContent;
+    var scripts = [];
+    tmp.querySelectorAll('script').forEach(function(s){
+      scripts.push(s.textContent);
       s.remove();
-      return code;
     });
 
     el.innerHTML = tmp.innerHTML;
 
-    // Scriptleri sırayla çalıştır (window.currentPage zaten set edildi)
-    scripts.forEach(function(code) {
+    // Script'leri sırayla çalıştır
+    scripts.forEach(function(code){
       try {
-        const s = document.createElement('script');
+        var s = document.createElement('script');
         s.textContent = code;
         document.body.appendChild(s);
-      } catch(e) { console.error('Script hatası:', e); }
+      } catch(e){ console.error('Script hatası:', e); }
     });
 
-    // Bağlıysa event gönder
+    // Script'ler çalıştıktan sonra bağlıysa event gönder
     if(window._isConnected) {
       setTimeout(function(){
         window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 50);
+      }, 100);
     }
 
   } catch(e) {
-    el.innerHTML = '<div class="module-loading" style="color:var(--r)">❌ ' + meta.module + '.html yüklenemedi: ' + e.message + '</div>';
+    el.innerHTML = '<div class="module-loading" style="color:var(--r)">❌ ' + (meta.module) + '.html yüklenemedi: ' + e.message + '</div>';
   }
 }
 
-function toggleGroup(id) {
-  document.getElementById(id).classList.toggle('open');
-}
+function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
 
-// create modülü loadModule içinde inline olarak tanımlı
-
-// ── createCamp ─────────────────────────────────────────────────────────
 async function createCamp() {
-  const name=document.getElementById('cName')?.value;
-  const obj=document.getElementById('cObj')?.value;
-  const budget=document.getElementById('cBudget')?.value;
-  const status=document.getElementById('cStatus')?.value;
+  var name=document.getElementById('cName')?.value;
+  var obj=document.getElementById('cObj')?.value;
+  var budget=document.getElementById('cBudget')?.value;
+  var status=document.getElementById('cStatus')?.value;
   if(!name||!budget){toast('Ad ve bütçe zorunlu');return;}
-  const d=await api(`${AID}/campaigns`,{name,objective:obj,daily_budget:Math.round(parseFloat(budget)*100),status,special_ad_categories:'[]'},'POST');
-  if(d?.id){toast('Oluşturuldu: '+d.id);document.getElementById('cName').value='';document.getElementById('cBudget').value='';}
-  else toast('Hata: '+(d?.error?.message||'?'));
+  var d=await api(AID+'/campaigns',{name:name,objective:obj,daily_budget:Math.round(parseFloat(budget)*100),status:status,special_ad_categories:'[]'},'POST');
+  if(d&&d.id){toast('Oluşturuldu: '+d.id);}
+  else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
 }
 
-// theme.css'i opsiyonel yükle
-(function(){
-  var l=document.createElement('link');
-  l.rel='stylesheet';l.href='/theme.css';
-  l.onerror=function(){console.log('theme.css yok, varsayılan tema kullanılıyor');};
-  document.head.appendChild(l);
-})();
-
-// ── Init ────────────────────────────────────────────────────────────────
+// Init
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
-
-// İlk sayfa
 nav('dashboard', document.querySelector('.nav-item.active'));
-
-// Her dakika badge güncelle
 setInterval(updateTaskBadge, 60000);
-
-// Railway veya localhost'tan açılıyorsa otomatik bağlan
-(function(){
-  var host = window.location.hostname;
-  if(host.indexOf('railway.app')>-1 || host.indexOf('up.railway')>-1 || host==='localhost' || host==='127.0.0.1') {
-    setTimeout(connect, 800);
-  }
-})();
+setTimeout(connect, 800);
 </script>
 </body>
 </html>
