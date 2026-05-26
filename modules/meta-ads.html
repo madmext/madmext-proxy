@@ -467,15 +467,13 @@ window.mLoad=function(){
 
 async function loadMetaCamp(){
   if(!document.getElementById('mTB')) return;
-  console.log('[MetaCamp] Başladı, _isConnected:', window._isConnected, 'AID:', AID);
   var st=document.getElementById('mStatus');if(st)st.textContent='⏳';
   var dp=getDP();
-  var params=Object.assign({fields:INSF+',campaign_id,campaign_name,updated_time,effective_status',level:'campaign',limit:500,action_attribution_windows:ATTR},dp);
+  var params=Object.assign({fields:INSF+',campaign_id,campaign_name',level:'campaign',limit:500,action_attribution_windows:ATTR},dp);
   var[ins,camps]=await Promise.all([
     api(AID+'/insights',params),
     api(AID+'/campaigns',{fields:'id,name,status,effective_status,daily_budget,lifetime_budget,end_time,updated_time,recommendations',limit:500})
   ]);
-  console.log('[MetaCamp] ins:', ins, 'camps:', camps);
   var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.campStore=(camps&&camps.data||[]);
   var rows=(ins&&ins.data||[]).map(function(r){
@@ -510,7 +508,7 @@ async function loadMetaAdsets(){
   var st=document.getElementById('mStatus');if(st)st.textContent='⏳';
   var dp=getDP();
   var campF=(document.getElementById('mCampFlt')||{}).value||'';
-  var params=Object.assign({fields:INSF+',adset_id,adset_name,campaign_id,campaign_name,updated_time,effective_status',level:'adset',limit:500,action_attribution_windows:ATTR},dp);
+  var params=Object.assign({fields:INSF+',adset_id,adset_name,campaign_id,campaign_name',level:'adset',limit:500,action_attribution_windows:ATTR},dp);
   if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
   var[ins,adsets,camps]=await Promise.all([
     api(AID+'/insights',params),
@@ -539,7 +537,7 @@ async function loadMetaAds(){
   var st=document.getElementById('mStatus');if(st)st.textContent='⏳';
   var dp=getDP();
   var campF=(document.getElementById('mCampFlt')||{}).value||'';
-  var params=Object.assign({fields:INSF+',ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name,updated_time,effective_status',level:'ad',limit:500,action_attribution_windows:ATTR},dp);
+  var params=Object.assign({fields:INSF+',ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name',level:'ad',limit:500,action_attribution_windows:ATTR},dp);
   if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
   var[ins,ads]=await Promise.all([
     api(AID+'/insights',params),
@@ -610,14 +608,6 @@ window.mApproveB=async function(){
   mPending=null;
 };
 
-// Bağlıysa direkt yükle, değilse event bekle
-if(window._isConnected) {
-  loadMetaCamp();
-} else {
-  window.addEventListener('mx:connected', function _metaInit(){
-    window.removeEventListener('mx:connected', _metaInit);
-    loadMetaCamp();
-  });
-}
+if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
 })();
 </script>
