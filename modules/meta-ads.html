@@ -84,21 +84,29 @@
     <option value="last_month">Geçen ay</option>
     <option value="custom">📅 Özel Aralık</option>
   </select>
-  <!-- Takvim - özel aralık için -->
   <div class="date-wrap" id="mCustomWrap" style="display:none">
     <input type="date" id="mFrom" onchange="mLoad()">
     <span>→</span>
     <input type="date" id="mTo" onchange="mLoad()">
   </div>
-  <!-- Aktif/Pasif filtre -->
-  <div style="display:flex;gap:3px;background:var(--bg);border-radius:5px;padding:3px;border:1px solid var(--b)">
-    <button class="mstatus-btn active" id="msBtnAll" onclick="setStatusFilter('all',this)" style="padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:var(--a);color:#fff;font-family:'DM Mono',monospace">Tümü</button>
-    <button class="mstatus-btn" id="msBtnActive" onclick="setStatusFilter('active',this)" style="padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace">● Aktif</button>
-    <button class="mstatus-btn" id="msBtnPaused" onclick="setStatusFilter('paused',this)" style="padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace">⏸ Pasif</button>
-  </div>
   <select class="flt" id="mCampFlt" style="font-size:11px;max-width:200px;display:none" onchange="mLoad()">
     <option value="">Tüm Kampanyalar</option>
   </select>
+  <!-- Aktif/Pasif filtre butonları -->
+  <div style="display:flex;gap:2px;background:var(--s2);border:1px solid var(--b);border-radius:5px;padding:2px">
+    <button class="mstatus-btn" id="msBtnAll" onclick="setStatusFilter('all',this)"
+      style="padding:4px 12px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:var(--a);color:#fff;font-family:'DM Mono',monospace;transition:all .15s">
+      Tümü
+    </button>
+    <button class="mstatus-btn" id="msBtnActive" onclick="setStatusFilter('active',this)"
+      style="padding:4px 12px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace;transition:all .15s">
+      ● Aktif
+    </button>
+    <button class="mstatus-btn" id="msBtnPaused" onclick="setStatusFilter('paused',this)"
+      style="padding:4px 12px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace;transition:all .15s">
+      ⏸ Pasif
+    </button>
+  </div>
   <button class="btn sm" onclick="mLoad()">↻</button>
   <select class="flt" id="mCmp" onchange="mLoad()" style="font-size:11px;padding:5px 8px">
     <option value="">Karşılaştırma yok</option>
@@ -181,8 +189,8 @@ var mPending = null;
 var mSort = {};
 var mPage = 0;
 var M_PAGE = 50;
-var mCols = new Set(['delivery','budget','results','cpr','spend','impr','reach','freq','cpm','clicks','ctr','cpc','roas','quality']);
 var mStatusFilter = 'all'; // 'all' | 'active' | 'paused'
+var mCols = new Set(['delivery','budget','results','cpr','spend','impr','reach','freq','cpm','clicks','ctr','cpc','roas','quality']);
 
 // Sütun tanımları
 var COLS = [
@@ -274,15 +282,21 @@ function qualCell(org,ectr,ecvr){
 
 // Özet
 function mSummary(data,cmp){
+  // Doğru hesaplama: tüm satırların ham değerlerini topla
   var tS=0,tI=0,tR=0,tC=0,tP=0,tRev=0;
   data.forEach(function(r){
-    tS+=r.spend||0;tI+=r.impr||0;tR+=r.reach||0;tC+=r.clicks||0;
-    tP+=r.results||0;tRev+=r.revenue||0;
+    tS  += r.spend   || 0;
+    tI  += r.impr    || 0;
+    tR  += r.reach   || 0;
+    tC  += r.clicks  || 0;
+    tP  += r.results || 0;
+    tRev+= r.revenue || 0;
   });
-  // CTR = toplam tıklama / toplam gösterim (doğru hesap)
-  var ctr = tI>0 ? (tC/tI*100) : 0;
-  // ROAS = toplam gelir / toplam harcama (ağırlıklı ortalama)
-  var roas = tS>0 ? (tRev/tS) : 0;
+  // CTR = toplam tıklama / toplam gösterim × 100  (ağırlıklı, doğru)
+  var ctr  = tI > 0 ? (tC / tI * 100) : 0;
+  // ROAS = toplam gelir / toplam harcama            (ağırlıklı, doğru)
+  var roas = tS > 0 ? (tRev / tS)     : 0;
+
   function s(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
   function d(id,cur,prev){
     var e=document.getElementById(id);if(!e||!prev)return;
@@ -290,23 +304,33 @@ function mSummary(data,cmp){
     e.className='ms-diff '+(p>=0?'up':'dn');
     e.textContent=(p>=0?'▲':'▼')+Math.abs(p).toFixed(1)+'%';
   }
-  s('ms-spend',tS.toFixed(0)+'₺');
-  s('ms-impr',tI>=1000?(tI/1000).toFixed(0)+'K':tI);
-  s('ms-reach',tR>=1000?(tR/1000).toFixed(0)+'K':tR);
+  s('ms-spend', tS.toFixed(0)+'₺');
+  s('ms-impr',  tI>=1000?(tI/1000).toFixed(1)+'K':String(tI));
+  s('ms-reach', tR>=1000?(tR/1000).toFixed(1)+'K':String(tR));
   s('ms-clicks',tC.toLocaleString('tr'));
-  s('ms-ctr',tI>0?ctr.toFixed(2)+'%':'—');
-  s('ms-roas',tS>0?roas.toFixed(2)+'x':'—');
+  s('ms-ctr',   tI>0 ? ctr.toFixed(2)+'%' : '—');
+  s('ms-roas',  tS>0 ? roas.toFixed(2)+'x': '—');
   s('ms-purchase',tP.toLocaleString('tr'));
+
   if(cmp&&cmp.length){
-    var cS=0,cI=0,cR=0,cC=0,cP=0;
-    cmp.forEach(function(r){cS+=r.spend||0;cI+=r.impr||0;cR+=r.reach||0;cC+=r.clicks||0;cP+=r.results||0;});
-    d('md-spend',tS,cS);d('md-impr',tI,cI);d('md-reach',tR,cR);d('md-clicks',tC,cC);d('md-purchase',tP,cP);
+    var cS=0,cI=0,cR=0,cC=0,cP=0,cRev=0;
+    cmp.forEach(function(r){
+      cS+=r.spend||0;cI+=r.impr||0;cR+=r.reach||0;
+      cC+=r.clicks||0;cP+=r.results||0;cRev+=r.revenue||0;
+    });
+    d('md-spend',tS,cS);d('md-impr',tI,cI);d('md-reach',tR,cR);
+    d('md-clicks',tC,cC);d('md-purchase',tP,cP);
   }
 }
 
-// Tablo render
+// Tablo render - her zaman filtrelenmiş veriyle çalışır
 function mRender(tab){
-  var data=mData[tab];
+  var data=getFiltered(mData[tab]);
+  mRenderData(tab,data);
+}
+
+function mRenderData(tab,data){
+  if(!document.getElementById('mTB')) return;
   var cols=COLS.filter(function(c){return c.fixed||mCols.has(c.k);});
   var st=mSort[tab]||{};
   // Header
@@ -467,30 +491,38 @@ function mapR(r,camp,adset){
   };
 }
 
-// Durum filtresi
-window.setStatusFilter = function(val, btn) {
-  mStatusFilter = val;
-  document.querySelectorAll('.mstatus-btn').forEach(function(b){
-    b.style.background='transparent';b.style.color='var(--m)';
-  });
-  if(btn){btn.style.background='var(--a)';btn.style.color='#fff';}
-  mPage=0;
-  // Mevcut veriyi tekrar render et (API çağrısı yapmadan)
-  mRender(currentMetaTab);
-  // Özet kartları da güncelle (filtreli veri ile)
-  var tab=currentMetaTab;
-  var filtered=getFiltered(mData[tab]);
-  mSummary(filtered,[]);
-};
-
+// Durum filtreleyici
 function getFiltered(data){
+  if(!data) return [];
   if(mStatusFilter==='all') return data;
   return data.filter(function(r){
     var s=(r.effectiveStatus||r.status||'').toUpperCase();
-    if(mStatusFilter==='active') return s==='ACTIVE';
-    if(mStatusFilter==='paused') return s==='PAUSED'||s==='CAMPAIGN_PAUSED'||s==='ADSET_PAUSED';
+    if(mStatusFilter==='active') return s==='ACTIVE'||s==='LEARNING'||s==='LEARNING_LIMITED';
+    if(mStatusFilter==='paused') return s==='PAUSED'||s==='CAMPAIGN_PAUSED'||s==='ADSET_PAUSED'||s==='ARCHIVED';
     return true;
   });
+}
+
+// Filtre butonu tıklama
+window.setStatusFilter=function(val,btn){
+  mStatusFilter=val;
+  // Buton stillerini güncelle
+  document.querySelectorAll('.mstatus-btn').forEach(function(b){
+    b.style.background='transparent';
+    b.style.color='var(--m)';
+  });
+  if(btn){btn.style.background='var(--a)';btn.style.color='#fff';}
+  // Özet kartları ve tabloyu filtreli veri ile güncelle
+  mPage=0;
+  var filtered=getFiltered(mData[currentMetaTab]);
+  mSummary(filtered,[]);
+  mRenderFiltered(currentMetaTab);
+};
+
+// Sadece tabloyu render et (filtrelenmiş) - API çağrısı yok
+function mRenderFiltered(tab){
+  var filtered=getFiltered(mData[tab]);
+  mRenderData(tab,filtered);
 }
 
 // Veri yükle
@@ -527,16 +559,18 @@ async function loadMetaCamp(){
   // Kampanya filter
   var cf=document.getElementById('mCampFlt');
   if(cf){cf.innerHTML='<option value="">Tüm Kampanyalar</option>'+(MX.campStore.map(function(c){return '<option value="'+c.id+'">'+c.name.slice(0,50)+'</option>';})).join('');}
-  mSummary(rows,[]);
+  // Özet: filtrelenmiş veri ile
+  mSummary(getFiltered(rows),[]);
   // Karşılaştırma
   var cmpV=document.getElementById('mCmp').value;
   if(cmpV){
     var cp=await api(AID+'/insights',Object.assign({fields:'spend,impressions,clicks,ctr,purchase_roas,actions,reach',level:'campaign',limit:500,action_attribution_windows:ATTR},{date_preset:cmpV}));
-    mSummary(rows,(cp&&cp.data||[]).map(function(r){return mapR(r,null,null);}));
+    mSummary(getFiltered(rows),(cp&&cp.data||[]).map(function(r){return mapR(r,null,null);}));
   }
   mPage=0;mRender('camp');
-  mSummary(getFiltered(rows),[]);
-  if(st)st.textContent=rows.length+' kampanya ('+getFiltered(rows).length+' gösteriliyor)';
+  var _fC=getFiltered(rows);
+  mSummary(_fC,[]);
+  if(st)st.textContent=rows.length+' kampanya'+(mStatusFilter!=='all'?' ('+_fC.length+' gösteriliyor)':'');
 }
 
 async function loadMetaAdsets(){
@@ -565,8 +599,9 @@ async function loadMetaAdsets(){
   rows.sort(function(a,b){return b.spend-a.spend;});
   mData.adset=rows;
   mPage=0;mRender('adset');
-  mSummary(getFiltered(rows),[]);
-  if(st)st.textContent=rows.length+' reklam seti ('+getFiltered(rows).length+' gösteriliyor)';
+  var _filtA=getFiltered(mData['adset']);
+  mSummary(_filtA,[]);
+  if(st)st.textContent=mData['adset'].length+' reklam seti'+(mStatusFilter!=='all'?' ('+_filtA.length+' gösteriliyor)':'');
 }
 
 async function loadMetaAds(){
@@ -593,8 +628,9 @@ async function loadMetaAds(){
   rows.sort(function(a,b){return b.spend-a.spend;});
   mData.ad=rows;
   mPage=0;mRender('ad');
-  mSummary(getFiltered(rows),[]);
-  if(st)st.textContent=rows.length+' reklam ('+getFiltered(rows).length+' gösteriliyor)';
+  var _filtD=getFiltered(mData['ad']);
+  mSummary(_filtD,[]);
+  if(st)st.textContent=mData['ad'].length+' reklam'+(mStatusFilter!=='all'?' ('+_filtD.length+' gösteriliyor)':'');
 }
 
 // Toggle
