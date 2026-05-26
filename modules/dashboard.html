@@ -34,6 +34,8 @@
 
 <script>
 async function loadDashboard() {
+  // Bu modül DOM'da değilse çıkıyoruz
+  if(!document.getElementById('dashLastUpdate')) return;
   var upEl = document.getElementById('dashLastUpdate');
   if(!upEl) return; // Farklı sayfadaysa çalışma
   upEl.textContent = 'Yükleniyor...';
@@ -97,8 +99,8 @@ async function loadDashboard() {
     }).join('');
   }
 
-  var lu=document.getElementById('dashLastUpdate'); if(lu) lu.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
+  var _lu=document.getElementById('dashLastUpdate');if(_lu)_lu.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
 }
 
-window.onConnected(loadDashboard);
+if(window._isConnected){loadDashboard();}else{window.addEventListener('mx:connected',function _di(){window.removeEventListener('mx:connected',_di);loadDashboard();});}
 </script>
