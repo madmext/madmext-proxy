@@ -208,7 +208,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('.cpicker-wra
 document.querySelectorAll('#mColPicker input').forEach(function(cb){
   cb.addEventListener('change',function(){
     if(this.checked)mCols.add(this.dataset.mc); else mCols.delete(this.dataset.mc);
-    mRender(currentMetaTab);
+    mRender(mTab);
   });
 });
 
@@ -296,7 +296,6 @@ function mSummary(data,cmp){
 
 // Tablo render
 function mRender(tab){
-  // Element yoksa bu modül DOM'da değil, çıkıyoruz
   if(!document.getElementById('mTB')) return;
   var data=mData[tab];
   var cols=COLS.filter(function(c){return c.fixed||mCols.has(c.k);});
@@ -304,8 +303,9 @@ function mRender(tab){
   // Header
   var hHTML='<tr><th style="width:32px"></th>';
   cols.forEach(function(c){
-    var icon=st.key===c.k?(st.dir===-1?'↓':'↑'):'';
-    hHTML+='<th class="'+(st.key===c.k?'sorted':'')+'" style="'+(c.w?'min-width:'+c.w+'px':'')+'" onclick="mSortBy(\''+tab+'\',\''+c.k+'\','+c.num+')">'+c.l+(icon?' '+icon:'')+'</th>';
+    var icon=st.key===c.k?(st.dir===-1?' ↓':' ↑'):'';
+    var thStyle='min-width:'+(c.w||80)+'px;cursor:pointer;user-select:none';
+    hHTML+='<th class="'+(st.key===c.k?'sorted':'')+'" style="'+thStyle+'" onclick="mSortBy(\''+tab+'\',\''+c.k+'\','+c.num+')">'+c.l+icon+'</th>';
   });
   hHTML+='<th style="width:80px">İşlem</th></tr>';
   document.getElementById('mTH').innerHTML=hHTML;
@@ -407,12 +407,23 @@ function mRender(tab){
 }
 
 window.mSortBy=function(tab,key,isNum){
-  var st=mSort[tab]||{key:null,dir:-1};
-  mSort[tab]={key:key,dir:st.key===key?-st.dir:-1};
+  var prev=mSort[tab]||{key:null,dir:-1};
+  // Aynı sütuna tıklanırsa yön değiştir, farklıysa azalan başla
+  var dir=prev.key===key?-prev.dir:-1;
+  mSort[tab]={key:key,dir:dir};
   mData[tab].sort(function(a,b){
-    var av=a[key],bv=b[key];
-    if(isNum)return mSort[tab].dir*(parseFloat(av||0)-parseFloat(bv||0));
-    return mSort[tab].dir*String(av||'').localeCompare(String(bv||''),'tr');
+    var av,bv;
+    // delivery sütunu effectiveStatus'a göre sıralanır
+    if(key==='delivery'){av=a.effectiveStatus||'';bv=b.effectiveStatus||'';}
+    // budget sütunu sayısal budgetAmt'a göre
+    else if(key==='budget'){
+      av=parseFloat((a.budgetAmt||'0').replace(/[^\d.]/g,''))||0;
+      bv=parseFloat((b.budgetAmt||'0').replace(/[^\d.]/g,''))||0;
+      return dir*(av-bv);
+    }
+    else{av=a[key];bv=b[key];}
+    if(isNum)return dir*(parseFloat(av||0)-parseFloat(bv||0));
+    return dir*String(av||'').localeCompare(String(bv||''),'tr');
   });
   mPage=0;mRender(tab);
 };
@@ -477,10 +488,7 @@ async function loadMetaCamp(){
   ]);
   var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.campStore=(camps&&camps.data||[]);
-  // Insights map
-  var insMap={};
   var rows=(ins&&ins.data||[]).map(function(r){
-    insMap[r.campaign_id]=true;
     var row=mapR(r,cmap[r.campaign_id],null);
     var camp=cmap[r.campaign_id];
     if(camp){
@@ -491,22 +499,6 @@ async function loadMetaCamp(){
     }
     return row;
   });
-  // Insights'ta olmayan kampanyaları da ekle (harcama=0)
-  (camps&&camps.data||[]).forEach(function(c){
-    if(insMap[c.id]) return;
-    var bi=getBi(c);
-    rows.push({
-      name:c.name||'—', status:c.status, effectiveStatus:c.effective_status||c.status,
-      budgeBadge:bi.badge, budgetAmt:bi.amt,
-      spend:0,impr:0,reach:0,freq:0,cpm:0,clicks:0,ctr:0,cpc:0,
-      results:0,cpr:0,roas:0,revenue:0,cart:0,
-      qual_org:'',qual_ectr:'',qual_ecvr:'',
-      lastEdit:c.updated_time?new Date(c.updated_time).toLocaleDateString('tr'):'',
-      endTime:c.end_time?new Date(c.end_time).toLocaleDateString('tr'):'',
-      warnings:0,errors:0,
-      _id:c.id,_budgetId:c.id,_budgetType:'campaign',_campId:c.id
-    });
-  });
   rows.sort(function(a,b){return b.spend-a.spend;});
   mData.camp=rows;
   // Kampanya filter
@@ -514,7 +506,7 @@ async function loadMetaCamp(){
   if(cf){cf.innerHTML='<option value="">Tüm Kampanyalar</option>'+(MX.campStore.map(function(c){return '<option value="'+c.id+'">'+c.name.slice(0,50)+'</option>';})).join('');}
   mSummary(rows,[]);
   // Karşılaştırma
-  var cmpV=(document.getElementById('mCmp')||{}).value||'';
+  var cmpV=document.getElementById('mCmp').value;
   if(cmpV){
     var cp=await api(AID+'/insights',Object.assign({fields:'spend,impressions,clicks,ctr,purchase_roas,actions,reach',level:'campaign',limit:500,action_attribution_windows:ATTR},{date_preset:cmpV}));
     mSummary(rows,(cp&&cp.data||[]).map(function(r){return mapR(r,null,null);}));
