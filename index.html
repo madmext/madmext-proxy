@@ -262,10 +262,11 @@ async function loadModule(page) {
     });
 
     // Script'ler çalıştıktan sonra bağlıysa event gönder
+    // 200ms: script'lerin event listener'larını kaydetmesi için yeterli süre
     if(window._isConnected) {
       setTimeout(function(){
         window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 100);
+      }, 200);
     }
 
   } catch(e) {
