@@ -208,7 +208,7 @@ document.addEventListener('click',function(e){if(!e.target.closest('.cpicker-wra
 document.querySelectorAll('#mColPicker input').forEach(function(cb){
   cb.addEventListener('change',function(){
     if(this.checked)mCols.add(this.dataset.mc); else mCols.delete(this.dataset.mc);
-    mRender(mTab);
+    mRender(currentMetaTab);
   });
 });
 
@@ -296,16 +296,14 @@ function mSummary(data,cmp){
 
 // Tablo render
 function mRender(tab){
-  if(!document.getElementById('mTB')) return;
   var data=mData[tab];
   var cols=COLS.filter(function(c){return c.fixed||mCols.has(c.k);});
   var st=mSort[tab]||{};
   // Header
   var hHTML='<tr><th style="width:32px"></th>';
   cols.forEach(function(c){
-    var icon=st.key===c.k?(st.dir===-1?' ↓':' ↑'):'';
-    var thStyle='min-width:'+(c.w||80)+'px;cursor:pointer;user-select:none';
-    hHTML+='<th class="'+(st.key===c.k?'sorted':'')+'" style="'+thStyle+'" onclick="mSortBy(\''+tab+'\',\''+c.k+'\','+c.num+')">'+c.l+icon+'</th>';
+    var icon=st.key===c.k?(st.dir===-1?'↓':'↑'):'';
+    hHTML+='<th class="'+(st.key===c.k?'sorted':'')+'" style="'+(c.w?'min-width:'+c.w+'px':'')+'" onclick="mSortBy(\''+tab+'\',\''+c.k+'\','+c.num+')">'+c.l+(icon?' '+icon:'')+'</th>';
   });
   hHTML+='<th style="width:80px">İşlem</th></tr>';
   document.getElementById('mTH').innerHTML=hHTML;
@@ -407,23 +405,12 @@ function mRender(tab){
 }
 
 window.mSortBy=function(tab,key,isNum){
-  var prev=mSort[tab]||{key:null,dir:-1};
-  // Aynı sütuna tıklanırsa yön değiştir, farklıysa azalan başla
-  var dir=prev.key===key?-prev.dir:-1;
-  mSort[tab]={key:key,dir:dir};
+  var st=mSort[tab]||{key:null,dir:-1};
+  mSort[tab]={key:key,dir:st.key===key?-st.dir:-1};
   mData[tab].sort(function(a,b){
-    var av,bv;
-    // delivery sütunu effectiveStatus'a göre sıralanır
-    if(key==='delivery'){av=a.effectiveStatus||'';bv=b.effectiveStatus||'';}
-    // budget sütunu sayısal budgetAmt'a göre
-    else if(key==='budget'){
-      av=parseFloat((a.budgetAmt||'0').replace(/[^\d.]/g,''))||0;
-      bv=parseFloat((b.budgetAmt||'0').replace(/[^\d.]/g,''))||0;
-      return dir*(av-bv);
-    }
-    else{av=a[key];bv=b[key];}
-    if(isNum)return dir*(parseFloat(av||0)-parseFloat(bv||0));
-    return dir*String(av||'').localeCompare(String(bv||''),'tr');
+    var av=a[key],bv=b[key];
+    if(isNum)return mSort[tab].dir*(parseFloat(av||0)-parseFloat(bv||0));
+    return mSort[tab].dir*String(av||'').localeCompare(String(bv||''),'tr');
   });
   mPage=0;mRender(tab);
 };
