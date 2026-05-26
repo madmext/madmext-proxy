@@ -240,7 +240,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 
 <div id="toast"></div>
 
-<link rel="stylesheet" href="/theme.css">
 <script src="/modules/shared.js"></script>
 <script>
 // ── Sayfa meta ──────────────────────────────────────────────────────────
@@ -349,6 +348,14 @@ async function createCamp() {
   if(d?.id){toast('Oluşturuldu: '+d.id);document.getElementById('cName').value='';document.getElementById('cBudget').value='';}
   else toast('Hata: '+(d?.error?.message||'?'));
 }
+
+// theme.css'i opsiyonel yükle
+(function(){
+  var l=document.createElement('link');
+  l.rel='stylesheet';l.href='/theme.css';
+  l.onerror=function(){console.log('theme.css yok, varsayılan tema kullanılıyor');};
+  document.head.appendChild(l);
+})();
 
 // ── Init ────────────────────────────────────────────────────────────────
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
