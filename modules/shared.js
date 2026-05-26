@@ -232,6 +232,7 @@ async function connect() {
     const d = await api('me', { fields: 'name' });
     if (d && !d.error) {
       if (dot) dot.className = 'dot on';
+      window._isConnected = true;
       toast('Bağlandı ✓');
       await loadServerLogs();
       updateTaskBadge();
