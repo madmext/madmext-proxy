@@ -256,12 +256,30 @@ const PAGES = {
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma',    module:'ayarlar'},
 };
 
-let currentPage = '';
-const moduleCache = {};
+// currentPage global - modüller window.currentPage ile okur
+window.currentPage = '';
+
+// Modül listener yönetimi - her modül geçişinde temizlenir
+window.__moduleListeners = [];
+window.onConnected = function(fn) {
+  window.__moduleListeners.push(fn);
+  window.addEventListener('mx:connected', fn);
+};
+
+let _navBusy = false;
 
 async function nav(page, el) {
-  if(page === currentPage) return;
-  currentPage = page;
+  if(page === window.currentPage) return;
+  if(_navBusy) return;
+  _navBusy = true;
+
+  // Önceki modülün listener'larını temizle
+  window.__moduleListeners.forEach(function(fn){
+    window.removeEventListener('mx:connected', fn);
+  });
+  window.__moduleListeners = [];
+
+  window.currentPage = page;
 
   // Sidebar aktif
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -274,60 +292,15 @@ async function nav(page, el) {
 
   // Modül yükle
   await loadModule(page);
+  _navBusy = false;
 }
 
 async function loadModule(page) {
-  const content = document.getElementById('mainContent');
-  const meta = PAGES[page];
-  if(!meta) return;
+  const el = document.getElementById('mainContent');
 
-  // Cache varsa kullan
-  if(moduleCache[page]) {
-    content.innerHTML = moduleCache[page];
-    reExecScripts(content);
-    if(window._isConnected) {
-      setTimeout(function(){
-        window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 200);
-    }
-    return;
-  }
-
-  content.innerHTML = '<div class="module-loading">⏳ Yükleniyor...</div>';
-
-  try {
-    const r = await fetch(`/modules/${meta.module}.html`);
-    if(!r.ok) throw new Error('Modül bulunamadı');
-    const html = await r.text();
-    moduleCache[page] = html;
-    content.innerHTML = html;
-    reExecScripts(content);
-    if(window._isConnected) {
-      setTimeout(function(){
-        window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 200);
-    }
-  } catch(e) {
-    content.innerHTML = `<div class="module-loading" style="color:var(--r)">❌ Modül yüklenemedi: ${meta.module}.html</div>`;
-  }
-}
-
-// Script taglarını yeniden çalıştır (innerHTML scripts çalışmaz)
-function reExecScripts(container) {
-  container.querySelectorAll('script').forEach(s => {
-    const ns = document.createElement('script');
-    ns.textContent = s.textContent;
-    document.body.appendChild(ns);
-  });
-}
-
-function toggleGroup(id) {
-  document.getElementById(id).classList.toggle('open');
-}
-
-// ── Inline modüller (fetch gerektirmeyen sayfalar) ─────────────────────
-const INLINE_MODULES = {
-  create: `
+  // Inline: create
+  if(page === 'create') {
+    el.innerHTML = `
     <div class="stl">Yeni Kampanya Oluştur</div>
     <div class="cform">
       <div class="fg full"><label>Kampanya Adı</label><input type="text" id="cName" placeholder="örn: Erkek Tişört Yaz 2026"></div>
@@ -335,11 +308,61 @@ const INLINE_MODULES = {
       <div class="fg"><label>Günlük Bütçe (₺)</label><input type="number" id="cBudget" placeholder="500" min="1"></div>
       <div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div>
       <div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div>
-    </div>`,
-};
+    </div>`;
+    return;
+  }
 
-// Inline modülleri cache'e al
-Object.entries(INLINE_MODULES).forEach(([k,v]) => { moduleCache[k] = v; });
+  const meta = PAGES[page];
+  if(!meta) {
+    el.innerHTML = `<div class="module-loading" style="color:var(--r)">❌ Sayfa bulunamadı: ${page}</div>`;
+    return;
+  }
+
+  el.innerHTML = '<div class="module-loading">⏳ Yükleniyor...</div>';
+
+  try {
+    // Cache yok - her seferinde taze yükle (script birikimini önler)
+    const r = await fetch('/modules/' + meta.module + '.html?v=' + Date.now());
+    if(!r.ok) throw new Error('HTTP ' + r.status);
+    const html = await r.text();
+
+    // HTML içindeki scriptleri ayır
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const scripts = Array.from(tmp.querySelectorAll('script')).map(s => {
+      const code = s.textContent;
+      s.remove();
+      return code;
+    });
+
+    el.innerHTML = tmp.innerHTML;
+
+    // Scriptleri sırayla çalıştır (window.currentPage zaten set edildi)
+    scripts.forEach(function(code) {
+      try {
+        const s = document.createElement('script');
+        s.textContent = code;
+        document.body.appendChild(s);
+      } catch(e) { console.error('Script hatası:', e); }
+    });
+
+    // Bağlıysa event gönder
+    if(window._isConnected) {
+      setTimeout(function(){
+        window.dispatchEvent(new CustomEvent('mx:connected'));
+      }, 50);
+    }
+
+  } catch(e) {
+    el.innerHTML = '<div class="module-loading" style="color:var(--r)">❌ ' + meta.module + '.html yüklenemedi: ' + e.message + '</div>';
+  }
+}
+
+function toggleGroup(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// create modülü loadModule içinde inline olarak tanımlı
 
 // ── createCamp ─────────────────────────────────────────────────────────
 async function createCamp() {
