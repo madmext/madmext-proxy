@@ -48,6 +48,13 @@ def get_ga4_token():
 def home():
     return send_from_directory('.', 'index.html')
 
+@app.route('/theme.css')
+def serve_theme():
+    try:
+        return send_from_directory('.', 'theme.css')
+    except:
+        return ':root{}', 200, {'Content-Type': 'text/css'}
+
 @app.route('/proxy-xml', methods=['GET'])
 def proxy_xml():
     url = request.args.get('url','')
