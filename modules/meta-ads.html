@@ -470,11 +470,14 @@ async function loadMetaCamp(){
   var params=Object.assign({fields:INSF+',campaign_id,campaign_name,updated_time,effective_status',level:'campaign',limit:500,action_attribution_windows:ATTR},dp);
   var[ins,camps]=await Promise.all([
     api(AID+'/insights',params),
-    api(AID+'/campaigns',{fields:'id,name,status,effective_status,daily_budget,lifetime_budget,end_time,updated_time,recommendations',limit:500})
+    api(AID+'/campaigns',{fields:'id,name,status,effective_status,daily_budget,lifetime_budget,end_time,updated_time,recommendations',limit:500,effective_status:'["ACTIVE","PAUSED","ARCHIVED"]'})
   ]);
   var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.campStore=(camps&&camps.data||[]);
+  // Insights'taki kampanyalar
+  var insMap={};
   var rows=(ins&&ins.data||[]).map(function(r){
+    insMap[r.campaign_id]=true;
     var row=mapR(r,cmap[r.campaign_id],null);
     var camp=cmap[r.campaign_id];
     if(camp){
@@ -485,6 +488,22 @@ async function loadMetaCamp(){
     }
     return row;
   });
+  // Insights'ta olmayan ama kampanya listesinde olan aktif/duraklatılmış kampanyalar
+  (camps&&camps.data||[]).forEach(function(c){
+    if(insMap[c.id]) return; // zaten var
+    var bi=getBi(c);
+    rows.push({
+      name:c.name||'—', status:c.status, effectiveStatus:c.effective_status||c.status,
+      budgeBadge:bi.badge, budgetAmt:bi.amt,
+      spend:0,impr:0,reach:0,freq:0,cpm:0,clicks:0,ctr:0,cpc:0,
+      results:0,cpr:0,roas:0,revenue:0,cart:0,
+      qual_org:'',qual_ectr:'',qual_ecvr:'',
+      lastEdit:c.updated_time?new Date(c.updated_time).toLocaleDateString('tr'):'',
+      endTime:c.end_time?new Date(c.end_time).toLocaleDateString('tr'):'',
+      warnings:0,errors:0,
+      _id:c.id, _budgetId:c.id, _budgetType:'campaign', _campId:c.id
+    });
+  });
   rows.sort(function(a,b){return b.spend-a.spend;});
   mData.camp=rows;
   // Kampanya filter
@@ -492,7 +511,7 @@ async function loadMetaCamp(){
   if(cf){cf.innerHTML='<option value="">Tüm Kampanyalar</option>'+(MX.campStore.map(function(c){return '<option value="'+c.id+'">'+c.name.slice(0,50)+'</option>';})).join('');}
   mSummary(rows,[]);
   // Karşılaştırma
-  var cmpV=document.getElementById('mCmp').value;
+  var cmpV=(document.getElementById('mCmp')||{}).value||'';
   if(cmpV){
     var cp=await api(AID+'/insights',Object.assign({fields:'spend,impressions,clicks,ctr,purchase_roas,actions,reach',level:'campaign',limit:500,action_attribution_windows:ATTR},{date_preset:cmpV}));
     mSummary(rows,(cp&&cp.data||[]).map(function(r){return mapR(r,null,null);}));
@@ -507,21 +526,45 @@ async function loadMetaAdsets(){
   var campF=(document.getElementById('mCampFlt')||{}).value||'';
   var params=Object.assign({fields:INSF+',adset_id,adset_name,campaign_id,campaign_name,updated_time,effective_status',level:'adset',limit:500,action_attribution_windows:ATTR},dp);
   if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
+  var adsetParams={fields:'id,name,status,effective_status,daily_budget,lifetime_budget,campaign_id,end_time,updated_time',limit:500,effective_status:'["ACTIVE","PAUSED"]'};
+  if(campF)adsetParams.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
   var[ins,adsets,camps]=await Promise.all([
     api(AID+'/insights',params),
-    api(AID+'/adsets',{fields:'id,name,status,effective_status,daily_budget,lifetime_budget,campaign_id,end_time,updated_time',limit:500}),
+    api(AID+'/adsets',adsetParams),
     api(AID+'/campaigns',{fields:'id,daily_budget,lifetime_budget',limit:500})
   ]);
   var amap={},cmap={};
   (adsets&&adsets.data||[]).forEach(function(a){amap[a.id]=a;});
   (camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.adsetStore=(adsets&&adsets.data||[]);
+  var insMap={};
   var rows=(ins&&ins.data||[]).map(function(r){
+    insMap[r.adset_id]=true;
     var adset=amap[r.adset_id],camp=cmap[r.campaign_id];
     var row=mapR(r,camp,adset);
     row.name=r.adset_name||'—';
     if(adset){row.status=adset.status;row.effectiveStatus=adset.effective_status||adset.status;row._id=adset.id;}
     return row;
+  });
+  // Insights'ta olmayan reklam setleri
+  (adsets&&adsets.data||[]).forEach(function(a){
+    if(insMap[a.id]) return;
+    var camp=cmap[a.campaign_id];
+    var bi=getBi(a);
+    rows.push({
+      name:a.name||'—', status:a.status, effectiveStatus:a.effective_status||a.status,
+      budgeBadge:bi.badge, budgetAmt:bi.amt,
+      spend:0,impr:0,reach:0,freq:0,cpm:0,clicks:0,ctr:0,cpc:0,
+      results:0,cpr:0,roas:0,revenue:0,cart:0,
+      qual_org:'',qual_ectr:'',qual_ecvr:'',
+      lastEdit:a.updated_time?new Date(a.updated_time).toLocaleDateString('tr'):'',
+      endTime:a.end_time?new Date(a.end_time).toLocaleDateString('tr'):'',
+      warnings:0,errors:0,
+      _id:a.id,
+      _budgetId:camp&&camp.daily_budget?camp.id:a.id,
+      _budgetType:camp&&camp.daily_budget?'campaign':'adset',
+      _campId:a.campaign_id
+    });
   });
   rows.sort(function(a,b){return b.spend-a.spend;});
   mData.adset=rows;
@@ -604,6 +647,6 @@ window.mApproveB=async function(){
   mPending=null;
 };
 
-window.addEventListener('mx:connected',function(){loadMetaCamp();});
+window.onConnected(function(){loadMetaCamp();});
 })();
 </script>
