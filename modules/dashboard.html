@@ -97,7 +97,7 @@ async function loadDashboard() {
     }).join('');
   }
 
-  if(document.getElementById('dashLastUpdate')) document.getElementById('dashLastUpdate').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
+  var lu=document.getElementById('dashLastUpdate'); if(lu) lu.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
 }
 
 window.onConnected(loadDashboard);
