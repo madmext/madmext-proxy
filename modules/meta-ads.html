@@ -296,6 +296,7 @@ function mSummary(data,cmp){
 
 // Tablo render
 function mRender(tab){
+  if(!document.getElementById('mTB')) return;
   var data=mData[tab];
   var cols=COLS.filter(function(c){return c.fixed||mCols.has(c.k);});
   var st=mSort[tab]||{};
@@ -466,6 +467,7 @@ window.mLoad=function(){
 
 async function loadMetaCamp(){
   if(!document.getElementById('mTB')) return;
+  console.log('[MetaCamp] Başladı, _isConnected:', window._isConnected, 'AID:', AID);
   var st=document.getElementById('mStatus');if(st)st.textContent='⏳';
   var dp=getDP();
   var params=Object.assign({fields:INSF+',campaign_id,campaign_name,updated_time,effective_status',level:'campaign',limit:500,action_attribution_windows:ATTR},dp);
@@ -473,6 +475,7 @@ async function loadMetaCamp(){
     api(AID+'/insights',params),
     api(AID+'/campaigns',{fields:'id,name,status,effective_status,daily_budget,lifetime_budget,end_time,updated_time,recommendations',limit:500})
   ]);
+  console.log('[MetaCamp] ins:', ins, 'camps:', camps);
   var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.campStore=(camps&&camps.data||[]);
   var rows=(ins&&ins.data||[]).map(function(r){
@@ -607,6 +610,14 @@ window.mApproveB=async function(){
   mPending=null;
 };
 
-window.onConnected(function(){loadMetaCamp();});
+// Bağlıysa direkt yükle, değilse event bekle
+if(window._isConnected) {
+  loadMetaCamp();
+} else {
+  window.addEventListener('mx:connected', function _metaInit(){
+    window.removeEventListener('mx:connected', _metaInit);
+    loadMetaCamp();
+  });
+}
 })();
 </script>
