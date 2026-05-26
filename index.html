@@ -285,6 +285,11 @@ async function loadModule(page) {
   if(moduleCache[page]) {
     content.innerHTML = moduleCache[page];
     reExecScripts(content);
+    if(window._isConnected) {
+      setTimeout(function(){
+        window.dispatchEvent(new CustomEvent('mx:connected'));
+      }, 100);
+    }
     return;
   }
 
@@ -297,6 +302,12 @@ async function loadModule(page) {
     moduleCache[page] = html;
     content.innerHTML = html;
     reExecScripts(content);
+    // Modül yüklendikten sonra connected eventi tekrar gönder
+    if(window._isConnected) {
+      setTimeout(function(){
+        window.dispatchEvent(new CustomEvent('mx:connected'));
+      }, 100);
+    }
   } catch(e) {
     content.innerHTML = `<div class="module-loading" style="color:var(--r)">❌ Modül yüklenemedi: ${meta.module}.html</div>`;
   }
