@@ -9,7 +9,7 @@
 .date-wrap input[type=date]{background:transparent;border:none;color:var(--t);font-family:'DM Mono',monospace;font-size:11px}
 .date-wrap span{color:var(--m);font-size:11px}
 
-.meta-summary{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:12px}
+.meta-summary{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:12px}
 .ms-card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden}
 .ms-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--a);border-radius:6px 6px 0 0}
 .ms-label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
@@ -131,7 +131,7 @@
       <label class="cpicker-item"><input type="checkbox" checked data-mc="ctr"> TO (CTR)</label>
       <label class="cpicker-item"><input type="checkbox" checked data-mc="cpc"> TBM</label>
       <label class="cpicker-item"><input type="checkbox" checked data-mc="roas"> ROAS</label>
-      <label class="cpicker-item"><input type="checkbox" data-mc="revenue"> Gelir</label>
+      <label class="cpicker-item"><input type="checkbox" checked data-mc="revenue"> Gelir ₺</label>
       <label class="cpicker-item"><input type="checkbox" data-mc="cart"> Sepete Ekle</label>
       <div class="cpicker-section">Kalite & Diğer</div>
       <label class="cpicker-item"><input type="checkbox" checked data-mc="quality"> Kalite Skoru</label>
@@ -143,14 +143,15 @@
 </div>
 
 <!-- Özet Kartlar -->
-<div class="meta-summary" id="mSummary">
+<div class="meta-summary" id="mSummary" style="grid-template-columns:repeat(8,1fr)">
   <div class="ms-card"><div class="ms-label">Harcama</div><div class="ms-val" id="ms-spend">—</div><div class="ms-diff" id="md-spend"></div></div>
-  <div class="ms-card"><div class="ms-label">Gösterim</div><div class="ms-val" id="ms-impr">—</div><div class="ms-diff" id="md-impr"></div></div>
-  <div class="ms-card"><div class="ms-label">Erişim</div><div class="ms-val" id="ms-reach">—</div><div class="ms-diff" id="md-reach"></div></div>
-  <div class="ms-card"><div class="ms-label">Tıklama</div><div class="ms-val" id="ms-clicks">—</div><div class="ms-diff" id="md-clicks"></div></div>
-  <div class="ms-card"><div class="ms-label">Ort. CTR</div><div class="ms-val" id="ms-ctr">—</div><div class="ms-diff" id="md-ctr"></div></div>
+  <div class="ms-card" style="--card-color:var(--g)"><div class="ms-label">Gelir</div><div class="ms-val" id="ms-revenue" style="color:var(--g)">—</div><div class="ms-diff" id="md-revenue"></div></div>
   <div class="ms-card"><div class="ms-label">Ort. ROAS</div><div class="ms-val" id="ms-roas">—</div><div class="ms-diff" id="md-roas"></div></div>
   <div class="ms-card"><div class="ms-label">Satın Alma</div><div class="ms-val" id="ms-purchase">—</div><div class="ms-diff" id="md-purchase"></div></div>
+  <div class="ms-card"><div class="ms-label">Tıklama</div><div class="ms-val" id="ms-clicks">—</div><div class="ms-diff" id="md-clicks"></div></div>
+  <div class="ms-card"><div class="ms-label">Ort. CTR</div><div class="ms-val" id="ms-ctr">—</div><div class="ms-diff" id="md-ctr"></div></div>
+  <div class="ms-card"><div class="ms-label">Gösterim</div><div class="ms-val" id="ms-impr">—</div><div class="ms-diff" id="md-impr"></div></div>
+  <div class="ms-card"><div class="ms-label">Erişim</div><div class="ms-val" id="ms-reach">—</div><div class="ms-diff" id="md-reach"></div></div>
 </div>
 
 <!-- Tablo -->
@@ -190,7 +191,7 @@ var mSort = {};
 var mPage = 0;
 var M_PAGE = 50;
 var mStatusFilter = 'all'; // 'all' | 'active' | 'paused'
-var mCols = new Set(['delivery','budget','results','cpr','spend','impr','reach','freq','cpm','clicks','ctr','cpc','roas','quality']);
+var mCols = new Set(['delivery','budget','results','cpr','spend','revenue','impr','reach','freq','cpm','clicks','ctr','cpc','roas','quality']);
 
 // Sütun tanımları
 var COLS = [
@@ -311,6 +312,9 @@ function mSummary(data,cmp){
   s('ms-ctr',   tI>0 ? ctr.toFixed(2)+'%' : '—');
   s('ms-roas',  tS>0 ? roas.toFixed(2)+'x': '—');
   s('ms-purchase',tP.toLocaleString('tr'));
+  // Gelir kartı
+  var revenueEl=document.getElementById('ms-revenue');
+  if(revenueEl) revenueEl.textContent=tRev>=1000?(tRev/1000).toFixed(1)+'K₺':tRev.toFixed(0)+'₺';
 
   if(cmp&&cmp.length){
     var cS=0,cI=0,cR=0,cC=0,cP=0,cRev=0;
@@ -457,8 +461,16 @@ var INSF='spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,act
 function mapR(r,camp,adset){
   var roas=groas(r);
   var purchase=gav(r.actions,'purchase');
+  // Gelir: önce action_values'dan al, yoksa roas × spend ile hesapla
   var revenue=0;
-  if(r.action_values){var x=(r.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x)revenue=parseFloat(x.value||0);}
+  if(r.action_values){
+    var x=(r.action_values||[]).find(function(v){return v.action_type==='purchase';});
+    if(x) revenue=parseFloat(x.value||0);
+  }
+  // action_values yoksa veya 0 ise, purchase_roas × spend kullan
+  if(revenue===0 && roas>0){
+    revenue=roas*parseFloat(r.spend||0);
+  }
   var bi=camp?getBi(camp):(adset?getBi(adset):{badge:'',amt:'—',type:'ABO'});
   var isCBO=bi.type==='CBO';
   return{
