@@ -288,7 +288,7 @@ async function loadModule(page) {
     if(window._isConnected) {
       setTimeout(function(){
         window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 100);
+      }, 200);
     }
     return;
   }
@@ -302,11 +302,10 @@ async function loadModule(page) {
     moduleCache[page] = html;
     content.innerHTML = html;
     reExecScripts(content);
-    // Modül yüklendikten sonra connected eventi tekrar gönder
     if(window._isConnected) {
       setTimeout(function(){
         window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 100);
+      }, 200);
     }
   } catch(e) {
     content.innerHTML = `<div class="module-loading" style="color:var(--r)">❌ Modül yüklenemedi: ${meta.module}.html</div>`;
@@ -316,15 +315,9 @@ async function loadModule(page) {
 // Script taglarını yeniden çalıştır (innerHTML scripts çalışmaz)
 function reExecScripts(container) {
   container.querySelectorAll('script').forEach(s => {
-    try {
-      const fn = new Function(s.textContent);
-      fn();
-    } catch(e) {
-      // Fallback: script tag yöntemi
-      const ns = document.createElement('script');
-      ns.textContent = s.textContent;
-      document.body.appendChild(ns);
-    }
+    const ns = document.createElement('script');
+    ns.textContent = s.textContent;
+    document.body.appendChild(ns);
   });
 }
 
