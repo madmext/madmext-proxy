@@ -1,18 +1,119 @@
-<div class="arow">
+<style>
+/* Dashboard özel stiller */
+.dash-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.dash-preset{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer}
+.dash-date-wrap{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:4px 10px}
+.dash-date-wrap input[type=date]{background:transparent;border:none;color:var(--t);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer}
+.dash-date-wrap span{color:var(--m);font-size:11px}
+.dash-period-label{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
+
+/* Kart grid */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:20px}
+.dash-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px 16px 10px;position:relative;overflow:hidden;cursor:default}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.dash-card.meta::before{background:#1877f2}
+.dash-card.ga4::before{background:#e8710a}
+.dash-card.combined::before{background:linear-gradient(90deg,#1877f2,#e8710a)}
+.dash-label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.dash-val{font-size:22px;font-weight:700;font-family:'DM Mono',monospace;letter-spacing:-0.5px;margin-bottom:2px}
+.dash-diff{font-size:10px;margin-bottom:4px}
+.dash-diff.up{color:var(--g)}.dash-diff.dn{color:var(--r)}.dash-diff.neu{color:var(--m)}
+.dash-sub{font-size:9px;color:var(--m)}
+.dash-src{font-size:8px;position:absolute;top:7px;right:10px;color:var(--b2);text-transform:uppercase;letter-spacing:1px;font-family:'DM Mono',monospace}
+/* Sparkline in card */
+.dash-spark{height:36px;margin-top:4px;width:100%}
+.dash-spark svg{width:100%;height:100%}
+
+/* Channel grid */
+.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.channel-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px}
+.channel-title{font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.channel-row{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.channel-row:last-child{border-bottom:none}
+.channel-row span:first-child{color:var(--m)}
+.channel-row span:last-child{color:var(--t);font-family:'DM Mono',monospace}
+</style>
+
+<!-- Toolbar: tarih seçici -->
+<div class="dash-toolbar">
   <button class="btn sm" onclick="loadDashboard()">🔄 Yenile</button>
-  <span id="dashLastUpdate" style="font-size:11px;color:var(--m)"></span>
+  <select class="dash-preset" id="dashPreset" onchange="onDashPreset()">
+    <option value="today">Bugün</option>
+    <option value="yesterday">Dün</option>
+    <option value="last_3d">Son 3 gün</option>
+    <option value="last_7d" selected>Son 7 gün</option>
+    <option value="last_14d">Son 14 gün</option>
+    <option value="last_30d">Son 30 gün</option>
+    <option value="this_month">Bu ay</option>
+    <option value="last_month">Geçen ay</option>
+    <option value="custom">📅 Özel Aralık</option>
+  </select>
+  <div class="dash-date-wrap" id="dashCustomWrap" style="display:none">
+    <input type="date" id="dashFrom" onchange="loadDashboard()">
+    <span>→</span>
+    <input type="date" id="dashTo" onchange="loadDashboard()">
+  </div>
+  <span class="dash-period-label" id="dashPeriodLabel"></span>
+  <span id="dashLastUpdate" style="font-size:11px;color:var(--m);margin-left:auto"></span>
 </div>
 
-<div class="stl">Genel Bakış — Son 7 Gün</div>
-<div class="dash-grid">
-  <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Harcama</div><div class="dash-val" id="d-meta-spend">—</div><div class="dash-sub">Son 7 gün</div></div>
-  <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Ort. ROAS</div><div class="dash-val" id="d-meta-roas">—</div><div class="dash-sub">Son 7 gün</div></div>
-  <div class="dash-card meta"><div class="dash-src">META</div><div class="dash-label">Toplam Satış</div><div class="dash-val" id="d-meta-sales">—</div><div class="dash-sub">Son 7 gün</div></div>
-  <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Oturum</div><div class="dash-val" id="d-ga4-sessions">—</div><div class="dash-sub">Son 7 gün</div></div>
-  <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Gelir</div><div class="dash-val" id="d-ga4-revenue">—</div><div class="dash-sub">Son 7 gün</div></div>
-  <div class="dash-card ga4"><div class="dash-src">GA4</div><div class="dash-label">Dönüşüm Oranı</div><div class="dash-val" id="d-ga4-cvr">—</div><div class="dash-sub">Son 7 gün</div></div>
+<!-- Özet Kartlar: META + GA4 + Birleşik -->
+<div class="stl" id="dashGridTitle">Genel Bakış — Son 7 Gün</div>
+<div class="dash-grid" id="dashGrid">
+  <!-- META -->
+  <div class="dash-card meta">
+    <div class="dash-src">META</div>
+    <div class="dash-label">Harcama</div>
+    <div class="dash-val" id="d-meta-spend">—</div>
+    <div class="dash-diff" id="dd-meta-spend"></div>
+    <div class="dash-spark" id="spark-meta-spend"></div>
+  </div>
+  <div class="dash-card meta">
+    <div class="dash-src">META</div>
+    <div class="dash-label">Gelir</div>
+    <div class="dash-val" id="d-meta-revenue" style="color:var(--g)">—</div>
+    <div class="dash-diff" id="dd-meta-revenue"></div>
+    <div class="dash-spark" id="spark-meta-revenue"></div>
+  </div>
+  <div class="dash-card meta">
+    <div class="dash-src">META</div>
+    <div class="dash-label">Ort. ROAS</div>
+    <div class="dash-val" id="d-meta-roas">—</div>
+    <div class="dash-diff" id="dd-meta-roas"></div>
+    <div class="dash-spark" id="spark-meta-roas"></div>
+  </div>
+  <div class="dash-card meta">
+    <div class="dash-src">META</div>
+    <div class="dash-label">Toplam Satış</div>
+    <div class="dash-val" id="d-meta-sales">—</div>
+    <div class="dash-diff" id="dd-meta-sales"></div>
+    <div class="dash-spark" id="spark-meta-sales"></div>
+  </div>
+  <!-- GA4 -->
+  <div class="dash-card ga4">
+    <div class="dash-src">GA4</div>
+    <div class="dash-label">Oturum</div>
+    <div class="dash-val" id="d-ga4-sessions">—</div>
+    <div class="dash-diff" id="dd-ga4-sessions"></div>
+    <div class="dash-spark" id="spark-ga4-sessions"></div>
+  </div>
+  <div class="dash-card ga4">
+    <div class="dash-src">GA4</div>
+    <div class="dash-label">Gelir (GA4)</div>
+    <div class="dash-val" id="d-ga4-revenue" style="color:var(--g)">—</div>
+    <div class="dash-diff" id="dd-ga4-revenue"></div>
+    <div class="dash-spark" id="spark-ga4-revenue"></div>
+  </div>
+  <div class="dash-card ga4">
+    <div class="dash-src">GA4</div>
+    <div class="dash-label">Dönüşüm Oranı</div>
+    <div class="dash-val" id="d-ga4-cvr">—</div>
+    <div class="dash-diff" id="dd-ga4-cvr"></div>
+    <div class="dash-spark" id="spark-ga4-cvr"></div>
+  </div>
 </div>
 
+<!-- Channel detay -->
 <div class="channel-grid">
   <div class="channel-card">
     <div class="channel-title">📘 Meta Ads</div>
@@ -24,6 +125,7 @@
   </div>
 </div>
 
+<!-- GA4 Trafik Kaynakları -->
 <div class="stl">GA4 — Trafik Kaynakları</div>
 <div class="twrap" style="max-height:280px">
   <table><thead><tr>
@@ -33,73 +135,277 @@
 </table></div>
 
 <script>
+// ── Tarih yardımcıları ─────────────────────────────────────────────────
+function getDashDP(){
+  var v=document.getElementById('dashPreset').value;
+  if(v!=='custom') return {preset:v};
+  var f=document.getElementById('dashFrom').value;
+  var t=document.getElementById('dashTo').value;
+  if(f&&t) return {from:f, to:t};
+  return {preset:'last_7d'};
+}
+
+function getDashDateRange(dp){
+  // Meta API için
+  if(dp.preset) return {date_preset:dp.preset};
+  return {time_range:JSON.stringify({since:dp.from,until:dp.to})};
+}
+
+function getDashGA4Range(dp){
+  // GA4 için
+  var presetMap={
+    today:{startDate:'today',endDate:'today'},
+    yesterday:{startDate:'yesterday',endDate:'yesterday'},
+    last_3d:{startDate:'3daysAgo',endDate:'today'},
+    last_7d:{startDate:'7daysAgo',endDate:'today'},
+    last_14d:{startDate:'14daysAgo',endDate:'today'},
+    last_30d:{startDate:'30daysAgo',endDate:'today'},
+    this_month:{startDate:'firstDayOfMonth',endDate:'today'},
+    last_month:{startDate:'firstDayOfLastMonth',endDate:'lastDayOfLastMonth'},
+  };
+  if(dp.preset && presetMap[dp.preset]) return presetMap[dp.preset];
+  if(dp.from && dp.to) return {startDate:dp.from,endDate:dp.to};
+  return {startDate:'7daysAgo',endDate:'today'};
+}
+
+function getDashLabel(dp){
+  var labels={
+    today:'Bugün',yesterday:'Dün',last_3d:'Son 3 gün',
+    last_7d:'Son 7 gün',last_14d:'Son 14 gün',last_30d:'Son 30 gün',
+    this_month:'Bu ay',last_month:'Geçen ay'
+  };
+  if(dp.preset) return labels[dp.preset]||dp.preset;
+  return dp.from+' → '+dp.to;
+}
+
+// GA4 günlük tarih boyutu için startDate/endDate parse
+function parseGA4Days(rows, metricIdx){
+  if(!rows) return [];
+  return rows.map(function(r){
+    return parseFloat(r.metricValues[metricIdx].value||0);
+  });
+}
+
+function onDashPreset(){
+  var v=document.getElementById('dashPreset').value;
+  document.getElementById('dashCustomWrap').style.display=(v==='custom')?'':'none';
+  if(v!=='custom') loadDashboard();
+}
+window.onDashPreset=onDashPreset;
+
+// ── Sparkline çizici ───────────────────────────────────────────────────
+function drawDashSpark(containerId, values, color, fillColor){
+  var el=document.getElementById(containerId);
+  if(!el||!values||!values.length) return;
+  var W=el.offsetWidth||160, H=36;
+  if(W<10) W=160;
+  var min=Math.min.apply(null,values);
+  var max=Math.max.apply(null,values);
+  var range=max-min||1;
+  var n=values.length;
+  var pts=values.map(function(v,i){
+    var x=(n===1)?W/2:(i/(n-1))*W;
+    var y=H-3-((v-min)/range*(H-6));
+    return [x,y];
+  });
+  var linePts=pts.map(function(p){return p[0]+','+p[1];}).join(' ');
+  var areaPath='M'+pts[0][0]+','+pts[0][1]+' L'+linePts+' L'+W+','+H+' L0,'+H+' Z';
+  var linePath='M'+pts[0][0]+','+pts[0][1]+' L'+linePts;
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">'
+    +'<defs><linearGradient id="g'+containerId+'" x1="0" y1="0" x2="0" y2="1">'
+    +'<stop offset="0%" stop-color="'+fillColor+'" stop-opacity="0.8"/>'
+    +'<stop offset="100%" stop-color="'+fillColor+'" stop-opacity="0.05"/>'
+    +'</linearGradient></defs>'
+    +'<path d="'+areaPath+'" fill="url(#g'+containerId+')"/>'
+    +'<path d="'+linePath+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    +(n>1?'<circle cx="'+pts[n-1][0]+'" cy="'+pts[n-1][1]+'" r="2.5" fill="'+color+'"/>':'')
+    +'</svg>';
+}
+
+function setDiff(id, cur, prev){
+  var el=document.getElementById(id);
+  if(!el) return;
+  if(!prev||prev===0){el.textContent='';el.className='dash-diff';return;}
+  var p=((cur-prev)/Math.abs(prev)*100);
+  el.className='dash-diff '+(p>=0?'up':'dn');
+  el.textContent=(p>=0?'▲':'▼')+Math.abs(p).toFixed(1)+'%';
+}
+
+// ── Ana yükleme fonksiyonu ─────────────────────────────────────────────
 async function loadDashboard() {
-  // Bu modül DOM'da değilse çıkıyoruz
-  if(!document.getElementById('dashLastUpdate')) return;
   var upEl = document.getElementById('dashLastUpdate');
-  if(!upEl) return; // Farklı sayfadaysa çalışma
+  if(!upEl) return;
   upEl.textContent = 'Yükleniyor...';
 
-  // META
-  const metaIns = await api(`${AID}/insights`, { fields: 'spend,clicks,purchase_roas,actions', date_preset: 'last_7d', level: 'account', action_attribution_windows: ATTR });
-  const mr = metaIns?.data?.[0];
-  if (mr) {
-    document.getElementById('d-meta-spend').textContent = parseFloat(mr.spend || 0).toFixed(0) + '₺';
-    const roas = groas(mr);
-    document.getElementById('d-meta-roas').textContent = roas ? roas.toFixed(2) + 'x' : '—';
-    document.getElementById('d-meta-sales').textContent = gav(mr.actions, 'purchase');
-    document.getElementById('metaChannelDetail').innerHTML = `
-      <div class="channel-row"><span>Harcama</span><span>${parseFloat(mr.spend || 0).toFixed(0)}₺</span></div>
-      <div class="channel-row"><span>ROAS</span><span style="color:${roasColor(roas)}">${roas ? roas.toFixed(2) + 'x' : '—'}</span></div>
-      <div class="channel-row"><span>Tıklama</span><span>${parseInt(mr.clicks || 0).toLocaleString('tr')}</span></div>
-      <div class="channel-row"><span>Satış</span><span>${gav(mr.actions, 'purchase')}</span></div>
-      <div class="channel-row"><span>Sepete Ekle</span><span>${gav(mr.actions, 'add_to_cart')}</span></div>`;
+  var dp = getDashDP();
+  var label = getDashLabel(dp);
+  var metaDP = getDashDateRange(dp);
+  var ga4Range = getDashGA4Range(dp);
+
+  // Başlık güncelle
+  var titleEl=document.getElementById('dashGridTitle');
+  if(titleEl) titleEl.textContent='Genel Bakış — '+label;
+
+  // ── META: Ana veri + Önceki dönem + Günlük trend ─────────────────
+  var metaFields='spend,impressions,clicks,purchase_roas,actions,action_values';
+  var metaSparkFields='spend,purchase_roas,actions,action_values';
+
+  // Paralel: Ana + Spark (günlük) + Önceki dönem
+  var prevPreset = dp.preset==='last_7d'?'last_14d':(dp.preset==='last_30d'?null:null);
+  var promises=[
+    api(AID+'/insights', Object.assign({fields:metaFields,level:'account',action_attribution_windows:ATTR}, metaDP)),
+    api(AID+'/insights', Object.assign({fields:metaSparkFields,level:'account',time_increment:1,limit:90,action_attribution_windows:ATTR}, metaDP)),
+  ];
+  if(prevPreset){
+    promises.push(api(AID+'/insights',{fields:metaFields,level:'account',action_attribution_windows:ATTR,date_preset:prevPreset}));
   }
 
-  // GA4
-  const ga4Sum = await ga4({
-    dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
-    metrics: [{ name: 'sessions' }, { name: 'totalRevenue' }, { name: 'conversions' }, { name: 'activeUsers' }]
-  });
-  if (ga4Sum?.rows) {
-    const sessions = parseInt(ga4val(ga4Sum, 0));
-    const revenue = parseFloat(ga4val(ga4Sum, 1));
-    const conversions = parseInt(ga4val(ga4Sum, 2));
-    const users = parseInt(ga4val(ga4Sum, 3));
-    const cvr = sessions > 0 ? (conversions / sessions * 100).toFixed(2) : 0;
-    document.getElementById('d-ga4-sessions').textContent = sessions.toLocaleString('tr');
-    document.getElementById('d-ga4-revenue').textContent = revenue.toFixed(0) + '₺';
-    document.getElementById('d-ga4-cvr').textContent = cvr + '%';
-    document.getElementById('ga4ChannelDetail').innerHTML = `
-      <div class="channel-row"><span>Oturum</span><span>${sessions.toLocaleString('tr')}</span></div>
-      <div class="channel-row"><span>Kullanıcı</span><span>${users.toLocaleString('tr')}</span></div>
-      <div class="channel-row"><span>Gelir</span><span>${revenue.toFixed(0)}₺</span></div>
-      <div class="channel-row"><span>Dönüşüm</span><span>${conversions}</span></div>
-      <div class="channel-row"><span>CVR</span><span>${cvr}%</span></div>`;
+  var results = await Promise.all(promises);
+  var metaIns=results[0], metaSpark=results[1], metaPrev=results[2];
+
+  // Ana metrikler
+  var mr=metaIns&&metaIns.data&&metaIns.data[0];
+  var prevMr=metaPrev&&metaPrev.data&&metaPrev.data[0];
+  if(mr){
+    var spend=parseFloat(mr.spend||0);
+    var roas=groas(mr);
+    var purchase=gav(mr.actions,'purchase');
+    var revenue=0;
+    if(mr.action_values){var x=(mr.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x)revenue=parseFloat(x.value||0);}
+    if(revenue===0&&roas>0) revenue=roas*spend;
+
+    var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+    s('d-meta-spend',   spend>=1000?(spend/1000).toFixed(1)+'K₺':spend.toFixed(0)+'₺');
+    s('d-meta-revenue', revenue>=1000?(revenue/1000).toFixed(1)+'K₺':revenue.toFixed(0)+'₺');
+    s('d-meta-roas',    roas?roas.toFixed(2)+'x':'—');
+    s('d-meta-sales',   purchase.toLocaleString('tr'));
+
+    // Önceki dönem farkı
+    if(prevMr){
+      var pSpend=parseFloat(prevMr.spend||0);
+      var pRoas=groas(prevMr);
+      var pPurchase=gav(prevMr.actions,'purchase');
+      var pRevenue=0;
+      if(prevMr.action_values){var px=(prevMr.action_values||[]).find(function(v){return v.action_type==='purchase';});if(px)pRevenue=parseFloat(px.value||0);}
+      if(pRevenue===0&&pRoas>0) pRevenue=pRoas*pSpend;
+      setDiff('dd-meta-spend',spend,pSpend);
+      setDiff('dd-meta-revenue',revenue,pRevenue);
+      setDiff('dd-meta-roas',roas,pRoas);
+      setDiff('dd-meta-sales',purchase,pPurchase);
+    }
+
+    document.getElementById('metaChannelDetail').innerHTML=
+      '<div class="channel-row"><span>Harcama</span><span>'+spend.toFixed(0)+'₺</span></div>'+
+      '<div class="channel-row"><span>Gelir</span><span style="color:var(--g)">'+revenue.toFixed(0)+'₺</span></div>'+
+      '<div class="channel-row"><span>ROAS</span><span style="color:'+roasColor(roas)+'">'+( roas?roas.toFixed(2)+'x':'—')+'</span></div>'+
+      '<div class="channel-row"><span>Tıklama</span><span>'+parseInt(mr.clicks||0).toLocaleString('tr')+'</span></div>'+
+      '<div class="channel-row"><span>Satış</span><span>'+purchase+'</span></div>'+
+      '<div class="channel-row"><span>Sepete Ekle</span><span>'+gav(mr.actions,'add_to_cart')+'</span></div>';
+  }
+
+  // Günlük sparkline - META
+  if(metaSpark&&metaSpark.data&&metaSpark.data.length){
+    var days=metaSpark.data.slice().sort(function(a,b){return a.date_start>b.date_start?1:-1;});
+    var spendSeries=[], roasSeries=[], revSeries=[], saleSeries=[];
+    days.forEach(function(d){
+      var sp=parseFloat(d.spend||0);
+      var r=groas(d);
+      var rev=0;
+      if(d.action_values){var x=(d.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x)rev=parseFloat(x.value||0);}
+      if(rev===0&&r>0)rev=r*sp;
+      spendSeries.push(sp);
+      roasSeries.push(r);
+      revSeries.push(rev);
+      saleSeries.push(gav(d.actions,'purchase'));
+    });
+    // Artış/düşüş rengi
+    function sparkColor(arr, pos, neg){
+      if(arr.length<2) return pos;
+      return arr[arr.length-1]>=arr[0]?pos:neg;
+    }
+    setTimeout(function(){
+      drawDashSpark('spark-meta-spend',   spendSeries, sparkColor(spendSeries,'#1877f2','#fa3e3e'), sparkColor(spendSeries,'#1877f2','#fa3e3e'));
+      drawDashSpark('spark-meta-revenue', revSeries,   sparkColor(revSeries,'#42b72a','#fa3e3e'),   sparkColor(revSeries,'#42b72a','#fa3e3e'));
+      drawDashSpark('spark-meta-roas',    roasSeries,  sparkColor(roasSeries,'#42b72a','#fa3e3e'),  sparkColor(roasSeries,'#42b72a','#fa3e3e'));
+      drawDashSpark('spark-meta-sales',   saleSeries,  sparkColor(saleSeries,'#42b72a','#fa3e3e'),  sparkColor(saleSeries,'#42b72a','#fa3e3e'));
+    },50);
+  }
+
+  // ── GA4: Ana veri + Günlük trend ───────────────────────────────────
+  var [ga4Sum, ga4Daily, ga4Src] = await Promise.all([
+    ga4({
+      dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],
+      metrics:[{name:'sessions'},{name:'totalRevenue'},{name:'conversions'},{name:'activeUsers'}]
+    }),
+    ga4({
+      dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],
+      dimensions:[{name:'date'}],
+      metrics:[{name:'sessions'},{name:'totalRevenue'},{name:'conversions'}],
+      orderBys:[{dimension:{dimensionName:'date'}}],
+      limit:90
+    }),
+    ga4({
+      dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],
+      dimensions:[{name:'sessionSource'},{name:'sessionMedium'}],
+      metrics:[{name:'sessions'},{name:'activeUsers'},{name:'totalRevenue'},{name:'conversions'}],
+      orderBys:[{metric:{metricName:'sessions'},desc:true}],
+      limit:10
+    })
+  ]);
+
+  if(ga4Sum&&ga4Sum.rows){
+    var sessions=parseInt(ga4val(ga4Sum,0));
+    var revenue=parseFloat(ga4val(ga4Sum,1));
+    var conversions=parseInt(ga4val(ga4Sum,2));
+    var users=parseInt(ga4val(ga4Sum,3));
+    var cvr=sessions>0?(conversions/sessions*100):0;
+    var s2=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+    s2('d-ga4-sessions', sessions.toLocaleString('tr'));
+    s2('d-ga4-revenue',  revenue>=1000?(revenue/1000).toFixed(1)+'K₺':revenue.toFixed(0)+'₺');
+    s2('d-ga4-cvr',      cvr.toFixed(2)+'%');
+    document.getElementById('ga4ChannelDetail').innerHTML=
+      '<div class="channel-row"><span>Oturum</span><span>'+sessions.toLocaleString('tr')+'</span></div>'+
+      '<div class="channel-row"><span>Kullanıcı</span><span>'+users.toLocaleString('tr')+'</span></div>'+
+      '<div class="channel-row"><span>Gelir</span><span style="color:var(--g)">'+revenue.toFixed(0)+'₺</span></div>'+
+      '<div class="channel-row"><span>Dönüşüm</span><span>'+conversions+'</span></div>'+
+      '<div class="channel-row"><span>CVR</span><span>'+cvr.toFixed(2)+'%</span></div>';
   } else {
-    document.getElementById('ga4ChannelDetail').innerHTML = '<div style="color:var(--r);font-size:11px">GA4 bağlantı hatası</div>';
+    document.getElementById('ga4ChannelDetail').innerHTML='<div style="color:var(--r);font-size:11px">GA4 bağlantı hatası</div>';
   }
 
-  // GA4 Sources
-  const ga4Src = await ga4({
-    dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
-    dimensions: [{ name: 'sessionSource' }, { name: 'sessionMedium' }],
-    metrics: [{ name: 'sessions' }, { name: 'activeUsers' }, { name: 'totalRevenue' }, { name: 'conversions' }],
-    orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
-    limit: 10
-  });
-  if (ga4Src?.rows) {
-    document.getElementById('ga4SourceTable').innerHTML = ga4Src.rows.map(r => {
-      const src = r.dimensionValues[0].value, med = r.dimensionValues[1].value;
-      const sess = parseInt(r.metricValues[0].value || 0);
-      const users = parseInt(r.metricValues[1].value || 0);
-      const rev = parseFloat(r.metricValues[2].value || 0);
-      const conv = parseInt(r.metricValues[3].value || 0);
-      return `<tr><td>${src} / ${med}</td><td>${sess.toLocaleString('tr')}</td><td>${users.toLocaleString('tr')}</td><td>${rev.toFixed(0)}₺</td><td>${conv}</td></tr>`;
+  // GA4 günlük sparkline
+  if(ga4Daily&&ga4Daily.rows&&ga4Daily.rows.length){
+    var sessSeries=[], revSeriesGA4=[], cvrSeries=[];
+    ga4Daily.rows.forEach(function(r){
+      var sess=parseInt(r.metricValues[0].value||0);
+      var rev=parseFloat(r.metricValues[1].value||0);
+      var conv=parseInt(r.metricValues[2].value||0);
+      sessSeries.push(sess);
+      revSeriesGA4.push(rev);
+      cvrSeries.push(sess>0?(conv/sess*100):0);
+    });
+    function sc(arr,p,n){return arr.length<2?p:(arr[arr.length-1]>=arr[0]?p:n);}
+    setTimeout(function(){
+      drawDashSpark('spark-ga4-sessions', sessSeries,  sc(sessSeries,'#e8710a','#fa3e3e'),  sc(sessSeries,'#e8710a','#fa3e3e'));
+      drawDashSpark('spark-ga4-revenue',  revSeriesGA4,sc(revSeriesGA4,'#42b72a','#fa3e3e'),sc(revSeriesGA4,'#42b72a','#fa3e3e'));
+      drawDashSpark('spark-ga4-cvr',      cvrSeries,   sc(cvrSeries,'#64b4ff','#fa3e3e'),   sc(cvrSeries,'#64b4ff','#fa3e3e'));
+    },50);
+  }
+
+  // GA4 Trafik kaynakları tablosu
+  if(ga4Src&&ga4Src.rows){
+    document.getElementById('ga4SourceTable').innerHTML=ga4Src.rows.map(function(r){
+      var src=r.dimensionValues[0].value, med=r.dimensionValues[1].value;
+      var sess=parseInt(r.metricValues[0].value||0);
+      var users=parseInt(r.metricValues[1].value||0);
+      var rev=parseFloat(r.metricValues[2].value||0);
+      var conv=parseInt(r.metricValues[3].value||0);
+      return '<tr><td>'+src+' / '+med+'</td><td>'+sess.toLocaleString('tr')+'</td><td>'+users.toLocaleString('tr')+'</td><td>'+rev.toFixed(0)+'₺</td><td>'+conv+'</td></tr>';
     }).join('');
   }
 
-  var _lu=document.getElementById('dashLastUpdate');if(_lu)_lu.textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr');
+  var lu=document.getElementById('dashLastUpdate');
+  if(lu) lu.textContent='Son güncelleme: '+new Date().toLocaleTimeString('tr');
 }
 
 if(window._isConnected){loadDashboard();}else{window.addEventListener('mx:connected',function _di(){window.removeEventListener('mx:connected',_di);loadDashboard();});}
