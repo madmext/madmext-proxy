@@ -603,7 +603,7 @@ window.mSortBy=function(tab,key,isNum){
 window.mChangePage=function(dir){mPage+=dir;if(mPage<0)mPage=0;mRender(currentMetaTab);};
 
 // ── Row map ───────────────────────────────────────────────────────────
-var INSF='spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values,quality_ranking,engagement_rate_ranking,conversion_rate_ranking,delivery_info';
+var INSF='spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values,quality_ranking,engagement_rate_ranking,conversion_rate_ranking';
 
 function mapR(r,camp,adset){
   var roas=groas(r);
@@ -632,21 +632,20 @@ function mapR(r,camp,adset){
     _id:camp?camp.id:(adset?adset.id:(r.ad_id||r.adset_id||r.campaign_id)),
     _campId:r.campaign_id,
     _budgetId:isCBO?(camp?camp.id:null):(adset?adset.id:null),
-    _budgetType:isCBO?'campaign':'adset',
-    _deliveryInfo:r.delivery_info||null
+    _budgetType:isCBO?'campaign':'adset'
   };
 }
 
-// delivery_info'dan gerçek yayın durumunu çöz
-function resolveDeliveryStatus(row, campaignOrAdset){
+// Yayın durumunu çöz - campaigns/adsets endpoint'inden gelen effective_status kullan
+// Meta API: IN_PROCESS=öğrenme, LIMITED=öğrenme sınırlı (campaigns endpoint'inden gelir)
+function resolveDeliveryStatus(row, campOrAdset){
   var es=(row.effectiveStatus||'').toUpperCase();
-  // delivery_info varsa öncelikli kullan
-  if(row._deliveryInfo){
-    var ds=(row._deliveryInfo.status||'').toUpperCase();
-    if(ds==='ACTIVE') return 'ACTIVE';
-    if(ds==='IN_PROCESS') return 'LEARNING';      // öğrenme
-    if(ds==='LIMITED') return 'LEARNING_LIMITED';  // öğrenme sınırlı
-    if(ds==='INACTIVE') return es; // pasif — effective_status'a dön
+  // Campaigns/adsets endpoint'inden gelen ek alan: configured_status vs effective_status
+  if(campOrAdset && campOrAdset.effective_status){
+    var ces=campOrAdset.effective_status.toUpperCase();
+    // IN_PROCESS Meta'nın öğrenme durumu
+    if(ces==='IN_PROCESS') return 'LEARNING';
+    if(ces==='LIMITED') return 'LEARNING_LIMITED';
   }
   return es;
 }
@@ -819,7 +818,7 @@ async function loadMetaCamp(){
   var params=Object.assign({fields:INSF+',campaign_id,campaign_name',level:'campaign',limit:500,action_attribution_windows:ATTR},dp);
   var[ins,camps]=await Promise.all([
     api(AID+'/insights',params),
-    api(AID+'/campaigns',{fields:'id,name,status,effective_status,daily_budget,lifetime_budget,end_time,updated_time,recommendations',limit:500})
+    api(AID+'/campaigns',{fields:'id,name,status,effective_status,configured_status,daily_budget,lifetime_budget,end_time,updated_time,recommendations',limit:500})
   ]);
   var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.campStore=(camps&&camps.data||[]);
@@ -863,7 +862,7 @@ async function loadMetaAdsets(){
   if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
   var[ins,adsets,camps]=await Promise.all([
     api(AID+'/insights',params),
-    api(AID+'/adsets',{fields:'id,name,status,effective_status,daily_budget,lifetime_budget,campaign_id,end_time,updated_time',limit:500}),
+    api(AID+'/adsets',{fields:'id,name,status,effective_status,configured_status,daily_budget,lifetime_budget,campaign_id,end_time,updated_time',limit:500}),
     api(AID+'/campaigns',{fields:'id,daily_budget,lifetime_budget',limit:500})
   ]);
   var amap={},cmap={};
