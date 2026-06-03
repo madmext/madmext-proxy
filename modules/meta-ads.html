@@ -50,6 +50,11 @@
 .qual-pip{width:8px;height:8px;border-radius:2px;background:var(--b2)}
 .qual-pip.hi{background:var(--g)}.qual-pip.md{background:var(--y)}.qual-pip.lo{background:var(--r)}
 .meta-pagination{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--b);font-size:11px;color:var(--m)}
+/* Sparkline */
+.ms-card{cursor:pointer;transition:border-color .15s}
+.ms-card:hover{border-color:var(--a)}
+.ms-spark{margin-top:6px;height:32px;width:100%}
+.ms-spark svg{width:100%;height:100%}
 /* Log modal */
 .log-modal-body{max-height:480px;overflow-y:auto;padding:0}
 .log-item{padding:10px 16px;border-bottom:1px solid var(--b);display:flex;gap:12px;align-items:flex-start}
@@ -139,14 +144,14 @@
 
 <!-- Özet Kartlar -->
 <div class="meta-summary" id="mSummary">
-  <div class="ms-card"><div class="ms-label">Harcama</div><div class="ms-val" id="ms-spend">—</div><div class="ms-diff" id="md-spend"></div></div>
-  <div class="ms-card"><div class="ms-label">Gelir</div><div class="ms-val" id="ms-revenue" style="color:var(--g)">—</div><div class="ms-diff" id="md-revenue"></div></div>
-  <div class="ms-card"><div class="ms-label">Ort. ROAS</div><div class="ms-val" id="ms-roas">—</div><div class="ms-diff" id="md-roas"></div></div>
-  <div class="ms-card"><div class="ms-label">Satın Alma</div><div class="ms-val" id="ms-purchase">—</div><div class="ms-diff" id="md-purchase"></div></div>
-  <div class="ms-card"><div class="ms-label">Tıklama</div><div class="ms-val" id="ms-clicks">—</div><div class="ms-diff" id="md-clicks"></div></div>
-  <div class="ms-card"><div class="ms-label">Ort. CTR</div><div class="ms-val" id="ms-ctr">—</div><div class="ms-diff" id="md-ctr"></div></div>
-  <div class="ms-card"><div class="ms-label">Gösterim</div><div class="ms-val" id="ms-impr">—</div><div class="ms-diff" id="md-impr"></div></div>
-  <div class="ms-card"><div class="ms-label">Erişim</div><div class="ms-val" id="ms-reach">—</div><div class="ms-diff" id="md-reach"></div></div>
+  <div class="ms-card"><div class="ms-label">Harcama</div><div class="ms-val" id="ms-spend">—</div><div class="ms-diff" id="md-spend"></div><div class="ms-spark" id="spark-spend"></div></div>
+  <div class="ms-card"><div class="ms-label">Gelir</div><div class="ms-val" id="ms-revenue" style="color:var(--g)">—</div><div class="ms-diff" id="md-revenue"></div><div class="ms-spark" id="spark-revenue"></div></div>
+  <div class="ms-card"><div class="ms-label">Ort. ROAS</div><div class="ms-val" id="ms-roas">—</div><div class="ms-diff" id="md-roas"></div><div class="ms-spark" id="spark-roas"></div></div>
+  <div class="ms-card"><div class="ms-label">Satın Alma</div><div class="ms-val" id="ms-purchase">—</div><div class="ms-diff" id="md-purchase"></div><div class="ms-spark" id="spark-purchase"></div></div>
+  <div class="ms-card"><div class="ms-label">Tıklama</div><div class="ms-val" id="ms-clicks">—</div><div class="ms-diff" id="md-clicks"></div><div class="ms-spark" id="spark-clicks"></div></div>
+  <div class="ms-card"><div class="ms-label">Ort. CTR</div><div class="ms-val" id="ms-ctr">—</div><div class="ms-diff" id="md-ctr"></div><div class="ms-spark" id="spark-ctr"></div></div>
+  <div class="ms-card"><div class="ms-label">Gösterim</div><div class="ms-val" id="ms-impr">—</div><div class="ms-diff" id="md-impr"></div><div class="ms-spark" id="spark-impr"></div></div>
+  <div class="ms-card"><div class="ms-label">Erişim</div><div class="ms-val" id="ms-reach">—</div><div class="ms-diff" id="md-reach"></div><div class="ms-spark" id="spark-reach"></div></div>
 </div>
 
 <!-- Tablo -->
@@ -598,7 +603,7 @@ window.mSortBy=function(tab,key,isNum){
 window.mChangePage=function(dir){mPage+=dir;if(mPage<0)mPage=0;mRender(currentMetaTab);};
 
 // ── Row map ───────────────────────────────────────────────────────────
-var INSF='spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values,quality_ranking,engagement_rate_ranking,conversion_rate_ranking';
+var INSF='spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values,quality_ranking,engagement_rate_ranking,conversion_rate_ranking,delivery_info';
 
 function mapR(r,camp,adset){
   var roas=groas(r);
@@ -627,8 +632,23 @@ function mapR(r,camp,adset){
     _id:camp?camp.id:(adset?adset.id:(r.ad_id||r.adset_id||r.campaign_id)),
     _campId:r.campaign_id,
     _budgetId:isCBO?(camp?camp.id:null):(adset?adset.id:null),
-    _budgetType:isCBO?'campaign':'adset'
+    _budgetType:isCBO?'campaign':'adset',
+    _deliveryInfo:r.delivery_info||null
   };
+}
+
+// delivery_info'dan gerçek yayın durumunu çöz
+function resolveDeliveryStatus(row, campaignOrAdset){
+  var es=(row.effectiveStatus||'').toUpperCase();
+  // delivery_info varsa öncelikli kullan
+  if(row._deliveryInfo){
+    var ds=(row._deliveryInfo.status||'').toUpperCase();
+    if(ds==='ACTIVE') return 'ACTIVE';
+    if(ds==='IN_PROCESS') return 'LEARNING';      // öğrenme
+    if(ds==='LIMITED') return 'LEARNING_LIMITED';  // öğrenme sınırlı
+    if(ds==='INACTIVE') return es; // pasif — effective_status'a dön
+  }
+  return es;
 }
 
 // ── Toggle ile log ────────────────────────────────────────────────────
@@ -690,6 +710,100 @@ window.mApproveB=async function(){
   mPending=null;
 };
 
+// ── Sparkline (günlük trend grafikleri) ──────────────────────────────
+async function loadSparklines(dp){
+  try {
+    // Özel aralık için günlük breakdown, preset için time_increment=1
+    var sparkParams={
+      fields:'spend,impressions,clicks,purchase_roas,actions,action_values',
+      level:'account',
+      time_increment:1,
+      limit:90,
+      action_attribution_windows:ATTR
+    };
+    // Tarih parametresi
+    if(dp.date_preset){
+      sparkParams.date_preset=dp.date_preset;
+    } else if(dp.time_range){
+      sparkParams.time_range=dp.time_range;
+    } else {
+      sparkParams.date_preset='last_7d';
+    }
+    var res = await api(AID+'/insights', sparkParams);
+    if(!res||!res.data||!res.data.length) return;
+
+    // Günlük veriyi parse et
+    var days = res.data.sort(function(a,b){return a.date_start>b.date_start?1:-1;});
+    var series = {
+      spend:[], revenue:[], roas:[], purchase:[], clicks:[], ctr:[], impr:[], reach:[]
+    };
+    days.forEach(function(d){
+      var spend=parseFloat(d.spend||0);
+      var roas=groas(d);
+      var purchase=gav(d.actions,'purchase');
+      var revenue=0;
+      if(d.action_values){var x=(d.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x)revenue=parseFloat(x.value||0);}
+      if(revenue===0&&roas>0) revenue=roas*spend;
+      series.spend.push(spend);
+      series.revenue.push(revenue);
+      series.roas.push(roas);
+      series.purchase.push(purchase);
+      series.clicks.push(parseInt(d.clicks||0));
+      var impr=parseInt(d.impressions||0);
+      series.ctr.push(impr>0?(parseInt(d.clicks||0)/impr*100):0);
+      series.impr.push(impr);
+      series.reach.push(parseInt(d.reach||0));
+    });
+
+    // Her kart için sparkline çiz
+    Object.keys(series).forEach(function(key){
+      drawSparkline('spark-'+key, series[key], key);
+    });
+  } catch(e){ console.log('Sparkline hata:',e); }
+}
+
+function drawSparkline(containerId, values, key){
+  var el=document.getElementById(containerId);
+  if(!el||!values||!values.length) return;
+
+  var W=el.offsetWidth||120, H=32;
+  var min=Math.min.apply(null,values);
+  var max=Math.max.apply(null,values);
+  var range=max-min||1;
+  var n=values.length;
+
+  // Renk: gelir/roas yeşil, harcama mavi, CTR sarı, diğer mavi
+  var color='var(--a)';
+  var fillColor='rgba(24,119,242,0.15)';
+  if(key==='revenue'||key==='roas'||key==='purchase'){color='var(--g)';fillColor='rgba(66,183,42,0.15)';}
+  else if(key==='ctr'){color='var(--y)';fillColor='rgba(240,180,41,0.12)';}
+
+  // Artış mı azalış mı?
+  if(values.length>1){
+    var first=values[0],last=values[values.length-1];
+    if(last<first){color='var(--r)';fillColor='rgba(250,62,62,0.12)';}
+  }
+
+  // Noktaları hesapla
+  var pts=values.map(function(v,i){
+    var x=(n===1)?W/2:(i/(n-1))*W;
+    var y=H-2-((v-min)/range*(H-4));
+    return x+','+y;
+  });
+
+  // Area path
+  var linePts=pts.join(' ');
+  var areaPath='M'+pts[0]+' L'+linePts+' L'+(W)+','+(H)+' L0,'+(H)+' Z';
+  var linePath='M'+pts[0]+' L'+linePts;
+
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<path d="'+areaPath+'" fill="'+fillColor+'" stroke="none"/>'
+    +'<path d="'+linePath+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    // Son nokta
+    +'<circle cx="'+pts[n-1].split(',')[0]+'" cy="'+pts[n-1].split(',')[1]+'" r="2.5" fill="'+color+'"/>'
+    +'</svg>';
+}
+
 // ── Veri yükle ────────────────────────────────────────────────────────
 window.mLoad=function(){
   if(currentMetaTab==='camp')loadMetaCamp();
@@ -715,6 +829,9 @@ async function loadMetaCamp(){
     if(camp){
       row.status=camp.status;
       row.effectiveStatus=camp.effective_status||camp.status;
+      // delivery_info'dan öğrenme durumunu çöz
+      var resolved=resolveDeliveryStatus(row,camp);
+      if(resolved!==row.effectiveStatus) row.effectiveStatus=resolved;
       row.endTime=camp.end_time?new Date(camp.end_time).toLocaleDateString('tr'):'';
       row.warnings=(camp.recommendations||[]).filter(function(rec){return rec.importance!=='HIGH';}).length;
       row.errors=(camp.recommendations||[]).filter(function(rec){return rec.importance==='HIGH';}).length;
@@ -732,6 +849,8 @@ async function loadMetaCamp(){
   }
   window._lastCmpRows=cmpRows;
   applyAndRender('camp',cmpV,cmpRows);
+  // Günlük trend verisi — sparkline için
+  loadSparklines(dp);
 }
 
 async function loadMetaAdsets(){
@@ -755,7 +874,14 @@ async function loadMetaAdsets(){
     var adset=amap[r.adset_id],camp=cmap[r.campaign_id];
     var row=mapR(r,camp,adset);
     row.name=r.adset_name||'—';
-    if(adset){row.status=adset.status;row.effectiveStatus=adset.effective_status||adset.status;row._id=adset.id;row.endTime=adset.end_time?new Date(adset.end_time).toLocaleDateString('tr'):'';}
+    if(adset){
+      row.status=adset.status;
+      row.effectiveStatus=adset.effective_status||adset.status;
+      var resolved=resolveDeliveryStatus(row,adset);
+      if(resolved!==row.effectiveStatus) row.effectiveStatus=resolved;
+      row._id=adset.id;
+      row.endTime=adset.end_time?new Date(adset.end_time).toLocaleDateString('tr'):'';
+    }
     return row;
   });
   rows.sort(function(a,b){return b.spend-a.spend;});
