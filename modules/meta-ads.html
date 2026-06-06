@@ -1,196 +1,243 @@
 <style>
-.meta-tabs{display:flex;gap:2px;background:var(--bg);border-radius:6px;padding:3px;margin-bottom:12px;width:fit-content}
-.meta-tab{padding:6px 20px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:500;color:var(--m);border:none;background:transparent;transition:all .15s}
+/* ── Meta Ads Layout ─────────────────────────────── */
+.ma-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
+
+/* Satır 1: Tabs + Tarih */
+.ma-row1{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;flex-shrink:0;gap:8px;flex-wrap:wrap}
+.meta-tabs{display:flex;gap:1px;background:transparent}
+.meta-tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s;display:flex;align-items:center;gap:6px}
 .meta-tab.active{background:var(--a);color:#fff}
-.meta-tab:hover:not(.active){color:var(--t);background:var(--b)}
-.meta-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
-.date-wrap{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:4px 10px}
-.date-wrap input[type=date]{background:transparent;border:none;color:var(--t);font-family:'DM Mono',monospace;font-size:11px}
-.meta-summary{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:12px}
-.ms-card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden}
+.meta-tab:hover:not(.active){background:var(--b);color:var(--t)}
+
+/* Satır 2: Filtreler */
+.ma-row2{display:flex;align-items:center;gap:6px;padding:0 0 8px;flex-shrink:0;flex-wrap:wrap}
+.mstatus-grp{display:flex;gap:1px;background:var(--s2);border:1px solid var(--b);border-radius:6px;padding:2px}
+.mstatus-btn{padding:4px 12px;font-size:11px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
+.mstatus-btn.on{background:var(--a);color:#fff}
+.ma-sep{width:1px;height:20px;background:var(--b);margin:0 2px}
+
+/* Özet kartlar */
+.ma-summary{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:10px;flex-shrink:0}
+.ms-card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.ms-card:hover{border-color:var(--a)}
 .ms-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--a);border-radius:6px 6px 0 0}
 .ms-label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
-.ms-val{font-family:'DM Mono',monospace;font-size:17px;font-weight:600}
+.ms-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:600;line-height:1.2}
 .ms-diff{font-size:10px;margin-top:2px}
 .ms-diff.up{color:var(--g)}.ms-diff.dn{color:var(--r)}.ms-diff.neu{color:var(--m)}
-.ms-spark{margin-top:6px;height:28px;width:100%}
-.meta-tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;max-height:calc(100vh - 340px)}
-.meta-tbl-wrap table{width:100%;border-collapse:collapse;font-size:11px}
-.meta-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--b);position:sticky;top:0;z-index:3;white-space:nowrap;cursor:pointer;user-select:none}
-.meta-tbl-wrap th:hover{color:var(--a)}.meta-tbl-wrap th.sorted{color:var(--a)}
-.meta-tbl-wrap td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
-.meta-tbl-wrap tr:hover td{background:rgba(255,255,255,.025)}
-.meta-tbl-wrap tr.total-row td{background:#151515;border-top:1px solid var(--b);font-weight:600;font-family:'DM Mono',monospace}
+.ms-spark{margin-top:6px;height:26px;width:100%}
+
+/* Tablo */
+.ma-tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;flex:1;min-height:0}
+.ma-tbl-wrap table{width:100%;border-collapse:collapse;font-size:11px}
+.ma-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--b);position:sticky;top:0;z-index:3;white-space:nowrap;cursor:pointer;user-select:none}
+.ma-tbl-wrap th:hover{color:var(--a)}.ma-tbl-wrap th.sorted{color:var(--a)}
+.ma-tbl-wrap td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
+.ma-tbl-wrap tr:hover td{background:rgba(255,255,255,.025)}
+.ma-tbl-wrap tr.total-row td{background:#151515;border-top:1px solid var(--b);font-weight:600;font-family:'DM Mono',monospace}
+.ma-pagination{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--b);font-size:11px;color:var(--m);flex-shrink:0}
+
+/* Toggle */
 .tog{position:relative;display:inline-flex;align-items:center;cursor:pointer}
 .tog input{display:none}
 .tog-track{width:28px;height:16px;border-radius:8px;background:var(--b2);transition:background .2s;position:relative}
 .tog-track::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .2s}
 .tog input:checked+.tog-track{background:var(--a)}
 .tog input:checked+.tog-track::after{transform:translateX(12px)}
-.status-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace;font-weight:600}
-.del-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+
+/* Status badges */
+.sb{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace;font-weight:600}
 .sb-active{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3)}
 .sb-learning{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
 .sb-limited{background:rgba(250,140,22,.12);color:#fa8c16;border:1px solid rgba(250,140,22,.3)}
 .sb-paused{background:rgba(138,141,145,.1);color:var(--m);border:1px solid rgba(138,141,145,.2)}
 .sb-error{background:rgba(250,62,62,.1);color:var(--r);border:1px solid rgba(250,62,62,.25)}
+.del-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
 .nm{font-family:'Inter',sans-serif;font-size:12px;font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub-label{font-size:9px;color:var(--m)}
+.sub-lbl{font-size:9px;color:var(--m)}
 .qual-pip{width:8px;height:8px;border-radius:2px;background:var(--b2);display:inline-block}
 .qual-pip.hi{background:var(--g)}.qual-pip.md{background:var(--y)}.qual-pip.lo{background:var(--r)}
-.meta-pagination{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--b);font-size:11px;color:var(--m)}
-.log-modal-body{max-height:440px;overflow-y:auto}
-.log-item{padding:10px 16px;border-bottom:1px solid var(--b);display:flex;gap:10px;align-items:flex-start}
-.log-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+
+/* Date picker */
+.dp-wrap{position:relative}
+.dp-btn{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer;white-space:nowrap;user-select:none}
+.dp-btn:hover{border-color:var(--a)}
+.dp-popup{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:600;background:#18191b;border:1px solid var(--b);border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.85);min-width:680px}
+.dp-popup.open{display:flex;flex-direction:column}
+.dp-body{display:flex}
+.dp-left{width:185px;flex-shrink:0;padding:8px 0;border-right:1px solid var(--b);overflow-y:auto;max-height:400px}
+.dp-sec-lbl{font-size:9px;color:var(--m);letter-spacing:1.2px;text-transform:uppercase;padding:8px 14px 3px;font-weight:600}
+.dp-ri{display:flex;align-items:center;gap:8px;padding:6px 14px;cursor:pointer;transition:background .1s}
+.dp-ri:hover{background:rgba(255,255,255,.05)}
+.dp-ri input[type=radio]{accent-color:var(--a);cursor:pointer;width:13px;height:13px;flex-shrink:0;margin:0}
+.dp-ri span{font-size:12px;color:var(--t);cursor:pointer}
+.dp-right{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px}
+.dp-cals{display:flex;gap:18px}
+.dp-cal{flex:1;min-width:0}
+.dp-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.dp-nav{background:none;border:1px solid var(--b);color:var(--m);cursor:pointer;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.dp-nav:hover{border-color:var(--a);color:var(--a)}
+.dp-cal-sel{background:var(--s2);border:1px solid var(--b2);color:var(--t);font-family:'DM Mono',monospace;font-size:10px;padding:2px 5px;border-radius:4px;cursor:pointer}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.dp-dh{font-size:9px;color:var(--m);text-align:center;padding:3px 0;text-transform:uppercase;font-weight:600}
+.dp-d{font-size:11px;text-align:center;padding:4px 0;cursor:pointer;border-radius:50%;font-family:'DM Mono',monospace;color:var(--t);transition:background .1s}
+.dp-d:not(.dp-empty):not(.dp-dis):hover{background:var(--b2)}
+.dp-d.dp-empty,.dp-d.dp-dis{color:#444;cursor:default;pointer-events:none}
+.dp-d.dp-today{color:var(--a);font-weight:700}
+.dp-d.dp-sel{background:var(--a)!important;color:#fff!important;border-radius:50%}
+.dp-d.dp-in-r{background:rgba(24,119,242,.18);border-radius:0;color:var(--t)}
+.dp-d.dp-rs{background:var(--a)!important;color:#fff!important;border-radius:50% 0 0 50%}
+.dp-d.dp-re{background:var(--a)!important;color:#fff!important;border-radius:0 50% 50% 0}
+.dp-d.dp-rs.dp-re{border-radius:50%}
+.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--b);padding:8px 14px;flex-shrink:0}
+.dp-fi{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
+
+/* Log/Geçmiş Modal */
+.log-modal-body{max-height:420px;overflow-y:auto}
+.log-item{padding:9px 14px;border-bottom:1px solid var(--b);display:flex;gap:10px;align-items:flex-start}
+.log-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
 .log-icon.budget{background:rgba(240,180,41,.15);color:var(--y)}
 .log-icon.status{background:rgba(24,119,242,.12);color:var(--a)}
 .log-icon.system{background:rgba(138,141,145,.1);color:var(--m)}
+
+/* Mobil */
+@media(max-width:900px){
+  .ma-summary{grid-template-columns:repeat(4,1fr)}
+  .dp-popup{min-width:340px;right:-50px}
+  .dp-cals{flex-direction:column}
+  .dp-left{width:100%;max-height:160px;overflow-x:auto;white-space:nowrap;display:flex;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--b)}
+  .dp-ri{display:inline-flex;padding:5px 10px}
+}
+@media(max-width:600px){
+  .ma-summary{grid-template-columns:repeat(2,1fr)}
+  .ma-row1{flex-direction:column;align-items:flex-start}
+  .meta-tabs{width:100%}
+  .meta-tab{flex:1;justify-content:center;font-size:11px;padding:6px 8px}
+  .ma-row2{gap:4px}
+  .mstatus-btn{padding:3px 8px;font-size:10px}
+}
 </style>
 
-<!-- Tabs -->
-<div class="meta-tabs">
-  <button class="meta-tab active" id="mtCamp" onclick="metaTabSwitch('camp',this)">📊 Kampanyalar</button>
-  <button class="meta-tab" id="mtAdset" onclick="metaTabSwitch('adset',this)">📁 Reklam Setleri</button>
-  <button class="meta-tab" id="mtAd" onclick="metaTabSwitch('ad',this)">🖼 Reklamlar</button>
-</div>
+<!-- ─── Ana wrapper ─────────────────────────────────────────── -->
+<div class="ma-wrap">
 
-<!-- Date Picker -->
-<style>
-.dp-wrap{position:relative}
-.dp-btn{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 12px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer;white-space:nowrap;user-select:none}
-.dp-btn:hover{border-color:var(--a)}
-.dp-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:600;background:#18191b;border:1px solid var(--b);border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.8);min-width:680px}
-.dp-popup.open{display:flex;flex-direction:column}
-.dp-body{display:flex}
-.dp-left{width:190px;flex-shrink:0;padding:10px 0;border-right:1px solid var(--b);max-height:420px;overflow-y:auto}
-.dp-section-label{font-size:10px;color:var(--m);letter-spacing:1px;text-transform:uppercase;padding:8px 14px 3px;font-weight:600}
-.dp-radio-item{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background .1s}
-.dp-radio-item:hover{background:rgba(255,255,255,.05)}
-.dp-radio-item input[type=radio]{accent-color:var(--a);cursor:pointer;width:14px;height:14px;flex-shrink:0;margin:0}
-.dp-radio-label{font-size:12px;color:var(--t);cursor:pointer;line-height:1}
-.dp-right{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
-.dp-cals{display:flex;gap:20px}
-.dp-cal{flex:1;min-width:0}
-.dp-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.dp-cal-nav{background:none;border:1px solid var(--b);color:var(--m);cursor:pointer;width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
-.dp-cal-nav:hover{border-color:var(--a);color:var(--a)}
-.dp-cal-title{display:flex;gap:4px;align-items:center}
-.dp-cal-sel{background:var(--s2);border:1px solid var(--b2);color:var(--t);font-family:'DM Mono',monospace;font-size:11px;padding:3px 6px;border-radius:4px;cursor:pointer}
-.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.dp-day-hdr{font-size:9px;color:var(--m);text-align:center;padding:4px 0;text-transform:uppercase;font-weight:600}
-.dp-day{font-size:11px;text-align:center;padding:5px 0;cursor:pointer;border-radius:50%;font-family:'DM Mono',monospace;color:var(--t);transition:background .1s,color .1s}
-.dp-day:not(.dp-empty):not(.dp-disabled):hover{background:var(--b2)}
-.dp-day.dp-empty,.dp-day.dp-disabled{color:#444;cursor:default;pointer-events:none}
-.dp-day.dp-today{color:var(--a);font-weight:700}
-.dp-day.dp-sel{background:var(--a)!important;color:#fff!important;border-radius:50%}
-.dp-day.dp-in-range{background:rgba(24,119,242,.18);border-radius:0;color:var(--t)}
-.dp-day.dp-rs{background:var(--a)!important;color:#fff!important;border-radius:50% 0 0 50%}
-.dp-day.dp-re{background:var(--a)!important;color:#fff!important;border-radius:0 50% 50% 0}
-.dp-day.dp-rs.dp-re{border-radius:50%}
-.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--b);padding:10px 16px;flex-shrink:0}
-.dp-footer-info{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
-.dp-footer-btns{display:flex;gap:8px}
-</style>
+<!-- Satır 1: Tabs (sol) + Tarih seçici (sağ) -->
+<div class="ma-row1">
+  <div class="meta-tabs">
+    <button class="meta-tab active" id="mtCamp" onclick="metaTabSwitch('camp',this)">📊 Kampanyalar</button>
+    <button class="meta-tab" id="mtAdset" onclick="metaTabSwitch('adset',this)">📁 Reklam Setleri</button>
+    <button class="meta-tab" id="mtAd" onclick="metaTabSwitch('ad',this)">🖼 Reklamlar</button>
+  </div>
 
-<div class="dp-wrap" id="dpWrap">
-  <button class="dp-btn" id="dpTrigger" onclick="toggleDP()">
-    <span>📅</span><span id="dpLabel">Son 7 gün</span>
-  </button>
-  <div class="dp-popup" id="dpPopup">
-    <div class="dp-body">
-      <div class="dp-left">
-        <div class="dp-section-label">Yakınlarda kullanılanlar</div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_7d','Son 7 gün')"><input type="radio" name="dpR" value="last_7d" checked><span class="dp-radio-label">Son 7 gün</span></div>
-        <div class="dp-section-label" style="margin-top:4px">Tarih aralığı ön ayarları</div>
-        <div class="dp-radio-item" onclick="dpPickPreset('today','Bugün')"><input type="radio" name="dpR" value="today"><span class="dp-radio-label">Bugün</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('yesterday','Dün')"><input type="radio" name="dpR" value="yesterday"><span class="dp-radio-label">Dün</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_2d','Bugün ve dün')"><input type="radio" name="dpR" value="last_2d"><span class="dp-radio-label">Bugün ve dün</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_7d','Son 7 gün')"><input type="radio" name="dpR" value="last_7d_2"><span class="dp-radio-label">Son 7 gün</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_14d','Son 14 gün')"><input type="radio" name="dpR" value="last_14d"><span class="dp-radio-label">Son 14 gün</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_28d','Son 28 gün')"><input type="radio" name="dpR" value="last_28d"><span class="dp-radio-label">Son 28 gün</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_30d','Son 30 gün')"><input type="radio" name="dpR" value="last_30d"><span class="dp-radio-label">Son 30 gün</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('this_week_sun_today','Bu hafta')"><input type="radio" name="dpR" value="this_week"><span class="dp-radio-label">Bu hafta</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_week_sun_sat','Geçen hafta')"><input type="radio" name="dpR" value="last_week"><span class="dp-radio-label">Geçen hafta</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('this_month','Bu ay')"><input type="radio" name="dpR" value="this_month"><span class="dp-radio-label">Bu ay</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('last_month','Geçen ay')"><input type="radio" name="dpR" value="last_month"><span class="dp-radio-label">Geçen ay</span></div>
-        <div class="dp-radio-item" onclick="dpPickPreset('maximum','Maksimum')"><input type="radio" name="dpR" value="maximum"><span class="dp-radio-label">Maksimum</span></div>
-        <div class="dp-radio-item" id="dpCustomItem" onclick="dpPickPreset('custom','Özel')"><input type="radio" name="dpR" value="custom"><span class="dp-radio-label">Özel</span></div>
-      </div>
-      <div class="dp-right">
-        <div class="dp-cals">
-          <div class="dp-cal">
-            <div class="dp-cal-hdr">
-              <button class="dp-cal-nav" onclick="dpNav(-1)">‹</button>
-              <div class="dp-cal-title">
-                <select class="dp-cal-sel" id="dpM1" onchange="dpGoTo(0,+this.value,+document.getElementById('dpY1').value)"></select>
-                <select class="dp-cal-sel" id="dpY1" onchange="dpGoTo(0,+document.getElementById('dpM1').value,+this.value)"></select>
+  <!-- Tarih seçici - sağ üst -->
+  <div class="dp-wrap" id="dpWrap">
+    <button class="dp-btn" id="dpTrigger" onclick="toggleDP()">
+      📅 <span id="dpLabel">Son 7 gün</span> ▾
+    </button>
+    <div class="dp-popup" id="dpPopup">
+      <div class="dp-body">
+        <!-- Sol: Preset listesi -->
+        <div class="dp-left">
+          <div class="dp-sec-lbl">Yakınlarda kullanılanlar</div>
+          <div class="dp-ri" onclick="dpPickP('last_7d','Son 7 gün')"><input type="radio" name="dpR" value="last_7d" checked><span>Son 7 gün</span></div>
+          <div class="dp-sec-lbl">Ön ayarlar</div>
+          <div class="dp-ri" onclick="dpPickP('today','Bugün')"><input type="radio" name="dpR" value="today"><span>Bugün</span></div>
+          <div class="dp-ri" onclick="dpPickP('yesterday','Dün')"><input type="radio" name="dpR" value="yesterday"><span>Dün</span></div>
+          <div class="dp-ri" onclick="dpPickP('last_2d','Bugün ve dün')"><input type="radio" name="dpR" value="last_2d"><span>Bugün ve dün</span></div>
+          <div class="dp-ri" onclick="dpPickP('last_7d','Son 7 gün')"><input type="radio" name="dpR" value="last_7d_2"><span>Son 7 gün</span></div>
+          <div class="dp-ri" onclick="dpPickP('last_14d','Son 14 gün')"><input type="radio" name="dpR" value="last_14d"><span>Son 14 gün</span></div>
+          <div class="dp-ri" onclick="dpPickP('last_28d','Son 28 gün')"><input type="radio" name="dpR" value="last_28d"><span>Son 28 gün</span></div>
+          <div class="dp-ri" onclick="dpPickP('last_30d','Son 30 gün')"><input type="radio" name="dpR" value="last_30d"><span>Son 30 gün</span></div>
+          <div class="dp-ri" onclick="dpPickP('this_week_sun_today','Bu hafta')"><input type="radio" name="dpR" value="this_week"><span>Bu hafta</span></div>
+          <div class="dp-ri" onclick="dpPickP('last_week_sun_sat','Geçen hafta')"><input type="radio" name="dpR" value="last_week"><span>Geçen hafta</span></div>
+          <div class="dp-ri" onclick="dpPickP('this_month','Bu ay')"><input type="radio" name="dpR" value="this_month"><span>Bu ay</span></div>
+          <div class="dp-ri" onclick="dpPickP('last_month','Geçen ay')"><input type="radio" name="dpR" value="last_month"><span>Geçen ay</span></div>
+          <div class="dp-ri" onclick="dpPickP('maximum','Maksimum')"><input type="radio" name="dpR" value="maximum"><span>Maksimum</span></div>
+          <div class="dp-ri" onclick="dpPickP('custom','Özel')"><input type="radio" name="dpR" value="custom"><span>Özel</span></div>
+        </div>
+        <!-- Sağ: Takvimler -->
+        <div class="dp-right">
+          <div class="dp-cals">
+            <div class="dp-cal">
+              <div class="dp-cal-hdr">
+                <button class="dp-nav" onclick="dpNav(-1)">‹</button>
+                <div style="display:flex;gap:4px">
+                  <select class="dp-cal-sel" id="dpM1" onchange="dpGoTo(0,+this.value,+document.getElementById('dpY1').value)"></select>
+                  <select class="dp-cal-sel" id="dpY1" onchange="dpGoTo(0,+document.getElementById('dpM1').value,+this.value)"></select>
+                </div>
+                <div style="width:24px"></div>
               </div>
-              <div style="width:26px"></div>
+              <div class="dp-grid" id="dpG1"></div>
             </div>
-            <div class="dp-grid" id="dpG1"></div>
-          </div>
-          <div class="dp-cal">
-            <div class="dp-cal-hdr">
-              <div style="width:26px"></div>
-              <div class="dp-cal-title">
-                <select class="dp-cal-sel" id="dpM2" onchange="dpGoTo(1,+this.value,+document.getElementById('dpY2').value)"></select>
-                <select class="dp-cal-sel" id="dpY2" onchange="dpGoTo(1,+document.getElementById('dpM2').value,+this.value)"></select>
+            <div class="dp-cal">
+              <div class="dp-cal-hdr">
+                <div style="width:24px"></div>
+                <div style="display:flex;gap:4px">
+                  <select class="dp-cal-sel" id="dpM2" onchange="dpGoTo(1,+this.value,+document.getElementById('dpY2').value)"></select>
+                  <select class="dp-cal-sel" id="dpY2" onchange="dpGoTo(1,+document.getElementById('dpM2').value,+this.value)"></select>
+                </div>
+                <button class="dp-nav" onclick="dpNav(+1)">›</button>
               </div>
-              <button class="dp-cal-nav" onclick="dpNav(+1)">›</button>
+              <div class="dp-grid" id="dpG2"></div>
             </div>
-            <div class="dp-grid" id="dpG2"></div>
           </div>
         </div>
       </div>
-    </div>
-    <div class="dp-footer">
-      <div class="dp-footer-info" id="dpInfo">Tarih seçin</div>
-      <div class="dp-footer-btns">
-        <button class="btn sec sm" onclick="closeDP()">İptal</button>
-        <button class="btn sm" id="dpOkBtn" onclick="dpApply()" disabled style="opacity:.45">Güncelle</button>
+      <div class="dp-footer">
+        <div class="dp-fi" id="dpInfo">Tarih seçin</div>
+        <div style="display:flex;gap:8px">
+          <span style="font-size:10px;color:var(--m);align-self:center">Tarihler Belgrad Saati'nde gösteriliyor</span>
+          <button class="btn sec sm" onclick="closeDP()">İptal</button>
+          <button class="btn sm" id="dpOkBtn" onclick="dpApply()" disabled style="opacity:.45">Güncelle</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
-<input type="hidden" id="mPreset" value="last_7d">
-<input type="hidden" id="mFrom">
-<input type="hidden" id="mTo">
-  <select class="flt" id="mCampFlt" style="font-size:11px;max-width:180px;display:none" onchange="mLoad()">
+
+<!-- Satır 2: Filtreler + Araçlar -->
+<div class="ma-row2">
+  <!-- Durum filtresi - sol tarafta (tabs'ın hemen altında) -->
+  <div class="mstatus-grp">
+    <button class="mstatus-btn on" onclick="setMF('all',this)">Tümü</button>
+    <button class="mstatus-btn" onclick="setMF('active',this)"><span style="color:var(--g)">●</span> Aktif</button>
+    <button class="mstatus-btn" onclick="setMF('learning',this)">📚 Öğrenme</button>
+    <button class="mstatus-btn" onclick="setMF('paused',this)">⏸ Pasif</button>
+  </div>
+  <!-- Kampanya filtresi -->
+  <select class="flt" id="mCampFlt" style="font-size:11px;max-width:170px;display:none" onchange="mLoad()">
     <option value="">Tüm Kampanyalar</option>
   </select>
-  <!-- Durum filtresi -->
-  <div style="display:flex;gap:2px;background:var(--s2);border:1px solid var(--b);border-radius:5px;padding:2px">
-    <button class="mstatus-btn" onclick="setMStatusFilter('all',this)" style="padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:var(--a);color:#fff;font-family:'DM Mono',monospace">Tümü</button>
-    <button class="mstatus-btn" onclick="setMStatusFilter('active',this)" style="padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace">● Aktif</button>
-    <button class="mstatus-btn" onclick="setMStatusFilter('learning',this)" style="padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace">📚 Öğrenme</button>
-    <button class="mstatus-btn" onclick="setMStatusFilter('paused',this)" style="padding:4px 10px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace">⏸ Pasif</button>
-  </div>
-  <button class="btn sm" onclick="mLoad()" title="Yenile">↻</button>
+  <div class="ma-sep"></div>
+  <!-- Karşılaştırma -->
   <select class="flt" id="mCmp" onchange="mLoad()" style="font-size:11px;padding:5px 8px">
     <option value="">Karşılaştırma yok</option>
     <option value="last_7d">Önceki 7 gün</option>
     <option value="last_14d">Önceki 14 gün</option>
     <option value="last_30d">Önceki 30 gün</option>
   </select>
+  <!-- Geçmiş -->
   <button class="btn sm sec" onclick="showAllLogs()" style="display:flex;align-items:center;gap:4px">📋 Geçmiş</button>
+  <div class="ma-sep"></div>
+  <!-- Dışa Aktar -->
   <div class="cpicker-wrap">
-    <button class="cpicker-btn" onclick="togglePicker('mExportMenu')" style="font-size:11px;padding:5px 10px;background:var(--g);color:#000;border:none">⬇ Dışa Aktar</button>
-    <div class="cpicker-dropdown" id="mExportMenu" style="min-width:170px">
+    <button class="cpicker-btn" onclick="togglePicker('mExportMenu')" style="font-size:11px;padding:5px 10px;background:var(--g);color:#000;border:none;border-radius:5px;cursor:pointer">⬇ Dışa Aktar</button>
+    <div class="cpicker-dropdown" id="mExportMenu" style="min-width:160px">
       <div class="cpicker-section">Format Seç</div>
       <div class="cpicker-item" onclick="exportData('excel');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">🟢 Excel (.xlsx)</div>
       <div class="cpicker-item" onclick="exportData('csv');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">📄 CSV</div>
       <div class="cpicker-item" onclick="exportData('pdf');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">🔴 PDF</div>
-      <div class="cpicker-item" onclick="exportData('clipboard');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">📋 Panoya Kopyala</div>
+      <div class="cpicker-item" onclick="exportData('clipboard');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">📋 Panoya</div>
     </div>
   </div>
   <span id="mStatus" style="font-size:11px;color:var(--m)"></span>
 </div>
 
 <!-- Özet Kartlar -->
-<div class="meta-summary" id="mSummary">
+<div class="ma-summary" id="mSummary">
   <div class="ms-card"><div class="ms-label">Harcama</div><div class="ms-val" id="ms-spend">—</div><div class="ms-diff neu" id="md-spend"></div><div class="ms-spark" id="spark-spend"></div></div>
   <div class="ms-card"><div class="ms-label">Gelir</div><div class="ms-val" id="ms-revenue" style="color:var(--g)">—</div><div class="ms-diff neu" id="md-revenue"></div><div class="ms-spark" id="spark-revenue"></div></div>
-  <div class="ms-card"><div class="ms-label">Ort. ROAS</div><div class="ms-val" id="ms-roas">—</div><div class="ms-diff neu" id="md-roas"></div><div class="ms-spark" id="spark-roas"></div></div>
+  <div class="ms-card"><div class="ms-label">ROAS</div><div class="ms-val" id="ms-roas">—</div><div class="ms-diff neu" id="md-roas"></div><div class="ms-spark" id="spark-roas"></div></div>
   <div class="ms-card"><div class="ms-label">Satın Alma</div><div class="ms-val" id="ms-purchase">—</div><div class="ms-diff neu" id="md-purchase"></div><div class="ms-spark" id="spark-purchase"></div></div>
   <div class="ms-card"><div class="ms-label">Tıklama</div><div class="ms-val" id="ms-clicks">—</div><div class="ms-diff neu" id="md-clicks"></div><div class="ms-spark" id="spark-clicks"></div></div>
   <div class="ms-card"><div class="ms-label">Ort. CTR</div><div class="ms-val" id="ms-ctr">—</div><div class="ms-diff neu" id="md-ctr"></div><div class="ms-spark" id="spark-ctr"></div></div>
@@ -199,13 +246,13 @@
 </div>
 
 <!-- Tablo -->
-<div class="meta-tbl-wrap">
+<div class="ma-tbl-wrap">
   <table id="mTbl">
     <thead id="mTH"></thead>
     <tbody id="mTB"><tr><td colspan="20" style="text-align:center;padding:30px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody>
     <tfoot id="mTF"></tfoot>
   </table>
-  <div class="meta-pagination" id="mPagination" style="display:none">
+  <div class="ma-pagination" id="mPagination" style="display:none">
     <span id="mPageInfo"></span>
     <div style="display:flex;gap:6px">
       <button class="btn sm sec" id="mPrevBtn" onclick="mChangePage(-1)">‹ Önceki</button>
@@ -214,7 +261,14 @@
   </div>
 </div>
 
-<!-- Bütçe Onay Modal -->
+</div><!-- /ma-wrap -->
+
+<!-- Hidden inputs -->
+<input type="hidden" id="mPreset" value="last_7d">
+<input type="hidden" id="mFrom">
+<input type="hidden" id="mTo">
+
+<!-- Bütçe Modal -->
 <div class="moverlay" id="mBModal" style="display:none">
   <div class="modal">
     <h3>💰 Bütçe Değişikliği</h3>
@@ -234,7 +288,7 @@
       <button class="btn sm sec" onclick="document.getElementById('mLogModal').style.display='none'">✕</button>
     </div>
     <div class="log-modal-body" id="mLogBody"></div>
-    <div style="padding-top:10px;border-top:1px solid var(--b);display:flex;justify-content:flex-end;gap:8px">
+    <div style="padding-top:10px;border-top:1px solid var(--b);display:flex;justify-content:flex-end">
       <button class="btn sm sec" onclick="document.getElementById('mLogModal').style.display='none'">Kapat</button>
     </div>
   </div>
@@ -450,10 +504,10 @@ function getFiltered(data){
   });
 }
 
-window.setMStatusFilter = function(val,btn){
+window.setMF = window.setMStatusFilter = function(val,btn){
   mStatusFilter=val;
-  document.querySelectorAll('.mstatus-btn').forEach(function(b){b.style.background='transparent';b.style.color='var(--m)';});
-  if(btn){btn.style.background='var(--a)';btn.style.color='#fff';}
+  document.querySelectorAll('.mstatus-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn){btn.classList.add('on');}
   mPage=0; renderAll(currentMetaTab);
 };
 
