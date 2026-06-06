@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Madmext Ads — Giriş</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0f1011;--s:#1a1b1d;--s2:#242526;--b:#2d2e30;--b2:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#8a8d91;--g:#42b72a;--r:#fa3e3e;--y:#f0b429}
+body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;font-size:13px;min-height:100vh;display:flex;align-items:center;justify-content:center}
+
+/* Login kartı */
+.login-wrap{width:100%;max-width:400px;padding:20px}
+.login-logo{text-align:center;margin-bottom:32px}
+.logo{font-size:24px;font-weight:800;letter-spacing:-1px;color:var(--t)}.logo span{color:#1877f2}
+.logo-sub{font-size:12px;color:var(--m);margin-top:4px}
+.login-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:32px}
+.login-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.login-sub{font-size:12px;color:var(--m);margin-bottom:24px}
+.fg{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.fg label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.fg input{background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:11px 14px;font-family:'Inter',sans-serif;font-size:13px;border-radius:6px;transition:border-color .15s;outline:none}
+.fg input:focus{border-color:var(--a)}
+.btn-login{width:100%;background:var(--a);color:#fff;border:none;padding:12px;font-family:'DM Mono',monospace;font-size:13px;font-weight:600;cursor:pointer;border-radius:6px;transition:opacity .2s;margin-top:4px}
+.btn-login:hover{opacity:.85}
+.btn-login:disabled{opacity:.5;cursor:not-allowed}
+.forgot-link{text-align:center;margin-top:16px;font-size:12px;color:var(--m)}
+.forgot-link a{color:var(--a);cursor:pointer;text-decoration:none}
+.forgot-link a:hover{text-decoration:underline}
+.err-msg{background:rgba(250,62,62,.1);border:1px solid rgba(250,62,62,.25);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--r);margin-bottom:16px;display:none}
+.err-msg.show{display:block}
+
+/* Şifremi unuttum formu */
+.forgot-form{display:none}
+.forgot-form.show{display:block}
+.login-form{display:block}
+.login-form.hide{display:none}
+
+.back-link{font-size:12px;color:var(--m);cursor:pointer;display:inline-flex;align-items:center;gap:4px;margin-bottom:16px}
+.back-link:hover{color:var(--t)}
+
+.succ-msg{background:rgba(66,183,42,.1);border:1px solid rgba(66,183,42,.25);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--g);margin-bottom:16px;display:none}
+.succ-msg.show{display:block}
+
+/* Mobil */
+@media(max-width:480px){
+  .login-card{padding:24px 20px;border-radius:8px}
+  .login-wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-logo">
+    <div class="logo">Madmext <span>Ads</span></div>
+    <div class="logo-sub">Reklam Yönetim Paneli</div>
+  </div>
+  <div class="login-card">
+
+    <!-- Giriş Formu -->
+    <div class="login-form" id="loginForm">
+      <div class="login-title">Hoş Geldiniz</div>
+      <div class="login-sub">Devam etmek için giriş yapın</div>
+      <div class="err-msg" id="loginErr"></div>
+      <div class="fg">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="ornek@mail.com" autocomplete="email">
+      </div>
+      <div class="fg">
+        <label>Şifre</label>
+        <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn-login" id="loginBtn" onclick="doLogin()">Giriş Yap</button>
+      <div class="forgot-link"><a onclick="showForgot()">Şifremi unuttum</a></div>
+    </div>
+
+    <!-- Şifremi Unuttum -->
+    <div class="forgot-form" id="forgotForm">
+      <span class="back-link" onclick="showLogin()">← Geri dön</span>
+      <div class="login-title">Şifre Sıfırlama</div>
+      <div class="login-sub">Talebiniz yöneticiye iletilecek</div>
+      <div class="err-msg" id="forgotErr"></div>
+      <div class="succ-msg" id="forgotSucc"></div>
+      <div class="fg">
+        <label>Email</label>
+        <input type="email" id="forgotEmail" placeholder="ornek@mail.com">
+      </div>
+      <div class="fg">
+        <label>Mesaj (Opsiyonel)</label>
+        <input type="text" id="forgotMsg" placeholder="Kısa bir not bırakın...">
+      </div>
+      <button class="btn-login" id="forgotBtn" onclick="doForgot()">Talep Gönder</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var BASE = window.location.origin;
+
+async function doLogin(){
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass = document.getElementById('loginPass').value;
+  var err = document.getElementById('loginErr');
+  var btn = document.getElementById('loginBtn');
+  err.className='err-msg'; err.textContent='';
+  if(!email||!pass){err.className='err-msg show';err.textContent='Email ve şifre zorunlu';return;}
+  btn.disabled=true; btn.textContent='Giriş yapılıyor...';
+  try{
+    var r = await fetch(BASE+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({email,password:pass})});
+    var d = await r.json();
+    if(d.ok){ window.location.href='/'; }
+    else{ err.className='err-msg show'; err.textContent=d.error||'Hata oluştu'; btn.disabled=false; btn.textContent='Giriş Yap'; }
+  }catch(e){ err.className='err-msg show'; err.textContent='Sunucu hatası: '+e.message; btn.disabled=false; btn.textContent='Giriş Yap'; }
+}
+
+async function doForgot(){
+  var email = document.getElementById('forgotEmail').value.trim();
+  var msg = document.getElementById('forgotMsg').value.trim();
+  var err = document.getElementById('forgotErr');
+  var succ = document.getElementById('forgotSucc');
+  var btn = document.getElementById('forgotBtn');
+  err.className='err-msg'; succ.className='succ-msg';
+  if(!email){err.className='err-msg show';err.textContent='Email zorunlu';return;}
+  btn.disabled=true; btn.textContent='Gönderiliyor...';
+  try{
+    var r = await fetch(BASE+'/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,message:msg||'Şifremi unuttum'})});
+    var d = await r.json();
+    succ.className='succ-msg show'; succ.textContent='Talebiniz yöneticiye iletildi. En kısa sürede dönüş yapılacak.';
+    btn.disabled=false; btn.textContent='Talep Gönder';
+  }catch(e){ err.className='err-msg show'; err.textContent='Hata: '+e.message; btn.disabled=false; btn.textContent='Talep Gönder'; }
+}
+
+function showForgot(){
+  document.getElementById('loginForm').className='login-form hide';
+  document.getElementById('forgotForm').className='forgot-form show';
+}
+function showLogin(){
+  document.getElementById('forgotForm').className='forgot-form';
+  document.getElementById('loginForm').className='login-form';
+}
+
+// Zaten giriş yapılmışsa yönlendir
+fetch('/auth/me',{credentials:'include'}).then(r=>r.json()).then(d=>{if(d.email)window.location.href='/';}).catch(()=>{});
+</script>
+</body>
+</html>
