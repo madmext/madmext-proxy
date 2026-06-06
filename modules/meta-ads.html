@@ -114,6 +114,18 @@
   <button class="btn sm sec" onclick="showAllLogs()" title="Tüm değişiklik geçmişi" style="display:flex;align-items:center;gap:4px">
     📋 Geçmiş
   </button>
+  <!-- Export -->
+  <div class="cpicker-wrap">
+    <button class="cpicker-btn" onclick="togglePicker('mExportMenu')" style="font-size:11px;padding:5px 10px;background:var(--g);color:#000;border:none">⬇ Dışa Aktar</button>
+    <div class="cpicker-dropdown" id="mExportMenu" style="min-width:180px">
+      <div class="cpicker-section">Format Seç</div>
+      <div class="cpicker-item" onclick="exportData('excel');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">🟢 Excel (.xlsx)</div>
+      <div class="cpicker-item" onclick="exportData('csv');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">📄 CSV</div>
+      <div class="cpicker-item" onclick="exportData('pdf');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">🔴 PDF</div>
+      <div class="cpicker-item" onclick="exportData('word');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">🔵 Word (.doc)</div>
+      <div class="cpicker-item" onclick="exportData('clipboard');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">📋 Panoya Kopyala</div>
+    </div>
+  </div>
   <div class="cpicker-wrap">
     <button class="cpicker-btn" onclick="togglePicker('mColPicker')" style="font-size:11px;padding:5px 10px">☰ Sütunlar</button>
     <div class="cpicker-dropdown" id="mColPicker">
@@ -255,6 +267,276 @@ function addLog(entityId, entityName, action, detail){
     id:entityId, name:entityName, action:action, detail:detail,
     time:new Date().toISOString(), user:'kullanıcı'
   });
+}
+
+// ── Dışa Aktarım (Excel, CSV, PDF, Word) ────────────────────────────────
+window.exportData = function(format){
+  var tab = currentMetaTab;
+  var data = getFiltered(mData[tab]);
+  if(!data||!data.length){ toast('Veri yok'); return; }
+
+  var exportCols = [
+    {h:'Kampanya/Ad',           f:function(r){return r.name||''}},
+    {h:'Yayın Durumu',          f:function(r){return r.effectiveStatus||''}},
+    {h:'Bütçe',                 f:function(r){return r.budgetAmt||''}},
+    {h:'Harcama (₺)',           f:function(r){return +(r.spend||0).toFixed(2)}},
+    {h:'Gelir (₺)',             f:function(r){return +(r.revenue||0).toFixed(2)}},
+    {h:'ROAS',                  f:function(r){return +(r.roas||0).toFixed(2)}},
+    {h:'Satın Alma',            f:function(r){return r.results||0}},
+    {h:'Satın Alma Başına (₺)', f:function(r){return +(r.cpr||0).toFixed(2)}},
+    {h:'Gösterim',              f:function(r){return r.impr||0}},
+    {h:'Erişim',                f:function(r){return r.reach||0}},
+    {h:'Tıklama',               f:function(r){return r.clicks||0}},
+    {h:'CTR (%)',               f:function(r){return +(r.ctr||0).toFixed(2)}},
+    {h:'TBM (₺)',               f:function(r){return +(r.cpc||0).toFixed(2)}},
+    {h:'CPM (₺)',               f:function(r){return +(r.cpm||0).toFixed(2)}},
+    {h:'Sıklık',                f:function(r){return +(r.freq||0).toFixed(2)}},
+    {h:'Sepete Ekle',           f:function(r){return r.cart||0}},
+  ];
+
+  var preset=(document.getElementById('mPreset')||{}).value||'last_7d';
+  var dateInfo=preset==='custom'
+    ?((document.getElementById('mFrom')||{}).value||'')+' - '+((document.getElementById('mTo')||{}).value||'')
+    :preset;
+  var tabLabel=tab==='camp'?'Kampanyalar':tab==='adset'?'Reklam Setleri':'Reklamlar';
+  var title='Madmext Ads — '+tabLabel+' — '+dateInfo;
+  var fname='madmext-'+tabLabel.toLowerCase().replace(/\s/g,'-')+'-'+dateInfo.replace(/[^0-9a-z-]/gi,'-');
+
+  // Toplam satırı
+  var tot=calcMetrics(data);
+
+  if(format==='excel'){
+    exportExcel(data, exportCols, title, fname+'.xlsx', tot);
+  } else if(format==='csv'){
+    exportCSV(data, exportCols, title, fname+'.csv');
+  } else if(format==='pdf'){
+    exportPDF(data, exportCols, title, tabLabel, dateInfo, tot);
+  } else if(format==='word'){
+    exportWord(data, exportCols, title, fname+'.doc', tot);
+  } else if(format==='clipboard'){
+    var tsv=exportCols.map(function(c){return c.h;}).join('	')+'
+';
+    tsv+=data.map(function(r){return exportCols.map(function(c){return String(c.f(r));}).join('	');}).join('
+');
+    navigator.clipboard.writeText(tsv).then(function(){toast('✓ '+data.length+' satır panoya kopyalandı');}).catch(function(){toast('Kopyalama başarısız');});
+  }
+};
+
+// ── Excel Export (xlsx binary) ────────────────────────────────────────
+function exportExcel(data, cols, title, fname, tot){
+  // SheetJS kütüphanesi olmadan saf XML xlsx oluştur
+  var headers = cols.map(function(c){return c.h;});
+
+  // XML satırları oluştur
+  function escXml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function cellVal(v, isNum){
+    if(isNum && !isNaN(parseFloat(v))){
+      return '<c t="n"><v>'+parseFloat(v)+'</v></c>';
+    }
+    return '<c t="inlineStr"><is><t>'+escXml(v)+'</t></is></c>';
+  }
+
+  var numCols = new Set([3,4,5,6,7,8,9,10,11,12,13,14,15]); // 0-indexed sayısal sütunlar
+  var rows = '';
+
+  // Başlık satırı
+  rows += '<row r="1">';
+  headers.forEach(function(h, i){
+    rows += '<c r="'+colLetter(i)+'1" t="inlineStr"><is><t>'+escXml(h)+'</t></is></c>';
+  });
+  rows += '</row>';
+
+  // Veri satırları
+  data.forEach(function(r, ri){
+    rows += '<row r="'+(ri+2)+'">';
+    cols.forEach(function(c, ci){
+      var v = c.f(r);
+      var ref = colLetter(ci)+(ri+2);
+      if(numCols.has(ci) && !isNaN(parseFloat(v))){
+        rows += '<c r="'+ref+'" t="n"><v>'+parseFloat(v)+'</v></c>';
+      } else {
+        rows += '<c r="'+ref+'" t="inlineStr"><is><t>'+escXml(v)+'</t></is></c>';
+      }
+    });
+    rows += '</row>';
+  });
+
+  // Toplam satırı
+  var lastRow = data.length + 2;
+  rows += '<row r="'+lastRow+'">';
+  cols.forEach(function(c, ci){
+    var ref = colLetter(ci)+lastRow;
+    var v = '';
+    if(ci===0) v='TOPLAM ('+data.length+' kayıt)';
+    else if(c.h==='Harcama (₺)') v = tot.spend.toFixed(2);
+    else if(c.h==='Gelir (₺)') v = tot.revenue.toFixed(2);
+    else if(c.h==='ROAS') v = (tot.spend>0?tot.roas.toFixed(2):'0');
+    else if(c.h==='Satın Alma') v = tot.purchase;
+    else if(c.h==='Gösterim') v = tot.impr;
+    else if(c.h==='Erişim') v = tot.reach;
+    else if(c.h==='Tıklama') v = tot.clicks;
+    else { rows += '<c r="'+ref+'"/>'; return; }
+    if(!isNaN(parseFloat(v)) && ci>0){
+      rows += '<c r="'+ref+'" t="n"><v>'+parseFloat(v)+'</v></c>';
+    } else {
+      rows += '<c r="'+ref+'" t="inlineStr"><is><t>'+escXml(v)+'</t></is></c>';
+    }
+  });
+  rows += '</row>';
+
+  var sheetXml = '<?xml version="1.0" encoding="UTF-8"?>'
+    +'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +'<sheetData>'+rows+'</sheetData></worksheet>';
+
+  var wbXml = '<?xml version="1.0" encoding="UTF-8"?>'
+    +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    +'<sheets><sheet name="'+escXml(title.slice(0,31))+'" sheetId="1" r:id="rId1"/></sheets></workbook>';
+
+  var relsXml = '<?xml version="1.0" encoding="UTF-8"?>'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+    +'</Relationships>';
+
+  var contentTypes = '<?xml version="1.0" encoding="UTF-8"?>'
+    +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    +'<Default Extension="xml" ContentType="application/xml"/>'
+    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+    +'</Types>';
+
+  // JSZip ile zip oluştur — CDN'den yükle
+  var script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+  script.onload = function(){
+    var zip = new JSZip();
+    zip.file('[Content_Types].xml', contentTypes);
+    zip.folder('_rels').file('.rels',
+      '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+      +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+      +'</Relationships>');
+    zip.folder('xl').file('workbook.xml', wbXml);
+    zip.folder('xl/_rels').file('workbook.xml.rels', relsXml);
+    zip.folder('xl/worksheets').file('sheet1.xml', sheetXml);
+    zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}).then(function(blob){
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href=url; a.download=fname; a.click();
+      URL.revokeObjectURL(url);
+      toast('✓ Excel dosyası indirildi');
+    });
+  };
+  if(window.JSZip){ script.onload(); } else { document.head.appendChild(script); }
+}
+
+function colLetter(n){
+  var s='';
+  n++;
+  while(n>0){ s=String.fromCharCode(64+(n%26||26))+s; n=Math.floor((n-1)/26); }
+  return s;
+}
+
+// ── CSV Export ────────────────────────────────────────────────────────
+function exportCSV(data, cols, title, fname){
+  var csv = '﻿';
+  csv += '# '+title+'
+';
+  csv += cols.map(function(c){return '"'+c.h+'"';}).join(',')+'
+';
+  csv += data.map(function(r){
+    return cols.map(function(c){return '"'+String(c.f(r)).replace(/"/g,'""')+'"';}).join(',');
+  }).join('
+');
+  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download=fname; a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ CSV indirildi');
+}
+
+// ── PDF Export ────────────────────────────────────────────────────────
+function exportPDF(data, cols, title, tabLabel, dateInfo, tot){
+  var w = window.open('','_blank');
+  var headers = cols.map(function(c){return c.h;});
+  var rows = data.map(function(r){return cols.map(function(c){return c.f(r);});});
+  var totRow = cols.map(function(c){
+    if(c.h==='Kampanya/Ad') return 'TOPLAM ('+data.length+' kayıt)';
+    if(c.h==='Harcama (₺)') return tot.spend.toFixed(2);
+    if(c.h==='Gelir (₺)') return tot.revenue.toFixed(2);
+    if(c.h==='ROAS') return (tot.spend>0?tot.roas.toFixed(2):'—');
+    if(c.h==='Satın Alma') return tot.purchase;
+    if(c.h==='Gösterim') return tot.impr.toLocaleString('tr');
+    if(c.h==='Erişim') return tot.reach.toLocaleString('tr');
+    if(c.h==='Tıklama') return tot.clicks.toLocaleString('tr');
+    return '—';
+  });
+  var thStyle='padding:6px 8px;background:#1a1a2e;color:#fff;font-size:10px;text-align:left;border:1px solid #333;white-space:nowrap';
+  var tdStyle='padding:5px 8px;font-size:10px;border:1px solid #ddd;white-space:nowrap';
+  var tfStyle='padding:5px 8px;font-size:10px;border:1px solid #333;background:#f5f5f5;font-weight:600';
+  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
+    +'<style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px;color:#111}'
+    +'h2{color:#1a1a2e;margin-bottom:4px}p{color:#666;margin:0 0 12px}'
+    +'table{border-collapse:collapse;width:100%;font-size:10px}'
+    +'@media print{@page{size:A4 landscape;margin:10mm}}</style>'
+    +'</head><body>'
+    +'<h2>'+title+'</h2>'
+    +'<p>Oluşturulma: '+new Date().toLocaleString('tr')+' &nbsp;|&nbsp; '+data.length+' kayıt</p>'
+    +'<table><thead><tr>'+headers.map(function(h){return '<th style="'+thStyle+'">'+h+'</th>';}).join('')+'</tr></thead>'
+    +'<tbody>'
+    +rows.map(function(row,i){
+      var bg=i%2===0?'#fff':'#f9f9f9';
+      return '<tr>'+row.map(function(v){return '<td style="'+tdStyle+';background:'+bg+'">'+v+'</td>';}).join('')+'</tr>';
+    }).join('')
+    +'<tr>'+totRow.map(function(v){return '<td style="'+tfStyle+'">'+v+'</td>';}).join('')+'</tr>'
+    +'</tbody></table></body></html>';
+  w.document.write(html);
+  w.document.close();
+  setTimeout(function(){w.print();},500);
+  toast('✓ PDF yazdırma ekranı açıldı');
+}
+
+// ── Word Export ───────────────────────────────────────────────────────
+function exportWord(data, cols, title, fname, tot){
+  var headers = cols.map(function(c){return c.h;});
+  var rows = data.map(function(r){return cols.map(function(c){return String(c.f(r));});});
+  var totRow = cols.map(function(c){
+    if(c.h==='Kampanya/Ad') return 'TOPLAM ('+data.length+' kayıt)';
+    if(c.h==='Harcama (₺)') return tot.spend.toFixed(2)+'₺';
+    if(c.h==='Gelir (₺)') return tot.revenue.toFixed(2)+'₺';
+    if(c.h==='ROAS') return (tot.spend>0?tot.roas.toFixed(2)+'x':'—');
+    if(c.h==='Satın Alma') return String(tot.purchase);
+    return '—';
+  });
+
+  function cell(v, bold, bg){
+    return '<w:tc><w:tcPr>'+(bg?'<w:shd w:val="clear" w:color="auto" w:fill="'+bg+'"/>':'')+'</w:tcPr>'
+      +'<w:p><w:r>'+(bold?'<w:rPr><w:b/></w:rPr>':'')+'<w:t xml:space="preserve">'+v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p></w:tc>';
+  }
+  function row(cells, bold, bg){
+    return '<w:tr>'+cells.map(function(v){return cell(v,bold,bg);}).join('')+'</w:tr>';
+  }
+
+  var tableRows = row(headers, true, '1A1A2E');
+  rows.forEach(function(r,i){ tableRows += row(r, false, i%2===0?'FFFFFF':'F5F5F5'); });
+  tableRows += row(totRow, true, 'E8E8E8');
+
+  var docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+    +'<w:body>'
+    +'<w:p><w:r><w:rPr><w:b/><w:sz w:val="28"/></w:rPr><w:t>'+title+'</w:t></w:r></w:p>'
+    +'<w:p><w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t>Oluşturulma: '+new Date().toLocaleString('tr')+' — '+data.length+' kayıt</w:t></w:r></w:p>'
+    +'<w:p><w:r><w:t> </w:t></w:r></w:p>'
+    +'<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="0" w:type="auto"/></w:tblPr>'
+    +'<w:tblGrid>'+headers.map(function(){return '<w:gridCol w:w="1200"/>';}).join('')+'</w:tblGrid>'
+    +tableRows
+    +'</w:tbl>'
+    +'<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/></w:sectPr>'
+    +'</w:body></w:document>';
+
+  var blob = new Blob([docXml],{type:'application/msword'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download=fname; a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ Word dosyası indirildi');
 }
 
 // Log göster - tek entity
