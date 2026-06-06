@@ -54,107 +54,107 @@
   <button class="meta-tab" id="mtAd" onclick="metaTabSwitch('ad',this)">🖼 Reklamlar</button>
 </div>
 
-<!-- Date Picker Styles -->
+<!-- Date Picker -->
 <style>
-.dp-btn{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 12px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.dp-wrap{position:relative}
+.dp-btn{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 12px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer;white-space:nowrap;user-select:none}
 .dp-btn:hover{border-color:var(--a)}
-.dp-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:500;background:#1a1b1d;border:1px solid var(--b);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.7);width:660px}
-.dp-popup.open{display:flex}
-.dp-left{width:180px;border-right:1px solid var(--b);padding:12px 0;flex-shrink:0}
-.dp-preset{padding:7px 16px;font-size:12px;cursor:pointer;color:var(--m);transition:all .15s;border-radius:0}
-.dp-preset:hover{background:var(--s2);color:var(--t)}
-.dp-preset.active{background:var(--s2);color:var(--a);font-weight:600}
-.dp-preset-group{font-size:9px;color:var(--b2);text-transform:uppercase;letter-spacing:1.2px;padding:10px 16px 3px;margin-top:4px}
+.dp-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:600;background:#18191b;border:1px solid var(--b);border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.8);min-width:680px}
+.dp-popup.open{display:flex;flex-direction:column}
+.dp-body{display:flex}
+.dp-left{width:190px;flex-shrink:0;padding:10px 0;border-right:1px solid var(--b);max-height:420px;overflow-y:auto}
+.dp-section-label{font-size:10px;color:var(--m);letter-spacing:1px;text-transform:uppercase;padding:8px 14px 3px;font-weight:600}
+.dp-radio-item{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background .1s}
+.dp-radio-item:hover{background:rgba(255,255,255,.05)}
+.dp-radio-item input[type=radio]{accent-color:var(--a);cursor:pointer;width:14px;height:14px;flex-shrink:0;margin:0}
+.dp-radio-label{font-size:12px;color:var(--t);cursor:pointer;line-height:1}
 .dp-right{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
-.dp-calendars{display:flex;gap:16px}
-.dp-cal{flex:1}
-.dp-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.dp-cal-nav{background:none;border:none;color:var(--m);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .15s}
-.dp-cal-nav:hover{background:var(--b);color:var(--t)}
-.dp-cal-title{display:flex;gap:6px;align-items:center}
-.dp-cal-select{background:var(--s2);border:1px solid var(--b2);color:var(--t);font-family:'DM Mono',monospace;font-size:11px;padding:3px 6px;border-radius:4px;cursor:pointer}
+.dp-cals{display:flex;gap:20px}
+.dp-cal{flex:1;min-width:0}
+.dp-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dp-cal-nav{background:none;border:1px solid var(--b);color:var(--m);cursor:pointer;width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+.dp-cal-nav:hover{border-color:var(--a);color:var(--a)}
+.dp-cal-title{display:flex;gap:4px;align-items:center}
+.dp-cal-sel{background:var(--s2);border:1px solid var(--b2);color:var(--t);font-family:'DM Mono',monospace;font-size:11px;padding:3px 6px;border-radius:4px;cursor:pointer}
 .dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.dp-day-hdr{font-size:9px;color:var(--m);text-align:center;padding:3px 0;text-transform:uppercase}
-.dp-day{font-size:11px;text-align:center;padding:5px 2px;cursor:pointer;border-radius:4px;font-family:'DM Mono',monospace;transition:all .1s;color:var(--t)}
-.dp-day:hover:not(.dp-empty):not(.dp-disabled){background:var(--b);color:var(--t)}
-.dp-day.dp-empty{cursor:default}
-.dp-day.dp-disabled{color:var(--b2);cursor:default}
-.dp-day.dp-today{font-weight:700;color:var(--a)}
-.dp-day.dp-selected{background:var(--a);color:#fff;border-radius:4px}
-.dp-day.dp-in-range{background:rgba(24,119,242,.15);border-radius:0}
-.dp-day.dp-range-start{background:var(--a);color:#fff;border-radius:4px 0 0 4px}
-.dp-day.dp-range-end{background:var(--a);color:#fff;border-radius:0 4px 4px 0}
-.dp-day.dp-range-start.dp-range-end{border-radius:4px}
-.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--b);padding-top:10px}
-.dp-footer-dates{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
+.dp-day-hdr{font-size:9px;color:var(--m);text-align:center;padding:4px 0;text-transform:uppercase;font-weight:600}
+.dp-day{font-size:11px;text-align:center;padding:5px 0;cursor:pointer;border-radius:50%;font-family:'DM Mono',monospace;color:var(--t);transition:background .1s,color .1s}
+.dp-day:not(.dp-empty):not(.dp-disabled):hover{background:var(--b2)}
+.dp-day.dp-empty,.dp-day.dp-disabled{color:#444;cursor:default;pointer-events:none}
+.dp-day.dp-today{color:var(--a);font-weight:700}
+.dp-day.dp-sel{background:var(--a)!important;color:#fff!important;border-radius:50%}
+.dp-day.dp-in-range{background:rgba(24,119,242,.18);border-radius:0;color:var(--t)}
+.dp-day.dp-rs{background:var(--a)!important;color:#fff!important;border-radius:50% 0 0 50%}
+.dp-day.dp-re{background:var(--a)!important;color:#fff!important;border-radius:0 50% 50% 0}
+.dp-day.dp-rs.dp-re{border-radius:50%}
+.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--b);padding:10px 16px;flex-shrink:0}
+.dp-footer-info{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
 .dp-footer-btns{display:flex;gap:8px}
 </style>
 
-<!-- Toolbar -->
-<div class="meta-toolbar">
-  <!-- Meta-style Date Picker -->
-  <div style="position:relative" id="dpWrap">
-    <button class="dp-btn" id="dpTrigger" onclick="toggleDP()">
-      📅 <span id="dpLabel">Son 7 gün</span>
-    </button>
-    <div class="dp-popup" id="dpPopup">
-      <!-- Sol: Presetler -->
+<div class="dp-wrap" id="dpWrap">
+  <button class="dp-btn" id="dpTrigger" onclick="toggleDP()">
+    <span>📅</span><span id="dpLabel">Son 7 gün</span>
+  </button>
+  <div class="dp-popup" id="dpPopup">
+    <div class="dp-body">
       <div class="dp-left">
-        <div class="dp-preset-group">Yakında kullanılanlar</div>
-        <div class="dp-preset active" data-preset="last_7d" onclick="selectPreset('last_7d',this)">Son 7 gün</div>
-        <div class="dp-preset" data-preset="last_30d" onclick="selectPreset('last_30d',this)">Son 30 gün</div>
-        <div class="dp-preset-group">Presetler</div>
-        <div class="dp-preset" data-preset="today" onclick="selectPreset('today',this)">Bugün</div>
-        <div class="dp-preset" data-preset="yesterday" onclick="selectPreset('yesterday',this)">Dün</div>
-        <div class="dp-preset" data-preset="last_3d" onclick="selectPreset('last_3d',this)">Son 3 gün</div>
-        <div class="dp-preset" data-preset="last_14d" onclick="selectPreset('last_14d',this)">Son 14 gün</div>
-        <div class="dp-preset" data-preset="last_30d" onclick="selectPreset('last_30d',this)">Son 30 gün</div>
-        <div class="dp-preset" data-preset="this_month" onclick="selectPreset('this_month',this)">Bu ay</div>
-        <div class="dp-preset" data-preset="last_month" onclick="selectPreset('last_month',this)">Geçen ay</div>
-        <div class="dp-preset" data-preset="custom" onclick="selectPreset('custom',this)">Özel</div>
+        <div class="dp-section-label">Yakınlarda kullanılanlar</div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_7d','Son 7 gün')"><input type="radio" name="dpR" value="last_7d" checked><span class="dp-radio-label">Son 7 gün</span></div>
+        <div class="dp-section-label" style="margin-top:4px">Tarih aralığı ön ayarları</div>
+        <div class="dp-radio-item" onclick="dpPickPreset('today','Bugün')"><input type="radio" name="dpR" value="today"><span class="dp-radio-label">Bugün</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('yesterday','Dün')"><input type="radio" name="dpR" value="yesterday"><span class="dp-radio-label">Dün</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_2d','Bugün ve dün')"><input type="radio" name="dpR" value="last_2d"><span class="dp-radio-label">Bugün ve dün</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_7d','Son 7 gün')"><input type="radio" name="dpR" value="last_7d_2"><span class="dp-radio-label">Son 7 gün</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_14d','Son 14 gün')"><input type="radio" name="dpR" value="last_14d"><span class="dp-radio-label">Son 14 gün</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_28d','Son 28 gün')"><input type="radio" name="dpR" value="last_28d"><span class="dp-radio-label">Son 28 gün</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_30d','Son 30 gün')"><input type="radio" name="dpR" value="last_30d"><span class="dp-radio-label">Son 30 gün</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('this_week_sun_today','Bu hafta')"><input type="radio" name="dpR" value="this_week"><span class="dp-radio-label">Bu hafta</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_week_sun_sat','Geçen hafta')"><input type="radio" name="dpR" value="last_week"><span class="dp-radio-label">Geçen hafta</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('this_month','Bu ay')"><input type="radio" name="dpR" value="this_month"><span class="dp-radio-label">Bu ay</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('last_month','Geçen ay')"><input type="radio" name="dpR" value="last_month"><span class="dp-radio-label">Geçen ay</span></div>
+        <div class="dp-radio-item" onclick="dpPickPreset('maximum','Maksimum')"><input type="radio" name="dpR" value="maximum"><span class="dp-radio-label">Maksimum</span></div>
+        <div class="dp-radio-item" id="dpCustomItem" onclick="dpPickPreset('custom','Özel')"><input type="radio" name="dpR" value="custom"><span class="dp-radio-label">Özel</span></div>
       </div>
-      <!-- Sağ: Takvim -->
       <div class="dp-right">
-        <div class="dp-calendars">
-          <!-- Sol takvim -->
-          <div class="dp-cal" id="dpCal1">
-            <div class="dp-cal-header">
+        <div class="dp-cals">
+          <div class="dp-cal">
+            <div class="dp-cal-hdr">
               <button class="dp-cal-nav" onclick="dpNav(-1)">‹</button>
               <div class="dp-cal-title">
-                <select class="dp-cal-select" id="dpMonth1" onchange="dpSelectMonth(0,this.value)"></select>
-                <select class="dp-cal-select" id="dpYear1" onchange="dpSelectYear(0,this.value)"></select>
+                <select class="dp-cal-sel" id="dpM1" onchange="dpGoTo(0,+this.value,+document.getElementById('dpY1').value)"></select>
+                <select class="dp-cal-sel" id="dpY1" onchange="dpGoTo(0,+document.getElementById('dpM1').value,+this.value)"></select>
               </div>
-              <div style="width:28px"></div>
+              <div style="width:26px"></div>
             </div>
-            <div class="dp-grid" id="dpGrid1"></div>
+            <div class="dp-grid" id="dpG1"></div>
           </div>
-          <!-- Sağ takvim -->
-          <div class="dp-cal" id="dpCal2">
-            <div class="dp-cal-header">
-              <div style="width:28px"></div>
+          <div class="dp-cal">
+            <div class="dp-cal-hdr">
+              <div style="width:26px"></div>
               <div class="dp-cal-title">
-                <select class="dp-cal-select" id="dpMonth2" onchange="dpSelectMonth(1,this.value)"></select>
-                <select class="dp-cal-select" id="dpYear2" onchange="dpSelectYear(1,this.value)"></select>
+                <select class="dp-cal-sel" id="dpM2" onchange="dpGoTo(1,+this.value,+document.getElementById('dpY2').value)"></select>
+                <select class="dp-cal-sel" id="dpY2" onchange="dpGoTo(1,+document.getElementById('dpM2').value,+this.value)"></select>
               </div>
-              <button class="dp-cal-nav" onclick="dpNav(1)">›</button>
+              <button class="dp-cal-nav" onclick="dpNav(+1)">›</button>
             </div>
-            <div class="dp-grid" id="dpGrid2"></div>
-          </div>
-        </div>
-        <div class="dp-footer">
-          <div class="dp-footer-dates" id="dpFooterDates">Tarih seçin</div>
-          <div class="dp-footer-btns">
-            <button class="btn sec sm" onclick="closeDP()">İptal</button>
-            <button class="btn sm" id="dpUpdateBtn" onclick="dpApply()" disabled style="opacity:.5">Güncelle</button>
+            <div class="dp-grid" id="dpG2"></div>
           </div>
         </div>
       </div>
     </div>
+    <div class="dp-footer">
+      <div class="dp-footer-info" id="dpInfo">Tarih seçin</div>
+      <div class="dp-footer-btns">
+        <button class="btn sec sm" onclick="closeDP()">İptal</button>
+        <button class="btn sm" id="dpOkBtn" onclick="dpApply()" disabled style="opacity:.45">Güncelle</button>
+      </div>
+    </div>
   </div>
-  <!-- Gizli alanlar (API için) -->
-  <input type="hidden" id="mPreset" value="last_7d">
-  <input type="hidden" id="mFrom">
-  <input type="hidden" id="mTo">
+</div>
+<input type="hidden" id="mPreset" value="last_7d">
+<input type="hidden" id="mFrom">
+<input type="hidden" id="mTo">
   <select class="flt" id="mCampFlt" style="font-size:11px;max-width:180px;display:none" onchange="mLoad()">
     <option value="">Tüm Kampanyalar</option>
   </select>
@@ -913,149 +913,155 @@ async function loadAds(){
   renderAll('ad');
 }
 
-// ── Date Picker ───────────────────────────────────────────────────────
-var dpState = {
-  mode: 'preset',        // 'preset' | 'custom'
-  preset: 'last_7d',
-  from: null,            // Date object
-  to: null,              // Date object
-  selecting: 0,          // 0=başlamadı 1=from seçildi
-  hover: null,           // hover date
-  cal: [new Date(), new Date(new Date().getFullYear(), new Date().getMonth()+1, 1)] // [sol, sağ] takvim
+// ── Date Picker ─────────────────────────────────────────────────────
+var _dp = {
+  months: ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+  days: ['Pzt','Sal','Çrş','Prş','Cum','Cts','Paz'],
+  cal: [null,null], // [sol takvim, sağ takvim] - her biri {y, m}
+  from: null, to: null, hov: null, // Date seçim state
+  step: 0,    // 0=hiç, 1=from seçildi (to bekleniyor), 2=tamamlandı
+  isCustom: false
 };
 
-var MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-var DAYS_TR = ['Pzt','Sal','Çrş','Prş','Cum','Cts','Paz'];
-var PRESET_LABELS = {
-  today:'Bugün', yesterday:'Dün', last_3d:'Son 3 gün', last_7d:'Son 7 gün',
-  last_14d:'Son 14 gün', last_30d:'Son 30 gün', this_month:'Bu ay', last_month:'Geçen ay'
-};
+function _dpInit(){
+  var now = new Date();
+  _dp.cal[0] = {y: now.getFullYear(), m: now.getMonth()-1 < 0 ? 11 : now.getMonth()-1};
+  if(now.getMonth()-1 < 0) _dp.cal[0].y--;
+  _dp.cal[1] = {y: now.getFullYear(), m: now.getMonth()};
+  _dpRenderBoth();
+}
 
 function toggleDP(){
-  var p=document.getElementById('dpPopup');
-  if(p.classList.contains('open')){ closeDP(); return; }
-  p.classList.add('open');
-  dpRenderCalendars();
-  // Dışarı tıklayınca kapat
-  setTimeout(function(){
-    document.addEventListener('click', dpOutsideClick);
-  }, 0);
+  var pop = document.getElementById('dpPopup');
+  if(pop.classList.contains('open')){ closeDP(); return; }
+  _dpInit();
+  pop.classList.add('open');
+  setTimeout(function(){ document.addEventListener('mousedown', _dpOutside); }, 10);
 }
+
 function closeDP(){
   document.getElementById('dpPopup').classList.remove('open');
-  document.removeEventListener('click', dpOutsideClick);
-}
-function dpOutsideClick(e){
-  if(!document.getElementById('dpWrap').contains(e.target)) closeDP();
+  document.removeEventListener('mousedown', _dpOutside);
 }
 
-function selectPreset(val, el){
-  dpState.preset = val;
-  dpState.mode = val==='custom' ? 'custom' : 'preset';
-  // Preset buton stillerini güncelle
-  document.querySelectorAll('.dp-preset').forEach(function(b){ b.classList.remove('active'); });
-  if(el) el.classList.add('active');
+function _dpOutside(e){
+  var w = document.getElementById('dpWrap');
+  if(w && !w.contains(e.target)) closeDP();
+}
 
-  if(val !== 'custom'){
-    // Preset seçilince direkt uygula
+function dpPickPreset(val, label){
+  // Radio'yu işaretle
+  document.querySelectorAll('input[name="dpR"]').forEach(function(r){r.checked = r.value===val||r.value===val+'_2';});
+  _dp.isCustom = (val === 'custom');
+  if(!_dp.isCustom){
+    // Preset: direkt uygula
     document.getElementById('mPreset').value = val;
-    document.getElementById('dpLabel').textContent = PRESET_LABELS[val] || val;
-    dpUpdateBtn(true);
+    document.getElementById('mFrom').value = '';
+    document.getElementById('mTo').value = '';
+    document.getElementById('dpLabel').textContent = label;
     closeDP();
     mLoad();
   } else {
-    // Özel seçilince takvimi aç, Güncelle beklenir
-    dpState.from = null; dpState.to = null; dpState.selecting = 0;
-    dpRenderCalendars();
-    dpUpdateFooter();
+    // Özel: takvimde seçim bekle
+    _dp.from = null; _dp.to = null; _dp.hov = null; _dp.step = 0;
+    _dpRenderBoth(); _dpUpdateFooter();
+    document.getElementById('dpOkBtn').disabled = true;
+    document.getElementById('dpOkBtn').style.opacity = '.45';
   }
 }
 
 function dpNav(dir){
-  dpState.cal[0] = new Date(dpState.cal[0].getFullYear(), dpState.cal[0].getMonth()+dir, 1);
-  dpState.cal[1] = new Date(dpState.cal[1].getFullYear(), dpState.cal[1].getMonth()+dir, 1);
-  dpRenderCalendars();
+  // İki takvimi birlikte kaydır
+  for(var i=0;i<2;i++){
+    _dp.cal[i].m += dir;
+    if(_dp.cal[i].m > 11){_dp.cal[i].m=0; _dp.cal[i].y++;}
+    if(_dp.cal[i].m < 0){_dp.cal[i].m=11; _dp.cal[i].y--;}
+  }
+  _dpRenderBoth();
 }
 
-function dpSelectMonth(calIdx, month){
-  dpState.cal[calIdx] = new Date(dpState.cal[calIdx].getFullYear(), parseInt(month), 1);
-  if(calIdx===0 && dpState.cal[0] >= dpState.cal[1])
-    dpState.cal[1] = new Date(dpState.cal[0].getFullYear(), dpState.cal[0].getMonth()+1, 1);
-  if(calIdx===1 && dpState.cal[1] <= dpState.cal[0])
-    dpState.cal[0] = new Date(dpState.cal[1].getFullYear(), dpState.cal[1].getMonth()-1, 1);
-  dpRenderCalendars();
-}
-function dpSelectYear(calIdx, year){
-  dpState.cal[calIdx] = new Date(parseInt(year), dpState.cal[calIdx].getMonth(), 1);
-  dpRenderCalendars();
-}
-
-function dpRenderCalendars(){
-  [0,1].forEach(function(i){
-    dpRenderCal(i);
-    dpFillDropdowns(i);
-  });
+function dpGoTo(calIdx, m, y){
+  _dp.cal[calIdx] = {m:m, y:y};
+  // Çakışma engelle
+  if(calIdx===0){
+    var other = _dp.cal[1];
+    if(y > other.y || (y===other.y && m >= other.m)){
+      _dp.cal[1] = {m: m===11?0:m+1, y: m===11?y+1:y};
+    }
+  } else {
+    var other = _dp.cal[0];
+    if(y < other.y || (y===other.y && m <= other.m)){
+      _dp.cal[0] = {m: m===0?11:m-1, y: m===0?y-1:y};
+    }
+  }
+  _dpRenderBoth();
 }
 
-function dpFillDropdowns(i){
-  var suffix = i===0?'1':'2';
-  var cal = dpState.cal[i];
-  var mSel = document.getElementById('dpMonth'+suffix);
-  var ySel = document.getElementById('dpYear'+suffix);
-  if(!mSel||!ySel) return;
-  mSel.innerHTML = MONTHS_TR.map(function(m,idx){
-    return '<option value="'+idx+'"'+(idx===cal.getMonth()?' selected':'')+'>'+m+'</option>';
+function _dpRenderBoth(){
+  _dpRenderCal(0);
+  _dpRenderCal(1);
+  _dpFillDropdowns(0);
+  _dpFillDropdowns(1);
+}
+
+function _dpFillDropdowns(i){
+  var suf = i===0?'1':'2';
+  var cal = _dp.cal[i];
+  var mEl = document.getElementById('dpM'+suf);
+  var yEl = document.getElementById('dpY'+suf);
+  if(!mEl||!yEl) return;
+  mEl.innerHTML = _dp.months.map(function(m,idx){
+    return '<option value="'+idx+'"'+(idx===cal.m?' selected':'')+'>'+m+'</option>';
   }).join('');
-  var yr = cal.getFullYear(), yHTML='';
-  for(var y=yr-5; y<=yr+2; y++) yHTML+='<option value="'+y+'"'+(y===yr?' selected':'')+'>'+y+'</option>';
-  ySel.innerHTML = yHTML;
+  var yr=cal.y, html='';
+  for(var y=yr-5;y<=yr+1;y++) html+='<option value="'+y+'"'+(y===yr?' selected':'')+'>'+y+'</option>';
+  yEl.innerHTML = html;
 }
 
-function dpRenderCal(calIdx){
-  var suffix = calIdx===0?'1':'2';
-  var grid = document.getElementById('dpGrid'+suffix);
+function _dpRenderCal(calIdx){
+  var suf = calIdx===0?'1':'2';
+  var grid = document.getElementById('dpG'+suf);
   if(!grid) return;
-  var cal = dpState.cal[calIdx];
-  var year = cal.getFullYear(), month = cal.getMonth();
+  var cal = _dp.cal[calIdx];
   var today = new Date(); today.setHours(0,0,0,0);
+  var firstDay = new Date(cal.y, cal.m, 1);
+  var startDow = (firstDay.getDay()+6)%7; // Pzt=0
+  var daysInMonth = new Date(cal.y, cal.m+1, 0).getDate();
 
-  var html = DAYS_TR.map(function(d){return '<div class="dp-day-hdr">'+d+'</div>';}).join('');
-
-  // Ayın ilk günü hangi haftanın günü? (Pazartesi=0)
-  var firstDay = new Date(year, month, 1);
-  var startDow = (firstDay.getDay()+6)%7; // Mon=0
+  var html = _dp.days.map(function(d){return '<div class="dp-day-hdr">'+d+'</div>';}).join('');
   for(var i=0;i<startDow;i++) html+='<div class="dp-day dp-empty"></div>';
 
-  var daysInMonth = new Date(year, month+1, 0).getDate();
-  for(var d=1; d<=daysInMonth; d++){
-    var date = new Date(year, month, d);
-    var classes = ['dp-day'];
-    if(date.getTime()===today.getTime()) classes.push('dp-today');
-    if(date > today) classes.push('dp-disabled');
+  for(var d=1;d<=daysInMonth;d++){
+    var date = new Date(cal.y, cal.m, d);
+    var ts = date.getTime();
+    var cls = ['dp-day'];
+    if(date > today) cls.push('dp-disabled');
+    if(date.getTime()===today.getTime()) cls.push('dp-today');
 
-    var fr=dpState.from, to=dpState.to||dpState.hover;
-    if(fr&&to){
-      var mn=fr<to?fr:to, mx=fr<to?to:fr;
-      if(date.getTime()===mn.getTime()) classes.push(fr<to?'dp-range-start':'dp-range-end');
-      else if(date.getTime()===mx.getTime()) classes.push(fr<to?'dp-range-end':'dp-range-start');
-      else if(date>mn&&date<mx) classes.push('dp-in-range');
-    } else if(fr&&date.getTime()===fr.getTime()){
-      classes.push('dp-selected');
+    // Seçim renklendirme
+    var fr = _dp.from, to = _dp.to || _dp.hov;
+    if(fr && to){
+      var lo = fr<to?fr:to, hi = fr<to?to:fr;
+      if(ts===lo.getTime()&&ts===hi.getTime()) cls.push('dp-sel');
+      else if(ts===lo.getTime()) cls.push(fr<=to?'dp-rs':'dp-re');
+      else if(ts===hi.getTime()) cls.push(fr<=to?'dp-re':'dp-rs');
+      else if(date>lo&&date<hi) cls.push('dp-in-range');
+    } else if(fr && ts===fr.getTime()){
+      cls.push('dp-sel');
     }
 
-    var ts = date.getTime();
-    html+='<div class="'+classes.join(' ')+'" '
-      +'onmouseenter="dpHover('+ts+')" onmouseleave="dpHover(null)" '
-      +'onclick="dpClick('+ts+')">'
-      +d+'</div>';
+    var disabled = date > today;
+    html += '<div class="'+cls.join(' ')+'"'
+      + (disabled?'':' onmouseenter="dpHov('+ts+')" onmouseleave="dpHov(null)" onclick="dpClick('+ts+')"')
+      + '>'+d+'</div>';
   }
   grid.innerHTML = html;
 }
 
-function dpHover(ts){
-  if(dpState.selecting !== 1) return;
-  dpState.hover = ts ? new Date(ts) : null;
-  dpRenderCalendars();
+function dpHov(ts){
+  if(_dp.step!==1) return;
+  _dp.hov = ts ? new Date(ts) : null;
+  _dpRenderBoth();
 }
 
 function dpClick(ts){
@@ -1063,69 +1069,61 @@ function dpClick(ts){
   var today = new Date(); today.setHours(0,0,0,0);
   if(date > today) return;
 
-  if(dpState.selecting === 0 || dpState.selecting === 2){
-    // Başlangıç seç
-    dpState.from = date; dpState.to = null; dpState.hover = null;
-    dpState.selecting = 1;
+  if(_dp.step===0 || _dp.step===2){
+    _dp.from = date; _dp.to=null; _dp.hov=null; _dp.step=1;
   } else {
-    // Bitiş seç
-    if(date < dpState.from){ dpState.to = dpState.from; dpState.from = date; }
-    else dpState.to = date;
-    dpState.hover = null;
-    dpState.selecting = 2;
+    _dp.to = date; _dp.hov=null; _dp.step=2;
+    // Sıra kontrolü
+    if(_dp.from > _dp.to){ var tmp=_dp.from; _dp.from=_dp.to; _dp.to=tmp; }
   }
-  dpRenderCalendars();
-  dpUpdateFooter();
+  _dpRenderBoth();
+  _dpUpdateFooter();
 }
 
-function dpUpdateFooter(){
-  var footerEl = document.getElementById('dpFooterDates');
-  var btn = document.getElementById('dpUpdateBtn');
-  if(!footerEl||!btn) return;
-  if(dpState.from && dpState.to){
-    var fmt = function(d){ return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'}); };
-    footerEl.textContent = fmt(dpState.from) + ' – ' + fmt(dpState.to);
-    btn.disabled = false; btn.style.opacity = '1';
-  } else if(dpState.from){
-    footerEl.textContent = dpState.from.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'}) + ' – ...';
-    btn.disabled = true; btn.style.opacity = '.5';
-  } else {
-    footerEl.textContent = 'Tarih seçin';
-    btn.disabled = true; btn.style.opacity = '.5';
-  }
+function _dpFmt(d){
+  return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});
+}
+function _dpFmtShort(d){
+  return d.toLocaleDateString('tr',{day:'numeric',month:'short'});
 }
 
-function dpUpdateBtn(immediate){
-  // Preset seçimlerinde btn yok, sadece özel tarihte
+function _dpUpdateFooter(){
+  var info = document.getElementById('dpInfo');
+  var btn = document.getElementById('dpOkBtn');
+  if(_dp.from && _dp.to){
+    info.textContent = _dpFmtShort(_dp.from) + ' – ' + _dpFmt(_dp.to);
+    btn.disabled=false; btn.style.opacity='1';
+  } else if(_dp.from){
+    info.textContent = _dpFmt(_dp.from) + ' – ...';
+    btn.disabled=true; btn.style.opacity='.45';
+  } else {
+    info.textContent = 'Tarih seçin';
+    btn.disabled=true; btn.style.opacity='.45';
+  }
 }
 
 function dpApply(){
-  if(!dpState.from || !dpState.to) return;
-  var fmt = function(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
-  var f=fmt(dpState.from<dpState.to?dpState.from:dpState.to);
-  var t=fmt(dpState.from<dpState.to?dpState.to:dpState.from);
-  document.getElementById('mFrom').value = f;
-  document.getElementById('mTo').value   = t;
+  if(!_dp.from || !_dp.to) return;
+  function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  document.getElementById('mFrom').value = fmt(_dp.from);
+  document.getElementById('mTo').value = fmt(_dp.to);
   document.getElementById('mPreset').value = 'custom';
-  var d1=dpState.from<dpState.to?dpState.from:dpState.to;
-  var d2=dpState.from<dpState.to?dpState.to:dpState.from;
-  document.getElementById('dpLabel').textContent =
-    d1.toLocaleDateString('tr',{day:'numeric',month:'short'}) + ' – ' +
-    d2.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('dpLabel').textContent = _dpFmtShort(_dp.from) + ' – ' + _dpFmt(_dp.to);
   closeDP();
   mLoad();
 }
 
-// getDP override — gizli inputları oku
+// getDP override
 function getDP(){
   var preset = document.getElementById('mPreset').value;
   if(preset !== 'custom') return {date_preset: preset};
   var f = document.getElementById('mFrom').value;
   var t = document.getElementById('mTo').value;
-  if(f && t) return {time_range: JSON.stringify({since:f, until:t})};
+  if(f && t) return {time_range: JSON.stringify({since:f,until:t})};
   return {date_preset:'last_7d'};
 }
 function onMPreset(){ mLoad(); }
+
 
 // ── Başlat ────────────────────────────────────────────────────────────
 if(window._isConnected){
