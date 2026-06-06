@@ -54,24 +54,107 @@
   <button class="meta-tab" id="mtAd" onclick="metaTabSwitch('ad',this)">🖼 Reklamlar</button>
 </div>
 
+<!-- Date Picker Styles -->
+<style>
+.dp-btn{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 12px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.dp-btn:hover{border-color:var(--a)}
+.dp-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:500;background:#1a1b1d;border:1px solid var(--b);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.7);width:660px}
+.dp-popup.open{display:flex}
+.dp-left{width:180px;border-right:1px solid var(--b);padding:12px 0;flex-shrink:0}
+.dp-preset{padding:7px 16px;font-size:12px;cursor:pointer;color:var(--m);transition:all .15s;border-radius:0}
+.dp-preset:hover{background:var(--s2);color:var(--t)}
+.dp-preset.active{background:var(--s2);color:var(--a);font-weight:600}
+.dp-preset-group{font-size:9px;color:var(--b2);text-transform:uppercase;letter-spacing:1.2px;padding:10px 16px 3px;margin-top:4px}
+.dp-right{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px}
+.dp-calendars{display:flex;gap:16px}
+.dp-cal{flex:1}
+.dp-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dp-cal-nav{background:none;border:none;color:var(--m);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;transition:all .15s}
+.dp-cal-nav:hover{background:var(--b);color:var(--t)}
+.dp-cal-title{display:flex;gap:6px;align-items:center}
+.dp-cal-select{background:var(--s2);border:1px solid var(--b2);color:var(--t);font-family:'DM Mono',monospace;font-size:11px;padding:3px 6px;border-radius:4px;cursor:pointer}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.dp-day-hdr{font-size:9px;color:var(--m);text-align:center;padding:3px 0;text-transform:uppercase}
+.dp-day{font-size:11px;text-align:center;padding:5px 2px;cursor:pointer;border-radius:4px;font-family:'DM Mono',monospace;transition:all .1s;color:var(--t)}
+.dp-day:hover:not(.dp-empty):not(.dp-disabled){background:var(--b);color:var(--t)}
+.dp-day.dp-empty{cursor:default}
+.dp-day.dp-disabled{color:var(--b2);cursor:default}
+.dp-day.dp-today{font-weight:700;color:var(--a)}
+.dp-day.dp-selected{background:var(--a);color:#fff;border-radius:4px}
+.dp-day.dp-in-range{background:rgba(24,119,242,.15);border-radius:0}
+.dp-day.dp-range-start{background:var(--a);color:#fff;border-radius:4px 0 0 4px}
+.dp-day.dp-range-end{background:var(--a);color:#fff;border-radius:0 4px 4px 0}
+.dp-day.dp-range-start.dp-range-end{border-radius:4px}
+.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--b);padding-top:10px}
+.dp-footer-dates{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
+.dp-footer-btns{display:flex;gap:8px}
+</style>
+
 <!-- Toolbar -->
 <div class="meta-toolbar">
-  <select class="flt" id="mPreset" onchange="onMPreset()" style="font-size:11px;padding:5px 8px">
-    <option value="today">Bugün</option>
-    <option value="yesterday">Dün</option>
-    <option value="last_3d">Son 3 gün</option>
-    <option value="last_7d" selected>Son 7 gün</option>
-    <option value="last_14d">Son 14 gün</option>
-    <option value="last_30d">Son 30 gün</option>
-    <option value="this_month">Bu ay</option>
-    <option value="last_month">Geçen ay</option>
-    <option value="custom">📅 Özel Aralık</option>
-  </select>
-  <div class="date-wrap" id="mCustomWrap" style="display:none">
-    <input type="date" id="mFrom" onchange="mLoad()">
-    <span style="color:var(--m);font-size:11px">→</span>
-    <input type="date" id="mTo" onchange="mLoad()">
+  <!-- Meta-style Date Picker -->
+  <div style="position:relative" id="dpWrap">
+    <button class="dp-btn" id="dpTrigger" onclick="toggleDP()">
+      📅 <span id="dpLabel">Son 7 gün</span>
+    </button>
+    <div class="dp-popup" id="dpPopup">
+      <!-- Sol: Presetler -->
+      <div class="dp-left">
+        <div class="dp-preset-group">Yakında kullanılanlar</div>
+        <div class="dp-preset active" data-preset="last_7d" onclick="selectPreset('last_7d',this)">Son 7 gün</div>
+        <div class="dp-preset" data-preset="last_30d" onclick="selectPreset('last_30d',this)">Son 30 gün</div>
+        <div class="dp-preset-group">Presetler</div>
+        <div class="dp-preset" data-preset="today" onclick="selectPreset('today',this)">Bugün</div>
+        <div class="dp-preset" data-preset="yesterday" onclick="selectPreset('yesterday',this)">Dün</div>
+        <div class="dp-preset" data-preset="last_3d" onclick="selectPreset('last_3d',this)">Son 3 gün</div>
+        <div class="dp-preset" data-preset="last_14d" onclick="selectPreset('last_14d',this)">Son 14 gün</div>
+        <div class="dp-preset" data-preset="last_30d" onclick="selectPreset('last_30d',this)">Son 30 gün</div>
+        <div class="dp-preset" data-preset="this_month" onclick="selectPreset('this_month',this)">Bu ay</div>
+        <div class="dp-preset" data-preset="last_month" onclick="selectPreset('last_month',this)">Geçen ay</div>
+        <div class="dp-preset" data-preset="custom" onclick="selectPreset('custom',this)">Özel</div>
+      </div>
+      <!-- Sağ: Takvim -->
+      <div class="dp-right">
+        <div class="dp-calendars">
+          <!-- Sol takvim -->
+          <div class="dp-cal" id="dpCal1">
+            <div class="dp-cal-header">
+              <button class="dp-cal-nav" onclick="dpNav(-1)">‹</button>
+              <div class="dp-cal-title">
+                <select class="dp-cal-select" id="dpMonth1" onchange="dpSelectMonth(0,this.value)"></select>
+                <select class="dp-cal-select" id="dpYear1" onchange="dpSelectYear(0,this.value)"></select>
+              </div>
+              <div style="width:28px"></div>
+            </div>
+            <div class="dp-grid" id="dpGrid1"></div>
+          </div>
+          <!-- Sağ takvim -->
+          <div class="dp-cal" id="dpCal2">
+            <div class="dp-cal-header">
+              <div style="width:28px"></div>
+              <div class="dp-cal-title">
+                <select class="dp-cal-select" id="dpMonth2" onchange="dpSelectMonth(1,this.value)"></select>
+                <select class="dp-cal-select" id="dpYear2" onchange="dpSelectYear(1,this.value)"></select>
+              </div>
+              <button class="dp-cal-nav" onclick="dpNav(1)">›</button>
+            </div>
+            <div class="dp-grid" id="dpGrid2"></div>
+          </div>
+        </div>
+        <div class="dp-footer">
+          <div class="dp-footer-dates" id="dpFooterDates">Tarih seçin</div>
+          <div class="dp-footer-btns">
+            <button class="btn sec sm" onclick="closeDP()">İptal</button>
+            <button class="btn sm" id="dpUpdateBtn" onclick="dpApply()" disabled style="opacity:.5">Güncelle</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+  <!-- Gizli alanlar (API için) -->
+  <input type="hidden" id="mPreset" value="last_7d">
+  <input type="hidden" id="mFrom">
+  <input type="hidden" id="mTo">
   <select class="flt" id="mCampFlt" style="font-size:11px;max-width:180px;display:none" onchange="mLoad()">
     <option value="">Tüm Kampanyalar</option>
   </select>
@@ -829,6 +912,220 @@ async function loadAds(){
   window._mLastCmpTotals=null;
   renderAll('ad');
 }
+
+// ── Date Picker ───────────────────────────────────────────────────────
+var dpState = {
+  mode: 'preset',        // 'preset' | 'custom'
+  preset: 'last_7d',
+  from: null,            // Date object
+  to: null,              // Date object
+  selecting: 0,          // 0=başlamadı 1=from seçildi
+  hover: null,           // hover date
+  cal: [new Date(), new Date(new Date().getFullYear(), new Date().getMonth()+1, 1)] // [sol, sağ] takvim
+};
+
+var MONTHS_TR = ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+var DAYS_TR = ['Pzt','Sal','Çrş','Prş','Cum','Cts','Paz'];
+var PRESET_LABELS = {
+  today:'Bugün', yesterday:'Dün', last_3d:'Son 3 gün', last_7d:'Son 7 gün',
+  last_14d:'Son 14 gün', last_30d:'Son 30 gün', this_month:'Bu ay', last_month:'Geçen ay'
+};
+
+function toggleDP(){
+  var p=document.getElementById('dpPopup');
+  if(p.classList.contains('open')){ closeDP(); return; }
+  p.classList.add('open');
+  dpRenderCalendars();
+  // Dışarı tıklayınca kapat
+  setTimeout(function(){
+    document.addEventListener('click', dpOutsideClick);
+  }, 0);
+}
+function closeDP(){
+  document.getElementById('dpPopup').classList.remove('open');
+  document.removeEventListener('click', dpOutsideClick);
+}
+function dpOutsideClick(e){
+  if(!document.getElementById('dpWrap').contains(e.target)) closeDP();
+}
+
+function selectPreset(val, el){
+  dpState.preset = val;
+  dpState.mode = val==='custom' ? 'custom' : 'preset';
+  // Preset buton stillerini güncelle
+  document.querySelectorAll('.dp-preset').forEach(function(b){ b.classList.remove('active'); });
+  if(el) el.classList.add('active');
+
+  if(val !== 'custom'){
+    // Preset seçilince direkt uygula
+    document.getElementById('mPreset').value = val;
+    document.getElementById('dpLabel').textContent = PRESET_LABELS[val] || val;
+    dpUpdateBtn(true);
+    closeDP();
+    mLoad();
+  } else {
+    // Özel seçilince takvimi aç, Güncelle beklenir
+    dpState.from = null; dpState.to = null; dpState.selecting = 0;
+    dpRenderCalendars();
+    dpUpdateFooter();
+  }
+}
+
+function dpNav(dir){
+  dpState.cal[0] = new Date(dpState.cal[0].getFullYear(), dpState.cal[0].getMonth()+dir, 1);
+  dpState.cal[1] = new Date(dpState.cal[1].getFullYear(), dpState.cal[1].getMonth()+dir, 1);
+  dpRenderCalendars();
+}
+
+function dpSelectMonth(calIdx, month){
+  dpState.cal[calIdx] = new Date(dpState.cal[calIdx].getFullYear(), parseInt(month), 1);
+  if(calIdx===0 && dpState.cal[0] >= dpState.cal[1])
+    dpState.cal[1] = new Date(dpState.cal[0].getFullYear(), dpState.cal[0].getMonth()+1, 1);
+  if(calIdx===1 && dpState.cal[1] <= dpState.cal[0])
+    dpState.cal[0] = new Date(dpState.cal[1].getFullYear(), dpState.cal[1].getMonth()-1, 1);
+  dpRenderCalendars();
+}
+function dpSelectYear(calIdx, year){
+  dpState.cal[calIdx] = new Date(parseInt(year), dpState.cal[calIdx].getMonth(), 1);
+  dpRenderCalendars();
+}
+
+function dpRenderCalendars(){
+  [0,1].forEach(function(i){
+    dpRenderCal(i);
+    dpFillDropdowns(i);
+  });
+}
+
+function dpFillDropdowns(i){
+  var suffix = i===0?'1':'2';
+  var cal = dpState.cal[i];
+  var mSel = document.getElementById('dpMonth'+suffix);
+  var ySel = document.getElementById('dpYear'+suffix);
+  if(!mSel||!ySel) return;
+  mSel.innerHTML = MONTHS_TR.map(function(m,idx){
+    return '<option value="'+idx+'"'+(idx===cal.getMonth()?' selected':'')+'>'+m+'</option>';
+  }).join('');
+  var yr = cal.getFullYear(), yHTML='';
+  for(var y=yr-5; y<=yr+2; y++) yHTML+='<option value="'+y+'"'+(y===yr?' selected':'')+'>'+y+'</option>';
+  ySel.innerHTML = yHTML;
+}
+
+function dpRenderCal(calIdx){
+  var suffix = calIdx===0?'1':'2';
+  var grid = document.getElementById('dpGrid'+suffix);
+  if(!grid) return;
+  var cal = dpState.cal[calIdx];
+  var year = cal.getFullYear(), month = cal.getMonth();
+  var today = new Date(); today.setHours(0,0,0,0);
+
+  var html = DAYS_TR.map(function(d){return '<div class="dp-day-hdr">'+d+'</div>';}).join('');
+
+  // Ayın ilk günü hangi haftanın günü? (Pazartesi=0)
+  var firstDay = new Date(year, month, 1);
+  var startDow = (firstDay.getDay()+6)%7; // Mon=0
+  for(var i=0;i<startDow;i++) html+='<div class="dp-day dp-empty"></div>';
+
+  var daysInMonth = new Date(year, month+1, 0).getDate();
+  for(var d=1; d<=daysInMonth; d++){
+    var date = new Date(year, month, d);
+    var classes = ['dp-day'];
+    if(date.getTime()===today.getTime()) classes.push('dp-today');
+    if(date > today) classes.push('dp-disabled');
+
+    var fr=dpState.from, to=dpState.to||dpState.hover;
+    if(fr&&to){
+      var mn=fr<to?fr:to, mx=fr<to?to:fr;
+      if(date.getTime()===mn.getTime()) classes.push(fr<to?'dp-range-start':'dp-range-end');
+      else if(date.getTime()===mx.getTime()) classes.push(fr<to?'dp-range-end':'dp-range-start');
+      else if(date>mn&&date<mx) classes.push('dp-in-range');
+    } else if(fr&&date.getTime()===fr.getTime()){
+      classes.push('dp-selected');
+    }
+
+    var ts = date.getTime();
+    html+='<div class="'+classes.join(' ')+'" '
+      +'onmouseenter="dpHover('+ts+')" onmouseleave="dpHover(null)" '
+      +'onclick="dpClick('+ts+')">'
+      +d+'</div>';
+  }
+  grid.innerHTML = html;
+}
+
+function dpHover(ts){
+  if(dpState.selecting !== 1) return;
+  dpState.hover = ts ? new Date(ts) : null;
+  dpRenderCalendars();
+}
+
+function dpClick(ts){
+  var date = new Date(ts);
+  var today = new Date(); today.setHours(0,0,0,0);
+  if(date > today) return;
+
+  if(dpState.selecting === 0 || dpState.selecting === 2){
+    // Başlangıç seç
+    dpState.from = date; dpState.to = null; dpState.hover = null;
+    dpState.selecting = 1;
+  } else {
+    // Bitiş seç
+    if(date < dpState.from){ dpState.to = dpState.from; dpState.from = date; }
+    else dpState.to = date;
+    dpState.hover = null;
+    dpState.selecting = 2;
+  }
+  dpRenderCalendars();
+  dpUpdateFooter();
+}
+
+function dpUpdateFooter(){
+  var footerEl = document.getElementById('dpFooterDates');
+  var btn = document.getElementById('dpUpdateBtn');
+  if(!footerEl||!btn) return;
+  if(dpState.from && dpState.to){
+    var fmt = function(d){ return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'}); };
+    footerEl.textContent = fmt(dpState.from) + ' – ' + fmt(dpState.to);
+    btn.disabled = false; btn.style.opacity = '1';
+  } else if(dpState.from){
+    footerEl.textContent = dpState.from.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'}) + ' – ...';
+    btn.disabled = true; btn.style.opacity = '.5';
+  } else {
+    footerEl.textContent = 'Tarih seçin';
+    btn.disabled = true; btn.style.opacity = '.5';
+  }
+}
+
+function dpUpdateBtn(immediate){
+  // Preset seçimlerinde btn yok, sadece özel tarihte
+}
+
+function dpApply(){
+  if(!dpState.from || !dpState.to) return;
+  var fmt = function(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+  var f=fmt(dpState.from<dpState.to?dpState.from:dpState.to);
+  var t=fmt(dpState.from<dpState.to?dpState.to:dpState.from);
+  document.getElementById('mFrom').value = f;
+  document.getElementById('mTo').value   = t;
+  document.getElementById('mPreset').value = 'custom';
+  var d1=dpState.from<dpState.to?dpState.from:dpState.to;
+  var d2=dpState.from<dpState.to?dpState.to:dpState.from;
+  document.getElementById('dpLabel').textContent =
+    d1.toLocaleDateString('tr',{day:'numeric',month:'short'}) + ' – ' +
+    d2.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});
+  closeDP();
+  mLoad();
+}
+
+// getDP override — gizli inputları oku
+function getDP(){
+  var preset = document.getElementById('mPreset').value;
+  if(preset !== 'custom') return {date_preset: preset};
+  var f = document.getElementById('mFrom').value;
+  var t = document.getElementById('mTo').value;
+  if(f && t) return {time_range: JSON.stringify({since:f, until:t})};
+  return {date_preset:'last_7d'};
+}
+function onMPreset(){ mLoad(); }
 
 // ── Başlat ────────────────────────────────────────────────────────────
 if(window._isConnected){
