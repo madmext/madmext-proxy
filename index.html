@@ -303,11 +303,17 @@ async function loadModule(page) {
     });
 
     // Script'ler çalıştıktan sonra bağlıysa event gönder
-    // 200ms: script'lerin event listener'larını kaydetmesi için yeterli süre
+    // _isConnected zaten true ise direkt mLoad çağır (event dispatch güvenilir değil)
     if(window._isConnected) {
       setTimeout(function(){
+        // Önce event dene
         window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 200);
+        // Yedek: mLoad global'sa direkt çağır
+        setTimeout(function(){
+          if(typeof window.mLoad === 'function') window.mLoad();
+          if(typeof window.loadDashboard === 'function') window.loadDashboard();
+        }, 100);
+      }, 300);
     }
 
   } catch(e) {
