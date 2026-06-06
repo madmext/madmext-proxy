@@ -121,24 +121,27 @@ def log_action():
 
 @app.route('/api', methods=['POST'])
 def meta_proxy():
+    import json as _json
     data = request.json
     endpoint = data['endpoint']
     raw_params = data.get('params', {})
     method = data.get('method', 'GET')
     url = f"https://graph.facebook.com/v19.0/{endpoint}"
 
-    # Parametreleri list of tuples olarak hazırla (requests bu şekilde handle eder)
+    # Parametreleri tuple listesi olarak hazırla (array params için)
     param_list = [('access_token', META_TOKEN)]
     for k, v in raw_params.items():
         if k == 'action_attribution_windows' and isinstance(v, str):
-            # JSON string'i parse edip her elemanı ayrı param yap
-            import json as _json
+            # ["7d_click","1d_view"] formatını ayrı parametrelere böl
             try:
                 arr = _json.loads(v)
                 for item in arr:
                     param_list.append((k + '[]', item))
             except:
                 param_list.append((k, v))
+        elif k == 'time_range' and isinstance(v, str):
+            # time_range JSON string olarak gitmeli — olduğu gibi bırak
+            param_list.append((k, v))
         else:
             param_list.append((k, v))
 
