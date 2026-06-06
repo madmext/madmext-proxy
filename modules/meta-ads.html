@@ -967,182 +967,7 @@ async function loadAds(){
   renderAll('ad');
 }
 
-// ── Date Picker ──────────────────────────────────────────────────────
-// Tek kaynak, temiz versiyon — tüm fonksiyon isimleri HTML ile eşleşiyor
-var _dp = {
-  M: ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
-  D: ['Pzt','Sal','Çrş','Prş','Cum','Cts','Paz'],
-  cal: [{y:0,m:0},{y:0,m:0}],
-  from: null, to: null, hov: null, step: 0
-};
-
-function _dpInit(){
-  var n = new Date();
-  var m0 = n.getMonth() - 1, y0 = n.getFullYear();
-  if(m0 < 0){ m0 = 11; y0--; }
-  _dp.cal[0] = {y: y0, m: m0};
-  _dp.cal[1] = {y: n.getFullYear(), m: n.getMonth()};
-  _dpRB();
-}
-
-function toggleDP(){
-  var pop = document.getElementById('dpPopup');
-  if(pop.classList.contains('open')){ closeDP(); return; }
-  _dpInit();
-  pop.classList.add('open');
-  setTimeout(function(){ document.addEventListener('mousedown', _dpOut); }, 10);
-}
-
-function closeDP(){
-  var pop = document.getElementById('dpPopup');
-  if(pop) pop.classList.remove('open');
-  document.removeEventListener('mousedown', _dpOut);
-}
-
-function _dpOut(e){
-  var w = document.getElementById('dpWrap');
-  if(w && !w.contains(e.target)) closeDP();
-}
-
-// HTML'den çağrılıyor: dpPickP
-function dpPickP(val, label){
-  // Radio güncelle
-  document.querySelectorAll('input[name="dpR"]').forEach(function(r){
-    r.checked = (r.value === val || r.value === val + '_2');
-  });
-  if(val !== 'custom'){
-    document.getElementById('mPreset').value = val;
-    document.getElementById('mFrom').value = '';
-    document.getElementById('mTo').value = '';
-    document.getElementById('dpLabel').textContent = label;
-    closeDP();
-    mLoad();
-  } else {
-    _dp.from = null; _dp.to = null; _dp.hov = null; _dp.step = 0;
-    _dpRB(); _dpUF();
-    var btn = document.getElementById('dpOkBtn');
-    if(btn){ btn.disabled = true; btn.style.opacity = '.45'; }
-  }
-}
-
-function dpNav(dir){
-  _dp.cal[0].m += dir; _dp.cal[1].m += dir;
-  [0,1].forEach(function(i){
-    if(_dp.cal[i].m > 11){ _dp.cal[i].m = 0; _dp.cal[i].y++; }
-    if(_dp.cal[i].m < 0){ _dp.cal[i].m = 11; _dp.cal[i].y--; }
-  });
-  _dpRB();
-}
-
-function dpGoTo(ci, m, y){
-  _dp.cal[ci] = {m:m, y:y};
-  if(ci===0 && (y > _dp.cal[1].y || (y===_dp.cal[1].y && m >= _dp.cal[1].m)))
-    _dp.cal[1] = {m: m===11?0:m+1, y: m===11?y+1:y};
-  if(ci===1 && (y < _dp.cal[0].y || (y===_dp.cal[0].y && m <= _dp.cal[0].m)))
-    _dp.cal[0] = {m: m===0?11:m-1, y: m===0?y-1:y};
-  _dpRB();
-}
-
-function _dpRB(){ _dpRC(0); _dpRC(1); _dpFD(0); _dpFD(1); }
-
-function _dpFD(i){
-  var s = i===0?'1':'2', cal = _dp.cal[i];
-  var mEl = document.getElementById('dpM'+s), yEl = document.getElementById('dpY'+s);
-  if(!mEl||!yEl) return;
-  mEl.innerHTML = _dp.M.map(function(m,idx){
-    return '<option value="'+idx+'"'+(idx===cal.m?' selected':'')+'>'+m+'</option>';
-  }).join('');
-  var h='';
-  for(var y=cal.y-5; y<=cal.y+1; y++) h+='<option value="'+y+'"'+(y===cal.y?' selected':'')+'>'+y+'</option>';
-  yEl.innerHTML = h;
-}
-
-function _dpRC(ci){
-  var s = ci===0?'1':'2';
-  var grid = document.getElementById('dpG'+s);
-  if(!grid) return;
-  var cal = _dp.cal[ci];
-  var today = new Date(); today.setHours(0,0,0,0);
-  var firstDay = new Date(cal.y, cal.m, 1);
-  var startDow = (firstDay.getDay()+6)%7;
-  var dim = new Date(cal.y, cal.m+1, 0).getDate();
-
-  var h = _dp.D.map(function(d){ return '<div class="dp-dh">'+d+'</div>'; }).join('');
-  for(var i=0; i<startDow; i++) h += '<div class="dp-d dp-empty"></div>';
-
-  for(var d=1; d<=dim; d++){
-    var date = new Date(cal.y, cal.m, d);
-    var ts = date.getTime();
-    var cls = ['dp-d'];
-    if(date > today) cls.push('dp-dis');
-    if(date.getTime() === today.getTime()) cls.push('dp-today');
-
-    var fr = _dp.from, to = _dp.to || _dp.hov;
-    if(fr && to){
-      var lo = fr<to?fr:to, hi = fr<to?to:fr;
-      if(ts===lo.getTime() && ts===hi.getTime()) cls.push('dp-sel');
-      else if(ts===lo.getTime()) cls.push(fr<=to?'dp-rs':'dp-re');
-      else if(ts===hi.getTime()) cls.push(fr<=to?'dp-re':'dp-rs');
-      else if(date>lo && date<hi) cls.push('dp-in-r');
-    } else if(fr && ts===fr.getTime()) cls.push('dp-sel');
-
-    var dis = date > today;
-    h += '<div class="'+cls.join(' ')+'"'
-      + (dis ? '' : ' onmouseenter="dpHov('+ts+')" onmouseleave="dpHov(null)" onclick="dpClick('+ts+')"')
-      + '>'+d+'</div>';
-  }
-  grid.innerHTML = h;
-}
-
-function dpHov(ts){
-  if(_dp.step !== 1) return;
-  _dp.hov = ts ? new Date(ts) : null;
-  _dpRB();
-}
-
-function dpClick(ts){
-  var date = new Date(ts);
-  var today = new Date(); today.setHours(0,0,0,0);
-  if(date > today) return;
-  if(_dp.step===0 || _dp.step===2){
-    _dp.from = date; _dp.to = null; _dp.hov = null; _dp.step = 1;
-  } else {
-    _dp.to = date; _dp.hov = null; _dp.step = 2;
-    if(_dp.from > _dp.to){ var tmp=_dp.from; _dp.from=_dp.to; _dp.to=tmp; }
-  }
-  _dpRB(); _dpUF();
-}
-
-function _dpUF(){
-  var info = document.getElementById('dpInfo');
-  var btn = document.getElementById('dpOkBtn');
-  function fmt(d){ return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'}); }
-  function fmts(d){ return d.toLocaleDateString('tr',{day:'numeric',month:'short'}); }
-  if(_dp.from && _dp.to){
-    if(info) info.textContent = fmts(_dp.from)+' – '+fmt(_dp.to);
-    if(btn){ btn.disabled=false; btn.style.opacity='1'; }
-  } else if(_dp.from){
-    if(info) info.textContent = fmt(_dp.from)+' – ...';
-    if(btn){ btn.disabled=true; btn.style.opacity='.45'; }
-  } else {
-    if(info) info.textContent = 'Tarih seçin';
-    if(btn){ btn.disabled=true; btn.style.opacity='.45'; }
-  }
-}
-
-function dpApply(){
-  if(!_dp.from || !_dp.to) return;
-  function fmt(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-  document.getElementById('mFrom').value = fmt(_dp.from);
-  document.getElementById('mTo').value   = fmt(_dp.to);
-  document.getElementById('mPreset').value = 'custom';
-  function fmts(d){ return d.toLocaleDateString('tr',{day:'numeric',month:'short'}); }
-  function fmtl(d){ return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'}); }
-  document.getElementById('dpLabel').textContent = fmts(_dp.from)+' – '+fmtl(_dp.to);
-  closeDP();
-  mLoad();
-}
-
+// getDP - IIFE içinden erişilebilir
 function getDP(){
   var preset = document.getElementById('mPreset').value;
   if(preset !== 'custom') return {date_preset: preset};
@@ -1212,4 +1037,161 @@ if(window._isConnected){
 }
 
 })();
+
+// ── Date Picker — GLOBAL SCOPE ────────────────────────────────────────
+// HTML onclick= doğrudan erişebilsin diye global'de tanımlı
+var _dp = {
+  M: ['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+  D: ['Pzt','Sal','Çrş','Prş','Cum','Cts','Paz'],
+  cal: [{y:0,m:0},{y:0,m:0}],
+  from: null, to: null, hov: null, step: 0
+};
+
+function _dpInit(){
+  var n = new Date();
+  var m0 = n.getMonth()-1, y0 = n.getFullYear();
+  if(m0<0){m0=11;y0--;}
+  _dp.cal[0]={y:y0,m:m0};
+  _dp.cal[1]={y:n.getFullYear(),m:n.getMonth()};
+  _dpRB();
+}
+
+function toggleDP(){
+  var pop=document.getElementById('dpPopup');
+  if(!pop)return;
+  if(pop.classList.contains('open')){closeDP();return;}
+  _dpInit();
+  pop.classList.add('open');
+  setTimeout(function(){document.addEventListener('mousedown',_dpOut);},10);
+}
+
+function closeDP(){
+  var pop=document.getElementById('dpPopup');
+  if(pop)pop.classList.remove('open');
+  document.removeEventListener('mousedown',_dpOut);
+}
+
+function _dpOut(e){
+  var w=document.getElementById('dpWrap');
+  if(w&&!w.contains(e.target))closeDP();
+}
+
+function dpPickP(val,label){
+  document.querySelectorAll('input[name="dpR"]').forEach(function(r){
+    r.checked=(r.value===val||r.value===val+'_2');
+  });
+  if(val!=='custom'){
+    document.getElementById('mPreset').value=val;
+    document.getElementById('mFrom').value='';
+    document.getElementById('mTo').value='';
+    document.getElementById('dpLabel').textContent=label;
+    closeDP();
+    if(typeof window.mLoad==='function')window.mLoad();
+  } else {
+    _dp.from=null;_dp.to=null;_dp.hov=null;_dp.step=0;
+    _dpRB();_dpUF();
+    var btn=document.getElementById('dpOkBtn');
+    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+  }
+}
+
+function dpNav(dir){
+  _dp.cal[0].m+=dir;_dp.cal[1].m+=dir;
+  [0,1].forEach(function(i){
+    if(_dp.cal[i].m>11){_dp.cal[i].m=0;_dp.cal[i].y++;}
+    if(_dp.cal[i].m<0){_dp.cal[i].m=11;_dp.cal[i].y--;}
+  });
+  _dpRB();
+}
+
+function dpGoTo(ci,m,y){
+  _dp.cal[ci]={m:m,y:y};
+  if(ci===0&&(y>_dp.cal[1].y||(y===_dp.cal[1].y&&m>=_dp.cal[1].m)))
+    _dp.cal[1]={m:m===11?0:m+1,y:m===11?y+1:y};
+  if(ci===1&&(y<_dp.cal[0].y||(y===_dp.cal[0].y&&m<=_dp.cal[0].m)))
+    _dp.cal[0]={m:m===0?11:m-1,y:m===0?y-1:y};
+  _dpRB();
+}
+
+function _dpRB(){_dpRC(0);_dpRC(1);_dpFD(0);_dpFD(1);}
+
+function _dpFD(i){
+  var s=i===0?'1':'2',cal=_dp.cal[i];
+  var mEl=document.getElementById('dpM'+s),yEl=document.getElementById('dpY'+s);
+  if(!mEl||!yEl)return;
+  mEl.innerHTML=_dp.M.map(function(m,idx){
+    return '<option value="'+idx+'"'+(idx===cal.m?' selected':'')+'>'+m+'</option>';
+  }).join('');
+  var h='';
+  for(var y=cal.y-5;y<=cal.y+1;y++)h+='<option value="'+y+'"'+(y===cal.y?' selected':'')+'>'+y+'</option>';
+  yEl.innerHTML=h;
+}
+
+function _dpRC(ci){
+  var s=ci===0?'1':'2';
+  var grid=document.getElementById('dpG'+s);
+  if(!grid)return;
+  var cal=_dp.cal[ci];
+  var today=new Date();today.setHours(0,0,0,0);
+  var fd=new Date(cal.y,cal.m,1);
+  var sdow=(fd.getDay()+6)%7;
+  var dim=new Date(cal.y,cal.m+1,0).getDate();
+  var h=_dp.D.map(function(d){return '<div class="dp-dh">'+d+'</div>';}).join('');
+  for(var i=0;i<sdow;i++)h+='<div class="dp-d dp-empty"></div>';
+  for(var d=1;d<=dim;d++){
+    var date=new Date(cal.y,cal.m,d),ts=date.getTime(),cls=['dp-d'];
+    if(date>today)cls.push('dp-dis');
+    if(date.getTime()===today.getTime())cls.push('dp-today');
+    var fr=_dp.from,to=_dp.to||_dp.hov;
+    if(fr&&to){
+      var lo=fr<to?fr:to,hi=fr<to?to:fr;
+      if(ts===lo.getTime()&&ts===hi.getTime())cls.push('dp-sel');
+      else if(ts===lo.getTime())cls.push(fr<=to?'dp-rs':'dp-re');
+      else if(ts===hi.getTime())cls.push(fr<=to?'dp-re':'dp-rs');
+      else if(date>lo&&date<hi)cls.push('dp-in-r');
+    }else if(fr&&ts===fr.getTime())cls.push('dp-sel');
+    var dis=date>today;
+    h+='<div class="'+cls.join(' ')+'"'+(dis?'':' onmouseenter="dpHov('+ts+')" onmouseleave="dpHov(null)" onclick="dpClick('+ts+')"')+'>'+d+'</div>';
+  }
+  grid.innerHTML=h;
+}
+
+function dpHov(ts){if(_dp.step!==1)return;_dp.hov=ts?new Date(ts):null;_dpRB();}
+
+function dpClick(ts){
+  var d=new Date(ts),t=new Date();t.setHours(0,0,0,0);
+  if(d>t)return;
+  if(_dp.step===0||_dp.step===2){_dp.from=d;_dp.to=null;_dp.hov=null;_dp.step=1;}
+  else{_dp.to=d;_dp.hov=null;_dp.step=2;if(_dp.from>_dp.to){var tmp=_dp.from;_dp.from=_dp.to;_dp.to=tmp;}}
+  _dpRB();_dpUF();
+}
+
+function _dpUF(){
+  var info=document.getElementById('dpInfo'),btn=document.getElementById('dpOkBtn');
+  function fmt(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  if(_dp.from&&_dp.to){
+    if(info)info.textContent=fmts(_dp.from)+' – '+fmt(_dp.to);
+    if(btn){btn.disabled=false;btn.style.opacity='1';}
+  }else if(_dp.from){
+    if(info)info.textContent=fmt(_dp.from)+' – ...';
+    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+  }else{
+    if(info)info.textContent='Tarih seçin';
+    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+  }
+}
+
+function dpApply(){
+  if(!_dp.from||!_dp.to)return;
+  function fmt(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  document.getElementById('mFrom').value=fmt(_dp.from);
+  document.getElementById('mTo').value=fmt(_dp.to);
+  document.getElementById('mPreset').value='custom';
+  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  function fmtl(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  document.getElementById('dpLabel').textContent=fmts(_dp.from)+' – '+fmtl(_dp.to);
+  closeDP();
+  if(typeof window.mLoad==='function')window.mLoad();
+}
 </script>
