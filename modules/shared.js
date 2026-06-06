@@ -272,3 +272,4 @@ console.log('✓ Madmext shared.js yüklendi');
     }
   } catch(e) {}
 })();
+
