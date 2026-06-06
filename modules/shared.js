@@ -24,8 +24,10 @@ async function api(ep, params = {}, m = 'GET') {
     const r = await fetch(`${px()}/api`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ endpoint: ep, params, method: m })
     });
+    if(r.status === 401) { window.location.href = '/login'; return null; }
     return await r.json();
   } catch (e) { toast('API Hata: ' + e.message); return null; }
 }
@@ -35,6 +37,7 @@ async function claude(msgs, sys = '') {
     const r = await fetch(`${px()}/claude`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2000, system: sys, messages: msgs })
     });
     const d = await r.json();
@@ -47,6 +50,7 @@ async function ga4(body, type = 'runReport') {
     const r = await fetch(`${px()}/ga4`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ type, body })
     });
     return await r.json();
@@ -56,7 +60,7 @@ async function ga4(body, type = 'runReport') {
 // ── Log (server-side) ──────────────────────────────────────────────────
 async function loadServerLogs() {
   try {
-    const r = await fetch(`${px()}/logs`);
+    const r = await fetch(`${px()}/logs`, {credentials:'include'});
     const d = await r.json();
     MX.budgetLog = d.budgetLog || [];
     MX.taskLog = d.taskLog || [];
@@ -68,7 +72,7 @@ async function loadServerLogs() {
 
 async function saveServerLogs() {
   try {
-    await fetch(`${px()}/logs/save`, {
+    await fetch(`${px()}/logs/save`, {credentials:'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ budgetLog: MX.budgetLog, taskLog: MX.taskLog })
@@ -81,7 +85,7 @@ async function saveServerLogs() {
 
 async function logAction(action) {
   try {
-    await fetch(`${px()}/logs/action`, {
+    await fetch(`${px()}/logs/action`, {credentials:'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(action)
