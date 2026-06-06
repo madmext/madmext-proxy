@@ -127,44 +127,12 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
-.hamburger{display:none;flex-direction:column;gap:4px;cursor:pointer;padding:4px;background:none;border:none}
-.hamburger span{display:block;width:20px;height:2px;background:var(--t);border-radius:2px;transition:all .2s}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200}
-.sidebar-overlay.show{display:block}
-@media(max-width:768px){
-  body{overflow:auto}
-  .app{flex-direction:column;height:auto;min-height:100vh}
-  .sidebar{position:fixed;top:0;left:0;bottom:0;width:240px;z-index:300;transform:translateX(-100%);transition:transform .25s;overflow-y:auto}
-  .sidebar.open{transform:translateX(0)}
-  .main{flex:1;width:100%;overflow:auto}
-  .topbar{padding:8px 12px;position:sticky;top:0;z-index:100;background:var(--s)}
-  .content{padding:12px;overflow-y:auto}
-  .hamburger{display:flex}
-  .conn-input{width:140px;font-size:10px}
-  .chat-layout{grid-template-columns:1fr;height:auto}
-  .chat-side{order:-1}
-  .dash-grid{grid-template-columns:repeat(2,1fr)}
-  .channel-grid{grid-template-columns:1fr}
-  .meta-summary{grid-template-columns:repeat(2,1fr) !important}
-  .meta-tbl-wrap{max-height:60vh}
-}
-@media(max-width:480px){
-  .dash-grid{grid-template-columns:1fr}
-  .meta-summary{grid-template-columns:1fr 1fr !important}
-  .topbar .conn-input{display:none}
-}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo">Madmext <span>Ads</span></div>
-    <div id="sidebarUser" style="font-size:10px;color:var(--m);margin-top:4px;display:none">
-      <span id="sidebarUserName"></span>
-      <span id="sidebarUserRole" style="background:rgba(24,119,242,.15);color:var(--a);border-radius:3px;padding:1px 5px;margin-left:4px;font-size:9px"></span>
-    </div>
-  </div>
+  <div class="sidebar-logo"><div class="logo">Madmext <span>Ads</span></div></div>
   <div class="sidebar-section">Ana Menü</div>
   <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
   <div class="sidebar-section">Reklam</div>
@@ -186,20 +154,13 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="nav-item" onclick="nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Diğer</div>
   <div class="nav-item" onclick="nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
-  <div class="nav-item admin-only" id="navKullanicilar" onclick="nav('kullanicilar',this)" style="display:none"><span class="nav-icon">👥</span><span>Kullanıcılar</span><span class="nav-badge" id="resetBadge" style="display:none">!</span></div>
   <div class="nav-item" onclick="nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
-  <div class="nav-item" id="navLogout" onclick="doLogout()" style="display:none"><span class="nav-icon">🚪</span><span>Çıkış Yap</span></div>
 </div>
 <div class="main">
   <div class="topbar">
-    <div style="display:flex;align-items:center;gap:10px">
-      <button class="hamburger" onclick="toggleSidebar()" aria-label="Menü">
-        <span></span><span></span><span></span>
-      </button>
-      <div>
-        <div class="page-title" id="pageTitle">Dashboard</div>
-        <div class="page-sub" id="pageSub">Genel bakış</div>
-      </div>
+    <div>
+      <div class="page-title" id="pageTitle">Dashboard</div>
+      <div class="page-sub" id="pageSub">Genel bakış</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span class="dot" id="dot"></span>
@@ -211,7 +172,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 </div>
 </div>
 <div id="toast"></div>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <script src="/modules/shared.js"></script>
 <script>
@@ -226,7 +186,6 @@ const PAGES = {
   gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri', module:'gorevler'},
   create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',   module:'create'},
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
-  kullanicilar: {title:'Kullanıcılar',  sub:'Kullanıcı ve yetki yönetimi', module:'kullanicilar'},
 };
 
 window.currentPage = '';
@@ -293,27 +252,25 @@ async function loadModule(page) {
 
     el.innerHTML = tmp.innerHTML;
 
-    // Script'leri sırayla çalıştır
+    // Script'leri senkron çalıştır (eval - listener kayıt garantili)
     scripts.forEach(function(code){
       try {
-        var s = document.createElement('script');
-        s.textContent = code;
-        document.body.appendChild(s);
-      } catch(e){ console.error('Script hatası:', e); }
+        // eval: senkron çalışır, listener hemen kayıt olur
+        // eslint-disable-next-line no-eval
+        (new Function(code))();
+      } catch(e){ 
+        // Fallback: script tag
+        try {
+          var s = document.createElement('script');
+          s.textContent = code;
+          document.body.appendChild(s);
+        } catch(e2){ console.error('Script hatası:', e2); }
+      }
     });
 
-    // Script'ler çalıştıktan sonra bağlıysa event gönder
-    // _isConnected zaten true ise direkt mLoad çağır (event dispatch güvenilir değil)
+    // Scriptler senkron çalıştı, listener kayıt oldu, şimdi event gönder
     if(window._isConnected) {
-      setTimeout(function(){
-        // Önce event dene
-        window.dispatchEvent(new CustomEvent('mx:connected'));
-        // Yedek: mLoad global'sa direkt çağır
-        setTimeout(function(){
-          if(typeof window.mLoad === 'function') window.mLoad();
-          if(typeof window.loadDashboard === 'function') window.loadDashboard();
-        }, 100);
-      }, 300);
+      window.dispatchEvent(new CustomEvent('mx:connected'));
     }
 
   } catch(e) {
@@ -334,61 +291,11 @@ async function createCamp() {
   else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
 }
 
-// ── Mobil Sidebar ──────────────────────────────────────────────
-function toggleSidebar(){
-  document.querySelector('.sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('show');
-}
-function closeSidebar(){
-  document.querySelector('.sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('show');
-}
-
-// ── Auth (opsiyonel - yeni app.py varsa çalışır) ─────────────────
-async function tryLoadAuth(){
-  try{
-    var r = await fetch('/auth/me', {credentials:'include'});
-    if(r.status === 404 || r.status === 405) return; // eski app.py - geç
-    if(r.status === 401){ 
-      // Yeni app.py var, giriş yok → login'e gönder
-      window.location.href = '/login'; 
-      return; 
-    }
-    var u = await r.json();
-    if(u && u.email){
-      var nameEl=document.getElementById('sidebarUserName');
-      var roleEl=document.getElementById('sidebarUserRole');
-      var infoEl=document.getElementById('sidebarUser');
-      var logoutEl=document.getElementById('navLogout');
-      if(nameEl) nameEl.textContent=u.name||u.email;
-      if(roleEl) roleEl.textContent=u.role==='admin'?'Admin':'Kullanıcı';
-      if(infoEl) infoEl.style.display='block';
-      if(logoutEl) logoutEl.style.display='';
-      window._currentUser = u;
-      if(u.role==='admin'){
-        document.querySelectorAll('.admin-only').forEach(function(el){el.style.display='';});
-      }
-    }
-  }catch(e){ /* auth yok, normal devam */ }
-}
-
-async function doLogout(){
-  if(!confirm('Çıkış yapmak istediğinize emin misiniz?')) return;
-  try{ await fetch('/auth/logout',{method:'POST',credentials:'include'}); }catch(e){}
-  window.location.href='/login';
-}
-
-// Nav tıklanınca mobilde kapat
-var _navBase = nav;
-nav = function(page, el){ closeSidebar(); return _navBase(page, el); };
-
-// Init - ESKİ ÇALIŞAN YAPI KORUNDU
+// Init
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
 nav('dashboard', document.querySelector('.nav-item.active'));
 setInterval(updateTaskBadge, 60000);
 setTimeout(connect, 800);
-// Auth opsiyonel olarak yükle (bekleme yok)
-setTimeout(tryLoadAuth, 1000);
 </script>
 </body>
 </html>
