@@ -72,7 +72,8 @@ async function loadServerLogs() {
 
 async function saveServerLogs() {
   try {
-    await fetch(`${px()}/logs/save`, {credentials:'include',
+    await fetch(`${px()}/logs/save`, {
+      credentials: 'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ budgetLog: MX.budgetLog, taskLog: MX.taskLog })
@@ -85,7 +86,8 @@ async function saveServerLogs() {
 
 async function logAction(action) {
   try {
-    await fetch(`${px()}/logs/action`, {credentials:'include',
+    await fetch(`${px()}/logs/action`, {
+      credentials: 'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(action)
