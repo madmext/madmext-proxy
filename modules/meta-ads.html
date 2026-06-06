@@ -145,7 +145,6 @@
       <label class="cpicker-item"><input type="checkbox" checked data-mc="ctr"> TO (CTR)</label>
       <label class="cpicker-item"><input type="checkbox" checked data-mc="cpc"> TBM</label>
       <label class="cpicker-item"><input type="checkbox" data-mc="cart"> Sepete Ekle</label>
-      <label class="cpicker-item"><input type="checkbox" checked data-mc="score"> Hız Skoru</label>
       <div class="cpicker-section">Kalite & Diğer</div>
       <label class="cpicker-item"><input type="checkbox" checked data-mc="quality"> Kalite Skoru</label>
       <label class="cpicker-item"><input type="checkbox" data-mc="lastedit"> Son Düzenleme</label>
@@ -220,7 +219,7 @@ var mPage = 0;
 var M_PAGE = 50;
 var mStatusFilter = 'all';
 var mCurrentLogEntity = null; // geçmişi görüntülenen entity id
-var mCols = new Set(['delivery','budget','results','cpr','spend','revenue','roas','impr','reach','freq','cpm','clicks','ctr','cpc','quality','score']);
+var mCols = new Set(['delivery','budget','results','cpr','spend','revenue','roas','impr','reach','freq','cpm','clicks','ctr','cpc','quality']);
 
 var COLS = [
   {k:'name',     l:'Kampanya / Ad',   fixed:true,  num:false, w:260},
@@ -240,7 +239,6 @@ var COLS = [
   {k:'cpc',      l:'TBM ₺',           fixed:false, num:true,  w:80},
   {k:'cart',     l:'Sepet',           fixed:false, num:true,  w:70},
   {k:'quality',  l:'Kalite',          fixed:false, num:false, w:100},
-  {k:'score',    l:'Hız Skoru',       fixed:false, num:true,  w:90},
   {k:'lastedit', l:'Son Düzenleme',   fixed:false, num:false, w:110},
   {k:'endtime',  l:'Bitiş',           fixed:false, num:false, w:90},
 ];
@@ -668,90 +666,6 @@ window.setStatusFilter=function(val,btn){
   applyAndRender(currentMetaTab, cmpV);
 };
 
-// ── Hız Skoru (Composite Score) ───────────────────────────────────────
-// Formül: ROAS×0.5 + CTR×0.3 + CVR×0.2 → normalize 0-100
-function calcScore(row, allData){
-  if(!allData||!allData.length) return 0;
-  // Referans değerler (filtrelenmiş verinin ortalaması)
-  var avgRoas=0,avgCtr=0,avgCvr=0,n=0;
-  allData.forEach(function(r){
-    if(r.spend>0){
-      avgRoas+=r.roas||0; avgCtr+=r.ctr||0;
-      var cvr=r.impr>0?(r.results/r.impr*100):0;
-      avgCvr+=cvr; n++;
-    }
-  });
-  if(n===0) return 0;
-  avgRoas/=n; avgCtr/=n; avgCvr/=n;
-  var rowRoas=row.roas||0;
-  var rowCtr=row.ctr||0;
-  var rowCvr=row.impr>0?(row.results/row.impr*100):0;
-  var roasScore = avgRoas>0?(rowRoas/avgRoas):0;
-  var ctrScore  = avgCtr>0?(rowCtr/avgCtr):0;
-  var cvrScore  = avgCvr>0?(rowCvr/avgCvr):0;
-  var composite = roasScore*0.5 + ctrScore*0.3 + cvrScore*0.2;
-  return Math.min(100, Math.round(composite*50)); // 50 = avg=50 skoru
-}
-
-function scoreColor(s){
-  if(s>=70) return 'var(--g)';
-  if(s>=40) return 'var(--y)';
-  return 'var(--r)';
-}
-
-// ── Kampanya Notları ───────────────────────────────────────────────────
-var NOTES_KEY='mx_campaign_notes';
-function getNotes(){try{return JSON.parse(localStorage.getItem(NOTES_KEY)||'{}');}catch(e){return {};}}
-function saveNote(id,text){var n=getNotes();if(text)n[id]=text;else delete n[id];localStorage.setItem(NOTES_KEY,JSON.stringify(n));}
-
-window.showNoteModal=function(id,name){
-  var notes=getNotes();
-  var current=notes[id]||'';
-  var html='<div class="moverlay" id="noteModal" style="display:flex" onclick="if(event.target===this)this.remove()">'
-    +'<div class="modal" style="max-width:440px;width:95%">'
-    +'<h3>📝 '+name.slice(0,40)+'</h3>'
-    +'<textarea id="noteTA" style="width:100%;background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:10px;font-family:Inter,sans-serif;font-size:13px;border-radius:6px;resize:vertical;min-height:100px;margin-bottom:12px">'+current+'</textarea>'
-    +'<div class="mbtns">'
-    +'<button class="btn sec" onclick="document.getElementById('noteModal').remove()">İptal</button>'
-    +'<button class="btn dng sm" onclick="saveNote(''+id+'','');document.getElementById('noteModal').remove();mRender(currentMetaTab)" style="'+(current?'':'display:none')+'">🗑 Sil</button>'
-    +'<button class="btn grn" onclick="saveNote(''+id+'',document.getElementById('noteTA').value);document.getElementById('noteModal').remove();mRender(currentMetaTab);toast('Not kaydedildi ✓')">Kaydet</button>'
-    +'</div></div></div>';
-  document.body.insertAdjacentHTML('beforeend',html);
-};
-
-// ── Anlık Bildirim Sistemi ─────────────────────────────────────────────
-var ALERT_KEY='mx_alert_settings';
-function getAlertSettings(){
-  try{return JSON.parse(localStorage.getItem(ALERT_KEY)||'null');}catch(e){return null;}
-}
-function checkThresholds(data){
-  var settings=getAlertSettings();
-  if(!settings||!settings.enabled) return;
-  var alerts=[];
-  var roasThreshold=parseFloat(settings.minRoas||2);
-  var spendThreshold=parseFloat(settings.maxSpendDaily||0);
-  data.forEach(function(r){
-    if(r.spend<=0) return;
-    var es=(r.effectiveStatus||'').toUpperCase();
-    if(es!=='ACTIVE'&&es!=='LEARNING') return;
-    if(r.roas>0 && r.roas<roasThreshold){
-      alerts.push('⚠ '+r.name.slice(0,30)+': ROAS '+r.roas.toFixed(2)+'x (eşik: '+roasThreshold+'x)');
-    }
-    if(spendThreshold>0 && r.spend>spendThreshold){
-      alerts.push('💸 '+r.name.slice(0,30)+': Harcama '+r.spend.toFixed(0)+'₺ (eşik: '+spendThreshold+'₺)');
-    }
-  });
-  if(alerts.length){
-    alerts.forEach(function(a){ toast(a); });
-    // Browser notification
-    if(Notification&&Notification.permission==='granted'){
-      new Notification('Madmext Ads Uyarısı',{body:alerts[0],icon:'/favicon.ico'});
-    } else if(Notification&&Notification.permission!=='denied'){
-      Notification.requestPermission();
-    }
-  }
-}
-
 // ── Metrik hesap ──────────────────────────────────────────────────────
 function calcMetrics(data){
   var tS=0,tI=0,tR=0,tC=0,tP=0,tRev=0;
@@ -794,10 +708,6 @@ function mSummary(cur,prev){
 
 function applyAndRender(tab,cmpV,cmpRows){
   var filtered=getFiltered(mData[tab]);
-  // Hız skorunu hesapla
-  filtered.forEach(function(r){ r.score=calcScore(r,filtered); });
-  // Anlık bildirim kontrolü
-  checkThresholds(filtered);
   var cur=calcMetrics(filtered);
   if(cmpRows&&cmpRows.length){
     var filteredIds={};
@@ -857,9 +767,7 @@ function mRenderData(tab,data){
         var warn='';
         if(r.warnings>0)warn+=' <span class="warn-badge">⚠ '+r.warnings+'</span>';
         if(r.errors>0)warn+=' <span class="err-badge">✕ '+r.errors+'</span>';
-        var noteText=getNotes()[r._id];
-        var noteDisp=noteText?'<div style="font-size:9px;color:var(--y);margin-top:2px;white-space:normal;max-width:220px;overflow:hidden;text-overflow:ellipsis">📝 '+noteText.slice(0,60)+'</div>':'';
-        bHTML+='<td><span class="nm" title="'+((v||'').replace(/"/g,''))+'">'+((v||'—').slice(0,45))+'</span>'+warn+noteDisp+'</td>';
+        bHTML+='<td><span class="nm" title="'+((v||'').replace(/"/g,''))+'">'+((v||'—').slice(0,45))+'</span>'+warn+'</td>';
       } else if(c.k==='delivery'){
         bHTML+='<td>'+deliveryCell(r.effectiveStatus)+'</td>';
       } else if(c.k==='budget'){
@@ -890,10 +798,6 @@ function mRenderData(tab,data){
         bHTML+='<td style="font-family:\'DM Mono\',monospace">'+(iv?iv.toLocaleString('tr'):'—')+'</td>';
       } else if(c.k==='quality'){
         bHTML+='<td>'+qualCell(r.qual_org,r.qual_ectr,r.qual_ecvr)+'</td>';
-      } else if(c.k==='score'){
-        var sc=r.score||0;
-        var scBar='<div style="width:'+(sc)+'%;height:4px;background:'+scoreColor(sc)+';border-radius:2px;margin-top:2px"></div>';
-        bHTML+='<td><span style="font-family:'DM Mono',monospace;font-size:11px;color:'+scoreColor(sc)+';font-weight:600">'+sc+'</span>'+scBar+'</td>';
       } else if(c.k==='lastedit'){
         bHTML+='<td style="font-size:10px;color:var(--m)">'+(r.lastEdit||'—')+'</td>';
       } else if(c.k==='endtime'){
@@ -1010,8 +914,7 @@ function mapR(r,camp,adset){
     _id:camp?camp.id:(adset?adset.id:(r.ad_id||r.adset_id||r.campaign_id)),
     _campId:r.campaign_id,
     _budgetId:isCBO?(camp?camp.id:null):(adset?adset.id:null),
-    _budgetType:isCBO?'campaign':'adset',
-    score:0 // sonra hesaplanır
+    _budgetType:isCBO?'campaign':'adset'
   };
 }
 
@@ -1290,20 +1193,13 @@ async function loadMetaAds(){
   var admap={};(ads&&ads.data||[]).forEach(function(a){admap[a.id]=a;});
   MX.adStore=(ads&&ads.data||[]);
   var rows=(ins&&ins.data||[]).map(function(r){
-    // ad_id insights response'unda bazen eksik gelir - farklı field'ları dene
-    var adId = r.ad_id || r['ad.id'] || '';
-    var ad=admap[adId];
+    var ad=admap[r.ad_id];
     var row=mapR(r,null,null);
-    row.name=r.ad_name||r['ad.name']||'—';
-    row._id=adId||('ad_'+Math.random().toString(36).slice(2));
-    if(ad){
-      row.status=ad.status;
-      row.effectiveStatus=ad.effective_status||ad.status;
-      row._id=ad.id;
-    }
+    row.name=r.ad_name||'—';
+    if(ad){row.status=ad.status;row.effectiveStatus=ad.effective_status||ad.status;row._id=ad.id;}
     row._budgetId=null;
     return row;
-  }).filter(function(r){return r.spend>0||r.impr>0;});
+  });
   rows.sort(function(a,b){return b.spend-a.spend;});
   mData.ad=rows;
   var cmpRows=[];
@@ -1317,6 +1213,20 @@ async function loadMetaAds(){
   applyAndRender('ad',cmpV,cmpRows);
 }
 
-if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
+// Bağlantı kontrolü - çoklu strateji
+if(window._isConnected){
+  loadMetaCamp();
+} else {
+  window.addEventListener('mx:connected',function _mi(){
+    window.removeEventListener('mx:connected',_mi);
+    loadMetaCamp();
+  });
+}
+// Global erişim için mLoad'u expose et (index.html fallback için)
+window.mLoad = function(){
+  if(currentMetaTab==='camp') loadMetaCamp();
+  else if(currentMetaTab==='adset') loadMetaAdsets();
+  else loadMetaAds();
+};
 })();
 </script>
