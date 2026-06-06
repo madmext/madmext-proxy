@@ -60,9 +60,10 @@
 
 /* Date picker */
 .dp-wrap{position:relative}
-.dp-btn{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 12px;font-family:'Inter',sans-serif;font-size:12px;font-weight:500;border-radius:6px;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.dp-btn:hover{border-color:var(--a);background:var(--b)}
-.dp-popup{display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:600;background:#18191b;border:1px solid var(--b);border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.85);min-width:680px}
+.dp-btn{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 12px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border-radius:6px;cursor:pointer;white-space:nowrap;line-height:1.2;user-select:none}
+.dp-btn:hover{border-color:rgba(255,255,255,.3);background:#2a2b2d}
+.dp-btn:active{background:#222}
+.dp-popup{display:none;position:fixed;z-index:9999;background:#18191b;border:1px solid var(--b);border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.9);min-width:680px}
 .dp-popup.open{display:flex;flex-direction:column}
 .dp-body{display:flex}
 .dp-left{width:185px;flex-shrink:0;padding:8px 0;border-right:1px solid var(--b);overflow-y:auto;max-height:400px}
@@ -132,7 +133,9 @@
   <!-- Tarih seçici - sağ üst -->
   <div class="dp-wrap" id="dpWrap">
     <button class="dp-btn" id="dpTrigger" onclick="toggleDP()">
-      📅 <span id="dpLabel">Son 7 gün</span> ▾
+      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" style="flex-shrink:0;opacity:.8"><g clip-path="url(#dpcal)"><path d="M12.517 2.047h-.564v-.762a.764.764 0 0 0-.762-.762.764.764 0 0 0-.762.762v.762H5.858v-.762a.764.764 0 0 0-.762-.762.764.764 0 0 0-.762.762v.762h-.549a2.263 2.263 0 0 0-2.27 2.035 43.35 43.35 0 0 0 0 8.891 2.268 2.268 0 0 0 2.27 2.034h8.709a2.277 2.277 0 0 0 2.278-2.05c.305-3.146.312-6.133.015-8.89-.122-1.151-1.097-2.012-2.27-2.012v-.008zM3.03 4.234a.758.758 0 0 1 .754-.663h8.732c.38 0 .716.29.754.655.053.534.091 1.082.13 1.63H2.908c.03-.54.068-1.081.122-1.622zm2.064 9.242h-1.31a.753.753 0 0 1-.754-.663 38.75 38.75 0 0 1-.122-1.623h2.194v2.286h-.008zm0-3.81H2.84a38.099 38.099 0 0 1 0-2.285h2.256v2.285zm4.572 3.81H6.62V11.19h3.048v2.286zm0-3.81H6.62V7.381h3.048v2.285zm3.581 3.14a.767.767 0 0 1-.762.67h-1.303V11.19h2.18c-.039.533-.07 1.067-.123 1.615h.008zm.19-3.14h-2.247V7.381h2.263c.015.746.015 1.508-.016 2.285z"></path></g><defs><clipPath id="dpcal"><path d="M0 0H16V16H0z"></path></clipPath></defs></svg>
+      <span id="dpLabel">Son 7 gün</span>
+      <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" style="flex-shrink:0;opacity:.7"><path d="M12 6a.667.667 0 0 1 .49 1.12l-4 4.332a.667.667 0 0 1-.98 0l-4-4.333A.667.667 0 0 1 4 6h8z"></path></svg>
     </button>
     <div class="dp-popup" id="dpPopup">
       <div class="dp-body">
@@ -1061,6 +1064,15 @@ function toggleDP(){
   if(!pop)return;
   if(pop.classList.contains('open')){closeDP();return;}
   _dpInit();
+  // Butonun konumuna göre popup'ı yerleştir
+  var btn=document.getElementById('dpTrigger');
+  var rect=btn.getBoundingClientRect();
+  var pw=680; // popup min-width
+  // Sağdan taşıyorsa sola kaydır
+  var left=rect.right-pw;
+  if(left<8)left=8;
+  pop.style.top=(rect.bottom+6)+'px';
+  pop.style.left=left+'px';
   pop.classList.add('open');
   setTimeout(function(){document.addEventListener('mousedown',_dpOut);},10);
 }
