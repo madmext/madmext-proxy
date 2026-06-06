@@ -338,9 +338,15 @@ async function createCamp() {
 async function checkAuth(){
   try{
     var r = await fetch('/auth/me',{credentials:'include'});
+    // 404 = eski app.py (auth yok) — geçici olarak geç
+    if(r.status===404){ 
+      console.log('Auth endpoint yok, devam ediliyor...');
+      return true; 
+    }
     if(r.status===401){ window.location.href='/login'; return false; }
     var u = await r.json();
-    if(u.error){ window.location.href='/login'; return false; }
+    if(u.error && u.error !== 'Giriş yapılmamış'){ window.location.href='/login'; return false; }
+    if(!u.email){ return true; } // auth yok, geç
     // Kullanıcı bilgisini göster
     var nameEl=document.getElementById('sidebarUserName');
     var roleEl=document.getElementById('sidebarUserRole');
@@ -400,7 +406,9 @@ window.nav = function(page, el){
 checkAuth().then(function(ok){
   if(!ok) return;
   document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
-  nav('dashboard', document.querySelector('.nav-item.active'));
+  var startPage = 'dashboard';
+  var activeEl = document.querySelector('.nav-item.active');
+  nav(startPage, activeEl);
   setInterval(updateTaskBadge, 60000);
   setTimeout(connect, 800);
 });
