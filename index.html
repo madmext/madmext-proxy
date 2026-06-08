@@ -540,5 +540,214 @@ function dpApply(){
   else if(typeof window.mLoad==='function')window.mLoad();
 }
 </script>
+
+<!-- DASHBOARD DATE PICKER - Global, dashboard modülü için -->
+<div id="ddpPopup" style="display:none">
+  <div class="dp-body">
+    <div class="dp-left">
+      <div class="dp-sec-lbl">Yakınlarda kullanılanlar</div>
+      <div class="dp-ri" onclick="ddpPickP('last_7d','Son 7 gün')"><input type="radio" name="ddpR" value="last_7d" checked><span>Son 7 gün</span></div>
+      <div class="dp-sec-lbl">Ön ayarlar</div>
+      <div class="dp-ri" onclick="ddpPickP('today','Bugün')"><input type="radio" name="ddpR" value="today"><span>Bugün</span></div>
+      <div class="dp-ri" onclick="ddpPickP('yesterday','Dün')"><input type="radio" name="ddpR" value="yesterday"><span>Dün</span></div>
+      <div class="dp-ri" onclick="ddpPickP('last_3d','Son 3 gün')"><input type="radio" name="ddpR" value="last_3d"><span>Son 3 gün</span></div>
+      <div class="dp-ri" onclick="ddpPickP('last_7d','Son 7 gün')"><input type="radio" name="ddpR" value="last_7d_2"><span>Son 7 gün</span></div>
+      <div class="dp-ri" onclick="ddpPickP('last_14d','Son 14 gün')"><input type="radio" name="ddpR" value="last_14d"><span>Son 14 gün</span></div>
+      <div class="dp-ri" onclick="ddpPickP('last_30d','Son 30 gün')"><input type="radio" name="ddpR" value="last_30d"><span>Son 30 gün</span></div>
+      <div class="dp-ri" onclick="ddpPickP('this_month','Bu ay')"><input type="radio" name="ddpR" value="this_month"><span>Bu ay</span></div>
+      <div class="dp-ri" onclick="ddpPickP('last_month','Geçen ay')"><input type="radio" name="ddpR" value="last_month"><span>Geçen ay</span></div>
+      <div class="dp-ri" onclick="ddpPickP('custom','Özel')"><input type="radio" name="ddpR" value="custom"><span>Özel</span></div>
+    </div>
+    <div class="dp-right">
+      <div class="dp-cals">
+        <div class="dp-cal">
+          <div class="dp-cal-hdr">
+            <button class="dp-nav" onclick="ddpNav(-1)">&#8249;</button>
+            <div style="display:flex;gap:4px">
+              <select class="dp-cal-sel" id="ddpM1" onchange="ddpGoTo(0,+this.value,+document.getElementById('ddpY1').value)"></select>
+              <select class="dp-cal-sel" id="ddpY1" onchange="ddpGoTo(0,+document.getElementById('ddpM1').value,+this.value)"></select>
+            </div>
+            <div style="width:24px"></div>
+          </div>
+          <div class="dp-grid" id="ddpG1"></div>
+        </div>
+        <div class="dp-cal">
+          <div class="dp-cal-hdr">
+            <div style="width:24px"></div>
+            <div style="display:flex;gap:4px">
+              <select class="dp-cal-sel" id="ddpM2" onchange="ddpGoTo(1,+this.value,+document.getElementById('ddpY2').value)"></select>
+              <select class="dp-cal-sel" id="ddpY2" onchange="ddpGoTo(1,+document.getElementById('ddpM2').value,+this.value)"></select>
+            </div>
+            <button class="dp-nav" onclick="ddpNav(+1)">&#8250;</button>
+          </div>
+          <div class="dp-grid" id="ddpG2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="dp-footer">
+    <div class="dp-fi" id="ddpInfo">Tarih seçin</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span style="font-size:10px;color:#8a8d91">Belgrad Saati</span>
+      <button onclick="closeDDP()" style="background:#242526;border:1px solid #3a3b3c;color:#e4e6eb;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px">İptal</button>
+      <button id="ddpOkBtn" onclick="ddpApply()" disabled style="background:#1877f2;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;opacity:.45">Güncelle</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// DASHBOARD DATE PICKER - Global scope
+var _ddp={
+  M:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
+  D:['Pzt','Sal','Çrş','Prş','Cum','Cts','Paz'],
+  cal:[{y:0,m:0},{y:0,m:0}],
+  from:null,to:null,hov:null,step:0
+};
+
+function toggleDDP(){
+  var pop=document.getElementById('ddpPopup');
+  if(!pop)return;
+  if(pop.style.display==='flex'){closeDDP();return;}
+  var n=new Date(),m0=n.getMonth()-1,y0=n.getFullYear();
+  if(m0<0){m0=11;y0--;}
+  _ddp.cal[0]={y:y0,m:m0};
+  _ddp.cal[1]={y:n.getFullYear(),m:n.getMonth()};
+  _ddpRB();
+  var btn=document.getElementById('ddpTrigger');
+  if(!btn)return;
+  var rect=btn.getBoundingClientRect();
+  var pw=Math.min(680,window.innerWidth-16);
+  var left=rect.right-pw;
+  if(left<8)left=8;
+  pop.style.cssText='display:flex;flex-direction:column;position:fixed;top:'+(rect.bottom+4)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999;background:#18191b;border:1px solid #2d2e30;border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.9)';
+  setTimeout(function(){document.addEventListener('mousedown',_ddpOut);},10);
+}
+
+function closeDDP(){
+  var pop=document.getElementById('ddpPopup');
+  if(pop)pop.style.display='none';
+  document.removeEventListener('mousedown',_ddpOut);
+}
+
+function _ddpOut(e){
+  var pop=document.getElementById('ddpPopup');
+  var btn=document.getElementById('ddpTrigger');
+  if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDDP();
+}
+
+function ddpPickP(val,label){
+  document.querySelectorAll('input[name="ddpR"]').forEach(function(r){r.checked=(r.value===val||r.value===val+'_2');});
+  if(val!=='custom'){
+    var pi=document.getElementById('dashPreset');if(pi)pi.value=val;
+    var fi=document.getElementById('dashFrom');if(fi)fi.value='';
+    var ti=document.getElementById('dashTo');if(ti)ti.value='';
+    var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=label;
+    closeDDP();
+    if(typeof loadDashboard==='function')loadDashboard();
+    else if(typeof window.loadDashboard==='function')window.loadDashboard();
+  } else {
+    _ddp.from=null;_ddp.to=null;_ddp.hov=null;_ddp.step=0;
+    _ddpRB();_ddpUF();
+    var b=document.getElementById('ddpOkBtn');
+    if(b){b.disabled=true;b.style.opacity='.45';}
+  }
+}
+
+function ddpNav(dir){
+  [0,1].forEach(function(i){
+    _ddp.cal[i].m+=dir;
+    if(_ddp.cal[i].m>11){_ddp.cal[i].m=0;_ddp.cal[i].y++;}
+    if(_ddp.cal[i].m<0){_ddp.cal[i].m=11;_ddp.cal[i].y--;}
+  });
+  _ddpRB();
+}
+
+function ddpGoTo(ci,m,y){
+  _ddp.cal[ci]={m:m,y:y};
+  if(ci===0&&(y>_ddp.cal[1].y||(y===_ddp.cal[1].y&&m>=_ddp.cal[1].m)))_ddp.cal[1]={m:m===11?0:m+1,y:m===11?y+1:y};
+  if(ci===1&&(y<_ddp.cal[0].y||(y===_ddp.cal[0].y&&m<=_ddp.cal[0].m)))_ddp.cal[0]={m:m===0?11:m-1,y:m===0?y-1:y};
+  _ddpRB();
+}
+
+function _ddpRB(){_ddpRC(0);_ddpRC(1);_ddpFD(0);_ddpFD(1);}
+
+function _ddpFD(i){
+  var s=i===0?'1':'2',cal=_ddp.cal[i];
+  var mEl=document.getElementById('ddpM'+s),yEl=document.getElementById('ddpY'+s);
+  if(!mEl||!yEl)return;
+  mEl.innerHTML=_ddp.M.map(function(m,idx){return '<option value="'+idx+'"'+(idx===cal.m?' selected':'')+'>'+m+'</option>';}).join('');
+  var h='';for(var y=cal.y-5;y<=cal.y+1;y++)h+='<option value="'+y+'"'+(y===cal.y?' selected':'')+'>'+y+'</option>';
+  yEl.innerHTML=h;
+}
+
+function _ddpRC(ci){
+  var s=ci===0?'1':'2',grid=document.getElementById('ddpG'+s);
+  if(!grid)return;
+  var cal=_ddp.cal[ci],today=new Date();today.setHours(0,0,0,0);
+  var fd=new Date(cal.y,cal.m,1),sdow=(fd.getDay()+6)%7,dim=new Date(cal.y,cal.m+1,0).getDate();
+  var h=_ddp.D.map(function(d){return '<div class="dp-dh">'+d+'</div>';}).join('');
+  for(var i=0;i<sdow;i++)h+='<div class="dp-d dp-empty"></div>';
+  for(var d=1;d<=dim;d++){
+    var date=new Date(cal.y,cal.m,d),ts=date.getTime(),cls=['dp-d'];
+    if(date>today)cls.push('dp-dis');
+    if(date.getTime()===today.getTime())cls.push('dp-today');
+    var fr=_ddp.from,to=_ddp.to||_ddp.hov;
+    if(fr&&to){
+      var lo=fr<to?fr:to,hi=fr<to?to:fr;
+      if(ts===lo.getTime()&&ts===hi.getTime())cls.push('dp-sel');
+      else if(ts===lo.getTime())cls.push(fr<=to?'dp-rs':'dp-re');
+      else if(ts===hi.getTime())cls.push(fr<=to?'dp-re':'dp-rs');
+      else if(date>lo&&date<hi)cls.push('dp-in-r');
+    }else if(fr&&ts===fr.getTime())cls.push('dp-sel');
+    var dis=date>today;
+    h+='<div class="'+cls.join(' ')+'"'+(dis?'':' onmouseenter="ddpHov('+ts+')" onmouseleave="ddpHov(null)" onclick="ddpClick('+ts+')"')+'>'+d+'</div>';
+  }
+  grid.innerHTML=h;
+}
+
+function ddpHov(ts){if(_ddp.step!==1)return;_ddp.hov=ts?new Date(ts):null;_ddpRB();}
+
+function ddpClick(ts){
+  var d=new Date(ts),t=new Date();t.setHours(0,0,0,0);
+  if(d>t)return;
+  if(_ddp.step===0||_ddp.step===2){_ddp.from=d;_ddp.to=null;_ddp.hov=null;_ddp.step=1;}
+  else{_ddp.to=d;_ddp.hov=null;_ddp.step=2;if(_ddp.from>_ddp.to){var tmp=_ddp.from;_ddp.from=_ddp.to;_ddp.to=tmp;}}
+  _ddpRB();_ddpUF();
+}
+
+function _ddpUF(){
+  var info=document.getElementById('ddpInfo'),btn=document.getElementById('ddpOkBtn');
+  function fmt(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  if(_ddp.from&&_ddp.to){
+    if(info)info.textContent=fmts(_ddp.from)+' – '+fmt(_ddp.to);
+    if(btn){btn.disabled=false;btn.style.opacity='1';}
+  }else if(_ddp.from){
+    if(info)info.textContent=fmt(_ddp.from)+' – ...';
+    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+  }else{
+    if(info)info.textContent='Tarih seçin';
+    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+  }
+}
+
+function ddpApply(){
+  if(!_ddp.from||!_ddp.to)return;
+  function pad(n){return String(n).padStart(2,'0');}
+  function fmt(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  var fi=document.getElementById('dashFrom'),ti=document.getElementById('dashTo'),pi=document.getElementById('dashPreset');
+  if(fi)fi.value=fmt(_ddp.from);
+  if(ti)ti.value=fmt(_ddp.to);
+  if(pi)pi.value='custom';
+  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  function fmtl(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  var lbl=document.getElementById('ddpLabel');
+  if(lbl)lbl.textContent=fmts(_ddp.from)+' – '+fmtl(_ddp.to);
+  closeDDP();
+  if(typeof loadDashboard==='function')loadDashboard();
+  else if(typeof window.loadDashboard==='function')window.loadDashboard();
+}
+</script>
+
 </body>
 </html>
