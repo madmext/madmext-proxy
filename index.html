@@ -127,6 +127,22 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
+/* Mobil */
+@media(max-width:768px){
+  body{overflow:auto}
+  .app{flex-direction:column;height:auto;min-height:100vh}
+  .sidebar{display:none}
+  .main{flex:1}
+  .topbar{padding:8px 12px}
+  .conn-input{width:140px;font-size:10px}
+  .content{padding:12px}
+  #mobileNav{display:flex!important}
+}
+#mobileNav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s);border-top:1px solid var(--b);z-index:1000;padding:6px 0 env(safe-area-inset-bottom,6px)}
+.mnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;color:var(--m);font-size:9px;transition:color .15s}
+.mnav-item.active{color:var(--a)}
+.mnav-item span:first-child{font-size:18px}
+.role-locked{opacity:.35;cursor:not-allowed!important;pointer-events:none}
 </style>
 </head>
 <body>
@@ -167,12 +183,38 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
       <span class="dot" id="dot"></span>
       <input type="text" class="conn-input" id="proxyUrl" placeholder="Railway URL...">
       <button class="btn sm" onclick="connect()">Bağlan</button>
+      <div id="userInfo" style="display:none;align-items:center;gap:8px;padding-left:8px;border-left:1px solid var(--b)">
+        <div>
+          <div style="font-size:12px;font-weight:600;color:var(--t)" id="topUserName"></div>
+          <div style="font-size:10px;color:var(--m)" id="topUserRole"></div>
+        </div>
+        <button class="btn sm sec" onclick="doLogout()" style="white-space:nowrap">⬠ Çıkış</button>
+      </div>
     </div>
   </div>
   <div class="content" id="mainContent"><div class="module-loading">Yükleniyor...</div></div>
 </div>
 </div>
 <div id="toast"></div>
+
+<!-- Mobil Alt Navigasyon -->
+<div id="mobileNav">
+  <div class="mnav-item active" id="mn-dashboard" onclick="nav('dashboard',null);setMobileActive('mn-dashboard')">
+    <span>🏠</span><span>Ana Sayfa</span>
+  </div>
+  <div class="mnav-item" id="mn-meta" onclick="nav('meta-ads',null);setMobileActive('mn-meta')">
+    <span>📢</span><span>Meta Ads</span>
+  </div>
+  <div class="mnav-item" id="mn-raporlar" onclick="nav('raporlar',null);setMobileActive('mn-raporlar')">
+    <span>📊</span><span>Raporlar</span>
+  </div>
+  <div class="mnav-item" id="mn-gorevler" onclick="nav('gorevler',null);setMobileActive('mn-gorevler')">
+    <span>⏰</span><span>Görevler</span>
+  </div>
+  <div class="mnav-item" id="mn-ayarlar" onclick="nav('ayarlar',null);setMobileActive('mn-ayarlar')">
+    <span>⚙️</span><span>Ayarlar</span>
+  </div>
+</div>
 
 <script src="/modules/shared.js"></script>
 <script>
@@ -204,6 +246,12 @@ var _navBusy = false;
 async function nav(page, el) {
   if(page === window.currentPage) return;
   if(_navBusy) return;
+  // Rol kısıtı kontrol
+  if(window._currentUser && !canAccess(page)){
+    toast('Bu sayfaya erişim yetkiniz yok');
+    _navBusy = false;
+    return;
+  }
   _navBusy = true;
 
   // Önceki modülün listener'larını temizle
@@ -286,11 +334,77 @@ async function createCamp() {
   else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
 }
 
-// Init
+// ── Rol sistemi ──────────────────────────────────────────────────────────
+var ROLE_PERMISSIONS = {
+  admin:  ['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler','create','ayarlar','kullanicilar'],
+  editor: ['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler'],
+  viewer: ['dashboard','meta-ads','raporlar']
+};
+
+window._currentUser = null;
+
+async function initUser(){
+  try{
+    var r = await fetch('/auth/me',{credentials:'include'});
+    if(r.status===401){ window.location.href='/login'; return; }
+    var u = await r.json();
+    window._currentUser = u;
+    var info = document.getElementById('userInfo');
+    if(info){
+      info.style.display='flex';
+      document.getElementById('topUserName').textContent = u.name||u.email;
+      var roleLabels = {admin:'👑 Admin', editor:'✏️ Editör', viewer:'👁 Görüntüleyici'};
+      document.getElementById('topUserRole').textContent = roleLabels[u.role]||u.role;
+    }
+    applyRoleRestrictions(u.role);
+  }catch(e){ console.log('Auth check failed:', e); }
+}
+
+function applyRoleRestrictions(role){
+  var allowed = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.viewer;
+  // Sidebar'daki nav item'ları kilitle
+  document.querySelectorAll('.nav-item[onclick]').forEach(function(el){
+    var match = el.getAttribute('onclick').match(/nav\('([^']+)'/);
+    if(match && !allowed.includes(match[1])){
+      el.classList.add('role-locked');
+      el.title = 'Bu sayfaya erişim yetkiniz yok';
+    }
+  });
+  // Admin-only sayfaları gizle
+  if(role !== 'admin'){
+    var adminEl = document.getElementById('navKullanicilar');
+    if(adminEl) adminEl.style.display='none';
+  }
+}
+
+function canAccess(page){
+  var role = (window._currentUser && window._currentUser.role) || 'viewer';
+  var allowed = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.viewer;
+  return allowed.includes(page);
+}
+
+async function doLogout(){
+  await fetch('/auth/logout',{method:'POST',credentials:'include'});
+  window.location.href='/login';
+}
+
+// ── Mobil nav ──────────────────────────────────────────────────────────
+function setMobileActive(id){
+  document.querySelectorAll('.mnav-item').forEach(function(el){ el.classList.remove('active'); });
+  var el = document.getElementById(id);
+  if(el) el.classList.add('active');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
-nav('dashboard', document.querySelector('.nav-item.active'));
-setInterval(updateTaskBadge, 60000);
-setTimeout(connect, 800);
+
+// Önce kullanıcı kontrolü
+initUser().then(function(){
+  var startPage = window._currentUser ? 'dashboard' : 'dashboard';
+  nav(startPage, document.querySelector('.nav-item.active'));
+  setInterval(updateTaskBadge, 60000);
+  setTimeout(connect, 800);
+});
 </script>
 
 <style id="dp-global-styles">
