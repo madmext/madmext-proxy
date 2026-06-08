@@ -277,7 +277,8 @@ function exportExcel(data, cols, title, fname, tot){
   var headers = cols.map(function(c){return c.h;});
 
   // XML satırları oluştur
-  function escXml(v){return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}\n  function cellVal(v, isNum){
+  function escXml(v){return String(v).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');}
+  function cellVal(v, isNum){
     if(isNum && !isNaN(parseFloat(v))){
       return '<c t="n"><v>'+parseFloat(v)+'</v></c>';
     }
@@ -353,7 +354,8 @@ function exportExcel(data, cols, title, fname, tot){
     +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
     +'</Types>';
 
-  // JSZip ile zip oluştur — CDN'den yükle\n  var script = document.createElement('script');
+  // JSZip ile zip oluştur — CDN'den yükle
+  var script = document.createElement('script');
   script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
   script.onload = function(){
     var zip = new JSZip();
@@ -388,8 +390,9 @@ function exportCSV(data, cols, title, fname){
   csv += '# '+title+'\n';
   csv += cols.map(function(c){return '"'+c.h+'"';}).join(',')+'\n';
   csv += data.map(function(r){
-    return cols.map(function(c){return '"'+String(c.f(r)).replace(/"/g,'""')+'"';}).join(',');\n  }).join('
-');\n  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    return cols.map(function(c){return '"'+String(c.f(r)).replace(/"/g,'""')+'"';}).join(',');
+  }).join('\n');
+  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a'); a.href=url; a.download=fname; a.click();
   URL.revokeObjectURL(url);
@@ -452,7 +455,7 @@ function exportWord(data, cols, title, fname, tot){
 
   function cell(v, bold, bg){
     return '<w:tc><w:tcPr>'+(bg?'<w:shd w:val="clear" w:color="auto" w:fill="'+bg+'"/>':'')+'</w:tcPr>'
-      +'<w:p><w:r>'+(bold?'<w:rPr><w:b/></w:rPr>':'')+'<w:t xml:space="preserve">'+v.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</w:t></w:r></w:p></w:tc>';
+      +'<w:p><w:r>'+(bold?'<w:rPr><w:b/></w:rPr>':'')+'<w:t xml:space="preserve">'+v.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>')+'</w:t></w:r></w:p></w:tc>';
   }
   function row(cells, bold, bg){
     return '<w:tr>'+cells.map(function(v){return cell(v,bold,bg);}).join('')+'</w:tr>';
@@ -703,13 +706,15 @@ function mRenderData(tab,data){
     var isActive=es==='ACTIVE';
     bHTML+='<tr>';
     // Toggle — log kaydeder
-    bHTML+='<td><label class="tog"><input type="checkbox"'+(isActive?' checked':'')+' onchange="mToggleWithLog(\''+r._id+'\',\''+((r.name||'').replace(/'/g,"\\'")||'').slice(0,40)+'\',this.checked?\'ACTIVE\':\'PAUSED\',\''+tab+'\')"><span class="tog-track"></span></label></td>';\n    cols.forEach(function(c){
+    bHTML+='<td><label class="tog"><input type="checkbox"'+(isActive?' checked':'')+' onchange="mToggleWithLog(\''+r._id+'\',\''+((r.name||'').replace(/'/g,"\\'")||'').slice(0,40)+'\',this.checked?\'ACTIVE\':\'PAUSED\',\''+tab+'\')"><span class="tog-track"></span></label></td>';
+    cols.forEach(function(c){
       var v=r[c.k];
       if(c.k==='name'){
         var warn='';
         if(r.warnings>0)warn+=' <span class="warn-badge">⚠ '+r.warnings+'</span>';
         if(r.errors>0)warn+=' <span class="err-badge">✕ '+r.errors+'</span>';
-        bHTML+='<td><span class="nm" title="'+((v||'').replace(/"/g,''))+'">'+((v||'—').slice(0,45))+'</span>'+warn+'</td>';\n      } else if(c.k==='delivery'){
+        bHTML+='<td><span class="nm" title="'+((v||'').replace(/"/g,''))+'">'+((v||'—').slice(0,45))+'</span>'+warn+'</td>';
+      } else if(c.k==='delivery'){
         bHTML+='<td>'+deliveryCell(r.effectiveStatus)+'</td>';
       } else if(c.k==='budget'){
         bHTML+='<td><div>'+(r.budgeBadge||'')+'</div><div style="font-family:\'DM Mono\',monospace;font-size:11px">'+(r.budgetAmt||'—')+'</div></td>';
@@ -750,9 +755,11 @@ function mRenderData(tab,data){
     // İşlem butonları: bütçe + geçmiş
     var btns='';
     if(r._budgetId&&r.budgetAmt&&r.budgetAmt!=='—'){
-      btns+='<button class="btn sm yel" title="Bütçe değiştir" onclick="mProposeB(\''+r._budgetId+'\',\''+((r.name||'').replace(/'/g,"\\'").slice(0,30))+'\',\''+r._budgetType+'\',\''+r.budgetAmt+'\',\''+r._id+'\')">₺</button>';\n    }
+      btns+='<button class="btn sm yel" title="Bütçe değiştir" onclick="mProposeB(\''+r._budgetId+'\',\''+((r.name||'').replace(/'/g,"\\'").slice(0,30))+'\',\''+r._budgetType+'\',\''+r.budgetAmt+'\',\''+r._id+'\')">₺</button>';
+    }
     // Geçmiş butonu — her satırda
-    btns+='<button class="btn sm sec" title="Değişiklik geçmişi" onclick="showEntityLog(\''+r._id+'\',\''+((r.name||'').replace(/'/g,"\\'").slice(0,40))+'\')">📋</button>';\n    bHTML+='<td><div style="display:flex;gap:3px">'+btns+'</div></td></tr>';
+    btns+='<button class="btn sm sec" title="Değişiklik geçmişi" onclick="showEntityLog(\''+r._id+'\',\''+((r.name||'').replace(/'/g,"\\'").slice(0,40))+'\')">📋</button>';
+    bHTML+='<td><div style="display:flex;gap:3px">'+btns+'</div></td></tr>';
   });
   document.getElementById('mTB').innerHTML=bHTML;
 
@@ -775,7 +782,8 @@ function mRenderData(tab,data){
   document.getElementById('mTF').innerHTML=fHTML;
 }
 
-// ── Delivery cell (öğrenme badge'i dahil) ─────────────────────────────\nfunction deliveryCell(es){
+// ── Delivery cell (öğrenme badge'i dahil) ─────────────────────────────
+function deliveryCell(es){
   var s=(es||'').toUpperCase();
   if(s==='ACTIVE'){
     return '<span class="status-badge sb-active"><span class="del-dot del-active"></span>Aktif</span>';
@@ -856,12 +864,15 @@ function mapR(r,camp,adset){
   };
 }
 
-// Yayın durumunu çöz - campaigns/adsets endpoint'inden gelen effective_status kullan\n// Meta API: IN_PROCESS=öğrenme, LIMITED=öğrenme sınırlı (campaigns endpoint'inden gelir)
+// Yayın durumunu çöz - campaigns/adsets endpoint'inden gelen effective_status kullan
+// Meta API: IN_PROCESS=öğrenme, LIMITED=öğrenme sınırlı (campaigns endpoint'inden gelir)
 function resolveDeliveryStatus(row, campOrAdset){
   var es=(row.effectiveStatus||'').toUpperCase();
-  // Campaigns/adsets endpoint'inden gelen ek alan: configured_status vs effective_status\n  if(campOrAdset && campOrAdset.effective_status){
+  // Campaigns/adsets endpoint'inden gelen ek alan: configured_status vs effective_status
+  if(campOrAdset && campOrAdset.effective_status){
     var ces=campOrAdset.effective_status.toUpperCase();
-    // IN_PROCESS Meta'nın öğrenme durumu\n    if(ces==='IN_PROCESS') return 'LEARNING';
+    // IN_PROCESS Meta'nın öğrenme durumu
+    if(ces==='IN_PROCESS') return 'LEARNING';
     if(ces==='LIMITED') return 'LEARNING_LIMITED';
   }
   return es;
@@ -1021,11 +1032,7 @@ function drawSparkline(containerId, values, key){
 }
 
 // ── Veri yükle ────────────────────────────────────────────────────────
-window.mLoad=function(){
-  if(currentMetaTab==='camp')loadMetaCamp();
-  else if(currentMetaTab==='adset')loadMetaAdsets();
-  else loadMetaAds();
-};
+// mLoad: IIFE sonunda expose edildi
 
 async function loadMetaCamp(){
   if(!document.getElementById('mTB')) return;
@@ -1045,7 +1052,8 @@ async function loadMetaCamp(){
     if(camp){
       row.status=camp.status;
       row.effectiveStatus=camp.effective_status||camp.status;
-      // delivery_info'dan öğrenme durumunu çöz\n      var resolved=resolveDeliveryStatus(row,camp);
+      // delivery_info'dan öğrenme durumunu çöz
+      var resolved=resolveDeliveryStatus(row,camp);
       if(resolved!==row.effectiveStatus) row.effectiveStatus=resolved;
       row.endTime=camp.end_time?new Date(camp.end_time).toLocaleDateString('tr'):'';
       row.warnings=(camp.recommendations||[]).filter(function(rec){return rec.importance!=='HIGH';}).length;
@@ -1147,14 +1155,9 @@ async function loadMetaAds(){
   applyAndRender('ad',cmpV,cmpRows);
 }
 
-if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
 
 // Global erişim
-window.mLoad = function(){
-  if(currentMetaTab==='camp') loadMetaCamp();
-  else if(currentMetaTab==='adset') loadMetaAdsets();
-  else loadMetaAds();
-};
+
 
 // Durum filtresi
 window.setMF = function(val,btn){
@@ -1176,7 +1179,22 @@ function getDP(){
 }
 function onMPreset(){ mLoad(); }
 
+// Global expose
+window.mLoad = function(){
+  if(currentMetaTab==='camp') loadMetaCamp();
+  else if(currentMetaTab==='adset') loadMetaAdsets();
+  else loadMetaAds();
+};
+window.setMF = function(val,btn){
+  mStatusFilter=val;
+  document.querySelectorAll('.mstatus-btn').forEach(function(b){b.classList.remove('on');});
+  if(btn) btn.classList.add('on');
+  mPage=0;
+  applyAndRender(currentMetaTab,(document.getElementById('mCmp')||{}).value||'');
+};
+window.mToggle = function(cb){
+  var id=cb.dataset.id, name=cb.dataset.name, tab=cb.dataset.tab;
+  window.mToggleWithLog(id, name, cb.checked?'ACTIVE':'PAUSED', tab);
+};
 if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
-})();
-</script>
- 
+})();</script>
