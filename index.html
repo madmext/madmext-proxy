@@ -538,8 +538,8 @@ function dpApply(){
   var lbl=document.getElementById('dpLabel');
   if(lbl)lbl.textContent=fmts(_dp.from)+' – '+fmtl(_dp.to);
   closeDP();
-  if(typeof mLoad==='function')mLoad();
-  else if(typeof window.mLoad==='function')window.mLoad();
+  var fn=typeof window.mLoad==='function'?window.mLoad:(typeof mLoad==='function'?mLoad:null);
+  if(fn)fn();
 }
 </script>
 
@@ -746,8 +746,8 @@ function ddpApply(){
   var lbl=document.getElementById('ddpLabel');
   if(lbl)lbl.textContent=fmts(_ddp.from)+' – '+fmtl(_ddp.to);
   closeDDP();
-  if(typeof loadDashboard==='function')loadDashboard();
-  else if(typeof window.loadDashboard==='function')window.loadDashboard();
+  var dfn=typeof window.loadDashboard==='function'?window.loadDashboard:(typeof loadDashboard==='function'?loadDashboard:null);
+  if(dfn)dfn();
 }
 </script>
 
