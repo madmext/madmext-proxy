@@ -303,9 +303,12 @@ async function loadModule(page) {
     el.innerHTML = tmp.innerHTML;
 
     // Script'leri global scope'ta çalıştır
+    // HTML entity decode gerekli: innerHTML parse ederken &amp; → & yapılmaz
     scripts.forEach(function(code){
       var s = document.createElement('script');
-      s.textContent = code;
+      var tmp = document.createElement('textarea');
+      tmp.innerHTML = code;
+      s.textContent = tmp.value;
       document.body.appendChild(s);
     });
 
