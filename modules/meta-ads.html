@@ -1037,11 +1037,7 @@ function drawSparkline(containerId, values, key){
 }
 
 // ── Veri yükle ────────────────────────────────────────────────────────
-window.mLoad=function(){
-  if(currentMetaTab==='camp')loadMetaCamp();
-  else if(currentMetaTab==='adset')loadMetaAdsets();
-  else loadMetaAds();
-};
+// mLoad IIFE sonunda window'a expose edilecek
 
 async function loadMetaCamp(){
   if(!document.getElementById('mTB')) return;
@@ -1164,36 +1160,22 @@ async function loadMetaAds(){
   applyAndRender('ad',cmpV,cmpRows);
 }
 
-if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
-
-// Global erişim
+// Global expose — HTML onclick="setMF(...)" ve dpPickP → window.mLoad erişebilsin
 window.mLoad = function(){
-  if(currentMetaTab==='camp') loadMetaCamp();
-  else if(currentMetaTab==='adset') loadMetaAdsets();
+  if(currentMetaTab==='camp')loadMetaCamp();
+  else if(currentMetaTab==='adset')loadMetaAdsets();
   else loadMetaAds();
 };
-
-// Durum filtresi
 window.setMF = function(val,btn){
   mStatusFilter=val;
   document.querySelectorAll('.mstatus-btn').forEach(function(b){b.classList.remove('on');});
-  if(btn) btn.classList.add('on');
+  if(btn)btn.classList.add('on');
   mPage=0;
   applyAndRender(currentMetaTab,(document.getElementById('mCmp')||{}).value||'');
 };
 
-// getDP - hidden input'lardan okur (index.html'deki DP tarafından set edilir)
-function getDP(){
-  var v=document.getElementById('mPreset').value;
-  if(v!=='custom') return {date_preset:v};
-  var f=document.getElementById('mFrom').value;
-  var t=document.getElementById('mTo').value;
-  if(f&&t) return {time_range:JSON.stringify({since:f,until:t})};
-  return {date_preset:'last_7d'};
-}
-function onMPreset(){ mLoad(); }
-
 if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
+
 })();
 </script>
  
