@@ -154,6 +154,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="nav-item" onclick="nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Diğer</div>
   <div class="nav-item" onclick="nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
+  <div class="nav-item" onclick="nav('kullanicilar',this)"><span class="nav-icon">👥</span><span>Kullanıcılar</span></div>
   <div class="nav-item" onclick="nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
 </div>
 <div class="main">
@@ -185,6 +186,7 @@ const PAGES = {
   raporlar:     {title:'Raporlar',     sub:'Performans raporları',    module:'raporlar'},
   gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri', module:'gorevler'},
   create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',   module:'create'},
+  kullanicilar: {title:'Kullanıcılar',  sub:'Kullanıcı yönetimi',          module:'kullanicilar'},
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
 };
 
@@ -252,26 +254,19 @@ async function loadModule(page) {
 
     el.innerHTML = tmp.innerHTML;
 
-    // Script'leri senkron çalıştır (eval - listener kayıt garantili)
+    // Script'leri global scope'ta çalıştır
     scripts.forEach(function(code){
-      try {
-        // eval: senkron çalışır, listener hemen kayıt olur
-        // eslint-disable-next-line no-eval
-        (new Function(code))();
-      } catch(e){ 
-        // Fallback: script tag
-        try {
-          var s = document.createElement('script');
-          s.textContent = code;
-          document.body.appendChild(s);
-        } catch(e2){ console.error('Script hatası:', e2); }
-      }
+      var s = document.createElement('script');
+      s.textContent = code;
+      document.body.appendChild(s);
     });
 
-    // Scriptler senkron çalıştı, listener kayıt oldu, şimdi event gönder
-    if(window._isConnected) {
-      window.dispatchEvent(new CustomEvent('mx:connected'));
-    }
+    // Script tag'leri async yüklenir - biraz bekle sonra event gönder
+    setTimeout(function(){
+      if(window._isConnected) {
+        window.dispatchEvent(new CustomEvent('mx:connected'));
+      }
+    }, 50);
 
   } catch(e) {
     el.innerHTML = '<div class="module-loading" style="color:var(--r)">❌ ' + (meta.module) + '.html yüklenemedi: ' + e.message + '</div>';
@@ -435,10 +430,8 @@ function dpPickP(val,label){
     var ti=document.getElementById('mTo');if(ti)ti.value='';
     var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=label;
     closeDP();
-    // mLoad'u bul ve çağır
-    var fn=typeof window.mLoad==='function'?window.mLoad:(typeof mLoad==='function'?mLoad:null);
-    if(fn)fn();
-    else console.warn('mLoad bulunamadı - meta-ads sayfasında mısınız?');
+    if(typeof mLoad==='function')mLoad();
+    else if(typeof window.mLoad==='function')window.mLoad();
   } else {
     _dp.from=null;_dp.to=null;_dp.hov=null;_dp.step=0;
     _dpRB();_dpUF();
@@ -538,8 +531,8 @@ function dpApply(){
   var lbl=document.getElementById('dpLabel');
   if(lbl)lbl.textContent=fmts(_dp.from)+' – '+fmtl(_dp.to);
   closeDP();
-  var fn=typeof window.mLoad==='function'?window.mLoad:(typeof mLoad==='function'?mLoad:null);
-  if(fn)fn();
+  if(typeof mLoad==='function')mLoad();
+  else if(typeof window.mLoad==='function')window.mLoad();
 }
 </script>
 
@@ -645,8 +638,8 @@ function ddpPickP(val,label){
     var ti=document.getElementById('dashTo');if(ti)ti.value='';
     var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=label;
     closeDDP();
-    var dfn=typeof window.loadDashboard==='function'?window.loadDashboard:(typeof loadDashboard==='function'?loadDashboard:null);
-    if(dfn)dfn();
+    if(typeof loadDashboard==='function')loadDashboard();
+    else if(typeof window.loadDashboard==='function')window.loadDashboard();
   } else {
     _ddp.from=null;_ddp.to=null;_ddp.hov=null;_ddp.step=0;
     _ddpRB();_ddpUF();
@@ -746,8 +739,8 @@ function ddpApply(){
   var lbl=document.getElementById('ddpLabel');
   if(lbl)lbl.textContent=fmts(_ddp.from)+' – '+fmtl(_ddp.to);
   closeDDP();
-  var dfn=typeof window.loadDashboard==='function'?window.loadDashboard:(typeof loadDashboard==='function'?loadDashboard:null);
-  if(dfn)dfn();
+  if(typeof loadDashboard==='function')loadDashboard();
+  else if(typeof window.loadDashboard==='function')window.loadDashboard();
 }
 </script>
 
