@@ -1,28 +1,57 @@
-<div class="arow">
+<style>
+.u-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.u-avatar{width:38px;height:38px;border-radius:50%;background:var(--a);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.u-info{flex:1;min-width:0}
+.u-name{font-size:13px;font-weight:600;color:var(--t)}
+.u-email{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
+.u-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.role-select{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:4px 8px;font-size:11px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace}
+.role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Mono',monospace}
+.rb-admin{background:rgba(24,119,242,.15);color:#64b4ff;border:1px solid rgba(24,119,242,.3)}
+.rb-editor{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
+.rb-viewer{background:rgba(138,141,145,.1);color:var(--m);border:1px solid rgba(138,141,145,.2)}
+.perm-list{font-size:10px;color:var(--m);margin-top:3px}
+.role-info-box{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:16px}
+.ri-row{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
+.ri-badge{width:80px;flex-shrink:0}
+.ri-desc{font-size:11px;color:var(--m);line-height:1.6}
+</style>
+
+<div class="arow" style="margin-bottom:16px">
   <button class="btn sm" onclick="loadUsers()">↻ Yenile</button>
   <button class="btn sm grn" onclick="showAddUser()">+ Kullanıcı Ekle</button>
 </div>
 
+<!-- Rol Açıklamaları -->
+<div class="role-info-box" style="margin-bottom:16px">
+  <div class="stl" style="margin-bottom:10px">Rol Yetkileri</div>
+  <div class="ri-row">
+    <div class="ri-badge"><span class="role-badge rb-admin">👑 Admin</span></div>
+    <div class="ri-desc">Tüm sayfalara tam erişim. Kullanıcı yönetimi, ayarlar, bütçe değişikliği, kampanya oluşturma.</div>
+  </div>
+  <div class="ri-row">
+    <div class="ri-badge"><span class="role-badge rb-editor">✏️ Editör</span></div>
+    <div class="ri-desc">Dashboard, Meta Ads, AI araçlar, raporlar, görevler. Kullanıcı yönetimi ve ayarlara erişemez.</div>
+  </div>
+  <div class="ri-row" style="margin-bottom:0">
+    <div class="ri-badge"><span class="role-badge rb-viewer">👁 Görüntüleyici</span></div>
+    <div class="ri-desc">Sadece Dashboard, Meta Ads ve Raporlar. Değişiklik yapamaz, sadece görüntüleyebilir.</div>
+  </div>
+</div>
+
 <!-- Şifre Talepleri -->
-<div id="resetRequestsWrap" style="display:none;margin-bottom:20px">
+<div id="resetRequestsWrap" style="display:none;margin-bottom:16px">
   <div class="stl">⚠ Bekleyen Şifre Sıfırlama Talepleri</div>
   <div id="resetRequestsList"></div>
 </div>
 
-<!-- Kullanıcılar Tablosu -->
+<!-- Kullanıcılar -->
 <div class="stl">Kullanıcılar</div>
-<div class="twrap" style="max-height:320px;margin-bottom:20px">
-  <table><thead><tr>
-    <th>Ad</th><th>Email</th><th>Rol</th><th>İşlem</th>
-  </tr></thead>
-  <tbody id="userTableBody">
-    <tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</td></tr>
-  </tbody></table>
-</div>
+<div id="userList"><div class="module-loading">Yükleniyor...</div></div>
 
 <!-- Kullanıcı Ekle Modal -->
 <div class="moverlay" id="addUserModal" style="display:none">
-  <div class="modal" style="max-width:400px">
+  <div class="modal" style="max-width:420px">
     <h3>+ Yeni Kullanıcı</h3>
     <div class="cform" style="grid-template-columns:1fr;gap:12px;padding:0;background:none;border:none">
       <div class="fg"><label>Ad Soyad</label><input type="text" id="newUserName" placeholder="Ad Soyad"></div>
@@ -30,9 +59,14 @@
       <div class="fg"><label>Şifre</label><input type="password" id="newUserPass" placeholder="En az 6 karakter"></div>
       <div class="fg"><label>Rol</label>
         <select id="newUserRole">
-          <option value="user">Kullanıcı</option>
-          <option value="admin">Admin</option>
+          <option value="viewer">👁 Görüntüleyici — Sadece görüntüleme</option>
+          <option value="editor">✏️ Editör — Meta Ads + AI araçlar</option>
+          <option value="admin">👑 Admin — Tam yetki</option>
         </select>
+      </div>
+      <div class="fg" id="permPreview" style="background:var(--bg);border-radius:6px;padding:10px">
+        <div class="stl" style="margin-bottom:6px">Erişim İzinleri</div>
+        <div id="permPreviewList" style="font-size:11px;color:var(--m);line-height:1.8"></div>
       </div>
     </div>
     <div id="addUserErr" style="color:var(--r);font-size:12px;margin-top:8px;display:none"></div>
@@ -48,7 +82,7 @@
   <div class="modal" style="max-width:360px">
     <h3>🔑 Şifre Sıfırla</h3>
     <div id="resetPassTarget" style="font-size:12px;color:var(--m);margin-bottom:12px"></div>
-    <div class="fg"><label>Yeni Şifre</label><input type="password" id="newPassInput" placeholder="Yeni şifre"></div>
+    <div class="fg"><label>Yeni Şifre</label><input type="password" id="newPassInput" placeholder="Yeni şifre (en az 6 karakter)"></div>
     <div class="mbtns" style="margin-top:16px">
       <button class="btn sec" onclick="document.getElementById('resetPassModal').style.display='none'">İptal</button>
       <button class="btn yel" onclick="doResetPass()">Kaydet</button>
@@ -59,33 +93,66 @@
 <script>
 var _resetTarget = null;
 
+var ROLE_PERMS = {
+  admin:  ['Dashboard','Meta Ads','AI Araçlar (Strateji/Optimizasyon/Hedef Kitle/Tasarım)','Raporlar','Görevler','Kampanya Oluştur','Ayarlar','Kullanıcı Yönetimi'],
+  editor: ['Dashboard','Meta Ads','AI Araçlar (Strateji/Optimizasyon/Hedef Kitle/Tasarım)','Raporlar','Görevler'],
+  viewer: ['Dashboard','Meta Ads (Sadece Görüntüleme)','Raporlar (Sadece Görüntüleme)']
+};
+
+var ROLE_LABELS = {
+  admin:  {label:'👑 Admin',  cls:'rb-admin'},
+  editor: {label:'✏️ Editör', cls:'rb-editor'},
+  viewer: {label:'👁 Görüntüleyici', cls:'rb-viewer'}
+};
+
+function updatePermPreview(){
+  var role = document.getElementById('newUserRole').value;
+  var perms = ROLE_PERMS[role] || [];
+  document.getElementById('permPreviewList').innerHTML = perms.map(function(p){
+    return '✓ '+p;
+  }).join('<br>');
+}
+
 async function loadUsers(){
   try{
     var r = await fetch('/admin/users',{credentials:'include'});
+    if(r.status===403){ document.getElementById('userList').innerHTML='<div style="color:var(--r);padding:20px">Bu sayfaya erişim yetkiniz yok.</div>'; return; }
     var users = await r.json();
-    var me = window._currentUser?.email||'';
-    var tbody = document.getElementById('userTableBody');
+    var me = (window._currentUser && window._currentUser.email)||'';
+    
     if(!users.length){
-      tbody.innerHTML='<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">Kullanıcı yok</td></tr>';
+      document.getElementById('userList').innerHTML='<div style="color:var(--m);padding:20px;text-align:center">Henüz kullanıcı yok</div>';
       return;
     }
-    tbody.innerHTML = users.map(function(u){
+    
+    document.getElementById('userList').innerHTML = users.map(function(u){
       var isMe = u.email.toLowerCase()===me.toLowerCase();
-      var roleLabel = u.role==='admin'
-        ? '<span class="bge" style="background:rgba(24,119,242,.12);color:#64b4ff;border:1px solid rgba(24,119,242,.3)">Admin</span>'
-        : '<span class="bge" style="background:rgba(66,183,42,.08);color:var(--g);border:1px solid rgba(66,183,42,.2)">Kullanıcı</span>';
-      var actions = isMe ? '<span style="font-size:11px;color:var(--m)">— (Siz)</span>' : `
-        <div style="display:flex;gap:4px">
-          <button class="btn sm yel" onclick="showResetPass('${u.email}')">🔑 Şifre</button>
-          <button class="btn sm sec" onclick="toggleRole('${u.email}','${u.role}')">⇄ Rol</button>
-          <button class="btn sm dng" onclick="deleteUser('${u.email}')">🗑</button>
-        </div>`;
-      return `<tr>
-        <td style="font-family:'Inter',sans-serif">${u.name||'—'}</td>
-        <td style="font-family:'DM Mono',monospace;font-size:11px">${u.email}</td>
-        <td>${roleLabel}</td>
-        <td>${actions}</td>
-      </tr>`;
+      var rl = ROLE_LABELS[u.role] || {label:u.role, cls:'rb-viewer'};
+      var initials = (u.name||u.email).split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
+      var avatarColors = {admin:'#1877f2',editor:'#f0b429',viewer:'#8a8d91'};
+      var avatarColor = avatarColors[u.role]||'#8a8d91';
+      
+      var actions = isMe 
+        ? '<span style="font-size:11px;color:var(--m);padding:4px 8px;background:var(--s2);border-radius:4px">— Siz</span>'
+        : '<div class="u-actions">'
+          +'<select class="role-select" onchange="changeRole(\''+u.email+'\',this.value)" title="Rol değiştir">'
+          +'<option value="viewer"'+(u.role==='viewer'?' selected':'')+'>👁 Görüntüleyici</option>'
+          +'<option value="editor"'+(u.role==='editor'?' selected':'')+'>✏️ Editör</option>'
+          +'<option value="admin"'+(u.role==='admin'?' selected':'')+'>👑 Admin</option>'
+          +'</select>'
+          +'<button class="btn sm yel" onclick="showResetPass(\''+u.email+'\')" title="Şifre sıfırla">🔑</button>'
+          +'<button class="btn sm dng" onclick="deleteUser(\''+u.email+'\')" title="Sil">🗑</button>'
+          +'</div>';
+      
+      return '<div class="u-card">'
+        +'<div class="u-avatar" style="background:'+avatarColor+'">'+initials+'</div>'
+        +'<div class="u-info">'
+        +'<div class="u-name">'+(u.name||'—')+'</div>'
+        +'<div class="u-email">'+u.email+'</div>'
+        +'<div style="margin-top:4px"><span class="role-badge '+rl.cls+'">'+rl.label+'</span></div>'
+        +'</div>'
+        +actions
+        +'</div>';
     }).join('');
   }catch(e){ toast('Hata: '+e.message); }
   loadResetRequests();
@@ -94,37 +161,40 @@ async function loadUsers(){
 async function loadResetRequests(){
   try{
     var r = await fetch('/admin/reset-requests',{credentials:'include'});
+    if(!r.ok) return;
     var reqs = await r.json();
     var pending = reqs.filter(function(x){return x.status==='pending';});
     var wrap = document.getElementById('resetRequestsWrap');
-    var list = document.getElementById('resetRequestsList');
     if(!pending.length){ wrap.style.display='none'; return; }
     wrap.style.display='';
-    list.innerHTML = pending.map(function(req, i){
-      var t = new Date(req.time).toLocaleString('tr');
-      return `<div class="lcard neu" style="margin-bottom:8px">
-        <div style="flex:1">
-          <div class="lname">${req.email}</div>
-          <div class="lmeta">${t} · ${req.message||'Şifremi unuttum'}</div>
-          ${req.user_exists?'<div class="lmeta" style="color:var(--g)">✓ Sistemde kayıtlı kullanıcı</div>':'<div class="lmeta" style="color:var(--r)">✗ Sistemde kayıtlı değil</div>'}
-        </div>
-        <div style="display:flex;flex-direction:column;gap:4px">
-          <button class="btn sm grn" onclick="resolveRequest(${i},'${req.email}')">Çözüldü</button>
-        </div>
-      </div>`;
+    document.getElementById('resetRequestsList').innerHTML = pending.map(function(req,i){
+      return '<div class="lcard neu">'
+        +'<div style="flex:1"><div class="lname">'+req.email+'</div>'
+        +'<div class="lmeta">'+new Date(req.time).toLocaleString('tr')+' · '+(req.message||'Şifremi unuttum')+'</div></div>'
+        +'<button class="btn sm grn" onclick="resolveRequest('+i+',\''+req.email+'\')">Çözüldü</button>'
+        +'</div>';
     }).join('');
   }catch(e){}
 }
 
 async function resolveRequest(idx, email){
   await fetch('/admin/reset-requests/'+idx+'/resolve',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:'{}'});
-  toast(email+' talebi çözüldü olarak işaretlendi');
+  toast(email+' talebi çözüldü ✓');
   loadResetRequests();
+}
+
+async function changeRole(email, newRole){
+  var r = await fetch('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:newRole})});
+  var d = await r.json();
+  if(d.ok){ toast('Rol güncellendi ✓'); loadUsers(); }
+  else toast('Hata: '+(d.error||'?'));
 }
 
 function showAddUser(){
   document.getElementById('addUserModal').style.display='flex';
   document.getElementById('addUserErr').style.display='none';
+  updatePermPreview();
+  document.getElementById('newUserRole').addEventListener('change', updatePermPreview);
 }
 function closeAddUser(){
   document.getElementById('addUserModal').style.display='none';
@@ -140,7 +210,7 @@ async function doAddUser(){
   err.style.display='none';
   if(!email||!pass){err.style.display='';err.textContent='Email ve şifre zorunlu';return;}
   if(pass.length<6){err.style.display='';err.textContent='Şifre en az 6 karakter olmalı';return;}
-  var r = await fetch('/admin/users',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pass,role})});
+  var r = await fetch('/admin/users',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,email:email,password:pass,role:role})});
   var d = await r.json();
   if(d.ok){ toast('Kullanıcı eklendi ✓'); closeAddUser(); loadUsers(); }
   else{ err.style.display=''; err.textContent=d.error||'Hata'; }
@@ -148,7 +218,7 @@ async function doAddUser(){
 
 function showResetPass(email){
   _resetTarget = email;
-  document.getElementById('resetPassTarget').textContent=email;
+  document.getElementById('resetPassTarget').textContent = email;
   document.getElementById('newPassInput').value='';
   document.getElementById('resetPassModal').style.display='flex';
 }
@@ -162,23 +232,13 @@ async function doResetPass(){
   else toast('Hata: '+(d.error||'?'));
 }
 
-async function toggleRole(email, currentRole){
-  var newRole = currentRole==='admin'?'user':'admin';
-  if(!confirm(email+' kullanıcısının rolü '+newRole+' yapılsın mı?')) return;
-  var r = await fetch('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:newRole})});
-  var d = await r.json();
-  if(d.ok){ toast('Rol güncellendi ✓'); loadUsers(); }
-  else toast('Hata: '+(d.error||'?'));
-}
-
 async function deleteUser(email){
   if(!confirm(email+' silinsin mi? Bu işlem geri alınamaz.')) return;
   var r = await fetch('/admin/users/'+encodeURIComponent(email),{method:'DELETE',credentials:'include'});
   var d = await r.json();
-  if(d.ok){ toast('Kullanıcı silindi'); loadUsers(); }
+  if(d.ok){ toast('Kullanıcı silindi ✓'); loadUsers(); }
   else toast('Hata: '+(d.error||'?'));
 }
 
 loadUsers();
 </script>
- 
