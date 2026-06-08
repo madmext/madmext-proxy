@@ -435,8 +435,10 @@ function dpPickP(val,label){
     var ti=document.getElementById('mTo');if(ti)ti.value='';
     var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=label;
     closeDP();
-    if(typeof mLoad==='function')mLoad();
-    else if(typeof window.mLoad==='function')window.mLoad();
+    // mLoad'u bul ve çağır
+    var fn=typeof window.mLoad==='function'?window.mLoad:(typeof mLoad==='function'?mLoad:null);
+    if(fn)fn();
+    else console.warn('mLoad bulunamadı - meta-ads sayfasında mısınız?');
   } else {
     _dp.from=null;_dp.to=null;_dp.hov=null;_dp.step=0;
     _dpRB();_dpUF();
@@ -643,8 +645,8 @@ function ddpPickP(val,label){
     var ti=document.getElementById('dashTo');if(ti)ti.value='';
     var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=label;
     closeDDP();
-    if(typeof loadDashboard==='function')loadDashboard();
-    else if(typeof window.loadDashboard==='function')window.loadDashboard();
+    var dfn=typeof window.loadDashboard==='function'?window.loadDashboard:(typeof loadDashboard==='function'?loadDashboard:null);
+    if(dfn)dfn();
   } else {
     _ddp.from=null;_ddp.to=null;_ddp.hov=null;_ddp.step=0;
     _ddpRB();_ddpUF();
