@@ -349,7 +349,13 @@ window._currentUser = null;
 async function initUser(){
   try{
     var r = await fetch('/auth/me',{credentials:'include'});
-    if(r.status===401){ window.location.href='/login'; return; }
+    var ct = r.headers.get('content-type')||'';
+    // JSON değilse (HTML redirect, Railway proxy hatası vs) - devam et
+    if(!ct.includes('json')){
+      console.log('Auth: JSON yanıt yok, devam ediliyor');
+      return;
+    }
+    if(r.status===401){ return; }
     var u = await r.json();
     window._currentUser = u;
     var info = document.getElementById('userInfo');
