@@ -405,3 +405,4 @@ async function loadDashboard() {
 window.loadDashboard = loadDashboard;
 if(window._isConnected){loadDashboard();}else{window.addEventListener('mx:connected',function _di(){window.removeEventListener('mx:connected',_di);loadDashboard();});}
 </script>
+ 
