@@ -23,6 +23,18 @@
 </div>
 
 <!-- Rol Açıklamaları -->
+<!-- USERS_JSON Hint Kutusu -->
+<div id="usersJsonHint" style="display:none;background:#1a2332;border:1px solid #1877f2;border-radius:8px;padding:12px 14px;margin-bottom:14px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <span style="font-size:12px;font-weight:600;color:#1877f2">⚠️ Kullanıcıları Kalıcı Kaydet</span>
+    <button onclick="copyUsersJson()" class="btn sm" style="font-size:10px">Kopyala</button>
+  </div>
+  <div style="font-size:11px;color:var(--m);margin-bottom:6px">
+    Railway → Variables → <strong>USERS_JSON</strong> adında yeni variable ekle, değer olarak aşağıdakini yapıştır:
+  </div>
+  <div id="usersJsonValue" style="font-family:monospace;font-size:10px;color:#8dd3f7;word-break:break-all;background:rgba(0,0,0,.3);padding:8px;border-radius:4px;max-height:60px;overflow:hidden"></div>
+</div>
+
 <div class="role-info-box" style="margin-bottom:16px">
   <div class="stl" style="margin-bottom:10px">Rol Yetkileri</div>
   <div class="ri-row">
@@ -117,8 +129,20 @@ async function loadUsers(){
   try{
     var r = await fetch('/admin/users',{credentials:'include'});
     if(r.status===403){ document.getElementById('userList').innerHTML='<div style="color:var(--r);padding:20px">Bu sayfaya erişim yetkiniz yok.</div>'; return; }
-    var users = await r.json();
+    var data = await r.json();
+    // API {users:[...], users_json_hint:"..."} veya direkt array döndürebilir
+    var users = Array.isArray(data) ? data : (data.users || []);
+    var usersJsonHint = Array.isArray(data) ? null : data.users_json_hint;
     var me = (window._currentUser && window._currentUser.email)||'';
+    
+    // USERS_JSON hint'i göster (Railway env var için)
+    var hintEl = document.getElementById('usersJsonHint');
+    if(hintEl && usersJsonHint){
+      hintEl.style.display = '';
+      document.getElementById('usersJsonValue').textContent = usersJsonHint;
+    } else if(hintEl){
+      hintEl.style.display = 'none';
+    }
     
     if(!users.length){
       document.getElementById('userList').innerHTML='<div style="color:var(--m);padding:20px;text-align:center">Henüz kullanıcı yok</div>';
