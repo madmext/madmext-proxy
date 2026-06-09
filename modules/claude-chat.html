@@ -284,32 +284,26 @@ function ccConnect(){
 }
 
 function ccLoadMetaData(){
-  // Meta Ads verilerini yükle
-  if(typeof window.mLoad === 'function'){
-    window.mLoad();
-  }
-  // Kampanya listesini çek
-  if(typeof loadMetaCamp === 'function'){
-    loadMetaCamp();
-  }
-  // 2 sn sonra context güncelle
-  setTimeout(function(){
-    updateContext();
-    if((MX.campStore||[]).length > 0){
-      document.getElementById('ccContext').textContent = 
-        (MX.campStore||[]).length + ' kampanya, ' + 
-        (MX.adsetStore||[]).length + ' reklam seti yüklü';
-      // Hoş geldin mesajını güncelle
-      var msgs = document.getElementById('ccMsgs');
-      if(msgs && msgs.children.length === 1){
-        msgs.innerHTML = '<div class="cc-msg sys"><div class="cc-msg-bubble">' +
-          (MX.campStore||[]).length + ' kampanya ve ' + 
-          (MX.adsetStore||[]).length + ' reklam seti yüklendi. ' +
-          'Performans analizi, bütçe optimizasyonu veya herhangi bir konuda yardımcı olabilirim.' +
-          '</div></div>';
-      }
+  // Kampanya + Reklam Setleri + Reklamları paralel yükle
+  var fns = ['loadMetaCamp','loadMetaAdsets','loadMetaAds'];
+  fns.forEach(function(fn){
+    if(typeof window[fn] === 'function'){
+      try{ window[fn](); }catch(e){}
     }
-  }, 2500);
+  });
+  // 4 sn bekle, sonra güncelle
+  setTimeout(function(){
+    var camps = (MX.campStore||[]).length;
+    var adsets = (MX.adsetStore||[]).length;
+    updateContext();
+    var msgs = document.getElementById('ccMsgs');
+    if(msgs){
+      var txt = camps > 0
+        ? camps + ' kampanya, ' + adsets + ' reklam seti yüklendi. Soru sorabilirsiniz.'
+        : 'Meta verisi yüklenemedi. Bağlantıyı kontrol edin.';
+      msgs.innerHTML = '<div class="cc-msg sys"><div class="cc-msg-bubble">'+txt+'</div></div>';
+    }
+  }, 4000);
 }
 
 window.addEventListener('mx:connected', function(){
