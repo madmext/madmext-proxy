@@ -30,6 +30,10 @@ GA4_CLIENT_SECRET = os.environ.get('GA4_CLIENT_SECRET', '')
 LOG_FILE = 'madmext_logs.json'
 log_lock = threading.Lock()
 
+# ── In-memory kullanıcı cache (restart'ta USERS_JSON'dan restore edilir) ──
+_users_cache = None
+_users_lock = threading.Lock()
+
 def read_logs():
     try:
         if os.path.exists(LOG_FILE):
@@ -165,25 +169,69 @@ def require_admin():
         return jsonify({'error':'Admin gerekli'}), 403
     return None
 
-def get_users():
-    # 1. PostgreSQL (kalici)
-    pg = db_get_users()
-    if pg is not None:
-        return pg if pg else [{'email':os.environ.get('ADMIN_EMAIL','admin@madmext.com'),'password_hash':hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),'role':'admin','name':'Admin'}]
-    # 2. USERS_JSON env var
+def _default_admin():
+    return [{'email':os.environ.get('ADMIN_EMAIL','admin@madmext.com'),
+             'password_hash':hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),
+             'role':'admin','name':'Admin'}]
+
+def _load_users_from_env():
+    """USERS_JSON env var'dan kullanıcıları yükle"""
+    import base64
     uj = os.environ.get('USERS_JSON','')
     if uj:
         try:
-            import base64
-            u2 = json.loads(base64.b64decode(uj).decode())
-            if u2: return u2
+            u = json.loads(base64.b64decode(uj).decode())
+            if u: return u
         except: pass
-    # 3. Dosya
+    return None
+
+def _users_to_json_b64(users):
+    """Kullanıcı listesini base64 JSON'a çevir"""
+    import base64
+    return base64.b64encode(json.dumps(users, ensure_ascii=False).encode()).decode()
+
+def get_users():
+    global _users_cache
+    # 1. PostgreSQL
+    pg = db_get_users()
+    if pg is not None:
+        return pg if pg else _default_admin()
+    # 2. In-memory cache (session süresince geçerli)
+    with _users_lock:
+        if _users_cache is not None:
+            return list(_users_cache)
+    # 3. USERS_JSON env var
+    env_users = _load_users_from_env()
+    if env_users:
+        with _users_lock:
+            _users_cache = list(env_users)
+        return env_users
+    # 4. Dosya
     try:
         logs = read_logs()
-        if logs.get('users'): return logs['users']
+        if logs.get('users'):
+            with _users_lock:
+                _users_cache = list(logs['users'])
+            return logs['users']
     except: pass
-    return [{'email':os.environ.get('ADMIN_EMAIL','admin@madmext.com'),'password_hash':hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),'role':'admin','name':'Admin'}]
+    # 5. Default admin
+    default = _default_admin()
+    with _users_lock:
+        _users_cache = list(default)
+    return default
+
+def save_users(users):
+    """Kullanıcıları cache'e ve dosyaya kaydet"""
+    global _users_cache
+    with _users_lock:
+        _users_cache = list(users)
+    # Dosyaya da kaydet (restart'a kadar geçerli)
+    try:
+        current = read_logs()
+        current['users'] = users
+        write_logs(current)
+    except: pass
+    return _users_to_json_b64(users)
 
 @app.route('/')
 def home():
@@ -259,8 +307,8 @@ def admin_add_user():
     users = get_users()
     if any(u['email'].lower()==email for u in users): return jsonify({'error':'Email zaten kayitli'}), 409
     users.append({'email':email,'password_hash':pw,'name':name,'role':role})
-    current = read_logs(); current['users']=users; write_logs(current)
-    return jsonify({'ok':True})
+    uj = save_users(users)
+    return jsonify({'ok':True,'users_json':uj})
 
 @app.route('/admin/users/<email>', methods=['DELETE'])
 def admin_delete_user(email):
@@ -269,10 +317,9 @@ def admin_delete_user(email):
     if get_db():
         db_delete(email)
         return jsonify({'ok':True})
-    current = read_logs()
     users = [u for u in get_users() if u['email'].lower()!=email.lower()]
-    current['users']=users; write_logs(current)
-    return jsonify({'ok':True})
+    uj = save_users(users)
+    return jsonify({'ok':True,'users_json':uj})
 
 @app.route('/admin/users/<email>/reset', methods=['POST'])
 def admin_reset_pw(email):
@@ -286,8 +333,8 @@ def admin_reset_pw(email):
     users = get_users()
     for u in users:
         if u['email'].lower()==email.lower(): u['password_hash']=pw
-    current = read_logs(); current['users']=users; write_logs(current)
-    return jsonify({'ok':True})
+    uj = save_users(users)
+    return jsonify({'ok':True,'users_json':uj})
 
 @app.route('/admin/users/<email>/role', methods=['POST'])
 def admin_change_role(email):
@@ -301,8 +348,8 @@ def admin_change_role(email):
     users = get_users()
     for u in users:
         if u['email'].lower()==email.lower(): u['role']=role
-    current = read_logs(); current['users']=users; write_logs(current)
-    return jsonify({'ok':True})
+    uj = save_users(users)
+    return jsonify({'ok':True,'users_json':uj})
 
 @app.route('/admin/reset-requests')
 def admin_reset_requests():
