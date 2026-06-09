@@ -180,6 +180,7 @@ async function loadUsers(){
     }).join('');
   }catch(e){ toast('Hata: '+e.message); }
   loadResetRequests();
+  return Promise.resolve();
 }
 
 async function loadResetRequests(){
@@ -210,7 +211,7 @@ async function resolveRequest(idx, email){
 async function changeRole(email, newRole){
   var r = await fetch('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:newRole})});
   var d = await r.json();
-  if(d.ok){ toast('Rol güncellendi ✓'); loadUsers(); }
+  if(d.ok){ toast('Rol guncellendi - Railway Variables guncelle!'); loadUsers().then(highlightUsersJson); }
   else toast('Hata: '+(d.error||'?'));
 }
 
@@ -260,7 +261,7 @@ async function deleteUser(email){
   if(!confirm(email+' silinsin mi? Bu işlem geri alınamaz.')) return;
   var r = await fetch('/admin/users/'+encodeURIComponent(email),{method:'DELETE',credentials:'include'});
   var d = await r.json();
-  if(d.ok){ toast('Kullanıcı silindi ✓'); loadUsers(); }
+  if(d.ok){ toast('Kullanici silindi - Railway Variables guncelle!'); loadUsers().then(highlightUsersJson); }
   else toast('Hata: '+(d.error||'?'));
 }
 
