@@ -127,10 +127,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
-@media(max-width:768px){body{overflow:auto}.app{flex-direction:column;height:auto;min-height:100vh}.sidebar{display:none}.main{flex:1}.topbar{padding:8px 12px}.conn-input{width:140px;font-size:10px}.content{padding:12px 8px}#mobileNav{display:flex!important}.content{padding-bottom:70px}}
-#mobileNav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s);border-top:1px solid var(--b);z-index:1000;padding:6px 0 env(safe-area-inset-bottom,6px)}
-.mnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;color:var(--m);font-size:9px;transition:color .15s;border:none;background:none}
-.mnav-item.active{color:var(--a)}.mnav-item span:first-child{font-size:18px}
 </style>
 </head>
 <body>
@@ -170,23 +166,12 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
       <span class="dot" id="dot"></span>
       <input type="text" class="conn-input" id="proxyUrl" placeholder="Railway URL...">
       <button class="btn sm" onclick="connect()">Bağlan</button>
-      <div id="userInfo" style="display:none;align-items:center;gap:8px;padding-left:8px;border-left:1px solid var(--b)">
-        <div><div style="font-size:12px;font-weight:600;color:var(--t)" id="topUserName"></div><div style="font-size:10px;color:var(--m)" id="topUserRole"></div></div>
-        <button class="btn sm sec" onclick="doLogout()" style="white-space:nowrap">⬠ Çıkış</button>
-      </div>
     </div>
   </div>
   <div class="content" id="mainContent"><div class="module-loading">Yükleniyor...</div></div>
 </div>
 </div>
 <div id="toast"></div>
-<div id="mobileNav">
-  <button class="mnav-item active" id="mn-dashboard" onclick="nav('dashboard',null);setMobileActive('mn-dashboard')"><span>🏠</span><span>Ana Sayfa</span></button>
-  <button class="mnav-item" id="mn-meta" onclick="nav('meta-ads',null);setMobileActive('mn-meta')"><span>📢</span><span>Meta Ads</span></button>
-  <button class="mnav-item" id="mn-raporlar" onclick="nav('raporlar',null);setMobileActive('mn-raporlar')"><span>📊</span><span>Raporlar</span></button>
-  <button class="mnav-item" id="mn-gorevler" onclick="nav('gorevler',null);setMobileActive('mn-gorevler')"><span>⏰</span><span>Görevler</span></button>
-  <button class="mnav-item" id="mn-ayarlar" onclick="nav('ayarlar',null);setMobileActive('mn-ayarlar')"><span>⚙️</span><span>Ayarlar</span></button>
-</div>
 
 <script src="/modules/shared.js"></script>
 <script>
@@ -217,7 +202,6 @@ var _navBusy = false;
 async function nav(page, el) {
   if(page === window.currentPage) return;
   if(_navBusy) return;
-  if(window._currentUser&&!canAccess(page)){toast('Bu sayfaya erişim yetkiniz yok');return;}
   _navBusy = true;
 
   // Önceki modülün listener'larını temizle
@@ -268,7 +252,6 @@ async function loadModule(page) {
 
     el.innerHTML = tmp.innerHTML;
 
-    // Script'leri global scope'ta çalıştır + entity decode
     scripts.forEach(function(code){
       var s = document.createElement('script');
       var tmp = document.createElement('textarea');
@@ -277,9 +260,7 @@ async function loadModule(page) {
       document.body.appendChild(s);
     });
     setTimeout(function(){
-      if(window._isConnected){
-        window.dispatchEvent(new CustomEvent('mx:connected'));
-      }
+      if(window._isConnected) window.dispatchEvent(new CustomEvent('mx:connected'));
     },50);
 
   } catch(e) {
@@ -300,549 +281,291 @@ async function createCamp() {
   else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
 }
 
-// ── Rol sistemi ──
-var ROLE_PERMISSIONS={admin:['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler','create','ayarlar','kullanicilar'],editor:['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler'],viewer:['dashboard','meta-ads','raporlar']};
-window._currentUser=null;
-async function initUser(){
-  try{
-    var r=await fetch('/auth/me',{credentials:'include'});
-    var ct=r.headers.get('content-type')||'';
-    if(!ct.includes('json'))return;
-    if(r.status===401)return;
-    var u=await r.json();
-    window._currentUser=u;
-    var info=document.getElementById('userInfo');
-    if(info){
-      info.style.display='flex';
-      document.getElementById('topUserName').textContent=u.name||u.email;
-      var rl={admin:'👑 Admin',editor:'✏️ Editör',viewer:'👁 Görüntüleyici'};
-      document.getElementById('topUserRole').textContent=rl[u.role]||u.role;
-    }
-  }catch(e){console.log('Auth:',e.message);}
-}
-function canAccess(page){
-  var role=(window._currentUser&&window._currentUser.role)||'admin';
-  return (ROLE_PERMISSIONS[role]||ROLE_PERMISSIONS.admin).includes(page);
-}
-function doLogout(){fetch('/auth/logout',{method:'POST',credentials:'include'}).then(function(){window.location.href='/login';});}
-function setMobileActive(id){document.querySelectorAll('.mnav-item').forEach(function(el){el.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
-// ── Init ──
-document.getElementById('proxyUrl').value=localStorage.getItem('proxyUrl')||'https://web-production-e5865.up.railway.app';
-initUser().then(function(){
-  nav('dashboard',document.querySelector('.nav-item.active'));
-  setInterval(updateTaskBadge,60000);
-  setTimeout(connect,800);
-});
+// Init
+document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
+nav('dashboard', document.querySelector('.nav-item.active'));
+setInterval(updateTaskBadge, 60000);
+setTimeout(connect, 800);
 </script>
 
 <style id="dp-global-styles">
-.dp-popup{display:none;position:fixed;z-index:99999;background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.18);flex-direction:column;font-family:'Inter',sans-serif}
-.dp-body{display:flex}
-.dp-left{width:185px;flex-shrink:0;padding:8px 0;border-right:1px solid #f0f0f0;overflow-y:auto;max-height:420px;background:#fafafa;border-radius:12px 0 0 0}
-.dp-sec-lbl{font-size:9px;color:#aaa;letter-spacing:1.2px;text-transform:uppercase;padding:10px 14px 4px;font-weight:700}
-.dp-ri{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background .12s}
-.dp-ri:hover{background:#f0f4ff}
-.dp-ri input[type=radio]{accent-color:#1877f2;cursor:pointer;width:13px;height:13px;flex-shrink:0;margin:0}
-.dp-ri span{font-size:12px;color:#333;cursor:pointer}
-.dp-right{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;background:#fff;border-radius:0 12px 0 0}
-.dp-cals{display:flex;gap:20px}
-.dp-cal{flex:1;min-width:0}
-.dp-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.dp-nav{background:none;border:1px solid #e0e0e0;color:#666;cursor:pointer;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
-.dp-nav:hover{border-color:#1877f2;color:#1877f2;background:#f0f4ff}
-.dp-cal-sel{background:#fff;border:1px solid #e0e0e0;color:#333;font-size:11px;padding:3px 6px;border-radius:6px;cursor:pointer;font-weight:600}
-.dp-cal-sel:hover{border-color:#1877f2}
-.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.dp-dh{font-size:9px;color:#aaa;text-align:center;padding:4px 0;text-transform:uppercase;font-weight:700}
-.dp-d{font-size:12px;text-align:center;padding:5px 2px;cursor:pointer;border-radius:50%;color:#333;transition:background .1s;line-height:1;display:flex;align-items:center;justify-content:center;aspect-ratio:1}
-.dp-d:not(.dp-empty):not(.dp-dis):hover{background:#f0f4ff;color:#1877f2}
-.dp-d.dp-empty,.dp-d.dp-dis{color:#ccc;cursor:default;pointer-events:none}
-.dp-d.dp-today{color:#1877f2;font-weight:700;border:1.5px solid #1877f2}
-.dp-d.dp-sel{background:#1877f2!important;color:#fff!important;border-radius:50%;border:none}
-.dp-d.dp-in-r{background:#e8f0fe;border-radius:0;color:#1877f2}
-.dp-d.dp-rs{background:#1877f2!important;color:#fff!important;border-radius:50% 0 0 50%;border:none}
-.dp-d.dp-re{background:#1877f2!important;color:#fff!important;border-radius:0 50% 50% 0;border:none}
-.dp-d.dp-rs.dp-re{border-radius:50%}
-.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f0f0f0;padding:10px 16px;background:#fff;border-radius:0 0 12px 12px;gap:8px}
-.dp-fi{font-size:12px;color:#555;font-weight:500;flex:1;min-height:28px;display:flex;align-items:center}
-#dpOkBtn,#ddpOkBtn{background:#1877f2;border:none;color:#fff;padding:7px 18px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}
-#dpOkBtn:not(:disabled):hover,#ddpOkBtn:not(:disabled):hover{background:#1565d8}
-#dpOkBtn:disabled,#ddpOkBtn:disabled{background:#c0d6f9;cursor:not-allowed}
+.dp-popup-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.16);min-width:300px;overflow:hidden;font-family:'Inter',sans-serif}
+.dp-preset-section{padding:8px 0;border-bottom:1px solid #f0f0f0;background:#fafafa}
+.dp-preset-lbl{font-size:9px;color:#aaa;letter-spacing:1px;text-transform:uppercase;padding:8px 14px 4px;font-weight:700}
+.dp-preset-item{padding:7px 14px;cursor:pointer;font-size:12px;color:#333;display:flex;align-items:center;gap:8px;transition:background .1s}
+.dp-preset-item:hover{background:#f0f4ff}
+.dp-preset-dot{width:7px;height:7px;border-radius:50%;background:transparent;flex-shrink:0;border:1.5px solid transparent;transition:all .15s}
+.dp-custom-section{padding:14px 16px}
+.dp-custom-lbl{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px}
+.dp-inputs-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.dp-input-group{flex:1;min-width:120px}
+.dp-input-group label{display:block;font-size:11px;color:#555;margin-bottom:4px;font-weight:500}
+.dp-input-group input[type=date]{width:100%;border:1.5px solid #e0e0e0;border-radius:8px;padding:7px 10px;font-size:13px;color:#333;background:#fff;outline:none;cursor:pointer;font-family:inherit;box-sizing:border-box}
+.dp-input-group input[type=date]:focus{border-color:#1877f2}
+.dp-arrow{color:#bbb;font-size:18px;padding-bottom:4px}
+.dp-err{color:#fa3e3e;font-size:11px;margin-top:6px;display:none}
+.dp-footer-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #f0f0f0;background:#fff;gap:8px}
+.dp-range-info{font-size:12px;color:#1877f2;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dp-btn-cancel{background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500}
+.dp-btn-apply{background:#1877f2;border:none;color:#fff;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background .15s}
+.dp-btn-apply:hover{background:#1565d8}
 @media(max-width:700px){
-  .dp-popup{position:fixed!important;bottom:0!important;top:auto!important;left:0!important;right:0!important;width:100%!important;border-radius:16px 16px 0 0;max-height:90vh;overflow-y:auto}
-  .dp-body{flex-direction:column}
-  .dp-left{width:100%;max-height:120px;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid #f0f0f0;border-radius:16px 16px 0 0;display:flex;flex-direction:row;padding:8px;gap:4px}
-  .dp-sec-lbl{display:none}
-  .dp-ri{padding:5px 12px;border-radius:20px;border:1px solid #e0e0e0;flex-shrink:0;white-space:nowrap}
-  .dp-ri:hover{background:#e8f0fe;border-color:#1877f2}
-  .dp-right{padding:12px}
-  .dp-cals{flex-direction:column;gap:16px}
-  .dp-cal+.dp-cal{display:none}
+  #dpPopup,#ddpPopup{display:none;position:fixed!important;bottom:0!important;top:auto!important;left:0!important;right:0!important;width:100%!important;z-index:99999}
+  .dp-popup-wrap{border-radius:16px 16px 0 0}
 }
 </style>
 <div id="dpPopup" style="display:none;position:fixed;z-index:99999">
-  <div style="background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.16);min-width:320px;overflow:hidden">
-    
-    <!-- Preset listesi -->
-    <div style="padding:8px 0;border-bottom:1px solid #f0f0f0;background:#fafafa">
-      <div style="font-size:9px;color:#aaa;letter-spacing:1px;text-transform:uppercase;padding:8px 14px 4px;font-weight:700">Hızlı Seçim</div>
-      <div id="dpPresets" style="display:flex;flex-direction:column"></div>
+  <div class="dp-popup-wrap">
+    <div class="dp-preset-section">
+      <div class="dp-preset-lbl">Hizli Secim</div>
+      <div id="dpPresets"></div>
     </div>
-    
-    <!-- Özel aralık -->
-    <div style="padding:14px 16px">
-      <div style="font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Özel Aralık</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <div style="flex:1;min-width:130px">
-          <div style="font-size:11px;color:#555;margin-bottom:4px;font-weight:500">Başlangıç</div>
-          <input type="date" id="dpFromInput" style="width:100%;border:1.5px solid #e0e0e0;border-radius:8px;padding:7px 10px;font-size:13px;color:#333;background:#fff;outline:none;cursor:pointer;font-family:inherit">
+    <div class="dp-custom-section">
+      <div class="dp-custom-lbl">Ozel Aralik</div>
+      <div class="dp-inputs-row">
+        <div class="dp-input-group">
+          <label>Baslangic</label>
+          <input type="date" id="dpFromInput">
         </div>
-        <div style="color:#aaa;font-size:16px;margin-top:18px">→</div>
-        <div style="flex:1;min-width:130px">
-          <div style="font-size:11px;color:#555;margin-bottom:4px;font-weight:500">Bitiş</div>
-          <input type="date" id="dpToInput" style="width:100%;border:1.5px solid #e0e0e0;border-radius:8px;padding:7px 10px;font-size:13px;color:#333;background:#fff;outline:none;cursor:pointer;font-family:inherit">
+        <div class="dp-arrow">&#x2192;</div>
+        <div class="dp-input-group">
+          <label>Bitis</label>
+          <input type="date" id="dpToInput">
         </div>
       </div>
-      <div id="dpValidErr" style="color:#fa3e3e;font-size:11px;margin-top:6px;display:none">Bitiş tarihi başlangıçtan önce olamaz</div>
+      <div class="dp-err" id="dpValidErr">Bitis tarihi baslangictan once olamaz</div>
     </div>
-    
-    <!-- Footer -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #f0f0f0;background:#fff">
-      <div id="dpRangeInfo" style="font-size:12px;color:#1877f2;font-weight:500"></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="closeDP()" style="background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500">İptal</button>
-        <button id="dpOkBtn" onclick="dpApply()" style="background:#1877f2;border:none;color:#fff;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">Güncelle</button>
+    <div class="dp-footer-row">
+      <div class="dp-range-info" id="dpRangeInfo"></div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="dp-btn-cancel" onclick="closeDP()">Iptal</button>
+        <button class="dp-btn-apply" onclick="dpApply()">Guncelle</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// ── YENİ DATE PICKER ─────────────────────────────────────────────────
-var _dpOpen = false;
-
-var DP_PRESETS = [
-  {v:'today',        l:'Bugün'},
-  {v:'yesterday',    l:'Dün'},
-  {v:'last_7d',      l:'Son 7 gün'},
-  {v:'last_14d',     l:'Son 14 gün'},
-  {v:'last_30d',     l:'Son 30 gün'},
-  {v:'this_month',   l:'Bu ay'},
-  {v:'last_month',   l:'Geçen ay'},
-  {v:'maximum',      l:'Maksimum'}
+// META ADS DATE PICKER
+var _dpOpen=false;
+var DP_PRESETS=[
+  {v:'today',l:'Bugun'},
+  {v:'yesterday',l:'Dun'},
+  {v:'last_7d',l:'Son 7 gun'},
+  {v:'last_14d',l:'Son 14 gun'},
+  {v:'last_30d',l:'Son 30 gun'},
+  {v:'this_month',l:'Bu ay'},
+  {v:'last_month',l:'Gecen ay'},
+  {v:'maximum',l:'Maksimum'}
 ];
-
-function _dpTodayStr(){
-  var d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function _dpOffsetStr(days){
-  var d=new Date();d.setDate(d.getDate()-days);
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
-function _dpFmtShow(iso){
-  if(!iso)return'';
-  var p=iso.split('-');
-  var d=new Date(+p[0],+p[1]-1,+p[2]);
-  return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});
-}
-
-function _dpBuildPresets(){
+function _dpToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _dpOffset(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _dpFmt(iso){if(!iso)return'';var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+function _dpSetDots(active){DP_PRESETS.forEach(function(p){var d=document.getElementById('dpPrDot_'+p.v);if(d){d.style.background=p.v===active?'#1877f2':'transparent';d.style.borderColor=p.v===active?'#1877f2':'transparent';}});}
+function _dpBuild(){
   var el=document.getElementById('dpPresets');
   if(!el||el.children.length)return;
   DP_PRESETS.forEach(function(p){
-    var div=document.createElement('div');
-    div.id='dpPr_'+p.v;
-    div.style.cssText='padding:7px 14px;cursor:pointer;font-size:12px;color:#333;transition:background .1s;display:flex;align-items:center;gap:8px';
-    div.onmouseover=function(){this.style.background='#f0f4ff'};
-    div.onmouseout=function(){this.style.background=''};
-    div.onclick=function(){_dpSelectPreset(p.v,p.l);};
-    var dot=document.createElement('span');
-    dot.id='dpPrDot_'+p.v;
-    dot.style.cssText='width:7px;height:7px;border-radius:50%;background:transparent;flex-shrink:0;border:1.5px solid transparent';
-    var txt=document.createElement('span');
-    txt.textContent=p.l;
-    div.appendChild(dot);div.appendChild(txt);
-    el.appendChild(div);
+    var row=document.createElement('div');row.className='dp-preset-item';
+    var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='dpPrDot_'+p.v;
+    var txt=document.createElement('span');txt.textContent=p.l;
+    row.appendChild(dot);row.appendChild(txt);
+    row.onclick=function(){_dpPickPreset(p.v,p.l);};
+    el.appendChild(row);
   });
 }
-
-function _dpSelectPreset(val,label){
-  // Tüm dot'ları sıfırla
-  DP_PRESETS.forEach(function(p){
-    var dot=document.getElementById('dpPrDot_'+p.v);
-    if(dot){dot.style.background='transparent';dot.style.borderColor='transparent';}
-  });
-  // Seçiliyi işaretle
-  var activeDot=document.getElementById('dpPrDot_'+val);
-  if(activeDot){activeDot.style.background='#1877f2';activeDot.style.borderColor='#1877f2';}
-  
-  // Preset bazında from/to hesapla
-  var from='',to=_dpTodayStr();
+function _dpPickPreset(val,label){
+  var from='',to=_dpToday();
   if(val==='today'){from=to;}
-  else if(val==='yesterday'){from=_dpOffsetStr(1);to=_dpOffsetStr(1);}
-  else if(val==='last_7d'){from=_dpOffsetStr(6);}
-  else if(val==='last_14d'){from=_dpOffsetStr(13);}
-  else if(val==='last_30d'){from=_dpOffsetStr(29);}
+  else if(val==='yesterday'){from=_dpOffset(1);to=_dpOffset(1);}
+  else if(val==='last_7d'){from=_dpOffset(6);}
+  else if(val==='last_14d'){from=_dpOffset(13);}
+  else if(val==='last_30d'){from=_dpOffset(29);}
   else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
   else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
   else if(val==='maximum'){from='2020-01-01';}
-  
-  var fi=document.getElementById('dpFromInput');
-  var ti=document.getElementById('dpToInput');
-  if(fi)fi.value=from;
-  if(ti)ti.value=to;
-  _dpUpdateInfo();
-  
-  // Preset için direkt uygula
-  var mPre=document.getElementById('mPreset');
-  var mFr=document.getElementById('mFrom');
-  var mTo=document.getElementById('mTo');
-  if(mPre)mPre.value=val;
-  if(mFr)mFr.value='';
-  if(mTo)mTo.value='';
-  var lbl=document.getElementById('dpLabel');
-  if(lbl)lbl.textContent=label;
+  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
+  if(fi)fi.value=from;if(ti)ti.value=to;
+  _dpSetDots(val);_dpInfo();
+  var mPre=document.getElementById('mPreset'),mFr=document.getElementById('mFrom'),mTo=document.getElementById('mTo');
+  if(mPre)mPre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';
+  var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=label;
   closeDP();
   var fn=typeof window.mLoad==='function'?window.mLoad:null;
-  if(fn)fn();
+  if(fn)setTimeout(fn,50);
 }
-
-function _dpUpdateInfo(){
-  var fi=document.getElementById('dpFromInput');
-  var ti=document.getElementById('dpToInput');
-  var info=document.getElementById('dpRangeInfo');
-  var err=document.getElementById('dpValidErr');
+function _dpInfo(){
+  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
+  var info=document.getElementById('dpRangeInfo'),err=document.getElementById('dpValidErr');
   if(!fi||!ti||!info)return;
   var from=fi.value,to=ti.value;
-  if(from&&to){
-    if(from>to){
-      if(err)err.style.display='';
-      info.textContent='';
-    }else{
-      if(err)err.style.display='none';
-      info.textContent='📅 '+_dpFmtShow(from)+' – '+_dpFmtShow(to);
-      // Preset dot'ları sıfırla (özel aralık)
-      DP_PRESETS.forEach(function(p){
-        var dot=document.getElementById('dpPrDot_'+p.v);
-        if(dot){dot.style.background='transparent';dot.style.borderColor='transparent';}
-      });
-    }
-  }else{
-    info.textContent='';
+  if(from&&to&&from<=to){
     if(err)err.style.display='none';
-  }
+    info.textContent=_dpFmt(from)+' - '+_dpFmt(to);
+  }else if(from&&to&&from>to){
+    if(err)err.style.display='';info.textContent='';
+  }else{info.textContent='';}
 }
-
 function toggleDP(){
-  var pop=document.getElementById('dpPopup');
-  if(!pop)return;
+  var pop=document.getElementById('dpPopup');if(!pop)return;
   if(_dpOpen){closeDP();return;}
-  
-  _dpBuildPresets();
-  
-  // Son 7 günü varsayılan seç ve göster
-  var fi=document.getElementById('dpFromInput');
-  var ti=document.getElementById('dpToInput');
-  fi.value=_dpOffsetStr(6);
-  ti.value=_dpTodayStr();
-  _dpUpdateInfo();
-  // last_7d dot'u aktif yap
-  DP_PRESETS.forEach(function(p){
-    var dot=document.getElementById('dpPrDot_'+p.v);
-    if(dot){dot.style.background=p.v==='last_7d'?'#1877f2':'transparent';dot.style.borderColor=p.v==='last_7d'?'#1877f2':'transparent';}
-  });
-  
-  // Input change listener
-  if(fi&&!fi._dpBound){fi._dpBound=true;fi.addEventListener('change',_dpUpdateInfo);}
-  if(ti&&!ti._dpBound){ti._dpBound=true;ti.addEventListener('change',_dpUpdateInfo);}
-  
-  // Konumlandır
-  var btn=document.getElementById('dpTrigger');
-  if(!btn)return;
-  var rect=btn.getBoundingClientRect();
-  var isMobile=window.innerWidth<=700;
-  if(isMobile){
-    pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';
-  }else{
-    var pw=340;
-    var left=Math.min(rect.right-pw, window.innerWidth-pw-8);
-    if(left<8)left=8;
-    pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';
-  }
+  _dpBuild();
+  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
+  if(fi)fi.value=_dpOffset(6);if(ti)ti.value=_dpToday();
+  _dpSetDots('last_7d');_dpInfo();
+  if(fi&&!fi._b){fi._b=true;fi.addEventListener('change',function(){_dpSetDots('');_dpInfo();});}
+  if(ti&&!ti._b){ti._b=true;ti.addEventListener('change',function(){_dpSetDots('');_dpInfo();});}
+  var btn=document.getElementById('dpTrigger'),rect=btn.getBoundingClientRect();
+  var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;
+  if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}
+  else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}
   _dpOpen=true;
-  setTimeout(function(){document.addEventListener('mousedown',_dpOutside);},10);
+  setTimeout(function(){document.addEventListener('mousedown',_dpOut);},10);
 }
-
 function closeDP(){
-  var pop=document.getElementById('dpPopup');
-  if(pop)pop.style.display='none';
-  _dpOpen=false;
-  document.removeEventListener('mousedown',_dpOutside);
+  var pop=document.getElementById('dpPopup');if(pop)pop.style.display='none';
+  _dpOpen=false;document.removeEventListener('mousedown',_dpOut);
 }
-
-function _dpOutside(e){
-  var pop=document.getElementById('dpPopup');
-  var btn=document.getElementById('dpTrigger');
+function _dpOut(e){
+  var pop=document.getElementById('dpPopup'),btn=document.getElementById('dpTrigger');
   if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDP();
 }
-
 function dpApply(){
-  var fi=document.getElementById('dpFromInput');
-  var ti=document.getElementById('dpToInput');
-  if(!fi||!ti||!fi.value||!ti.value){toast('Başlangıç ve bitiş tarihi seçin');return;}
-  if(fi.value>ti.value){toast('Bitiş tarihi başlangıçtan önce olamaz');return;}
-  
-  // meta-ads.html'in okuduğu hidden input'ları set et
-  var mPre=document.getElementById('mPreset');
-  var mFr=document.getElementById('mFrom');
-  var mTo=document.getElementById('mTo');
-  if(mPre)mPre.value='custom';
-  if(mFr)mFr.value=fi.value;
-  if(mTo)mTo.value=ti.value;
-  
-  // Buton label
-  var lbl=document.getElementById('dpLabel');
-  if(lbl)lbl.textContent=_dpFmtShow(fi.value)+' – '+_dpFmtShow(ti.value);
-  
+  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
+  if(!fi||!ti||!fi.value||!ti.value){toast('Tarih secin');return;}
+  if(fi.value>ti.value){toast('Bitis tarihi baslangictan once olamaz');return;}
+  var mPre=document.getElementById('mPreset'),mFr=document.getElementById('mFrom'),mTo=document.getElementById('mTo');
+  if(mPre)mPre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;
+  var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=_dpFmt(fi.value)+' - '+_dpFmt(ti.value);
   closeDP();
-  
-  // Meta verilerini yükle
   var fn=typeof window.mLoad==='function'?window.mLoad:null;
-  if(fn){setTimeout(function(){fn();},50);}
+  if(fn)setTimeout(fn,50);
 }
-
-// İlk yüklenişte son 7 günü set et
-(function(){
-  var fi=document.getElementById('dpFromInput');
-  var ti=document.getElementById('dpToInput');
-  if(fi)fi.value=_dpOffsetStr(6);
-  if(ti)ti.value=_dpTodayStr();
-})();
 </script>
 
-
-<!-- DASHBOARD DATE PICKER - Global, dashboard modülü için -->
-<div id="ddpPopup" style="display:none">
-  <div class="dp-body">
-    <div class="dp-left">
-      <div class="dp-sec-lbl">Yakınlarda kullanılanlar</div>
-      <div class="dp-ri" onclick="ddpPickP('last_7d','Son 7 gün')"><input type="radio" name="ddpR" value="last_7d" checked><span>Son 7 gün</span></div>
-      <div class="dp-sec-lbl">Ön ayarlar</div>
-      <div class="dp-ri" onclick="ddpPickP('today','Bugün')"><input type="radio" name="ddpR" value="today"><span>Bugün</span></div>
-      <div class="dp-ri" onclick="ddpPickP('yesterday','Dün')"><input type="radio" name="ddpR" value="yesterday"><span>Dün</span></div>
-      <div class="dp-ri" onclick="ddpPickP('last_3d','Son 3 gün')"><input type="radio" name="ddpR" value="last_3d"><span>Son 3 gün</span></div>
-      <div class="dp-ri" onclick="ddpPickP('last_7d','Son 7 gün')"><input type="radio" name="ddpR" value="last_7d_2"><span>Son 7 gün</span></div>
-      <div class="dp-ri" onclick="ddpPickP('last_14d','Son 14 gün')"><input type="radio" name="ddpR" value="last_14d"><span>Son 14 gün</span></div>
-      <div class="dp-ri" onclick="ddpPickP('last_30d','Son 30 gün')"><input type="radio" name="ddpR" value="last_30d"><span>Son 30 gün</span></div>
-      <div class="dp-ri" onclick="ddpPickP('this_month','Bu ay')"><input type="radio" name="ddpR" value="this_month"><span>Bu ay</span></div>
-      <div class="dp-ri" onclick="ddpPickP('last_month','Geçen ay')"><input type="radio" name="ddpR" value="last_month"><span>Geçen ay</span></div>
-      <div class="dp-ri" onclick="ddpPickP('custom','Özel')"><input type="radio" name="ddpR" value="custom"><span>Özel</span></div>
+<div id="ddpPopup" style="display:none;position:fixed;z-index:99999">
+  <div class="dp-popup-wrap">
+    <div class="dp-preset-section">
+      <div class="dp-preset-lbl">Hizli Secim</div>
+      <div id="ddpPresets"></div>
     </div>
-    <div class="dp-right">
-      <div class="dp-cals">
-        <div class="dp-cal">
-          <div class="dp-cal-hdr">
-            <button class="dp-nav" onclick="ddpNav(-1)">&#8249;</button>
-            <div style="display:flex;gap:4px">
-              <select class="dp-cal-sel" id="ddpM1" onchange="ddpGoTo(0,+this.value,+document.getElementById('ddpY1').value)"></select>
-              <select class="dp-cal-sel" id="ddpY1" onchange="ddpGoTo(0,+document.getElementById('ddpM1').value,+this.value)"></select>
-            </div>
-            <div style="width:24px"></div>
-          </div>
-          <div class="dp-grid" id="ddpG1"></div>
+    <div class="dp-custom-section">
+      <div class="dp-custom-lbl">Ozel Aralik</div>
+      <div class="dp-inputs-row">
+        <div class="dp-input-group">
+          <label>Baslangic</label>
+          <input type="date" id="ddpFromInput">
         </div>
-        <div class="dp-cal">
-          <div class="dp-cal-hdr">
-            <div style="width:24px"></div>
-            <div style="display:flex;gap:4px">
-              <select class="dp-cal-sel" id="ddpM2" onchange="ddpGoTo(1,+this.value,+document.getElementById('ddpY2').value)"></select>
-              <select class="dp-cal-sel" id="ddpY2" onchange="ddpGoTo(1,+document.getElementById('ddpM2').value,+this.value)"></select>
-            </div>
-            <button class="dp-nav" onclick="ddpNav(+1)">&#8250;</button>
-          </div>
-          <div class="dp-grid" id="ddpG2"></div>
+        <div class="dp-arrow">&#x2192;</div>
+        <div class="dp-input-group">
+          <label>Bitis</label>
+          <input type="date" id="ddpToInput">
         </div>
       </div>
+      <div class="dp-err" id="ddpValidErr">Bitis tarihi baslangictan once olamaz</div>
     </div>
-  </div>
-  <div class="dp-footer">
-    <div class="dp-fi" id="ddpInfo"></div>
-    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
-      <button onclick="closeDDP()" style="background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500">İptal</button>
-      <button id="ddpOkBtn" onclick="ddpApply()" disabled>Güncelle</button>
+    <div class="dp-footer-row">
+      <div class="dp-range-info" id="ddpRangeInfo"></div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="dp-btn-cancel" onclick="closeDDP()">Iptal</button>
+        <button class="dp-btn-apply" onclick="ddpApply()">Guncelle</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-// DASHBOARD DATE PICKER - Global scope
-var _ddp={
-  M:['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'],
-  D:['Pzt','Sal','Çrş','Prş','Cum','Cts','Paz'],
-  cal:[{y:0,m:0},{y:0,m:0}],
-  from:null,to:null,hov:null,step:0
-};
-
-function toggleDDP(){
-  var pop=document.getElementById('ddpPopup');
-  if(!pop)return;
-  if(pop.style.display==='flex'){closeDDP();return;}
-  var n=new Date(),m0=n.getMonth()-1,y0=n.getFullYear();
-  if(m0<0){m0=11;y0--;}
-  _ddp.cal[0]={y:y0,m:m0};
-  _ddp.cal[1]={y:n.getFullYear(),m:n.getMonth()};
-  _ddpRB();
-  _ddpUF();
-  var btn=document.getElementById('ddpTrigger');
-  if(!btn)return;
-  var rect=btn.getBoundingClientRect();
-  var pw=Math.min(680,window.innerWidth-16);
-  var left=rect.right-pw;
-  if(left<8)left=8;
-  var isMobile=window.innerWidth<=700;
-  if(isMobile){
-    pop.style.cssText='display:flex;flex-direction:column;position:fixed;bottom:0;left:0;width:100%;z-index:99999;border-radius:16px 16px 0 0;max-height:90vh;overflow-y:auto;background:#fff;border:1px solid #e0e0e0;box-shadow:0 -4px 24px rgba(0,0,0,.15)';
-  }else{
-    pop.style.cssText='display:flex;flex-direction:column;position:fixed;top:'+(rect.bottom+4)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999;background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.18)';
-  }
-  setTimeout(function(){document.addEventListener('mousedown',_ddpOut);},10);
-}
-
-function closeDDP(){
-  var pop=document.getElementById('ddpPopup');
-  if(pop)pop.style.display='none';
-  document.removeEventListener('mousedown',_ddpOut);
-}
-
-function _ddpOut(e){
-  var pop=document.getElementById('ddpPopup');
-  var btn=document.getElementById('ddpTrigger');
-  if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDDP();
-}
-
-function ddpPickP(val,label){
-  document.querySelectorAll('input[name="ddpR"]').forEach(function(r){r.checked=(r.value===val||r.value===val+'_2');});
-  if(val!=='custom'){
-    var pi=document.getElementById('dashPreset');if(pi)pi.value=val;
-    var fi=document.getElementById('dashFrom');if(fi)fi.value='';
-    var ti=document.getElementById('dashTo');if(ti)ti.value='';
-    var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=label;
-    closeDDP();
-    if(typeof loadDashboard==='function')loadDashboard();
-    else if(typeof window.loadDashboard==='function')window.loadDashboard();
-  } else {
-    _ddp.from=null;_ddp.to=null;_ddp.hov=null;_ddp.step=0;
-    _ddpRB();_ddpUF();
-    var b=document.getElementById('ddpOkBtn');
-    if(b){b.disabled=true;b.style.opacity='.45';}
-  }
-}
-
-function ddpNav(dir){
-  [0,1].forEach(function(i){
-    _ddp.cal[i].m+=dir;
-    if(_ddp.cal[i].m>11){_ddp.cal[i].m=0;_ddp.cal[i].y++;}
-    if(_ddp.cal[i].m<0){_ddp.cal[i].m=11;_ddp.cal[i].y--;}
+// DASHBOARD DATE PICKER
+var _ddpOpen=false;
+var DDP_PRESETS=[
+  {v:'today',l:'Bugun'},
+  {v:'yesterday',l:'Dun'},
+  {v:'last_7d',l:'Son 7 gun'},
+  {v:'last_14d',l:'Son 14 gun'},
+  {v:'last_30d',l:'Son 30 gun'},
+  {v:'this_month',l:'Bu ay'},
+  {v:'last_month',l:'Gecen ay'},
+  {v:'maximum',l:'Maksimum'}
+];
+function _ddpToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _ddpOffset(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _ddpFmt(iso){if(!iso)return'';var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+function _ddpSetDots(active){DDP_PRESETS.forEach(function(p){var d=document.getElementById('ddpPrDot_'+p.v);if(d){d.style.background=p.v===active?'#1877f2':'transparent';d.style.borderColor=p.v===active?'#1877f2':'transparent';}});}
+function _ddpBuild(){
+  var el=document.getElementById('ddpPresets');
+  if(!el||el.children.length)return;
+  DDP_PRESETS.forEach(function(p){
+    var row=document.createElement('div');row.className='dp-preset-item';
+    var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='ddpPrDot_'+p.v;
+    var txt=document.createElement('span');txt.textContent=p.l;
+    row.appendChild(dot);row.appendChild(txt);
+    row.onclick=function(){_ddpPickPreset(p.v,p.l);};
+    el.appendChild(row);
   });
-  _ddpRB();
 }
-
-function ddpGoTo(ci,m,y){
-  _ddp.cal[ci]={m:m,y:y};
-  if(ci===0&&(y>_ddp.cal[1].y||(y===_ddp.cal[1].y&&m>=_ddp.cal[1].m)))_ddp.cal[1]={m:m===11?0:m+1,y:m===11?y+1:y};
-  if(ci===1&&(y<_ddp.cal[0].y||(y===_ddp.cal[0].y&&m<=_ddp.cal[0].m)))_ddp.cal[0]={m:m===0?11:m-1,y:m===0?y-1:y};
-  _ddpRB();
-}
-
-function _ddpRB(){_ddpRC(0);_ddpRC(1);_ddpFD(0);_ddpFD(1);}
-
-function _ddpFD(i){
-  var s=i===0?'1':'2',cal=_ddp.cal[i];
-  var mEl=document.getElementById('ddpM'+s),yEl=document.getElementById('ddpY'+s);
-  if(!mEl||!yEl)return;
-  mEl.innerHTML=_ddp.M.map(function(m,idx){return '<option value="'+idx+'"'+(idx===cal.m?' selected':'')+'>'+m+'</option>';}).join('');
-  var h='';for(var y=cal.y-5;y<=cal.y+1;y++)h+='<option value="'+y+'"'+(y===cal.y?' selected':'')+'>'+y+'</option>';
-  yEl.innerHTML=h;
-}
-
-function _ddpRC(ci){
-  var s=ci===0?'1':'2',grid=document.getElementById('ddpG'+s);
-  if(!grid)return;
-  var cal=_ddp.cal[ci],today=new Date();today.setHours(0,0,0,0);
-  var fd=new Date(cal.y,cal.m,1),sdow=(fd.getDay()+6)%7,dim=new Date(cal.y,cal.m+1,0).getDate();
-  var h=_ddp.D.map(function(d){return '<div class="dp-dh">'+d+'</div>';}).join('');
-  for(var i=0;i<sdow;i++)h+='<div class="dp-d dp-empty"></div>';
-  for(var d=1;d<=dim;d++){
-    var date=new Date(cal.y,cal.m,d),ts=date.getTime(),cls=['dp-d'];
-    if(date>today)cls.push('dp-dis');
-    if(date.getTime()===today.getTime())cls.push('dp-today');
-    var fr=_ddp.from,to=_ddp.to||_ddp.hov;
-    if(fr&&to){
-      var lo=fr<to?fr:to,hi=fr<to?to:fr;
-      if(ts===lo.getTime()&&ts===hi.getTime())cls.push('dp-sel');
-      else if(ts===lo.getTime())cls.push(fr<=to?'dp-rs':'dp-re');
-      else if(ts===hi.getTime())cls.push(fr<=to?'dp-re':'dp-rs');
-      else if(date>lo&&date<hi)cls.push('dp-in-r');
-    }else if(fr&&ts===fr.getTime())cls.push('dp-sel');
-    var dis=date>today;
-    h+='<div class="'+cls.join(' ')+'"'+(dis?'':' onmouseenter="ddpHov('+ts+')" onmouseleave="ddpHov(null)" onclick="ddpClick('+ts+')"')+'>'+d+'</div>';
-  }
-  grid.innerHTML=h;
-}
-
-function ddpHov(ts){if(_ddp.step!==1)return;_ddp.hov=ts?new Date(ts):null;_ddpRB();}
-
-function ddpClick(ts){
-  var d=new Date(ts),t=new Date();t.setHours(0,0,0,0);
-  if(d>t)return;
-  if(_ddp.step===0||_ddp.step===2){_ddp.from=d;_ddp.to=null;_ddp.hov=null;_ddp.step=1;}
-  else{_ddp.to=d;_ddp.hov=null;_ddp.step=2;if(_ddp.from>_ddp.to){var tmp=_ddp.from;_ddp.from=_ddp.to;_ddp.to=tmp;}}
-  _ddpRB();_ddpUF();
-}
-
-function _ddpUF(){
-  var info=document.getElementById('ddpInfo');
-  var btn=document.getElementById('ddpOkBtn');
-  function fmtShow(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
-  function fmtShort(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
-  if(!info)return;
-  info.innerHTML='';
-  if(_ddp.from&&_ddp.to){
-    var s=document.createElement('span');
-    s.style.cssText='background:#e8f0fe;color:#1877f2;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600';
-    s.textContent='📅 '+fmtShort(_ddp.from)+' – '+fmtShow(_ddp.to);
-    info.appendChild(s);
-    if(btn)btn.disabled=false;
-  }else if(_ddp.from){
-    var s=document.createElement('span');
-    s.style.cssText='font-size:12px;color:#555';
-    s.textContent='📅 '+fmtShow(_ddp.from)+' – bitiş seçin...';
-    info.appendChild(s);
-    if(btn)btn.disabled=true;
-  }else{
-    var s=document.createElement('span');
-    s.style.cssText='font-size:11px;color:#aaa';
-    s.textContent='Başlangıç ve bitiş tarihi seçin';
-    info.appendChild(s);
-    if(btn)btn.disabled=true;
-  }
-}
-
-function ddpApply(){
-  if(!_ddp.from||!_ddp.to)return;
-  function pad(n){return String(n).padStart(2,'0');}
-  function fmtISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
-  function fmtShow(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
-  var fi=document.getElementById('dashFrom'),ti=document.getElementById('dashTo'),pi=document.getElementById('dashPreset');
-  if(fi)fi.value=fmtISO(_ddp.from);
-  if(ti)ti.value=fmtISO(_ddp.to);
-  if(pi)pi.value='custom';
-  var lbl=document.getElementById('ddpLabel');
-  if(lbl)lbl.textContent=fmtShow(_ddp.from)+' – '+fmtShow(_ddp.to);
+function _ddpPickPreset(val,label){
+  var from='',to=_ddpToday();
+  if(val==='today'){from=to;}
+  else if(val==='yesterday'){from=_ddpOffset(1);to=_ddpOffset(1);}
+  else if(val==='last_7d'){from=_ddpOffset(6);}
+  else if(val==='last_14d'){from=_ddpOffset(13);}
+  else if(val==='last_30d'){from=_ddpOffset(29);}
+  else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
+  else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
+  else if(val==='maximum'){from='2020-01-01';}
+  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
+  if(fi)fi.value=from;if(ti)ti.value=to;
+  _ddpSetDots(val);_ddpInfo();
+  var pre=document.getElementById('dashPreset'),mFr=document.getElementById('dashFrom'),mTo=document.getElementById('dashTo');
+  if(pre)pre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';
+  var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=label;
   closeDDP();
   var fn=typeof window.loadDashboard==='function'?window.loadDashboard:null;
-  if(fn)fn();
+  if(fn)setTimeout(fn,50);
+}
+function _ddpInfo(){
+  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
+  var info=document.getElementById('ddpRangeInfo'),err=document.getElementById('ddpValidErr');
+  if(!fi||!ti||!info)return;
+  var from=fi.value,to=ti.value;
+  if(from&&to&&from<=to){if(err)err.style.display='none';info.textContent=_ddpFmt(from)+' - '+_ddpFmt(to);}
+  else if(from&&to&&from>to){if(err)err.style.display='';info.textContent='';}
+  else{info.textContent='';}
+}
+function toggleDDP(){
+  var pop=document.getElementById('ddpPopup');if(!pop)return;
+  if(_ddpOpen){closeDDP();return;}
+  _ddpBuild();
+  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
+  if(fi)fi.value=_ddpOffset(6);if(ti)ti.value=_ddpToday();
+  _ddpSetDots('last_7d');_ddpInfo();
+  if(fi&&!fi._b){fi._b=true;fi.addEventListener('change',function(){_ddpSetDots('');_ddpInfo();});}
+  if(ti&&!ti._b){ti._b=true;ti.addEventListener('change',function(){_ddpSetDots('');_ddpInfo();});}
+  var btn=document.getElementById('ddpTrigger'),rect=btn.getBoundingClientRect();
+  var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;
+  if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}
+  else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}
+  _ddpOpen=true;
+  setTimeout(function(){document.addEventListener('mousedown',_ddpOut);},10);
+}
+function closeDDP(){
+  var pop=document.getElementById('ddpPopup');if(pop)pop.style.display='none';
+  _ddpOpen=false;document.removeEventListener('mousedown',_ddpOut);
+}
+function _ddpOut(e){
+  var pop=document.getElementById('ddpPopup'),btn=document.getElementById('ddpTrigger');
+  if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDDP();
+}
+function ddpApply(){
+  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
+  if(!fi||!ti||!fi.value||!ti.value){toast('Tarih secin');return;}
+  if(fi.value>ti.value){toast('Bitis tarihi baslangictan once olamaz');return;}
+  var pre=document.getElementById('dashPreset'),mFr=document.getElementById('dashFrom'),mTo=document.getElementById('dashTo');
+  if(pre)pre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;
+  var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=_ddpFmt(fi.value)+' - '+_ddpFmt(ti.value);
+  closeDDP();
+  var fn=typeof window.loadDashboard==='function'?window.loadDashboard:null;
+  if(fn)setTimeout(fn,50);
 }
 </script>
 
