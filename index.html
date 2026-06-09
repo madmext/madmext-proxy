@@ -11,6 +11,20 @@
 :root{--bg:#0f1011;--s:#1a1b1d;--s2:#242526;--b:#2d2e30;--b2:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#8a8d91;--g:#42b72a;--r:#fa3e3e;--y:#f0b429;--bl:#64b4ff}
 body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;font-size:13px;overflow:hidden}
 .app{display:flex;height:100vh}
+/* Hamburger - sadece mobil */
+#hamburgerBtn{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-direction:column;gap:5px;align-items:center;justify-content:center}
+#hamburgerBtn span{display:block;width:22px;height:2px;background:var(--t);border-radius:2px;transition:all .25s}
+#hamburgerBtn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+#hamburgerBtn.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+#hamburgerBtn.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+#sidebarOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:998;backdrop-filter:blur(2px)}
+@media(max-width:768px){
+  #hamburgerBtn{display:flex}
+  .sidebar{position:fixed!important;top:0;left:-240px;height:100vh;z-index:999;transition:left .25s cubic-bezier(.4,0,.2,1);box-shadow:4px 0 24px rgba(0,0,0,.3);overflow-y:auto}
+  .sidebar.open{left:0}
+  #sidebarOverlay.open{display:block}
+  .content{padding:12px 10px 80px}
+}
 .sidebar{width:220px;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{background:var(--s);border-bottom:1px solid var(--b);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -131,36 +145,42 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 </head>
 <body>
 <div class="app">
+<div id="sidebarOverlay" onclick="closeSidebar()"></div>
 <div class="sidebar">
   <div class="sidebar-logo"><div class="logo">Madmext <span>Ads</span></div></div>
   <div class="sidebar-section">Ana Menü</div>
-  <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
+  <div class="nav-item active" onclick="closeSidebar();nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
   <div class="sidebar-section">Reklam</div>
   <div class="nav-group open" id="navGrupReklam">
     <div class="nav-group-header" onclick="toggleGroup('navGrupReklam')"><span class="nav-icon">📢</span><span style="flex:1">Reklam</span><span style="font-size:10px">▾</span></div>
     <div class="nav-group-items">
-      <div class="nav-item nav-sub" onclick="nav('meta-ads',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Meta Ads</span></div>
+      <div class="nav-item nav-sub" onclick="closeSidebar();nav('meta-ads',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Meta Ads</span></div>
       <div class="nav-item nav-sub" style="opacity:.45;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>Google Ads</span><span class="nav-soon">Yakında</span></div>
       <div class="nav-item nav-sub" style="opacity:.45;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>TikTok</span><span class="nav-soon">Yakında</span></div>
     </div>
   </div>
   <div class="sidebar-section">AI Araçlar</div>
-  <div class="nav-item" onclick="nav('strateji',this)"><span class="nav-icon">🧠</span><span>Strateji</span><span class="nav-ai">AI</span></div>
-  <div class="nav-item" onclick="nav('optimizasyon',this)"><span class="nav-icon">⚙️</span><span>Optimizasyon</span><span class="nav-ai">AI</span></div>
-  <div class="nav-item" onclick="nav('hedef-kitle',this)"><span class="nav-icon">🎯</span><span>Hedef Kitle</span><span class="nav-ai">AI</span></div>
-  <div class="nav-item" onclick="nav('tasarim',this)"><span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('strateji',this)"><span class="nav-icon">🧠</span><span>Strateji</span><span class="nav-ai">AI</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('optimizasyon',this)"><span class="nav-icon">⚙️</span><span>Optimizasyon</span><span class="nav-ai">AI</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('hedef-kitle',this)"><span class="nav-icon">🎯</span><span>Hedef Kitle</span><span class="nav-ai">AI</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('tasarim',this)"><span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span></div>
   <div class="sidebar-section">Raporlama</div>
-  <div class="nav-item" onclick="nav('raporlar',this)"><span class="nav-icon">📊</span><span>Raporlar</span></div>
-  <div class="nav-item" onclick="nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('raporlar',this)"><span class="nav-icon">📊</span><span>Raporlar</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Diğer</div>
-  <div class="nav-item" onclick="nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
-  <div class="nav-item" onclick="nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
 </div>
 <div class="main">
   <div class="topbar">
-    <div>
-      <div class="page-title" id="pageTitle">Dashboard</div>
-      <div class="page-sub" id="pageSub">Genel bakış</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub" id="pageSub">Genel bakış</div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <span class="dot" id="dot"></span>
@@ -569,5 +589,33 @@ function ddpApply(){
 }
 </script>
 
+<script>
+function toggleSidebar(){
+  var sb=document.querySelector('.sidebar');
+  var ov=document.getElementById('sidebarOverlay');
+  var btn=document.getElementById('hamburgerBtn');
+  var isOpen=sb.classList.contains('open');
+  if(isOpen){closeSidebar();}
+  else{
+    sb.classList.add('open');
+    ov.classList.add('open');
+    btn.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+}
+function closeSidebar(){
+  var sb=document.querySelector('.sidebar');
+  var ov=document.getElementById('sidebarOverlay');
+  var btn=document.getElementById('hamburgerBtn');
+  sb.classList.remove('open');
+  ov.classList.remove('open');
+  btn.classList.remove('open');
+  document.body.style.overflow='';
+}
+// Resize'da desktop'a geçince sidebar'ı normalize et
+window.addEventListener('resize',function(){
+  if(window.innerWidth>768)closeSidebar();
+});
+</script>
 </body>
 </html>
