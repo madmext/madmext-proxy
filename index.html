@@ -170,6 +170,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="sidebar-section">Diğer</div>
   <div class="nav-item" onclick="closeSidebar();nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('kullanicilar',this)"><span class="nav-icon">👥</span><span>Kullanıcılar</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('claude-chat',this)"><span class="nav-icon">🤖</span><span>Claude AI</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
 </div>
 <div class="main">
@@ -215,6 +216,7 @@ const PAGES = {
   create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',   module:'create'},
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
   kullanicilar: {title:'Kullanicilar', sub:'Kullanici ve rol yonetimi', module:'kullanicilar'},
+  'claude-chat': {title:'Claude AI', sub:'AI asistan — Meta verilerinizi analiz edin', module:'claude-chat'},
 };
 
 window.currentPage = '';
