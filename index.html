@@ -417,34 +417,124 @@ initUser().then(function(){
 </script>
 
 <style id="dp-global-styles">
-.dp-popup{display:none;position:fixed;z-index:99999;background:#18191b;border:1px solid #2d2e30;border-radius:10px;box-shadow:0 16px 48px rgba(0,0,0,.9);flex-direction:column;min-width:320px}
+/* DATE PICKER — Beyaz tema, Meta Ads tarzı */
+.dp-popup{
+  display:none;position:fixed;z-index:99999;
+  background:#ffffff;
+  border:1px solid #e0e0e0;
+  border-radius:12px;
+  box-shadow:0 8px 40px rgba(0,0,0,.18);
+  flex-direction:column;min-width:320px;
+  font-family:'Inter',sans-serif;
+}
 .dp-body{display:flex}
-.dp-left{width:185px;flex-shrink:0;padding:8px 0;border-right:1px solid #2d2e30;overflow-y:auto;max-height:400px}
-.dp-sec-lbl{font-size:9px;color:#8a8d91;letter-spacing:1.2px;text-transform:uppercase;padding:8px 14px 3px;font-weight:600}
-.dp-ri{display:flex;align-items:center;gap:8px;padding:6px 14px;cursor:pointer;transition:background .1s}
-.dp-ri:hover{background:rgba(255,255,255,.05)}
+
+/* Sol panel - preset listesi */
+.dp-left{
+  width:190px;flex-shrink:0;padding:8px 0;
+  border-right:1px solid #f0f0f0;
+  overflow-y:auto;max-height:420px;
+  background:#fafafa;
+  border-radius:12px 0 0 0;
+}
+.dp-sec-lbl{
+  font-size:9px;color:#aaa;letter-spacing:1.2px;
+  text-transform:uppercase;padding:10px 14px 4px;font-weight:700
+}
+.dp-ri{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background .12s;border-radius:0}
+.dp-ri:hover{background:#f0f4ff}
+.dp-ri.selected{background:#e8f0fe}
 .dp-ri input[type=radio]{accent-color:#1877f2;cursor:pointer;width:13px;height:13px;flex-shrink:0;margin:0}
-.dp-ri span{font-size:12px;color:#e4e6eb;cursor:pointer}
-.dp-right{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px}
-.dp-cals{display:flex;gap:18px}
+.dp-ri span{font-size:12px;color:#333;cursor:pointer}
+.dp-ri.selected span{color:#1877f2;font-weight:600}
+
+/* Sağ panel - takvim */
+.dp-right{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;background:#fff;border-radius:0 12px 0 0}
+.dp-cals{display:flex;gap:20px}
 .dp-cal{flex:1;min-width:0}
-.dp-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.dp-nav{background:none;border:1px solid #2d2e30;color:#8a8d91;cursor:pointer;width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px}
-.dp-nav:hover{border-color:#1877f2;color:#1877f2}
-.dp-cal-sel{background:#242526;border:1px solid #3a3b3c;color:#e4e6eb;font-size:10px;padding:2px 5px;border-radius:4px;cursor:pointer}
-.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.dp-dh{font-size:9px;color:#8a8d91;text-align:center;padding:3px 0;text-transform:uppercase;font-weight:600}
-.dp-d{font-size:11px;text-align:center;padding:4px 0;cursor:pointer;border-radius:50%;color:#e4e6eb;transition:background .1s;font-family:monospace}
-.dp-d:not(.dp-empty):not(.dp-dis):hover{background:#3a3b3c}
-.dp-d.dp-empty,.dp-d.dp-dis{color:#444;cursor:default;pointer-events:none}
-.dp-d.dp-today{color:#1877f2;font-weight:700}
-.dp-d.dp-sel{background:#1877f2!important;color:#fff!important;border-radius:50%}
-.dp-d.dp-in-r{background:rgba(24,119,242,.18);border-radius:0;color:#e4e6eb}
-.dp-d.dp-rs{background:#1877f2!important;color:#fff!important;border-radius:50% 0 0 50%}
-.dp-d.dp-re{background:#1877f2!important;color:#fff!important;border-radius:0 50% 50% 0}
+.dp-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+
+.dp-nav{
+  background:none;border:1px solid #e0e0e0;color:#666;
+  cursor:pointer;width:26px;height:26px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  transition:all .15s
+}
+.dp-nav:hover{border-color:#1877f2;color:#1877f2;background:#f0f4ff}
+.dp-cal-sel{
+  background:#fff;border:1px solid #e0e0e0;color:#333;
+  font-size:11px;padding:3px 6px;border-radius:6px;cursor:pointer;
+  font-weight:600
+}
+.dp-cal-sel:hover{border-color:#1877f2}
+
+/* Grid */
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-dh{font-size:9px;color:#aaa;text-align:center;padding:4px 0;text-transform:uppercase;font-weight:700}
+.dp-d{
+  font-size:12px;text-align:center;padding:6px 2px;
+  cursor:pointer;border-radius:50%;color:#333;
+  transition:background .1s;
+  line-height:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+}
+.dp-d:not(.dp-empty):not(.dp-dis):hover{background:#f0f4ff;color:#1877f2}
+.dp-d.dp-empty,.dp-d.dp-dis{color:#ccc;cursor:default;pointer-events:none}
+.dp-d.dp-today{color:#1877f2;font-weight:700;border:1.5px solid #1877f2}
+.dp-d.dp-sel{background:#1877f2!important;color:#fff!important;border-radius:50%;border:none}
+.dp-d.dp-in-r{background:#e8f0fe;border-radius:0;color:#1877f2}
+.dp-d.dp-rs{background:#1877f2!important;color:#fff!important;border-radius:50% 0 0 50%;border:none}
+.dp-d.dp-re{background:#1877f2!important;color:#fff!important;border-radius:0 50% 50% 0;border:none}
 .dp-d.dp-rs.dp-re{border-radius:50%}
-.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #2d2e30;padding:8px 14px;flex-shrink:0}
-.dp-fi{font-size:11px;color:#8a8d91;font-family:monospace}
+
+/* Footer */
+.dp-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:1px solid #f0f0f0;padding:10px 16px;
+  background:#fff;border-radius:0 0 12px 12px;
+}
+.dp-fi{font-size:12px;color:#555;font-weight:500}
+
+/* Seçili aralık label */
+.dp-range-label{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#e8f0fe;color:#1877f2;border-radius:20px;
+  padding:4px 12px;font-size:12px;font-weight:600
+}
+
+/* Güncelle butonu */
+#dpOkBtn{
+  background:#1877f2;border:none;color:#fff;
+  padding:7px 18px;border-radius:8px;cursor:pointer;
+  font-size:12px;font-weight:600;
+  transition:all .15s;
+}
+#dpOkBtn:not(:disabled):hover{background:#1565d8;transform:translateY(-1px)}
+#dpOkBtn:disabled{background:#c0d6f9;cursor:not-allowed;opacity:1}
+#ddpOkBtn{
+  background:#1877f2;border:none;color:#fff;
+  padding:7px 18px;border-radius:8px;cursor:pointer;
+  font-size:12px;font-weight:600;transition:all .15s;
+}
+#ddpOkBtn:not(:disabled):hover{background:#1565d8}
+#ddpOkBtn:disabled{background:#c0d6f9;cursor:not-allowed;opacity:1}
+
+/* Mobil — takvimler dikey */
+@media(max-width:700px){
+  .dp-popup{position:fixed!important;bottom:0!important;top:auto!important;left:0!important;right:0!important;width:100%!important;border-radius:16px 16px 0 0;max-height:90vh;overflow-y:auto}
+  .dp-body{flex-direction:column}
+  .dp-left{width:100%;max-height:160px;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid #f0f0f0;border-radius:16px 16px 0 0;white-space:nowrap;display:flex;flex-direction:row;flex-wrap:nowrap;padding:8px}
+  .dp-sec-lbl{display:none}
+  .dp-ri{padding:5px 10px;border-radius:20px;border:1px solid #e0e0e0;margin:2px;display:inline-flex;flex-shrink:0}
+  .dp-ri:hover,.dp-ri.selected{background:#e8f0fe;border-color:#1877f2}
+  .dp-right{padding:12px}
+  .dp-cals{flex-direction:column;gap:16px}
+  .dp-cal:last-child{display:none} /* Mobilde tek takvim */
+}
+
+/* DP trigger buton - seçili aralık gösterimi */
+.dp-btn{transition:all .15s}
+.dp-btn:hover{border-color:#1877f2;color:#1877f2}
+#dpLabel,#ddpLabel{font-variant-numeric:tabular-nums}
 </style>
 <div id="dpPopup" style="display:none">
   <div class="dp-body">
@@ -494,11 +584,12 @@ initUser().then(function(){
     </div>
   </div>
   <div class="dp-footer">
-    <div class="dp-fi" id="dpInfo">Tarih seçin</div>
+    <div class="dp-fi" id="dpInfo">
+      <span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>
+    </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <span style="font-size:10px;color:#8a8d91">Belgrad Saati</span>
-      <button onclick="closeDP()" style="background:#242526;border:1px solid #3a3b3c;color:#e4e6eb;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px">İptal</button>
-      <button id="dpOkBtn" onclick="dpApply()" disabled style="background:#1877f2;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;opacity:.45">Güncelle</button>
+      <button onclick="closeDP()" style="background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500">İptal</button>
+      <button id="dpOkBtn" onclick="dpApply()" disabled>Güncelle</button>
     </div>
   </div>
 </div>
@@ -630,32 +721,32 @@ function _dpUF(){
   function fmt(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
   function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
   if(_dp.from&&_dp.to){
-    if(info)info.textContent=fmts(_dp.from)+' – '+fmt(_dp.to);
-    if(btn){btn.disabled=false;btn.style.opacity='1';}
+    if(info)info.innerHTML='<span class="dp-range-label">📅 '+fmts(_dp.from)+' – '+fmt(_dp.to)+'</span>';
+    if(btn){btn.disabled=false;}
   }else if(_dp.from){
-    if(info)info.textContent=fmt(_dp.from)+' – ...';
-    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+    if(info)info.innerHTML='<span style="color:#1877f2;font-size:12px;font-weight:600">📅 '+fmt(_dp.from)+' – <span style="color:#aaa">bitiş seçin...</span></span>';
+    if(btn){btn.disabled=true;}
   }else{
-    if(info)info.textContent='Tarih seçin';
-    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+    if(info)info.innerHTML='<span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>';
+    if(btn){btn.disabled=true;}
   }
 }
 
 function dpApply(){
   if(!_dp.from||!_dp.to)return;
   function pad(n){return String(n).padStart(2,'0');}
-  function fmt(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function fmtISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function fmtBtn(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
   var fi=document.getElementById('mFrom'),ti=document.getElementById('mTo'),pi=document.getElementById('mPreset');
-  if(fi)fi.value=fmt(_dp.from);
-  if(ti)ti.value=fmt(_dp.to);
+  if(fi)fi.value=fmtISO(_dp.from);
+  if(ti)ti.value=fmtISO(_dp.to);
   if(pi)pi.value='custom';
-  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
-  function fmtl(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  // Buton: "1 Haz 2026 – 3 Haz 2026"
   var lbl=document.getElementById('dpLabel');
-  if(lbl)lbl.textContent=fmts(_dp.from)+' – '+fmtl(_dp.to);
+  if(lbl)lbl.textContent=fmtBtn(_dp.from)+' – '+fmtBtn(_dp.to);
   closeDP();
-  if(typeof mLoad==='function')mLoad();
-  else if(typeof window.mLoad==='function')window.mLoad();
+  var fn=typeof window.mLoad==='function'?window.mLoad:(typeof mLoad==='function'?mLoad:null);
+  if(fn)fn();
 }
 </script>
 
@@ -704,11 +795,12 @@ function dpApply(){
     </div>
   </div>
   <div class="dp-footer">
-    <div class="dp-fi" id="ddpInfo">Tarih seçin</div>
+    <div class="dp-fi" id="ddpInfo">
+      <span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>
+    </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <span style="font-size:10px;color:#8a8d91">Belgrad Saati</span>
-      <button onclick="closeDDP()" style="background:#242526;border:1px solid #3a3b3c;color:#e4e6eb;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px">İptal</button>
-      <button id="ddpOkBtn" onclick="ddpApply()" disabled style="background:#1877f2;border:none;color:#fff;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px;opacity:.45">Güncelle</button>
+      <button onclick="closeDDP()" style="background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500">İptal</button>
+      <button id="ddpOkBtn" onclick="ddpApply()" disabled>Güncelle</button>
     </div>
   </div>
 </div>
@@ -838,32 +930,31 @@ function _ddpUF(){
   function fmt(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
   function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
   if(_ddp.from&&_ddp.to){
-    if(info)info.textContent=fmts(_ddp.from)+' – '+fmt(_ddp.to);
-    if(btn){btn.disabled=false;btn.style.opacity='1';}
+    if(info)info.innerHTML='<span class="dp-range-label">📅 '+fmts(_ddp.from)+' – '+fmt(_ddp.to)+'</span>';
+    if(btn){btn.disabled=false;}
   }else if(_ddp.from){
-    if(info)info.textContent=fmt(_ddp.from)+' – ...';
-    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+    if(info)info.innerHTML='<span style="color:#1877f2;font-size:12px;font-weight:600">📅 '+fmt(_ddp.from)+' – <span style="color:#aaa">bitiş seçin...</span></span>';
+    if(btn){btn.disabled=true;}
   }else{
-    if(info)info.textContent='Tarih seçin';
-    if(btn){btn.disabled=true;btn.style.opacity='.45';}
+    if(info)info.innerHTML='<span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>';
+    if(btn){btn.disabled=true;}
   }
 }
 
 function ddpApply(){
   if(!_ddp.from||!_ddp.to)return;
   function pad(n){return String(n).padStart(2,'0');}
-  function fmt(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function fmtISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  function fmtBtn(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
   var fi=document.getElementById('dashFrom'),ti=document.getElementById('dashTo'),pi=document.getElementById('dashPreset');
-  if(fi)fi.value=fmt(_ddp.from);
-  if(ti)ti.value=fmt(_ddp.to);
+  if(fi)fi.value=fmtISO(_ddp.from);
+  if(ti)ti.value=fmtISO(_ddp.to);
   if(pi)pi.value='custom';
-  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
-  function fmtl(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
   var lbl=document.getElementById('ddpLabel');
-  if(lbl)lbl.textContent=fmts(_ddp.from)+' – '+fmtl(_ddp.to);
+  if(lbl)lbl.textContent=fmtBtn(_ddp.from)+' – '+fmtBtn(_ddp.to);
   closeDDP();
-  if(typeof loadDashboard==='function')loadDashboard();
-  else if(typeof window.loadDashboard==='function')window.loadDashboard();
+  var dfn=typeof window.loadDashboard==='function'?window.loadDashboard:(typeof loadDashboard==='function'?loadDashboard:null);
+  if(dfn)dfn();
 }
 </script>
 
