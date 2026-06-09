@@ -127,22 +127,10 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
-/* Mobil */
-@media(max-width:768px){
-  body{overflow:auto}
-  .app{flex-direction:column;height:auto;min-height:100vh}
-  .sidebar{display:none}
-  .main{flex:1}
-  .topbar{padding:8px 12px}
-  .conn-input{width:140px;font-size:10px}
-  .content{padding:12px}
-  #mobileNav{display:flex!important}
-}
+@media(max-width:768px){body{overflow:auto}.app{flex-direction:column;height:auto;min-height:100vh}.sidebar{display:none}.main{flex:1}.topbar{padding:8px 12px}.conn-input{width:140px;font-size:10px}.content{padding:12px 8px}#mobileNav{display:flex!important}.content{padding-bottom:70px}}
 #mobileNav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--s);border-top:1px solid var(--b);z-index:1000;padding:6px 0 env(safe-area-inset-bottom,6px)}
-.mnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;color:var(--m);font-size:9px;transition:color .15s}
-.mnav-item.active{color:var(--a)}
-.mnav-item span:first-child{font-size:18px}
-.role-locked{opacity:.35;cursor:not-allowed!important;pointer-events:none}
+.mnav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0;color:var(--m);font-size:9px;transition:color .15s;border:none;background:none}
+.mnav-item.active{color:var(--a)}.mnav-item span:first-child{font-size:18px}
 </style>
 </head>
 <body>
@@ -170,7 +158,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="nav-item" onclick="nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Diğer</div>
   <div class="nav-item" onclick="nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
-  <div class="nav-item" onclick="nav('kullanicilar',this)"><span class="nav-icon">👥</span><span>Kullanıcılar</span></div>
   <div class="nav-item" onclick="nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
 </div>
 <div class="main">
@@ -184,10 +171,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
       <input type="text" class="conn-input" id="proxyUrl" placeholder="Railway URL...">
       <button class="btn sm" onclick="connect()">Bağlan</button>
       <div id="userInfo" style="display:none;align-items:center;gap:8px;padding-left:8px;border-left:1px solid var(--b)">
-        <div>
-          <div style="font-size:12px;font-weight:600;color:var(--t)" id="topUserName"></div>
-          <div style="font-size:10px;color:var(--m)" id="topUserRole"></div>
-        </div>
+        <div><div style="font-size:12px;font-weight:600;color:var(--t)" id="topUserName"></div><div style="font-size:10px;color:var(--m)" id="topUserRole"></div></div>
         <button class="btn sm sec" onclick="doLogout()" style="white-space:nowrap">⬠ Çıkış</button>
       </div>
     </div>
@@ -196,24 +180,12 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 </div>
 </div>
 <div id="toast"></div>
-
-<!-- Mobil Alt Navigasyon -->
 <div id="mobileNav">
-  <div class="mnav-item active" id="mn-dashboard" onclick="nav('dashboard',null);setMobileActive('mn-dashboard')">
-    <span>🏠</span><span>Ana Sayfa</span>
-  </div>
-  <div class="mnav-item" id="mn-meta" onclick="nav('meta-ads',null);setMobileActive('mn-meta')">
-    <span>📢</span><span>Meta Ads</span>
-  </div>
-  <div class="mnav-item" id="mn-raporlar" onclick="nav('raporlar',null);setMobileActive('mn-raporlar')">
-    <span>📊</span><span>Raporlar</span>
-  </div>
-  <div class="mnav-item" id="mn-gorevler" onclick="nav('gorevler',null);setMobileActive('mn-gorevler')">
-    <span>⏰</span><span>Görevler</span>
-  </div>
-  <div class="mnav-item" id="mn-ayarlar" onclick="nav('ayarlar',null);setMobileActive('mn-ayarlar')">
-    <span>⚙️</span><span>Ayarlar</span>
-  </div>
+  <button class="mnav-item active" id="mn-dashboard" onclick="nav('dashboard',null);setMobileActive('mn-dashboard')"><span>🏠</span><span>Ana Sayfa</span></button>
+  <button class="mnav-item" id="mn-meta" onclick="nav('meta-ads',null);setMobileActive('mn-meta')"><span>📢</span><span>Meta Ads</span></button>
+  <button class="mnav-item" id="mn-raporlar" onclick="nav('raporlar',null);setMobileActive('mn-raporlar')"><span>📊</span><span>Raporlar</span></button>
+  <button class="mnav-item" id="mn-gorevler" onclick="nav('gorevler',null);setMobileActive('mn-gorevler')"><span>⏰</span><span>Görevler</span></button>
+  <button class="mnav-item" id="mn-ayarlar" onclick="nav('ayarlar',null);setMobileActive('mn-ayarlar')"><span>⚙️</span><span>Ayarlar</span></button>
 </div>
 
 <script src="/modules/shared.js"></script>
@@ -228,7 +200,6 @@ const PAGES = {
   raporlar:     {title:'Raporlar',     sub:'Performans raporları',    module:'raporlar'},
   gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri', module:'gorevler'},
   create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',   module:'create'},
-  kullanicilar: {title:'Kullanıcılar',  sub:'Kullanıcı yönetimi',          module:'kullanicilar'},
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
 };
 
@@ -246,12 +217,7 @@ var _navBusy = false;
 async function nav(page, el) {
   if(page === window.currentPage) return;
   if(_navBusy) return;
-  // Rol kısıtı kontrol
-  if(window._currentUser && !canAccess(page)){
-    toast('Bu sayfaya erişim yetkiniz yok');
-    _navBusy = false;
-    return;
-  }
+  if(window._currentUser&&!canAccess(page)){toast('Bu sayfaya erişim yetkiniz yok');return;}
   _navBusy = true;
 
   // Önceki modülün listener'larını temizle
@@ -302,8 +268,7 @@ async function loadModule(page) {
 
     el.innerHTML = tmp.innerHTML;
 
-    // Script'leri global scope'ta çalıştır
-    // HTML entity decode gerekli: innerHTML parse ederken &amp; → & yapılmaz
+    // Script'leri global scope'ta çalıştır + entity decode
     scripts.forEach(function(code){
       var s = document.createElement('script');
       var tmp = document.createElement('textarea');
@@ -311,13 +276,11 @@ async function loadModule(page) {
       s.textContent = tmp.value;
       document.body.appendChild(s);
     });
-
-    // Script tag'leri async yüklenir - biraz bekle sonra event gönder
     setTimeout(function(){
-      if(window._isConnected) {
+      if(window._isConnected){
         window.dispatchEvent(new CustomEvent('mx:connected'));
       }
-    }, 50);
+    },50);
 
   } catch(e) {
     el.innerHTML = '<div class="module-loading" style="color:var(--r)">❌ ' + (meta.module) + '.html yüklenemedi: ' + e.message + '</div>';
@@ -337,146 +300,61 @@ async function createCamp() {
   else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
 }
 
-// ── Rol sistemi ──────────────────────────────────────────────────────────
-var ROLE_PERMISSIONS = {
-  admin:  ['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler','create','ayarlar','kullanicilar'],
-  editor: ['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler'],
-  viewer: ['dashboard','meta-ads','raporlar']
-};
-
-window._currentUser = null;
-
+// ── Rol sistemi ──
+var ROLE_PERMISSIONS={admin:['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler','create','ayarlar','kullanicilar'],editor:['dashboard','meta-ads','strateji','optimizasyon','hedef-kitle','tasarim','raporlar','gorevler'],viewer:['dashboard','meta-ads','raporlar']};
+window._currentUser=null;
 async function initUser(){
   try{
-    var r = await fetch('/auth/me',{credentials:'include'});
-    var ct = r.headers.get('content-type')||'';
-    // JSON değilse (HTML redirect, Railway proxy hatası vs) - devam et
-    if(!ct.includes('json')){
-      console.log('Auth: JSON yanıt yok, devam ediliyor');
-      return;
-    }
-    if(r.status===401){ return; }
-    var u = await r.json();
-    window._currentUser = u;
-    var info = document.getElementById('userInfo');
+    var r=await fetch('/auth/me',{credentials:'include'});
+    var ct=r.headers.get('content-type')||'';
+    if(!ct.includes('json'))return;
+    if(r.status===401)return;
+    var u=await r.json();
+    window._currentUser=u;
+    var info=document.getElementById('userInfo');
     if(info){
       info.style.display='flex';
-      document.getElementById('topUserName').textContent = u.name||u.email;
-      var roleLabels = {admin:'👑 Admin', editor:'✏️ Editör', viewer:'👁 Görüntüleyici'};
-      document.getElementById('topUserRole').textContent = roleLabels[u.role]||u.role;
+      document.getElementById('topUserName').textContent=u.name||u.email;
+      var rl={admin:'👑 Admin',editor:'✏️ Editör',viewer:'👁 Görüntüleyici'};
+      document.getElementById('topUserRole').textContent=rl[u.role]||u.role;
     }
-    applyRoleRestrictions(u.role);
-  }catch(e){ console.log('Auth check failed:', e); }
+  }catch(e){console.log('Auth:',e.message);}
 }
-
-function applyRoleRestrictions(role){
-  var allowed = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.viewer;
-  // Sidebar'daki nav item'ları kilitle
-  document.querySelectorAll('.nav-item[onclick]').forEach(function(el){
-    var match = el.getAttribute('onclick').match(/nav\('([^']+)'/);
-    if(match && !allowed.includes(match[1])){
-      el.classList.add('role-locked');
-      el.title = 'Bu sayfaya erişim yetkiniz yok';
-    }
-  });
-  // Admin-only sayfaları gizle
-  if(role !== 'admin'){
-    var adminEl = document.getElementById('navKullanicilar');
-    if(adminEl) adminEl.style.display='none';
-  }
-}
-
 function canAccess(page){
-  var role = (window._currentUser && window._currentUser.role) || 'viewer';
-  var allowed = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.viewer;
-  return allowed.includes(page);
+  var role=(window._currentUser&&window._currentUser.role)||'admin';
+  return (ROLE_PERMISSIONS[role]||ROLE_PERMISSIONS.admin).includes(page);
 }
-
-async function doLogout(){
-  await fetch('/auth/logout',{method:'POST',credentials:'include'});
-  window.location.href='/login';
-}
-
-// ── Mobil nav ──────────────────────────────────────────────────────────
-function setMobileActive(id){
-  document.querySelectorAll('.mnav-item').forEach(function(el){ el.classList.remove('active'); });
-  var el = document.getElementById(id);
-  if(el) el.classList.add('active');
-}
-
-// ── Init ──────────────────────────────────────────────────────────────────
-document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
-
-// Önce kullanıcı kontrolü
+function doLogout(){fetch('/auth/logout',{method:'POST',credentials:'include'}).then(function(){window.location.href='/login';});}
+function setMobileActive(id){document.querySelectorAll('.mnav-item').forEach(function(el){el.classList.remove('active');});var el=document.getElementById(id);if(el)el.classList.add('active');}
+// ── Init ──
+document.getElementById('proxyUrl').value=localStorage.getItem('proxyUrl')||'https://web-production-e5865.up.railway.app';
 initUser().then(function(){
-  var startPage = window._currentUser ? 'dashboard' : 'dashboard';
-  nav(startPage, document.querySelector('.nav-item.active'));
-  setInterval(updateTaskBadge, 60000);
-  setTimeout(connect, 800);
+  nav('dashboard',document.querySelector('.nav-item.active'));
+  setInterval(updateTaskBadge,60000);
+  setTimeout(connect,800);
 });
 </script>
 
 <style id="dp-global-styles">
-/* DATE PICKER — Beyaz tema, Meta Ads tarzı */
-.dp-popup{
-  display:none;position:fixed;z-index:99999;
-  background:#ffffff;
-  border:1px solid #e0e0e0;
-  border-radius:12px;
-  box-shadow:0 8px 40px rgba(0,0,0,.18);
-  flex-direction:column;min-width:320px;
-  font-family:'Inter',sans-serif;
-}
+.dp-popup{display:none;position:fixed;z-index:99999;background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.18);flex-direction:column;font-family:'Inter',sans-serif}
 .dp-body{display:flex}
-
-/* Sol panel - preset listesi */
-.dp-left{
-  width:190px;flex-shrink:0;padding:8px 0;
-  border-right:1px solid #f0f0f0;
-  overflow-y:auto;max-height:420px;
-  background:#fafafa;
-  border-radius:12px 0 0 0;
-}
-.dp-sec-lbl{
-  font-size:9px;color:#aaa;letter-spacing:1.2px;
-  text-transform:uppercase;padding:10px 14px 4px;font-weight:700
-}
-.dp-ri{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background .12s;border-radius:0}
+.dp-left{width:185px;flex-shrink:0;padding:8px 0;border-right:1px solid #f0f0f0;overflow-y:auto;max-height:420px;background:#fafafa;border-radius:12px 0 0 0}
+.dp-sec-lbl{font-size:9px;color:#aaa;letter-spacing:1.2px;text-transform:uppercase;padding:10px 14px 4px;font-weight:700}
+.dp-ri{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;transition:background .12s}
 .dp-ri:hover{background:#f0f4ff}
-.dp-ri.selected{background:#e8f0fe}
 .dp-ri input[type=radio]{accent-color:#1877f2;cursor:pointer;width:13px;height:13px;flex-shrink:0;margin:0}
 .dp-ri span{font-size:12px;color:#333;cursor:pointer}
-.dp-ri.selected span{color:#1877f2;font-weight:600}
-
-/* Sağ panel - takvim */
 .dp-right{flex:1;padding:16px;display:flex;flex-direction:column;gap:12px;background:#fff;border-radius:0 12px 0 0}
 .dp-cals{display:flex;gap:20px}
 .dp-cal{flex:1;min-width:0}
 .dp-cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-
-.dp-nav{
-  background:none;border:1px solid #e0e0e0;color:#666;
-  cursor:pointer;width:26px;height:26px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;font-size:14px;
-  transition:all .15s
-}
+.dp-nav{background:none;border:1px solid #e0e0e0;color:#666;cursor:pointer;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
 .dp-nav:hover{border-color:#1877f2;color:#1877f2;background:#f0f4ff}
-.dp-cal-sel{
-  background:#fff;border:1px solid #e0e0e0;color:#333;
-  font-size:11px;padding:3px 6px;border-radius:6px;cursor:pointer;
-  font-weight:600
-}
+.dp-cal-sel{background:#fff;border:1px solid #e0e0e0;color:#333;font-size:11px;padding:3px 6px;border-radius:6px;cursor:pointer;font-weight:600}
 .dp-cal-sel:hover{border-color:#1877f2}
-
-/* Grid */
 .dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
 .dp-dh{font-size:9px;color:#aaa;text-align:center;padding:4px 0;text-transform:uppercase;font-weight:700}
-.dp-d{
-  font-size:12px;text-align:center;padding:6px 2px;
-  cursor:pointer;border-radius:50%;color:#333;
-  transition:background .1s;
-  line-height:1;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
-}
+.dp-d{font-size:12px;text-align:center;padding:5px 2px;cursor:pointer;border-radius:50%;color:#333;transition:background .1s;line-height:1;display:flex;align-items:center;justify-content:center;aspect-ratio:1}
 .dp-d:not(.dp-empty):not(.dp-dis):hover{background:#f0f4ff;color:#1877f2}
 .dp-d.dp-empty,.dp-d.dp-dis{color:#ccc;cursor:default;pointer-events:none}
 .dp-d.dp-today{color:#1877f2;font-weight:700;border:1.5px solid #1877f2}
@@ -485,56 +363,22 @@ initUser().then(function(){
 .dp-d.dp-rs{background:#1877f2!important;color:#fff!important;border-radius:50% 0 0 50%;border:none}
 .dp-d.dp-re{background:#1877f2!important;color:#fff!important;border-radius:0 50% 50% 0;border:none}
 .dp-d.dp-rs.dp-re{border-radius:50%}
-
-/* Footer */
-.dp-footer{
-  display:flex;align-items:center;justify-content:space-between;
-  border-top:1px solid #f0f0f0;padding:10px 16px;
-  background:#fff;border-radius:0 0 12px 12px;
-}
-.dp-fi{font-size:12px;color:#555;font-weight:500}
-
-/* Seçili aralık label */
-.dp-range-label{
-  display:inline-flex;align-items:center;gap:6px;
-  background:#e8f0fe;color:#1877f2;border-radius:20px;
-  padding:4px 12px;font-size:12px;font-weight:600
-}
-
-/* Güncelle butonu */
-#dpOkBtn{
-  background:#1877f2;border:none;color:#fff;
-  padding:7px 18px;border-radius:8px;cursor:pointer;
-  font-size:12px;font-weight:600;
-  transition:all .15s;
-}
-#dpOkBtn:not(:disabled):hover{background:#1565d8;transform:translateY(-1px)}
-#dpOkBtn:disabled{background:#c0d6f9;cursor:not-allowed;opacity:1}
-#ddpOkBtn{
-  background:#1877f2;border:none;color:#fff;
-  padding:7px 18px;border-radius:8px;cursor:pointer;
-  font-size:12px;font-weight:600;transition:all .15s;
-}
-#ddpOkBtn:not(:disabled):hover{background:#1565d8}
-#ddpOkBtn:disabled{background:#c0d6f9;cursor:not-allowed;opacity:1}
-
-/* Mobil — takvimler dikey */
+.dp-footer{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #f0f0f0;padding:10px 16px;background:#fff;border-radius:0 0 12px 12px;gap:8px}
+.dp-fi{font-size:12px;color:#555;font-weight:500;flex:1;min-height:28px;display:flex;align-items:center}
+#dpOkBtn,#ddpOkBtn{background:#1877f2;border:none;color:#fff;padding:7px 18px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:all .15s;white-space:nowrap}
+#dpOkBtn:not(:disabled):hover,#ddpOkBtn:not(:disabled):hover{background:#1565d8}
+#dpOkBtn:disabled,#ddpOkBtn:disabled{background:#c0d6f9;cursor:not-allowed}
 @media(max-width:700px){
   .dp-popup{position:fixed!important;bottom:0!important;top:auto!important;left:0!important;right:0!important;width:100%!important;border-radius:16px 16px 0 0;max-height:90vh;overflow-y:auto}
   .dp-body{flex-direction:column}
-  .dp-left{width:100%;max-height:160px;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid #f0f0f0;border-radius:16px 16px 0 0;white-space:nowrap;display:flex;flex-direction:row;flex-wrap:nowrap;padding:8px}
+  .dp-left{width:100%;max-height:120px;overflow-x:auto;overflow-y:hidden;border-right:none;border-bottom:1px solid #f0f0f0;border-radius:16px 16px 0 0;display:flex;flex-direction:row;padding:8px;gap:4px}
   .dp-sec-lbl{display:none}
-  .dp-ri{padding:5px 10px;border-radius:20px;border:1px solid #e0e0e0;margin:2px;display:inline-flex;flex-shrink:0}
-  .dp-ri:hover,.dp-ri.selected{background:#e8f0fe;border-color:#1877f2}
+  .dp-ri{padding:5px 12px;border-radius:20px;border:1px solid #e0e0e0;flex-shrink:0;white-space:nowrap}
+  .dp-ri:hover{background:#e8f0fe;border-color:#1877f2}
   .dp-right{padding:12px}
   .dp-cals{flex-direction:column;gap:16px}
-  .dp-cal:last-child{display:none} /* Mobilde tek takvim */
+  .dp-cal+.dp-cal{display:none}
 }
-
-/* DP trigger buton - seçili aralık gösterimi */
-.dp-btn{transition:all .15s}
-.dp-btn:hover{border-color:#1877f2;color:#1877f2}
-#dpLabel,#ddpLabel{font-variant-numeric:tabular-nums}
 </style>
 <div id="dpPopup" style="display:none">
   <div class="dp-body">
@@ -584,10 +428,8 @@ initUser().then(function(){
     </div>
   </div>
   <div class="dp-footer">
-    <div class="dp-fi" id="dpInfo">
-      <span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
+    <div class="dp-fi" id="dpInfo"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
       <button onclick="closeDP()" style="background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500">İptal</button>
       <button id="dpOkBtn" onclick="dpApply()" disabled>Güncelle</button>
     </div>
@@ -717,18 +559,30 @@ function dpClick(ts){
 }
 
 function _dpUF(){
-  var info=document.getElementById('dpInfo'),btn=document.getElementById('dpOkBtn');
-  function fmt(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
-  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  var info=document.getElementById('dpInfo');
+  var btn=document.getElementById('dpOkBtn');
+  function fmtShow(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  function fmtShort(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  if(!info)return;
+  info.innerHTML='';
   if(_dp.from&&_dp.to){
-    if(info)info.innerHTML='<span class="dp-range-label">📅 '+fmts(_dp.from)+' – '+fmt(_dp.to)+'</span>';
-    if(btn){btn.disabled=false;}
+    var s=document.createElement('span');
+    s.style.cssText='background:#e8f0fe;color:#1877f2;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600';
+    s.textContent='📅 '+fmtShort(_dp.from)+' – '+fmtShow(_dp.to);
+    info.appendChild(s);
+    if(btn)btn.disabled=false;
   }else if(_dp.from){
-    if(info)info.innerHTML='<span style="color:#1877f2;font-size:12px;font-weight:600">📅 '+fmt(_dp.from)+' – <span style="color:#aaa">bitiş seçin...</span></span>';
-    if(btn){btn.disabled=true;}
+    var s=document.createElement('span');
+    s.style.cssText='font-size:12px;color:#555';
+    s.textContent='📅 '+fmtShow(_dp.from)+' – bitiş seçin...';
+    info.appendChild(s);
+    if(btn)btn.disabled=true;
   }else{
-    if(info)info.innerHTML='<span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>';
-    if(btn){btn.disabled=true;}
+    var s=document.createElement('span');
+    s.style.cssText='font-size:11px;color:#aaa';
+    s.textContent='Başlangıç ve bitiş tarihi seçin';
+    info.appendChild(s);
+    if(btn)btn.disabled=true;
   }
 }
 
@@ -736,16 +590,15 @@ function dpApply(){
   if(!_dp.from||!_dp.to)return;
   function pad(n){return String(n).padStart(2,'0');}
   function fmtISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
-  function fmtBtn(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  function fmtShow(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
   var fi=document.getElementById('mFrom'),ti=document.getElementById('mTo'),pi=document.getElementById('mPreset');
   if(fi)fi.value=fmtISO(_dp.from);
   if(ti)ti.value=fmtISO(_dp.to);
   if(pi)pi.value='custom';
-  // Buton: "1 Haz 2026 – 3 Haz 2026"
   var lbl=document.getElementById('dpLabel');
-  if(lbl)lbl.textContent=fmtBtn(_dp.from)+' – '+fmtBtn(_dp.to);
+  if(lbl)lbl.textContent=fmtShow(_dp.from)+' – '+fmtShow(_dp.to);
   closeDP();
-  var fn=typeof window.mLoad==='function'?window.mLoad:(typeof mLoad==='function'?mLoad:null);
+  var fn=typeof window.mLoad==='function'?window.mLoad:null;
   if(fn)fn();
 }
 </script>
@@ -795,10 +648,8 @@ function dpApply(){
     </div>
   </div>
   <div class="dp-footer">
-    <div class="dp-fi" id="ddpInfo">
-      <span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
+    <div class="dp-fi" id="ddpInfo"></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
       <button onclick="closeDDP()" style="background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500">İptal</button>
       <button id="ddpOkBtn" onclick="ddpApply()" disabled>Güncelle</button>
     </div>
@@ -926,18 +777,30 @@ function ddpClick(ts){
 }
 
 function _ddpUF(){
-  var info=document.getElementById('ddpInfo'),btn=document.getElementById('ddpOkBtn');
-  function fmt(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
-  function fmts(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  var info=document.getElementById('ddpInfo');
+  var btn=document.getElementById('ddpOkBtn');
+  function fmtShow(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  function fmtShort(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short'});}
+  if(!info)return;
+  info.innerHTML='';
   if(_ddp.from&&_ddp.to){
-    if(info)info.innerHTML='<span class="dp-range-label">📅 '+fmts(_ddp.from)+' – '+fmt(_ddp.to)+'</span>';
-    if(btn){btn.disabled=false;}
+    var s=document.createElement('span');
+    s.style.cssText='background:#e8f0fe;color:#1877f2;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600';
+    s.textContent='📅 '+fmtShort(_ddp.from)+' – '+fmtShow(_ddp.to);
+    info.appendChild(s);
+    if(btn)btn.disabled=false;
   }else if(_ddp.from){
-    if(info)info.innerHTML='<span style="color:#1877f2;font-size:12px;font-weight:600">📅 '+fmt(_ddp.from)+' – <span style="color:#aaa">bitiş seçin...</span></span>';
-    if(btn){btn.disabled=true;}
+    var s=document.createElement('span');
+    s.style.cssText='font-size:12px;color:#555';
+    s.textContent='📅 '+fmtShow(_ddp.from)+' – bitiş seçin...';
+    info.appendChild(s);
+    if(btn)btn.disabled=true;
   }else{
-    if(info)info.innerHTML='<span style="color:#aaa;font-size:11px">Başlangıç ve bitiş tarihi seçin</span>';
-    if(btn){btn.disabled=true;}
+    var s=document.createElement('span');
+    s.style.cssText='font-size:11px;color:#aaa';
+    s.textContent='Başlangıç ve bitiş tarihi seçin';
+    info.appendChild(s);
+    if(btn)btn.disabled=true;
   }
 }
 
@@ -945,16 +808,16 @@ function ddpApply(){
   if(!_ddp.from||!_ddp.to)return;
   function pad(n){return String(n).padStart(2,'0');}
   function fmtISO(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
-  function fmtBtn(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+  function fmtShow(d){return d.toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
   var fi=document.getElementById('dashFrom'),ti=document.getElementById('dashTo'),pi=document.getElementById('dashPreset');
   if(fi)fi.value=fmtISO(_ddp.from);
   if(ti)ti.value=fmtISO(_ddp.to);
   if(pi)pi.value='custom';
   var lbl=document.getElementById('ddpLabel');
-  if(lbl)lbl.textContent=fmtBtn(_ddp.from)+' – '+fmtBtn(_ddp.to);
+  if(lbl)lbl.textContent=fmtShow(_ddp.from)+' – '+fmtShow(_ddp.to);
   closeDDP();
-  var dfn=typeof window.loadDashboard==='function'?window.loadDashboard:(typeof loadDashboard==='function'?loadDashboard:null);
-  if(dfn)dfn();
+  var fn=typeof window.loadDashboard==='function'?window.loadDashboard:null;
+  if(fn)fn();
 }
 </script>
 
