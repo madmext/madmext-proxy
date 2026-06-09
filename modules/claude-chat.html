@@ -97,9 +97,16 @@ window.ccSend = function(preMsg){
   ccTyping = true;
   document.getElementById('ccSendBtn').disabled = true;
 
-  // Veri toparla
+  // Meta verisi yükle (yoksa API'den çek)
+  ccLoadMetaAndSend(msg);
+};
+
+window.ccLoadMetaAndSend = async function(msg){
+  var containerId = 'ccMsgs';
+  
+  // Önce mevcut store'a bak
   var campData = (MX.campStore||[]).slice(0,15).map(function(c){
-    return {id:c.id, name:c.name, status:c.status};
+    return {id:c.id, name:c.name, status:c.status, effective_status:c.effective_status};
   });
   var adsetData = (MX.adsetStore||[]).slice(0,20).map(function(r){
     return {
@@ -112,12 +119,66 @@ window.ccSend = function(preMsg){
     };
   }).filter(function(r){return r.id;});
 
-  var sys = "Sen Madmext reklam yöneticisinin AI asistanısın. Meta Graph API'ye doğrudan bağlısın - gerçek bütçe değişikliği YAPABİLİRSİN.\n" +
-    "Türkçe yanıt ver. Kısa ve net ol. Sayıları TL cinsinden göster.\n" +
-    "KAMPANYALAR: " + JSON.stringify(campData) + "\n" +
-    "REKLAM SETLERİ: " + JSON.stringify(adsetData) + "\n" +
+  // Store boşsa Meta API'den direkt çek
+  if(!campData.length && window._isConnected){
+    try{
+      var insRes = await api(AID+'/insights',{
+        fields:'campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,purchase_roas,actions,action_values',
+        level:'campaign', date_preset:'last_7d', limit:20,
+        action_attribution_windows:'["1d_click","7d_click"]'
+      });
+      if(insRes && insRes.data){
+        campData = insRes.data.map(function(r){
+          var roas = 0;
+          if(r.purchase_roas && r.purchase_roas[0]) roas = parseFloat(r.purchase_roas[0].value||0);
+          var purchase = 0;
+          if(r.actions) r.actions.forEach(function(a){if(a.action_type==='purchase')purchase=parseInt(a.value||0);});
+          var revenue = 0;
+          if(r.action_values) r.action_values.forEach(function(a){if(a.action_type==='purchase')revenue=parseFloat(a.value||0);});
+          return {
+            id:r.campaign_id, name:r.campaign_name||'—',
+            spend:+(parseFloat(r.spend||0)).toFixed(0),
+            roas:+roas.toFixed(2), purchase:purchase, revenue:+revenue.toFixed(0),
+            clicks:parseInt(r.clicks||0), ctr:+(parseFloat(r.ctr||0)).toFixed(2),
+            cpc:+(parseFloat(r.cpc||0)).toFixed(2)
+          };
+        });
+      }
+      // Adset verisi de çek
+      var adRes = await api(AID+'/insights',{
+        fields:'adset_id,adset_name,spend,ctr,cpc,purchase_roas,actions,action_values',
+        level:'adset', date_preset:'last_7d', limit:30,
+        action_attribution_windows:'["1d_click","7d_click"]'
+      });
+      if(adRes && adRes.data){
+        adsetData = adRes.data.map(function(r){
+          var roas=0;
+          if(r.purchase_roas&&r.purchase_roas[0])roas=parseFloat(r.purchase_roas[0].value||0);
+          var revenue=0;
+          if(r.action_values)r.action_values.forEach(function(a){if(a.action_type==='purchase')revenue=parseFloat(a.value||0);});
+          return {
+            id:r.adset_id, name:r.adset_name||'—',
+            spend:+(parseFloat(r.spend||0)).toFixed(0),
+            roas:+roas.toFixed(2), revenue:+revenue.toFixed(0),
+            ctr:+(parseFloat(r.ctr||0)).toFixed(2), cpc:+(parseFloat(r.cpc||0)).toFixed(2)
+          };
+        });
+      }
+      updateContext();
+    }catch(e){ console.log('Meta fetch err:',e); }
+  }
+
+  var dataInfo = campData.length
+    ? campData.length + ' kampanya, ' + adsetData.length + ' reklam seti verisi mevcut'
+    : 'Meta bağlantısı yok — önce Bağlan butonuna basın';
+
+  var sys = "Sen Madmext reklam yöneticisinin AI asistanısın. Meta Graph API verilerine erişimin var.\n" +
+    "Türkçe yanıt ver. Kısa ve net ol. Sayıları TL cinsinden göster. Tablolar kullan.\n" +
+    "VERİ DURUMU: " + dataInfo + "\n" +
+    "KAMPANYALAR (son 7 gün): " + JSON.stringify(campData) + "\n" +
+    "REKLAM SETLERİ (son 7 gün): " + JSON.stringify(adsetData) + "\n" +
     "Bütçe değişikliği için: <!--ACTION:BUDGET_INCREASE|ID|ADI|adset|MEVCUT|YENI|PCT-->\n" +
-    "SADECE gerçek ID kullan.";
+    "SADECE gerçek ID kullan. Veri yoksa 'Bağlan butonuna basın' de.";
 
   claude(ccHistory.slice(-8), sys).then(function(reply){
     th.remove();
@@ -192,10 +253,72 @@ window.ccExport = function(){
   navigator.clipboard.writeText(text).then(function(){toast('Sohbet kopyalandı');});
 };
 
-// Connected olunca context güncelle
-window.addEventListener('mx:connected', updateContext);
-updateContext();
+// Bağlan ve Meta verilerini çek
+function ccConnect(){
+  var dot = document.getElementById('dot');
+  var isDotGreen = dot && dot.classList.contains('green');
+  
+  if(window._isConnected && (MX.campStore||[]).length > 0){
+    // Zaten bağlı ve veri var
+    updateContext();
+    return;
+  }
+  
+  // Bağlı değilse veya veri yoksa bağlan
+  document.getElementById('ccContext').textContent = 'Bağlanıyor...';
+  
+  // connect() shared.js'de tanımlı
+  if(typeof connect === 'function'){
+    connect().then(function(){
+      // Bağlandı, şimdi Meta kampanya verilerini çek
+      ccLoadMetaData();
+    }).catch(function(){
+      ccLoadMetaData(); // yine de dene
+    });
+  } else {
+    setTimeout(function(){
+      if(typeof connect === 'function') connect();
+      setTimeout(ccLoadMetaData, 1500);
+    }, 500);
+  }
+}
+
+function ccLoadMetaData(){
+  // Meta Ads verilerini yükle
+  if(typeof window.mLoad === 'function'){
+    window.mLoad();
+  }
+  // Kampanya listesini çek
+  if(typeof loadMetaCamp === 'function'){
+    loadMetaCamp();
+  }
+  // 2 sn sonra context güncelle
+  setTimeout(function(){
+    updateContext();
+    if((MX.campStore||[]).length > 0){
+      document.getElementById('ccContext').textContent = 
+        (MX.campStore||[]).length + ' kampanya, ' + 
+        (MX.adsetStore||[]).length + ' reklam seti yüklü';
+      // Hoş geldin mesajını güncelle
+      var msgs = document.getElementById('ccMsgs');
+      if(msgs && msgs.children.length === 1){
+        msgs.innerHTML = '<div class="cc-msg sys"><div class="cc-msg-bubble">' +
+          (MX.campStore||[]).length + ' kampanya ve ' + 
+          (MX.adsetStore||[]).length + ' reklam seti yüklendi. ' +
+          'Performans analizi, bütçe optimizasyonu veya herhangi bir konuda yardımcı olabilirim.' +
+          '</div></div>';
+      }
+    }
+  }, 2500);
+}
+
+window.addEventListener('mx:connected', function(){
+  updateContext();
+  ccLoadMetaData();
+});
+
+// Sayfa açılınca otomatik bağlan
+setTimeout(ccConnect, 300);
 
 })();
 </script>
-
