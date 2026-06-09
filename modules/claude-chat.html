@@ -83,10 +83,160 @@ function updateContext(){
   }
 }
 
+// ── Hazır cevaplar (token harcamaz) ──────────────────────────────
+function quickReply(msg){
+  var camps = MX.campStore||[];
+  var adsets = MX.adsetStore||[];
+
+  // Performans özeti
+  if(msg.indexOf('Performans')!==-1 && msg.indexOf('özeti')!==-1){
+    if(!adsets.length) return null;
+    var totalSpend=0,totalRev=0,totalClicks=0,totalImpr=0,activeCount=0;
+    adsets.forEach(function(r){
+      totalSpend+=r.spend||0; totalRev+=r.revenue||0;
+      totalClicks+=r.clicks||0; totalImpr+=r.impr||0;
+      if((r.effectiveStatus||'').toUpperCase()==='ACTIVE') activeCount++;
+    });
+    var roas = totalSpend>0?(totalRev/totalSpend).toFixed(2):0;
+    var ctr = totalImpr>0?(totalClicks/totalImpr*100).toFixed(2):0;
+    return '**Hesap Performans Özeti**
+
+' +
+      '💰 Toplam Harcama: **' + totalSpend.toFixed(0) + ' TL**
+' +
+      '📈 Toplam Gelir: **' + totalRev.toFixed(0) + ' TL**
+' +
+      '🎯 Ortalama ROAS: **' + roas + 'x**
+' +
+      '🖱️ Toplam Tıklama: **' + totalClicks.toLocaleString('tr') + '**
+' +
+      '👁️ Gösterim: **' + (totalImpr/1000).toFixed(0) + 'K**
+' +
+      '📊 CTR: **%' + ctr + '**
+' +
+      '✅ Aktif Reklam Seti: **' + activeCount + ' / ' + adsets.length + '**';
+  }
+
+  // Harcama özeti
+  if(msg.indexOf('Harcama')!==-1 && msg.indexOf('özeti')!==-1){
+    if(!adsets.length) return null;
+    var sorted = adsets.slice().sort(function(a,b){return (b.spend||0)-(a.spend||0);});
+    var top5 = sorted.slice(0,5);
+    var total = adsets.reduce(function(s,r){return s+(r.spend||0);},0);
+    return '**Harcama Dağılımı**
+
+Toplam: **' + total.toFixed(0) + ' TL**
+
+**En Çok Harcayan 5:**
+' +
+      top5.map(function(r,i){
+        return (i+1)+'. '+r.name.slice(0,35)+' — **'+(r.spend||0).toFixed(0)+'TL** (ROAS: '+(r.roas||0).toFixed(1)+'x)';
+      }).join('
+');
+  }
+
+  // Düşük ROAS
+  if(msg.indexOf('ROAS')!==-1 && (msg.indexOf('düşük')!==-1||msg.indexOf('Düşük')!==-1)){
+    if(!adsets.length) return null;
+    var avgRoas = adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length;
+    var low = adsets.filter(function(r){return (r.roas||0)<avgRoas && (r.spend||0)>50;})
+      .sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,8);
+    if(!low.length) return 'Tüm reklam setleri hesap ROAS ortalamasının (' + avgRoas.toFixed(2) + 'x) üstünde görünüyor.';
+    return '**Düşük ROAS Reklam Setleri** (ort: ' + avgRoas.toFixed(2) + 'x)
+
+' +
+      low.map(function(r,i){
+        return (i+1)+'. '+r.name.slice(0,35)+'
+   ROAS: **'+(r.roas||0).toFixed(2)+'x** | Harcama: '+(r.spend||0).toFixed(0)+'TL';
+      }).join('
+');
+  }
+
+  // Kapatılacaklar
+  if(msg.indexOf('kapat')!==-1||msg.indexOf('Kapat')!==-1){
+    if(!adsets.length) return null;
+    var avgR = adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length;
+    var toStop = adsets.filter(function(r){
+      return (r.effectiveStatus||'').toUpperCase()==='ACTIVE' && 
+             (r.roas||0) < avgR*0.5 && (r.spend||0) > 100;
+    }).sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,6);
+    if(!toStop.length) return 'Kapatılması önerilen kritik reklam seti bulunamadı.';
+    return '**Kapatılması Önerilen Reklam Setleri**
+*(ROAS hesap ortalamasının %50 altı)*
+
+' +
+      toStop.map(function(r,i){
+        return (i+1)+'. '+r.name.slice(0,35)+'
+   ROAS: **'+(r.roas||0).toFixed(2)+'x** | Harcama: '+(r.spend||0).toFixed(0)+'TL';
+      }).join('
+');
+  }
+
+  // Bütçe önerisi
+  if(msg.indexOf('Bütçe')!==-1 && msg.indexOf('önerisi')!==-1){
+    if(!adsets.length) return null;
+    var avgR2 = adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length;
+    var increase = adsets.filter(function(r){return (r.roas||0)>avgR2*1.5 && (r.effectiveStatus||'').toUpperCase()==='ACTIVE';})
+      .sort(function(a,b){return (b.roas||0)-(a.roas||0);}).slice(0,3);
+    var decrease = adsets.filter(function(r){return (r.roas||0)<avgR2*0.7 && (r.spend||0)>100;})
+      .sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,3);
+    return '**Bütçe Optimizasyon Önerisi**
+
+' +
+      '📈 **Artırılması önerilen:**
+' +
+      (increase.length ? increase.map(function(r){
+        return '• '+r.name.slice(0,35)+' (ROAS: '+(r.roas||0).toFixed(2)+'x) → %20 artır';
+      }).join('
+') : 'Yok') + '
+
+' +
+      '📉 **Azaltılması önerilen:**
+' +
+      (decrease.length ? decrease.map(function(r){
+        return '• '+r.name.slice(0,35)+' (ROAS: '+(r.roas||0).toFixed(2)+'x) → %20 azalt';
+      }).join('
+') : 'Yok');
+  }
+
+  // Karşılaştır
+  if(msg.indexOf('arşılaştır')!==-1||msg.indexOf('en iyi')!==-1||msg.indexOf('en kötü')!==-1){
+    if(!adsets.length) return null;
+    var sorted2 = adsets.slice().sort(function(a,b){return (b.roas||0)-(a.roas||0);});
+    var top3 = sorted2.slice(0,3);
+    var bot3 = sorted2.slice(-3).reverse();
+    return '**En İyi vs En Kötü 3 Reklam Seti**
+
+' +
+      '🏆 **En İyi:**
+' + top3.map(function(r,i){
+        return (i+1)+'. '+r.name.slice(0,30)+' — ROAS: **'+(r.roas||0).toFixed(2)+'x**, Gelir: '+(r.revenue||0).toFixed(0)+'TL';
+      }).join('
+') + '
+
+' +
+      '⚠️ **En Kötü:**
+' + bot3.map(function(r,i){
+        return (i+1)+'. '+r.name.slice(0,30)+' — ROAS: **'+(r.roas||0).toFixed(2)+'x**, Harcama: '+(r.spend||0).toFixed(0)+'TL';
+      }).join('
+');
+  }
+
+  return null; // Bilinmiyor, Claude'a gönder
+}
+
 window.ccSend = function(preMsg){
   var msg = preMsg || (document.getElementById('ccInput').value||'').trim();
   if(!msg||ccTyping) return;
   document.getElementById('ccInput').value = '';
+
+  // Hazır cevap var mı?
+  var quick = quickReply(msg);
+  if(quick){
+    addCCMsg(msg, 'user');
+    addCCMsg(quick, 'ai');
+    return;
+  }
 
   // User mesajı
   addCCMsg(msg, 'user');
