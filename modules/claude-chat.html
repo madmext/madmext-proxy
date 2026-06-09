@@ -1,0 +1,200 @@
+<style>
+.cc-wrap{display:flex;flex-direction:column;height:calc(100vh - 80px);gap:0}
+.cc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--b);background:var(--s);flex-shrink:0}
+.cc-title{display:flex;align-items:center;gap:10px}
+.cc-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.cc-name{font-size:14px;font-weight:600}
+.cc-sub{font-size:11px;color:var(--m)}
+.cc-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.cc-msg{display:flex;gap:10px;max-width:85%;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.cc-msg.user{align-self:flex-end;flex-direction:row-reverse}
+.cc-msg-bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.cc-msg.user .cc-msg-bubble{background:#1877f2;color:#fff;border-radius:12px 2px 12px 12px}
+.cc-msg.ai .cc-msg-bubble{background:var(--s2);color:var(--t);border:1px solid var(--b);border-radius:2px 12px 12px 12px}
+.cc-msg.sys .cc-msg-bubble{background:transparent;color:var(--m);font-size:11px;text-align:center;border:none;padding:4px}
+.cc-msg-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
+.cc-thinking{display:flex;gap:4px;padding:12px 16px;align-items:center}
+.cc-dot{width:6px;height:6px;border-radius:50%;background:var(--m);animation:bounce .8s infinite}
+.cc-dot:nth-child(2){animation-delay:.15s}.cc-dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+.cc-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
+.cc-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
+.cc-input{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px 14px;font-family:Inter,sans-serif;font-size:13px;border-radius:20px;resize:none;height:44px;max-height:120px;line-height:1.4;transition:border-color .15s;outline:none}
+.cc-input:focus{border-color:#1877f2}
+.cc-send{width:40px;height:40px;border-radius:50%;background:#1877f2;border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;margin-top:2px}
+.cc-send:hover{background:#1565d8;transform:scale(1.05)}
+.cc-send:disabled{background:var(--b2);cursor:default;transform:none}
+.cc-context{font-size:10px;color:var(--m);padding:4px 16px;border-top:1px solid var(--b);background:var(--bg);flex-shrink:0}
+</style>
+
+<div class="cc-wrap">
+  <div class="cc-header">
+    <div class="cc-title">
+      <div class="cc-avatar">🤖</div>
+      <div>
+        <div class="cc-name">Claude AI Asistan</div>
+        <div class="cc-sub" id="ccSub">Meta verilerinize erişimim var</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm sec" onclick="ccClear()">🗑 Temizle</button>
+      <button class="btn sm sec" onclick="ccExport()">📋 Kopyala</button>
+    </div>
+  </div>
+
+  <div class="cc-msgs" id="ccMsgs">
+    <div class="cc-msg sys"><div class="cc-msg-bubble">Madmext Ads paneline hoş geldiniz. Meta kampanya verilerinizi analiz edebilir, bütçe önerisi yapabilir, optimizasyon uygulayabilirim. Ne yapmamı istersiniz?</div></div>
+  </div>
+
+  <div class="cc-toolbar">
+    <button class="qbtn" onclick="ccSend('Kampanyalarımın genel performansını özetle')">📊 Performans özeti</button>
+    <button class="qbtn" onclick="ccSend('Hangi kampanyalarda bütçe artırmalıyım?')">💰 Bütçe önerisi</button>
+    <button class="qbtn" onclick="ccSend('ROAS düşük olan reklamları listele ve ne yapmalıyım söyle')">📉 Düşük ROAS</button>
+    <button class="qbtn" onclick="ccSend('Bu hafta hangi reklamları kapatmalıyım?')">🔴 Kapatılacaklar</button>
+    <button class="qbtn" onclick="ccSend('Hesabın toplam harcama ve gelir özeti')">💵 Harcama özeti</button>
+    <button class="qbtn" onclick="ccSend('En iyi ve en kötü 3 kampanyamı karşılaştır')">⚖️ Karşılaştır</button>
+  </div>
+
+  <div class="cc-input-row">
+    <textarea class="cc-input" id="ccInput" placeholder="Meta kampanyalarınız hakkında bir şey sorun..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ccSend();}"></textarea>
+    <button class="cc-send" id="ccSendBtn" onclick="ccSend()">↑</button>
+  </div>
+
+  <div class="cc-context" id="ccContext">Bağlı değil — önce Bağlan butonuna basın</div>
+</div>
+
+<script>
+(function(){
+
+var ccHistory = [];
+var ccTyping = false;
+
+function updateContext(){
+  var el = document.getElementById('ccContext');
+  var sub = document.getElementById('ccSub');
+  var camps = (MX.campStore||[]).length;
+  var adsets = (MX.adsetStore||[]).length;
+  var ads = (MX.adStore||[]).length;
+  if(camps||adsets||ads){
+    var txt = camps + ' kampanya, ' + adsets + ' reklam seti, ' + ads + ' reklam yüklü';
+    el.textContent = txt;
+    sub.textContent = txt;
+  }
+}
+
+window.ccSend = function(preMsg){
+  var msg = preMsg || (document.getElementById('ccInput').value||'').trim();
+  if(!msg||ccTyping) return;
+  document.getElementById('ccInput').value = '';
+
+  // User mesajı
+  addCCMsg(msg, 'user');
+  ccHistory.push({role:'user', content:msg});
+
+  // Thinking
+  var th = addCCThinking();
+  ccTyping = true;
+  document.getElementById('ccSendBtn').disabled = true;
+
+  // Veri toparla
+  var campData = (MX.campStore||[]).slice(0,15).map(function(c){
+    return {id:c.id, name:c.name, status:c.status};
+  });
+  var adsetData = (MX.adsetStore||[]).slice(0,20).map(function(r){
+    return {
+      id:r._budgetId, name:r.name,
+      budget:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
+      roas:+(r.roas||0).toFixed(2), spend:+(r.spend||0).toFixed(0),
+      revenue:+(r.revenue||0).toFixed(0), clicks:r.clicks||0,
+      ctr:+(r.ctr||0).toFixed(2), cpc:+(r.cpc||0).toFixed(2),
+      status:r.effectiveStatus
+    };
+  }).filter(function(r){return r.id;});
+
+  var sys = "Sen Madmext reklam yöneticisinin AI asistanısın. Meta Graph API'ye doğrudan bağlısın - gerçek bütçe değişikliği YAPABİLİRSİN.\n" +
+    "Türkçe yanıt ver. Kısa ve net ol. Sayıları TL cinsinden göster.\n" +
+    "KAMPANYALAR: " + JSON.stringify(campData) + "\n" +
+    "REKLAM SETLERİ: " + JSON.stringify(adsetData) + "\n" +
+    "Bütçe değişikliği için: <!--ACTION:BUDGET_INCREASE|ID|ADI|adset|MEVCUT|YENI|PCT-->\n" +
+    "SADECE gerçek ID kullan.";
+
+  claude(ccHistory.slice(-8), sys).then(function(reply){
+    th.remove();
+    ccTyping = false;
+    document.getElementById('ccSendBtn').disabled = false;
+    ccHistory.push({role:'assistant', content:reply});
+    var clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
+    addCCMsg(clean, 'ai');
+    if(typeof parseAndRenderActions === 'function'){
+      parseAndRenderActions(reply, 'ccMsgs');
+    }
+    document.getElementById('ccMsgs').scrollTop = 9999;
+  }).catch(function(e){
+    th.remove();
+    ccTyping = false;
+    document.getElementById('ccSendBtn').disabled = false;
+    addCCMsg('Hata: ' + e.message, 'sys');
+  });
+};
+
+function addCCMsg(text, role){
+  var msgs = document.getElementById('ccMsgs');
+  var div = document.createElement('div');
+  div.className = 'cc-msg ' + role;
+  if(role === 'user'){
+    div.innerHTML = '<div class="cc-msg-bubble">' + escHtml(text) + '</div>';
+  } else if(role === 'ai'){
+    div.innerHTML =
+      '<div class="cc-msg-avatar">🤖</div>' +
+      '<div class="cc-msg-bubble">' + markdownToHtml(text) + '</div>';
+  } else {
+    div.innerHTML = '<div class="cc-msg-bubble">' + text + '</div>';
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = 9999;
+  return div;
+}
+
+function addCCThinking(){
+  var msgs = document.getElementById('ccMsgs');
+  var div = document.createElement('div');
+  div.className = 'cc-msg ai';
+  div.innerHTML = '<div class="cc-msg-avatar">🤖</div><div class="cc-thinking"><div class="cc-dot"></div><div class="cc-dot"></div><div class="cc-dot"></div></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = 9999;
+  return div;
+}
+
+function escHtml(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function markdownToHtml(t){
+  return escHtml(t)
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g,'<em>$1</em>')
+    .replace(/`([^`]+)`/g,'<code style="background:var(--b);padding:1px 4px;border-radius:3px;font-family:monospace">$1</code>')
+    .replace(/\n- /g,'\n• ')
+    .replace(/\n/g,'<br>');
+}
+
+window.ccClear = function(){
+  ccHistory = [];
+  var msgs = document.getElementById('ccMsgs');
+  msgs.innerHTML = '<div class="cc-msg sys"><div class="cc-msg-bubble">Sohbet temizlendi. Yeni bir soru sorabilirsiniz.</div></div>';
+};
+
+window.ccExport = function(){
+  var text = ccHistory.map(function(m){
+    return (m.role==='user'?'Siz: ':'Claude: ') + m.content;
+  }).join('\n\n');
+  navigator.clipboard.writeText(text).then(function(){toast('Sohbet kopyalandı');});
+};
+
+// Connected olunca context güncelle
+window.addEventListener('mx:connected', updateContext);
+updateContext();
+
+})();
+</script>
