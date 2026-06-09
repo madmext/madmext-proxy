@@ -7,6 +7,13 @@ import threading
 import hashlib
 from datetime import datetime
 
+try:
+    import psycopg2
+    import psycopg2.extras
+    HAS_PG = True
+except ImportError:
+    HAS_PG = False
+
 app = Flask(__name__, static_folder='.')
 app.secret_key = os.environ.get('SECRET_KEY', 'madmext-default-key-2026')
 CORS(app, supports_credentials=True)
@@ -46,26 +53,118 @@ def get_ga4_token():
 
 # ── STATIC FILES ──────────────────────────────────────────────────────────
 
+
+# ── PostgreSQL ───────────────────────────────────────────────────────
+def get_db():
+    url = os.environ.get('DATABASE_URL','')
+    if not url or not HAS_PG: return None
+    try:
+        if url.startswith('postgres://'): url = url.replace('postgres://','postgresql://',1)
+        return psycopg2.connect(url, sslmode='require')
+    except Exception as e:
+        print('DB error:', e); return None
+
+def init_db():
+    conn = get_db()
+    if not conn: return
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS mx_users (
+                email TEXT PRIMARY KEY,
+                name TEXT,
+                password_hash TEXT NOT NULL,
+                role TEXT DEFAULT 'viewer',
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        conn.commit(); cur.close(); conn.close()
+    except Exception as e: print('init_db:', e)
+
+def db_get_users():
+    conn = get_db()
+    if not conn: return None
+    try:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute('SELECT email,name,password_hash,role FROM mx_users ORDER BY created_at')
+        rows = [dict(r) for r in cur.fetchall()]
+        cur.close(); conn.close()
+        return rows
+    except Exception as e: print('db_get_users:', e); return None
+
+def db_upsert_user(email, name, pw_hash, role):
+    conn = get_db()
+    if not conn: return False
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            'INSERT INTO mx_users(email,name,password_hash,role) VALUES(%s,%s,%s,%s) ON CONFLICT(email) DO UPDATE SET name=%s,role=%s',
+            (email,name,pw_hash,role,name,role)
+        )
+        conn.commit(); cur.close(); conn.close(); return True
+    except Exception as e: print('db_upsert:', e); return False
+
+def db_delete(email):
+    conn = get_db()
+    if not conn: return False
+    try:
+        cur = conn.cursor()
+        cur.execute('DELETE FROM mx_users WHERE email=%s',(email,))
+        conn.commit(); cur.close(); conn.close(); return True
+    except Exception as e: print('db_delete:', e); return False
+
+def db_update_role(email, role):
+    conn = get_db()
+    if not conn: return False
+    try:
+        cur = conn.cursor()
+        cur.execute('UPDATE mx_users SET role=%s WHERE email=%s',(role,email))
+        conn.commit(); cur.close(); conn.close(); return True
+    except Exception as e: print('db_update_role:', e); return False
+
+def db_update_pw(email, pw_hash):
+    conn = get_db()
+    if not conn: return False
+    try:
+        cur = conn.cursor()
+        cur.execute('UPDATE mx_users SET password_hash=%s WHERE email=%s',(pw_hash,email))
+        conn.commit(); cur.close(); conn.close(); return True
+    except Exception as e: print('db_update_pw:', e); return False
+
+# DB init + ilk admin
+try:
+    init_db()
+    existing = db_get_users()
+    if existing is not None and len(existing) == 0:
+        db_upsert_user(
+            os.environ.get('ADMIN_EMAIL','admin@madmext.com'),
+            'Admin',
+            hashlib.sha256(os.environ.get('ADMIN_PASSWORD','madmext2026').encode()).hexdigest(),
+            'admin'
+        )
+except Exception as e: print('DB init error:', e)
+
 def hash_pw(p): return hashlib.sha256(p.encode()).hexdigest()
 
 def get_users():
-    # 1. Önce USERS_JSON env var'a bak (Railway'de kalıcı)
-    users_json = os.environ.get('USERS_JSON','')
-    if users_json:
+    # 1. PostgreSQL (kalici)
+    pg = db_get_users()
+    if pg is not None:
+        return pg if pg else [{'email':os.environ.get('ADMIN_EMAIL','admin@madmext.com'),'password_hash':hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),'role':'admin','name':'Admin'}]
+    # 2. USERS_JSON env var
+    uj = os.environ.get('USERS_JSON','')
+    if uj:
         try:
             import base64
-            users = json.loads(base64.b64decode(users_json).decode())
-            if users: return users
+            u2 = json.loads(base64.b64decode(uj).decode())
+            if u2: return u2
         except: pass
-    # 2. Dosyadan oku
+    # 3. Dosya
     try:
         logs = read_logs()
         if logs.get('users'): return logs['users']
     except: pass
-    # 3. Default: ADMIN_EMAIL/ADMIN_PASSWORD env var
-    return [{'email': os.environ.get('ADMIN_EMAIL','admin@madmext.com'),
-             'password_hash': hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),
-             'role':'admin','name':'Admin'}]
+    return [{'email':os.environ.get('ADMIN_EMAIL','admin@madmext.com'),'password_hash':hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),'role':'admin','name':'Admin'}]
 
 @app.route('/')
 def home():
@@ -80,12 +179,9 @@ def login_page():
 
 @app.route('/auth/me')
 def auth_me():
-    # SECRET_KEY set edilmemişse (basit deploy) → her zaman admin olarak dön
-    if not os.environ.get('SECRET_KEY'):
-        return jsonify({'email':'admin@madmext.com','name':'Admin','role':'admin'})
     if not session.get('user_email'):
         return jsonify({'error':'Giriş yapılmamış'}), 401
-    return jsonify({'email':session['user_email'],'name':session.get('user_name'),'role':session.get('user_role','admin')})
+    return jsonify({'email':session['user_email'],'name':session.get('user_name'),'role':session.get('user_role','user')})
 
 @app.route('/auth/login', methods=['POST'])
 def auth_login():
@@ -121,39 +217,49 @@ def forgot_password():
 def admin_get_users():
     if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
     users = get_users()
-    import base64
-    users_b64 = base64.b64encode(json.dumps(users, ensure_ascii=False).encode()).decode()
-    return jsonify({
-        'users': [{'email':u['email'],'name':u.get('name'),'role':u.get('role','user')} for u in users],
-        'users_json_hint': users_b64
-    })
+    return jsonify([{'email':u['email'],'name':u.get('name'),'role':u.get('role','user')} for u in users])
 
 @app.route('/admin/users', methods=['POST'])
 def admin_add_user():
     if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
     data = request.json or {}
-    users = get_users()
     email = (data.get('email') or '').strip().lower()
-    if any(u['email'].lower()==email for u in users): return jsonify({'error':'Email zaten kayıtlı'}), 409
-    users.append({'email':email,'password_hash':hash_pw(data.get('password','')),'name':data.get('name',email),'role':data.get('role','user')})
-    current = read_logs(); current['users'] = users; write_logs(current)
+    name = data.get('name', email)
+    pw = hash_pw(data.get('password',''))
+    role = data.get('role','viewer')
+    if get_db():
+        users = get_users()
+        if any(u['email'].lower()==email for u in users): return jsonify({'error':'Email zaten kayitli'}), 409
+        db_upsert_user(email, name, pw, role)
+        return jsonify({'ok':True})
+    users = get_users()
+    if any(u['email'].lower()==email for u in users): return jsonify({'error':'Email zaten kayitli'}), 409
+    users.append({'email':email,'password_hash':pw,'name':name,'role':role})
+    current = read_logs(); current['users']=users; write_logs(current)
     return jsonify({'ok':True})
 
 @app.route('/admin/users/<email>', methods=['DELETE'])
 def admin_delete_user(email):
     if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    if get_db():
+        db_delete(email)
+        return jsonify({'ok':True})
     current = read_logs()
     users = [u for u in get_users() if u['email'].lower()!=email.lower()]
-    current['users'] = users; write_logs(current)
+    current['users']=users; write_logs(current)
     return jsonify({'ok':True})
 
 @app.route('/admin/users/<email>/reset', methods=['POST'])
 def admin_reset_pw(email):
     if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
     data = request.json or {}
+    pw = hash_pw(data.get('password',''))
+    if get_db():
+        db_update_pw(email, pw)
+        return jsonify({'ok':True})
     users = get_users()
     for u in users:
-        if u['email'].lower()==email.lower(): u['password_hash']=hash_pw(data.get('password',''))
+        if u['email'].lower()==email.lower(): u['password_hash']=pw
     current = read_logs(); current['users']=users; write_logs(current)
     return jsonify({'ok':True})
 
@@ -161,9 +267,13 @@ def admin_reset_pw(email):
 def admin_change_role(email):
     if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
     data = request.json or {}
+    role = data.get('role','viewer')
+    if get_db():
+        db_update_role(email, role)
+        return jsonify({'ok':True})
     users = get_users()
     for u in users:
-        if u['email'].lower()==email.lower(): u['role']=data.get('role','user')
+        if u['email'].lower()==email.lower(): u['role']=role
     current = read_logs(); current['users']=users; write_logs(current)
     return jsonify({'ok':True})
 
