@@ -128,7 +128,10 @@ function updatePermPreview(){
 async function loadUsers(){
   try{
     var r = await fetch('/admin/users',{credentials:'include'});
-    if(r.status===403){ document.getElementById('userList').innerHTML='<div style="color:var(--r);padding:20px">Bu sayfaya erişim yetkiniz yok.</div>'; return; }
+    if(r.status===403){
+      document.getElementById('userList').innerHTML='<div style="color:var(--r);padding:20px;text-align:center"><b>Oturum süresi dolmuş.</b><br><br><button class="btn" onclick="window.location.reload()">Sayfayı Yenile</button> &nbsp; <button class="btn sec" onclick="window.location.href='/login'">Giriş Yap</button></div>';
+      return;
+    }
     var data = await r.json();
     // API {users:[...], users_json_hint:"..."} veya direkt array döndürebilir
     var users = Array.isArray(data) ? data : (data.users || []);
@@ -211,7 +214,11 @@ async function resolveRequest(idx, email){
 async function changeRole(email, newRole){
   var r = await fetch('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:newRole})});
   var d = await r.json();
-  if(d.ok){ toast('Rol guncellendi - Railway Variables guncelle!'); loadUsers().then(highlightUsersJson); }
+  if(d.ok){
+    if(d.users_json) updateUsersJsonBox(d.users_json);
+    toast('Rol guncellendi! USERS_JSON kutusunu Railway'e kaydet.');
+    loadUsers();
+  }
   else toast('Hata: '+(d.error||'?'));
 }
 
@@ -261,7 +268,11 @@ async function deleteUser(email){
   if(!confirm(email+' silinsin mi? Bu işlem geri alınamaz.')) return;
   var r = await fetch('/admin/users/'+encodeURIComponent(email),{method:'DELETE',credentials:'include'});
   var d = await r.json();
-  if(d.ok){ toast('Kullanici silindi - Railway Variables guncelle!'); loadUsers().then(highlightUsersJson); }
+  if(d.ok){
+    if(d.users_json) updateUsersJsonBox(d.users_json);
+    toast('Kullanici silindi! USERS_JSON kutusunu Railway'e kaydet.');
+    loadUsers();
+  }
   else toast('Hata: '+(d.error||'?'));
 }
 
