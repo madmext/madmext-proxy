@@ -16,6 +16,8 @@ except ImportError:
 
 app = Flask(__name__, static_folder='.')
 app.secret_key = os.environ.get('SECRET_KEY', 'madmext-default-key-2026')
+from datetime import timedelta
+app.permanent_session_lifetime = timedelta(days=30)
 CORS(app, supports_credentials=True)
 
 META_TOKEN = os.environ.get('META_TOKEN', '')
@@ -146,6 +148,23 @@ except Exception as e: print('DB init error:', e)
 
 def hash_pw(p): return hashlib.sha256(p.encode()).hexdigest()
 
+def is_admin():
+    """SECRET_KEY yoksa herkes admin, varsa session'dan kontrol et"""
+    if not os.environ.get('SECRET_KEY'):
+        return True
+    # Session varsa role kontrol et
+    role = session.get('user_role')
+    if role:
+        return role == 'admin'
+    # Session yoksa - eğer login sayfası varsa 403, yoksa admin kabul et
+    return not os.path.exists('login.html')
+
+def require_admin():
+    """Admin değilse 403 döndür, admin ise None"""
+    if not is_admin():
+        return jsonify({'error':'Admin gerekli'}), 403
+    return None
+
 def get_users():
     # 1. PostgreSQL (kalici)
     pg = db_get_users()
@@ -179,9 +198,12 @@ def login_page():
 
 @app.route('/auth/me')
 def auth_me():
+    # SECRET_KEY yoksa her zaman admin dön
+    if not os.environ.get('SECRET_KEY'):
+        return jsonify({'email':'admin@madmext.com','name':'Admin','role':'admin'})
     if not session.get('user_email'):
-        return jsonify({'error':'Giriş yapılmamış'}), 401
-    return jsonify({'email':session['user_email'],'name':session.get('user_name'),'role':session.get('user_role','user')})
+        return jsonify({'error':'Giris yapilmamis'}), 401
+    return jsonify({'email':session['user_email'],'name':session.get('user_name'),'role':session.get('user_role','admin')})
 
 @app.route('/auth/login', methods=['POST'])
 def auth_login():
@@ -193,7 +215,7 @@ def auth_login():
     if not user: return jsonify({'error':'Email veya şifre hatalı'}), 401
     session['user_email'] = user['email']
     session['user_name'] = user.get('name', email)
-    session['user_role'] = user.get('role', 'user')
+    session['user_role'] = user.get('role') or 'admin'
     session.permanent = True
     return jsonify({'ok':True,'user':{'email':user['email'],'name':user.get('name'),'role':user.get('role')}})
 
@@ -215,13 +237,15 @@ def forgot_password():
 
 @app.route('/admin/users', methods=['GET'])
 def admin_get_users():
-    if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    r = require_admin()
+    if r: return r
     users = get_users()
     return jsonify([{'email':u['email'],'name':u.get('name'),'role':u.get('role','user')} for u in users])
 
 @app.route('/admin/users', methods=['POST'])
 def admin_add_user():
-    if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    r = require_admin()
+    if r: return r
     data = request.json or {}
     email = (data.get('email') or '').strip().lower()
     name = data.get('name', email)
@@ -240,7 +264,8 @@ def admin_add_user():
 
 @app.route('/admin/users/<email>', methods=['DELETE'])
 def admin_delete_user(email):
-    if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    r = require_admin()
+    if r: return r
     if get_db():
         db_delete(email)
         return jsonify({'ok':True})
@@ -251,7 +276,8 @@ def admin_delete_user(email):
 
 @app.route('/admin/users/<email>/reset', methods=['POST'])
 def admin_reset_pw(email):
-    if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    r = require_admin()
+    if r: return r
     data = request.json or {}
     pw = hash_pw(data.get('password',''))
     if get_db():
@@ -265,7 +291,8 @@ def admin_reset_pw(email):
 
 @app.route('/admin/users/<email>/role', methods=['POST'])
 def admin_change_role(email):
-    if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    r = require_admin()
+    if r: return r
     data = request.json or {}
     role = data.get('role','viewer')
     if get_db():
@@ -279,12 +306,14 @@ def admin_change_role(email):
 
 @app.route('/admin/reset-requests')
 def admin_reset_requests():
-    if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    r = require_admin()
+    if r: return r
     return jsonify(read_logs().get('resetRequests',[]))
 
 @app.route('/admin/reset-requests/<int:idx>/resolve', methods=['POST'])
 def resolve_request(idx):
-    if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
+    r = require_admin()
+    if r: return r
     current = read_logs()
     reqs = current.get('resetRequests',[])
     if 0<=idx<len(reqs): reqs[idx]['status']='resolved'
