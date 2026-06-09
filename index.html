@@ -315,7 +315,14 @@ document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || 
 initUser();
 nav('dashboard', document.querySelector('.nav-item.active'));
 setInterval(updateTaskBadge, 60000);
-setTimeout(connect, 800);
+// shared.js yüklendikten sonra connect
+(function waitConnect(){
+  if(typeof connect === 'function'){
+    setTimeout(connect, 300);
+  } else {
+    setTimeout(waitConnect, 100);
+  }
+})();
 </script>
 
 <style id="dp-global-styles">
@@ -654,4 +661,3 @@ window.addEventListener('resize',function(){
 </script>
 </body>
 </html>
-
