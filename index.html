@@ -448,6 +448,8 @@ function toggleDP(){
   var pop=document.getElementById('dpPopup');
   if(!pop)return;
   if(pop.style.display==='flex'){closeDP();return;}
+  // State'i sıfırla - her açılışta temiz başla
+  _dp.from=null;_dp.to=null;_dp.hov=null;_dp.step=0;
   var n=new Date(),m0=n.getMonth()-1,y0=n.getFullYear();
   if(m0<0){m0=11;y0--;}
   _dp.cal[0]={y:y0,m:m0};
