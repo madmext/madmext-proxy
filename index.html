@@ -169,6 +169,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="nav-item" onclick="closeSidebar();nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Diğer</div>
   <div class="nav-item" onclick="closeSidebar();nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('kullanicilar',this)"><span class="nav-icon">👥</span><span>Kullanıcılar</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
 </div>
 <div class="main">
@@ -206,6 +207,7 @@ const PAGES = {
   gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri', module:'gorevler'},
   create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',   module:'create'},
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
+  kullanicilar: {title:'Kullanicilar', sub:'Kullanici ve rol yonetimi', module:'kullanicilar'},
 };
 
 window.currentPage = '';
