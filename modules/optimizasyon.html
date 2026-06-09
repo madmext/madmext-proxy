@@ -1,135 +1,265 @@
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-  <div>
-    <div class="stl">Bütçe Değişiklik Geçmişi</div>
-    <div id="logList"><div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div></div>
-    <div class="arow" style="margin-top:8px">
-      <button class="btn sm" onclick="checkBudget()">📊 Performans Kontrolü</button>
-      <button class="btn sm sec" onclick="clearLog()">🗑 Temizle</button>
+<style>
+.opt-wrap{display:grid;grid-template-columns:340px 1fr;gap:16px;height:calc(100vh - 100px);min-height:500px}
+.opt-left{display:flex;flex-direction:column;gap:0;overflow-y:auto;border:1px solid var(--b);border-radius:8px;background:var(--s)}
+.opt-section{border-bottom:1px solid var(--b)}
+.opt-section-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;user-select:none;transition:background .15s}
+.opt-section-hdr:hover{background:var(--b)}
+.opt-section-icon{width:32px;height:32px;border-radius:6px;border:1px solid var(--b);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.opt-section-title{font-size:12px;font-weight:600;flex:1}
+.opt-section-arrow{font-size:10px;color:var(--m);transition:transform .2s}
+.opt-section-arrow.open{transform:rotate(180deg)}
+.opt-cards{display:none;flex-direction:column;gap:0}
+.opt-cards.open{display:flex}
+.opt-card{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-top:1px solid var(--b);transition:background .15s;position:relative}
+.opt-card:hover{background:var(--b)}
+.opt-card.active{background:rgba(24,119,242,.1);border-left:3px solid #1877f2}
+.opt-card img{width:40px;height:40px;border-radius:50%;flex-shrink:0}
+.opt-card-name{font-size:12px;font-weight:500;line-height:1.3}
+.opt-card-desc{font-size:10px;color:var(--m);line-height:1.4;margin-top:2px}
+.opt-card-badge{font-size:9px;background:var(--b);color:var(--m);padding:2px 6px;border-radius:4px;width:fit-content;margin-bottom:4px}
+.opt-right{display:flex;flex-direction:column;gap:12px}
+.opt-detail{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;flex-shrink:0}
+.opt-detail-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.opt-detail-desc{font-size:12px;color:var(--m);line-height:1.6}
+.opt-apply-btn{margin-top:12px;display:flex;gap:8px;align-items:center}
+.opt-chat{flex:1;display:flex;flex-direction:column;background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:hidden;min-height:300px}
+.opt-chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.opt-chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--b);flex-shrink:0}
+.opt-chat-input textarea{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:8px 10px;font-family:Inter,sans-serif;font-size:12px;border-radius:6px;resize:none;height:52px;line-height:1.4}
+.opt-qbtns{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border-top:1px solid var(--b)}
+.opt-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--m);text-align:center;padding:40px}
+.opt-empty-icon{font-size:32px;margin-bottom:12px;opacity:.4}
+.opt-status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--b);font-size:11px;color:var(--m)}
+.opt-status-dot{width:8px;height:8px;border-radius:50%;background:var(--g);flex-shrink:0}
+@media(max-width:900px){.opt-wrap{grid-template-columns:1fr;height:auto}.opt-left{max-height:300px}}
+</style>
+
+<div class="opt-wrap" id="optWrap">
+  <!-- Sol: Optimizasyon listesi -->
+  <div class="opt-left" id="optLeft">
+    <div class="opt-status">
+      <div class="opt-status-dot"></div>
+      <span>Meta hesabı bağlı — optimizasyonlar hazır</span>
     </div>
+    <!-- Sections JS tarafından doldurulacak -->
   </div>
-  <div style="display:flex;flex-direction:column;gap:12px">
-    <div class="chat-msgs" id="optimMsgs" style="height:350px">
-      <div class="msg sys">Bütçe optimizasyonu için yardım isteyebilirsiniz.<br>Önce Reklam Setleri sekmesini yenile.</div>
+
+  <!-- Sağ: Detail + Chat -->
+  <div class="opt-right">
+    <div class="opt-empty" id="optEmpty">
+      <div class="opt-empty-icon">⚡</div>
+      <div style="font-size:13px;font-weight:500;margin-bottom:6px">Bir optimizasyon seç</div>
+      <div style="font-size:11px">Soldan bir kural seçince detayları ve AI asistanı burada açılır.</div>
     </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="qbtn" onclick="aiSend('optim','En iyi ROAS\'a sahip reklam setine %20 bütçe artışı öner ve uygula.')">🚀 En iyiye artır</button>
-      <button class="qbtn" onclick="aiSend('optim','ROAS 1.5 altındaki reklam setlerinin bütçesini %20 azalt.')">📉 Kötüleri azalt</button>
-      <button class="qbtn" onclick="aiSend('optim','Tüm reklam setleri için composite skor analizi yap (%70 ROAS + %20 CTR + %10 TBM).')">📊 Skor analizi</button>
-      <button class="qbtn" onclick="aiSend('optim','Bütçe değişikliği yapılmış kampanyaların performansını değerlendir.')">📈 Bütçe takibi</button>
+    <div id="optDetail" style="display:none" class="opt-detail">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <img id="optDetailImg" src="" style="width:48px;height:48px;border-radius:50%">
+        <div>
+          <div class="opt-detail-title" id="optDetailTitle"></div>
+          <div class="opt-card-badge" id="optDetailBadge"></div>
+        </div>
+      </div>
+      <div class="opt-detail-desc" id="optDetailDesc"></div>
+      <div class="opt-apply-btn">
+        <button class="btn" id="optApplyBtn" onclick="applyOptimization()">⚡ Bu Kuralı Uygula</button>
+        <button class="btn sec" onclick="analyzeOptimization()">🔍 Önce Analiz Et</button>
+        <span id="optApplyStatus" style="font-size:11px;color:var(--m)"></span>
+      </div>
     </div>
-    <div style="display:flex;gap:8px">
-      <textarea id="optimIn" placeholder="Optimizasyon sorusu..." style="flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px;font-family:Inter,sans-serif;font-size:12px;border-radius:4px;resize:none;height:60px"></textarea>
-      <button class="btn" onclick="aiSend('optim',document.getElementById('optimIn').value)">→</button>
+    <div id="optChatWrap" style="display:none;flex:1;flex-direction:column;min-height:0" class="opt-chat">
+      <div class="opt-chat-msgs" id="optimMsgs">
+        <div class="msg sys" style="font-size:12px">Bir optimizasyon kuralı seçince burada analiz ve uygulama yapabiliriz.</div>
+      </div>
+      <div class="opt-qbtns" id="optQbtns"></div>
+      <div class="opt-chat-input">
+        <textarea id="optimIn" placeholder="Soru veya komut..."></textarea>
+        <button class="btn" onclick="aiSend('optim', document.getElementById('optimIn').value)">→</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-async function aiSend(type, msg) {
-  if(!msg||!msg.trim()) return;
-  const inp = document.getElementById(type+'In');
-  if(inp) inp.value = '';
-  const containerId = type+'Msgs';
-  addMsg(msg, 'user', containerId);
-  const th = addThinking(containerId);
+(function(){
 
-  const adsetList = MX.adsetStore.slice(0,20).map(r=>({
+var OPT_SECTIONS = [
+  {
+    id: 'increase',
+    title: 'Artırma Optimizasyonları',
+    color: '#1DB56F',
+    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6v1.5h4.94l-6.44 6.44-3.22-3.22a.749.749 0 00-1.06 0L1.5 18.44l1.06 1.06 7.19-7.19 3.22 3.22a.751.751 0 001.06 0L21 8.56v4.94h1.5V6H15z" fill="currentColor"/></svg>',
+    cards: [
+      {id:'kralin-hamlesi', name:'Kralın Hamlesi', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/kralinhamlesi.svg', desc:'Son 3 günde ROAS\'ı hesabın ROAS\'ından yüksek olan reklamların bütçesi %25 artırılır.', action:'increase_25', condition:'roas_above_account_3d'},
+      {id:'tahtin-efendisi', name:'Tahtın Efendisi', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/tahtinefendisi.svg', desc:'Reklam ROAS\'ı hesabın ROAS\'ından yüksek olan reklamların bütçesi günlük %20 artırılır.', action:'increase_20', condition:'roas_above_account'},
+      {id:'kazanc-gurulari', name:'Kazanç Guruları', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/kazancgrulari.svg', desc:'Son 3 günde ROAS\'ı en yüksek olan en iyi 5 reklamın bütçesi %25 artırılır.', action:'increase_25_top5', condition:'top5_roas_3d'},
+      {id:'stratejinin-zaferi', name:'Stratejinin Zaferi', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/stratejininzaferi.svg', desc:'Son 14, 7 ve 3 günlük ROAS\'ı sabit ya da artarak devam eden reklamlarda bütçe %25 artırılır.', action:'increase_25', condition:'roas_stable_growing'},
+    ]
+  },
+  {
+    id: 'decrease',
+    title: 'Azaltma Optimizasyonları',
+    color: '#1890FF',
+    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 18v-1.5h4.94l-6.44-6.44-3.22 3.22a.749.749 0 01-1.06 0L1.5 5.56 2.56 4.5l7.19 7.19 3.22-3.22a.75.75 0 011.06 0L21 15.44V10.5h1.5V18H15z" fill="currentColor"/></svg>',
+    cards: [
+      {id:'manevra-kaciranlar', name:'Manevra Kaçıranlar', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/manevrakaciranlar.svg', desc:'ROAS\'ı son 3 günde 7 ve 14 güne göre 3 kat ve üzeri düşenlerin bütçesi 2 kat azaltılır.', action:'decrease_50', condition:'roas_drop_3x_3d'},
+      {id:'oyun-savunmasi', name:'Oyun Savunması', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/altinkupa.svg', desc:'Son 3 günde ROAS\'ı en kötü 5 reklamın bütçesi %30 azaltılır.', action:'decrease_30_worst5', condition:'worst5_roas_3d'},
+      {id:'zeka-denklemi', name:'Zeka Denklemi', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/zekadenklemi.svg', desc:'Son 14, 7 ve 3 günlük ROAS\'ı 2 kat veya daha fazla azalarak devam ediyorsa bütçe %25 azaltılır.', action:'decrease_25', condition:'roas_declining_2x'},
+      {id:'hamle-savaslari', name:'Hamle Savaşları', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/hamlesavaslari.svg', desc:'Son 3 günde reklamın ROAS\'ı hesabın ROAS\'ından düşük olan reklamların bütçesi %25 azaltılır.', action:'decrease_25', condition:'roas_below_account_3d'},
+      {id:'oyun-dengesi', name:'Oyun Dengesi', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/stratejininzaferi.svg', desc:'Reklam ROAS\'ı hesabın ROAS\'ından düşük olanlar günlük %20 olarak azaltılır.', action:'decrease_20', condition:'roas_below_account'},
+    ]
+  },
+  {
+    id: 'pause',
+    title: 'Kapatma Optimizasyonları',
+    color: '#FF3838',
+    icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.5 7.5H9v9h1.5v-9zM15 7.5h-1.5v9H15v-9z" fill="currentColor"/><path d="M12 3a9 9 0 110 18 9 9 0 010-18zm0-1.5a10.5 10.5 0 100 21 10.5 10.5 0 000-21z" fill="currentColor"/></svg>',
+    cards: [
+      {id:'oyunun-esiri', name:'Oyunun Esiri', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/oyununesiri.svg', desc:'Son 14, 7 ve 3 günlük ROAS\'ı 3 kat veya üzeri düşüyorsa reklamı kapat.', action:'pause', condition:'roas_drop_3x_trend'},
+      {id:'sessiz-savasci', name:'Sessiz Savaşçı', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/sessizsavasci.png', desc:'Reklam son 5 günde toplam 10 TL ve altında harcama yaptıysa otomatik olarak kapatılır.', action:'pause', condition:'spend_under_10tl_5d'},
+      {id:'kaybeden-hamle', name:'Kaybeden Hamle', badge:'ROAS Tabanlı', img:'https://cdn.iyzads.com/optimisation/kaybedenhamle.png', desc:'Reklamın son 5 günlük ROAS\'ı, reklam setinin ROAS\'ından 3 kat düşükse ve harcama yapıyorsa kapatılır.', action:'pause', condition:'roas_3x_below_adset_5d'},
+    ]
+  },
+];
+
+var selectedCard = null;
+
+// Sol paneli oluştur
+function buildLeft(){
+  var left = document.getElementById('optLeft');
+  var statusEl = left.querySelector('.opt-status');
+  left.innerHTML = '';
+  left.appendChild(statusEl);
+
+  OPT_SECTIONS.forEach(function(sec){
+    var section = document.createElement('div');
+    section.className = 'opt-section';
+    section.innerHTML =
+      '<div class="opt-section-hdr" onclick="toggleSection(\''+sec.id+'\')">' +
+        '<div class="opt-section-icon" style="color:'+sec.color+'">'+sec.icon+'</div>' +
+        '<div class="opt-section-title">'+sec.title+'</div>' +
+        '<span class="opt-section-arrow open" id="arrow-'+sec.id+'">▼</span>' +
+      '</div>' +
+      '<div class="opt-cards open" id="cards-'+sec.id+'"></div>';
+    left.appendChild(section);
+
+    var cardsEl = section.querySelector('#cards-'+sec.id);
+    sec.cards.forEach(function(card){
+      var div = document.createElement('div');
+      div.className = 'opt-card';
+      div.id = 'card-'+card.id;
+      div.onclick = function(){ selectCard(card, sec); };
+      div.innerHTML =
+        '<img src="'+card.img+'" onerror="this.style.display=\'none\'">' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="opt-card-badge">'+card.badge+'</div>' +
+          '<div class="opt-card-name">'+card.name+'</div>' +
+          '<div class="opt-card-desc">'+card.desc.slice(0,70)+'...</div>' +
+        '</div>';
+      cardsEl.appendChild(div);
+    });
+  });
+}
+
+window.toggleSection = function(id){
+  var cards = document.getElementById('cards-'+id);
+  var arrow = document.getElementById('arrow-'+id);
+  var isOpen = cards.classList.contains('open');
+  cards.classList.toggle('open', !isOpen);
+  arrow.classList.toggle('open', !isOpen);
+};
+
+function selectCard(card, sec){
+  // Aktif kartı güncelle
+  document.querySelectorAll('.opt-card').forEach(function(el){ el.classList.remove('active'); });
+  document.getElementById('card-'+card.id).classList.add('active');
+  selectedCard = card;
+
+  // Detail paneli doldur
+  document.getElementById('optEmpty').style.display = 'none';
+  document.getElementById('optDetail').style.display = '';
+  document.getElementById('optChatWrap').style.display = 'flex';
+
+  document.getElementById('optDetailImg').src = card.img;
+  document.getElementById('optDetailTitle').textContent = card.name;
+  document.getElementById('optDetailBadge').textContent = card.badge;
+  document.getElementById('optDetailDesc').textContent = card.desc;
+  document.getElementById('optApplyStatus').textContent = '';
+
+  // Quick button'ları güncelle
+  var qbtns = document.getElementById('optQbtns');
+  qbtns.innerHTML = [
+    {label:'📊 Uygun reklamları bul', msg:'Bu kural için uygun reklamları listele ve hangilerine uygulanacağını göster.'},
+    {label:'⚡ Uygula', msg:'Bu optimizasyon kuralını şimdi uygula: ' + card.name},
+    {label:'🔍 Simüle et', msg:'Bu kuralı uygulamadan önce simüle et, hangi reklamlar etkilenir ve tahmini sonuç ne olur?'},
+    {label:'📈 Geçmişi gör', msg:'Bu tür optimizasyon geçmişte nasıl sonuçlar verdi?'},
+  ].map(function(q){
+    return '<button class="qbtn" onclick="aiSend(\'optim\',\''+q.msg.replace(/'/g,"\\'")+'\')">' + q.label + '</button>';
+  }).join('');
+
+  // Chat'e hoş geldin mesajı
+  var msgs = document.getElementById('optimMsgs');
+  msgs.innerHTML = '';
+  addMsg('Seçilen kural: ' + card.name + '\n\n' + card.desc + '\n\nNasıl devam edelim?', 'sys', 'optimMsgs');
+}
+
+window.applyOptimization = function(){
+  if(!selectedCard){ return; }
+  var msg = selectedCard.name + ' kuralını şimdi uygula. Hangi reklamlara uygulandığını listele ve bütçe değişikliklerini yap.';
+  aiSend('optim', msg);
+};
+
+window.analyzeOptimization = function(){
+  if(!selectedCard){ return; }
+  var msg = selectedCard.name + ' kuralını uygulamadan önce analiz et. Mevcut reklamlardan hangilerine uygulanır? Tahmini etkiyi göster.';
+  aiSend('optim', msg);
+};
+
+// aiSend - mevcut shared.js claude() fonksiyonunu kullanır
+window.aiSend = async function(type, msg){
+  if(!msg||!msg.trim()) return;
+  var inp = document.getElementById(type+'In');
+  if(inp) inp.value = '';
+  var containerId = type+'Msgs';
+  addMsg(msg, 'user', containerId);
+  var th = addThinking(containerId);
+
+  var adsetList = (MX.adsetStore||[]).slice(0,20).map(function(r){return {
     id:r._budgetId, name:r.name, type:r._budgetType||'adset',
     budgetTL:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
     roas:r.roas, spend:r.spend, ctr:r.ctr, cpc:r.cpc
-  })).filter(r=>r.id&&r.budgetTL>0);
+  };}).filter(function(r){return r.id&&r.budgetTL>0;});
 
-  const sys = `Sen Madmext Meta Ads yöneticisisin. Bu uygulama Meta Graph API\'ye doğrudan bağlı — gerçek bütçe değişikliği YAPABİLİRSİN. Türkçe yanıt ver.
-VERİLER: ${JSON.stringify(adsetList)}
-Bütçe artışı için: <!--ACTION:BUDGET_INCREASE|GERCEK_ID|ADI|TYPE|MEVCUT_TL|YENI_TL|PCT-->
-SADECE listeden gerçek ID kullan.`;
+  var campList = (MX.campStore||[]).slice(0,10).map(function(c){return {
+    id:c.id, name:c.name, status:c.status
+  };});
+
+  var selectedRule = selectedCard ? ('Seçili kural: ' + selectedCard.name + ' - ' + selectedCard.desc) : '';
+
+  var sys = 'Sen Madmext Meta Ads yöneticisisin. Bu uygulama Meta Graph API\'ye doğrudan bağlı — gerçek bütçe değişikliği YAPABİLİRSİN. Türkçe yanıt ver.\n' +
+    selectedRule + '\n' +
+    'REKLAM SETLERİ: ' + JSON.stringify(adsetList) + '\n' +
+    'KAMPANYALAR: ' + JSON.stringify(campList) + '\n' +
+    'Bütçe artışı için: <!--ACTION:BUDGET_INCREASE|GERCEK_ID|ADI|TYPE|MEVCUT_TL|YENI_TL|PCT-->\n' +
+    'SADECE listeden gerçek ID kullan.';
 
   if(!MX.chatH.optim) MX.chatH.optim = [];
   MX.chatH.optim.push({role:'user',content:msg});
-  const reply = await claude(MX.chatH.optim.slice(-6), sys);
+  var reply = await claude(MX.chatH.optim.slice(-6), sys);
   th.remove();
   MX.chatH.optim.push({role:'assistant',content:reply});
-  const clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
+  var clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
   addClaudeMsg(clean, containerId);
-  parseAndRenderActions(reply, containerId);
-}
+  if(typeof parseAndRenderActions === 'function') parseAndRenderActions(reply, containerId);
+};
 
-function renderLog(elId='logList') {
-  const el = document.getElementById(elId); if(!el) return;
-  if(!MX.budgetLog.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--m)">Henüz değişiklik yok.</div>';return;}
-  el.innerHTML = MX.budgetLog.map((e,i) => {
-    const d = new Date(e.time).toLocaleString('tr');
-    const daysSince = (Date.now()-new Date(e.time).getTime())/(1000*60*60*24);
-    const canCheck = daysSince >= 1;
-    const baseH = e.baseline?`<div class="lmeta">Baseline → ROAS: <strong>${e.baseline.roas?.toFixed(2)||'—'}x</strong> · Harcama: <strong>${e.baseline.spend?.toFixed(0)||'—'}₺</strong> · Satış: <strong>${e.baseline.purchase||'—'}</strong></div>`:'';
-    let perfH='',perfDrop=false;
-    if(e.curRoas!=null){
-      const baseRoas=e.baseline?.roas||0;
-      const roasDiff=baseRoas>0?((e.curRoas-baseRoas)/baseRoas*100):0;
-      const diffColor=roasDiff>=-10?'var(--g)':'var(--r)';
-      perfDrop=roasDiff<-15;
-      perfH=`<div class="lmeta">Şu anki → ROAS: <strong style="color:${diffColor}">${e.curRoas.toFixed(2)}x</strong> ${baseRoas>0?`(${roasDiff>=0?'+':''}${roasDiff.toFixed(1)}%)`:''}  </div>`;
-    }
-    const aiH = e.aiNote?`<div style="margin-top:8px;padding:8px;background:var(--bg);border-radius:4px;border-left:2px solid var(--a);font-size:11px;line-height:1.6">${e.aiNote}</div>`:'';
-    const checkBtn = canCheck?`<button class="btn sm sec" onclick="checkSingle(${i})" style="margin-top:6px;width:100%">${e.checking?'⏳ Kontrol ediliyor...':'🔍 Şimdi Kontrol Et'}</button>`:'<div style="font-size:10px;color:var(--m);margin-top:6px">⏳ 24 saat sonra kontrol</div>';
-    const revertBtn = perfDrop?`<button class="btn sm dng" onclick="revertBudget(${i})" style="margin-top:4px;width:100%">↩ Geri Al (${e.old.toFixed(0)}₺)</button>`:'';
-    const cardClass = e.curRoas==null?'neu':perfDrop?'dn':'up';
-    const pctColor = e.pct>0?'var(--g)':'var(--r)';
-    return `<div class="lcard ${cardClass}">
-      <div style="flex:1">
-        <div class="lname">${e.name}</div>
-        <div class="lmeta">${d} · ${e.type==='campaign'?'CBO':'ABO'}</div>
-        <div class="lmeta">${e.old.toFixed(0)}₺ → ${e.new.toFixed(0)}₺/gün</div>
-        ${baseH}${perfH}${aiH}${checkBtn}${revertBtn}
-      </div>
-      <div><div class="lch" style="color:${pctColor}">${e.pct>0?'+':''}%${e.pct}</div></div>
-    </div>`;
-  }).join('');
-}
+// Init
+buildLeft();
 
-async function checkSingle(idx) {
-  const e = MX.budgetLog[idx]; if(!e)return;
-  MX.budgetLog[idx].checking=true; renderLog();
-  try {
-    const d = await api(`${AID}/insights`,{fields:'spend,ctr,cpc,purchase_roas,actions',date_preset:'last_3d',
-      level:e.type==='campaign'?'campaign':'adset',
-      filtering:JSON.stringify([{field:e.type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:e.id}]),
-      action_attribution_windows:ATTR});
-    const r = d?.data?.[0];
-    if(r){
-      e.curRoas=groas(r); e.curSpend=parseFloat(r.spend||0);
-      e.curPurchase=gav(r.actions,'purchase'); e.curCtr=parseFloat(r.ctr||0);
-      const baseRoas=e.baseline?.roas||0;
-      const roasChange=baseRoas>0?((e.curRoas-baseRoas)/baseRoas*100):0;
-      const aiPrompt=`Bütçe değişikliği sonrası performans (Türkçe, 2 cümle max):\n${e.name} | ${e.old.toFixed(0)}₺→${e.new.toFixed(0)}₺/gün (+%${e.pct})\nBaseline ROAS: ${baseRoas.toFixed(2)}x → Şu an: ${e.curRoas.toFixed(2)}x (${roasChange>=0?'+':''}${roasChange.toFixed(1)}%)`;
-      e.aiNote = await claude([{role:'user',content:aiPrompt}],'Meta reklam uzmanısın. Net, kısa Türkçe yorum.');
-    }
-  } catch(err){ toast('Hata: '+err.message); }
-  MX.budgetLog[idx].checking=false;
-  saveServerLogs(); renderLog();
-  toast('Kontrol tamamlandı ✓');
-}
+window.addEventListener('mx:connected', function(){
+  document.querySelector('.opt-status').innerHTML =
+    '<div class="opt-status-dot"></div><span>Meta hesabı bağlı — ' +
+    ((MX.adsetStore||[]).length) + ' reklam seti yüklü</span>';
+});
 
-async function checkBudget() {
-  if(!MX.budgetLog.length){toast('Değişiklik yok');return;}
-  toast('Kontrol ediliyor...');
-  for(let i=0;i<Math.min(MX.budgetLog.length,10);i++){
-    const daysSince=(Date.now()-new Date(MX.budgetLog[i].time).getTime())/(1000*60*60*24);
-    if(daysSince>=1) await checkSingle(i);
-  }
-  toast('Tamamlandı ✓');
-}
-
-async function revertBudget(idx) {
-  const e=MX.budgetLog[idx]; if(!e||!confirm(`${e.name} bütçesi ${e.old.toFixed(0)}₺'ye geri alınsın mı?`))return;
-  const d=await api(e.id,{daily_budget:Math.round(e.old*100)},'POST');
-  if(d?.success||d?.id){
-    MX.budgetLog.unshift({id:e.id,name:e.name,type:e.type,old:e.new,new:e.old,pct:-(e.pct),time:new Date().toISOString(),baseline:e.baseline||null});
-    saveServerLogs(); toast(`Bütçe ${e.old.toFixed(0)}₺'ye geri alındı ✓`); renderLog();
-  } else toast('Hata: '+(d?.error?.message||'?'));
-}
-
-function clearLog(){if(confirm('Silinsin mi?')){MX.budgetLog=[];saveServerLogs();renderLog();}}
-
-window.onConnected(function(){renderLog();});
+})();
 </script>
