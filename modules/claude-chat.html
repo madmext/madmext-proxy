@@ -330,10 +330,26 @@ window.ccLoadMetaAndSend = async function(msg){
     "Bütçe değişikliği için: <!--ACTION:BUDGET_INCREASE|ID|ADI|adset|MEVCUT|YENI|PCT-->\n" +
     "SADECE gerçek ID kullan. Veri yoksa 'Bağlan butonuna basın' de.";
 
-  claude(ccHistory.slice(-8), sys).then(function(reply){
+  // Direkt API çağrısı - shared.js bağımlılığı yok
+  var proxyUrl = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
+  fetch(proxyUrl + '/claude', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    credentials: 'include',
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1500,
+      system: sys,
+      messages: ccHistory.slice(-8)
+    })
+  }).then(function(r){ return r.json(); })
+  .then(function(data){
     th.remove();
     ccTyping = false;
     document.getElementById('ccSendBtn').disabled = false;
+    var reply = (data.content && data.content[0] && data.content[0].text) || 
+                (data.error && ('Hata: ' + (data.error.message||JSON.stringify(data.error)))) || 
+                'Cevap alınamadı';
     ccHistory.push({role:'assistant', content:reply});
     var clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
     addCCMsg(clean, 'ai');
@@ -345,7 +361,7 @@ window.ccLoadMetaAndSend = async function(msg){
     th.remove();
     ccTyping = false;
     document.getElementById('ccSendBtn').disabled = false;
-    addCCMsg('Hata: ' + e.message, 'sys');
+    addCCMsg('Bağlantı hatası: ' + e.message + '. Bağlan butonuna basın.', 'sys');
   });
 };
 
