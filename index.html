@@ -185,9 +185,9 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
-      <span class="dot" id="dot"></span>
-      <input type="text" class="conn-input" id="proxyUrl" placeholder="Railway URL...">
-      <button class="btn sm" onclick="connect()">Bağlan</button>
+      <span class="dot" id="dot" title="Bağlantı durumu"></span>
+      <input type="text" class="conn-input" id="proxyUrl" placeholder="Railway URL..." style="display:none">
+      <button class="btn sm" onclick="connect()" style="display:none">Bağlan</button>
       <div id="userInfo" style="display:none;align-items:center;gap:8px;padding-left:8px;border-left:1px solid var(--b)">
         <div style="text-align:right">
           <div style="font-size:12px;font-weight:600;color:var(--t);line-height:1.2" id="topUserName"></div>
@@ -664,4 +664,3 @@ window.addEventListener('resize',function(){
 </script>
 </body>
 </html>
-
