@@ -263,87 +263,87 @@ var CUSTOM_RULES_KEY = 'mx_custom_opt_rules';
 var OPT_RULES = {
   'roas-artir': {
     section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '👑',
-    name: 'Kralın Hamlesi',
+    name: 'Süper Performans',
     desc: 'Son 3 günde ROAS\'ı hesabın ortalamasından yüksek olan reklamlara bütçe artışı',
     conditions: ['Son 3 günlük ROAS > hesap ortalama ROAS', 'Reklam aktif durumda'],
-    action: 'Bütçe %25 artır', source: 'iyzads'
+    action: 'Bütçe %25 artır', source: 'madmext'
   },
   'roas-artir-2': {
     section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '🏆',
-    name: 'Tahtın Efendisi',
+    name: 'Günlük Yıldız',
     desc: 'Reklam ROAS\'ı hesabın ROAS\'ından yüksek olanlara günlük bütçe artışı',
     conditions: ['Günlük ROAS > hesap ROAS ortalaması', 'Minimum 100 TL harcama'],
-    action: 'Bütçe %20 artır', source: 'iyzads'
+    action: 'Bütçe %20 artır', source: 'madmext'
   },
   'roas-artir-3': {
     section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '💰',
-    name: 'Kazanç Guruları',
+    name: 'En İyi 5 Reklam',
     desc: 'Son 3 günde ROAS\'ı en yüksek olan ilk 5 reklama bütçe artışı',
     conditions: ['Son 3 günlük ROAS sıralamasında ilk 5', 'Aktif reklam'],
-    action: 'Bütçe %25 artır', source: 'iyzads'
+    action: 'Bütçe %25 artır', source: 'madmext'
   },
   'roas-artir-4': {
     section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '🎯',
-    name: 'Stratejinin Zaferi',
+    name: 'Büyüyen Trend',
     desc: 'Son 14, 7 ve 3 günlük ROAS\'ı sabit ya da artarak devam eden reklamlara artış',
     conditions: ['14 günlük ROAS ≤ 7 günlük ROAS ≤ 3 günlük ROAS (trend yukarı)', 'Aktif reklam'],
-    action: 'Bütçe %25 artır', source: 'iyzads'
+    action: 'Bütçe %25 artır', source: 'madmext'
   },
   'roas-azalt-1': {
     section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '📉',
-    name: 'Manevra Kaçıranlar',
+    name: 'Ani Düşüş',
     desc: 'ROAS\'ı son 3 günde 7 ve 14 güne göre 3 kat ve üzeri düşen reklamlarda azalt',
     conditions: ['3 günlük ROAS < (7 günlük ROAS / 3)', '7 günlük ROAS < (14 günlük ROAS / 3)'],
-    action: 'Bütçe 2 kat azalt (%50)', source: 'iyzads'
+    action: 'Bütçe 2 kat azalt (%50)', source: 'madmext'
   },
   'roas-azalt-2': {
     section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '🛡',
-    name: 'Oyun Savunması',
+    name: 'En Kötü 5 Reklam',
     desc: 'Son 3 günde ROAS\'ı en kötü 5 reklamın bütçesini azalt',
     conditions: ['Son 3 günlük ROAS sıralamasında son 5', 'Minimum 50 TL harcama'],
-    action: 'Bütçe %30 azalt', source: 'iyzads'
+    action: 'Bütçe %30 azalt', source: 'madmext'
   },
   'roas-azalt-3': {
     section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '🧮',
-    name: 'Zeka Denklemi',
+    name: 'Azalan Trend',
     desc: 'Son 14, 7 ve 3 günlük ROAS\'ı 2 kat veya daha fazla azalarak devam eden reklamlarda azalt',
     conditions: ['14 günlük ROAS ≥ (7 günlük ROAS × 2)', '7 günlük ROAS ≥ (3 günlük ROAS × 2)'],
-    action: 'Bütçe %25 azalt', source: 'iyzads'
+    action: 'Bütçe %25 azalt', source: 'madmext'
   },
   'roas-azalt-4': {
     section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '⚔️',
-    name: 'Hamle Savaşları',
+    name: 'Hesap Altı Performans',
     desc: 'Son 3 günde reklamın ROAS\'ı hesabın ROAS\'ından düşük olanları azalt',
     conditions: ['3 günlük ROAS < hesap ortalama ROAS', 'Aktif reklam, minimum 50 TL harcama'],
-    action: 'Bütçe %25 azalt', source: 'iyzads'
+    action: 'Bütçe %25 azalt', source: 'madmext'
   },
   'roas-azalt-5': {
     section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '⚖️',
-    name: 'Oyun Dengesi',
+    name: 'Günlük Düşük ROAS',
     desc: 'Reklam ROAS\'ı hesabın ROAS\'ından düşük olanları günlük azalt',
     conditions: ['Günlük ROAS < hesap ROAS ortalaması', 'Aktif reklam'],
-    action: 'Bütçe günlük %20 azalt', source: 'iyzads'
+    action: 'Bütçe günlük %20 azalt', source: 'madmext'
   },
   'roas-kapat-1': {
     section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '🚫',
-    name: 'Oyunun Esiri',
+    name: 'Kritik Düşüş',
     desc: 'Son 14, 7 ve 3 günlük ROAS\'ı 3 kat veya üzeri düşüyorsa kapat',
     conditions: ['14 günlük ROAS ≥ (7 günlük ROAS × 3)', '7 günlük ROAS ≥ (3 günlük ROAS × 3)'],
-    action: 'Reklamı duraklat', source: 'iyzads'
+    action: 'Reklamı duraklat', source: 'madmext'
   },
   'roas-kapat-2': {
     section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '🤫',
-    name: 'Sessiz Savaşçı',
+    name: 'Düşük Harcama',
     desc: 'Son 5 günde toplam 10 TL ve altında harcama yapan reklamı kapat',
     conditions: ['Son 5 günlük toplam harcama ≤ 10 TL', 'Aktif reklam'],
-    action: 'Reklamı duraklat', source: 'iyzads'
+    action: 'Reklamı duraklat', source: 'madmext'
   },
   'roas-kapat-3': {
     section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '💔',
-    name: 'Kaybeden Hamle',
+    name: 'Set Altı Performans',
     desc: 'Son 5 günlük ROAS\'ı reklam setinin 3 kat altına düşmüş ve harcama yapıyorsa kapat',
     conditions: ['Reklam ROAS\'ı < (Reklam seti ROAS\'ı / 3)', 'Aktif harcama devam ediyor'],
-    action: 'Reklamı duraklat', source: 'iyzads'
+    action: 'Reklamı duraklat', source: 'madmext'
   },
   // ── MADMEXT ÖZEL KURALLARI ──
   'ctr-artir-1': {
@@ -466,7 +466,7 @@ function buildList(){
             '<div class="opt-item-emoji">'+r.rule.emoji+'</div>' +
             '<div class="opt-item-info">' +
               '<div class="opt-item-name">'+r.rule.name+'</div>' +
-              '<div class="opt-item-tag">'+(r.rule.source==='madmext'?'Madmext':'iyzads')+'</div>' +
+              '<div class="opt-item-tag">'+(r.rule.source==='madmext'?'Madmext':'madmext')+'</div>' +
             '</div>' +
             '<div class="opt-item-type '+r.rule.type+'"></div>' +
           '</div>';
@@ -511,7 +511,7 @@ window.selectRule = function(id){
   document.getElementById('dBadges').innerHTML =
     '<span class="opt-badge '+rule.type+'">'+(typelabels[rule.type]||rule.type)+'</span>' +
     '<span class="opt-badge increase" style="background:var(--b);color:var(--m);border-color:var(--b)">'+rule.action+'</span>' +
-    '<span class="opt-badge increase" style="background:var(--b);color:var(--m);border-color:var(--b)">'+(rule.source==='madmext'?'Madmext Özel':'iyzads')+'</span>';
+    '<span class="opt-badge increase" style="background:var(--b);color:var(--m);border-color:var(--b)">'+(rule.source==='madmext'?'Madmext Özel':'madmext')+'</span>';
 
   document.getElementById('dConditions').innerHTML = (rule.conditions||[]).map(function(c){
     return '<div class="opt-condition-rule"><div class="opt-condition-dot"></div><div>'+c+'</div></div>';
