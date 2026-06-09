@@ -49,10 +49,20 @@ def get_ga4_token():
 def hash_pw(p): return hashlib.sha256(p.encode()).hexdigest()
 
 def get_users():
+    # 1. Önce USERS_JSON env var'a bak (Railway'de kalıcı)
+    users_json = os.environ.get('USERS_JSON','')
+    if users_json:
+        try:
+            import base64
+            users = json.loads(base64.b64decode(users_json).decode())
+            if users: return users
+        except: pass
+    # 2. Dosyadan oku
     try:
         logs = read_logs()
         if logs.get('users'): return logs['users']
     except: pass
+    # 3. Default: ADMIN_EMAIL/ADMIN_PASSWORD env var
     return [{'email': os.environ.get('ADMIN_EMAIL','admin@madmext.com'),
              'password_hash': hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),
              'role':'admin','name':'Admin'}]
@@ -111,7 +121,12 @@ def forgot_password():
 def admin_get_users():
     if session.get('user_role') != 'admin': return jsonify({'error':'Admin gerekli'}), 403
     users = get_users()
-    return jsonify([{'email':u['email'],'name':u.get('name'),'role':u.get('role','user')} for u in users])
+    import base64
+    users_b64 = base64.b64encode(json.dumps(users, ensure_ascii=False).encode()).decode()
+    return jsonify({
+        'users': [{'email':u['email'],'name':u.get('name'),'role':u.get('role','user')} for u in users],
+        'users_json_hint': users_b64
+    })
 
 @app.route('/admin/users', methods=['POST'])
 def admin_add_user():
