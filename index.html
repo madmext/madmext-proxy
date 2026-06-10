@@ -327,21 +327,13 @@ async function loadModule(page) {
 
     el.innerHTML = tmp.innerHTML;
 
+    // Script tag ile çalıştır — global scope garantili, sıralı
     scripts.forEach(function(code){
-      try {
-        var tmp2 = document.createElement('textarea');
-        tmp2.innerHTML = code;
-        (new Function(tmp2.value))();
-      } catch(e){
-        try {
-          var s = document.createElement('script');
-          var tmp3 = document.createElement('textarea');
-          tmp3.innerHTML = code;
-          s.textContent = tmp3.value;
-          document.body.appendChild(s);
-        } catch(e2){ console.error('Script hatasi:', e2); }
-      }
+      var s = document.createElement('script');
+      s.textContent = code;
+      document.body.appendChild(s);
     });
+    // Script'ler sync çalışır (inline script tag), hemen connected dispatch
     if(window._isConnected){
       window.dispatchEvent(new CustomEvent('mx:connected'));
     }
@@ -393,15 +385,16 @@ window.addEventListener('mx:connected', function(){
   if(ed) ed.style.display = 'none';
 });
 
-// initUser ve nav PARALEL — ikisi birbirinden bağımsız
-Promise.all([
-  initUser(),
-  nav(_startPage, null)
-]);
+// initUser hemen başlat (auth kontrolü)
+initUser();
 
-// connect() bağımsız başlat
+// connect önce, bittikten sonra nav — race condition yok
 updateConnBadge('', 'Bağlanıyor...');
-connect();
+connect().then(function(){
+  nav(_startPage, null);
+}).catch(function(){
+  nav(_startPage, null); // connect hata verse bile sayfayı yükle
+});
 
 // Task badge her dakika güncelle
 setInterval(updateTaskBadge, 60000);
