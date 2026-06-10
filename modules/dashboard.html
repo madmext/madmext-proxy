@@ -447,7 +447,13 @@ window.loadDashboard = loadDashboard;
 // ── Uyarı + Sıralama Paneli ─────────────────────────────────────────
 function renderAlerts(){
   var adsets = MX.adsetStore || [];
-  if(!adsets.length) return;
+  if(!adsets.length){
+    document.getElementById('dbAlerts').innerHTML =
+      '<div class="db-alert blue"><div class="db-alert-icon">⏳</div>'+
+      '<div><div class="db-alert-title">Reklam verileri yükleniyor...</div>'+
+      '<div class="db-alert-desc">Meta Ads verileri hazırlanıyor, lütfen bekleyin.</div></div></div>';
+    return;
+  }
 
   var alerts = [];
   var avgRoas = adsets.reduce(function(s,r){return s+(r.roas||0);},0) / adsets.length;
@@ -549,12 +555,18 @@ function renderAlerts(){
 // loadDashboard'u wrap et
 var _origLoad = loadDashboard;
 window.loadDashboard = async function(){
+  // Önce uyarı panelini yükleniyor göster
+  renderAlerts();
+  // Dashboard verilerini yükle
   await _origLoad();
-  // Adset verisi de yükle (uyarılar için)
+  // Adset verisi yoksa yükle
   if(!(MX.adsetStore||[]).length && typeof loadMetaAdsets==='function'){
     await loadMetaAdsets();
   }
+  // Uyarıları güncelle
   renderAlerts();
+  // 3 sn sonra tekrar güncelle (veriler geç gelebilir)
+  setTimeout(renderAlerts, 3000);
 };
 
 if(window._isConnected){
