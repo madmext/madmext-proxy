@@ -22,6 +22,7 @@ CORS(app, supports_credentials=True)
 
 META_TOKEN = os.environ.get('META_TOKEN', '')
 ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
+OPENAI_KEY = os.environ.get('OPENAI_KEY', '')
 GA4_PROPERTY_ID = os.environ.get('GA4_PROPERTY_ID', '')
 GA4_REFRESH_TOKEN = os.environ.get('GA4_REFRESH_TOKEN', '')
 GA4_CLIENT_ID = os.environ.get('GA4_CLIENT_ID', '')
@@ -526,6 +527,40 @@ def claude_proxy():
         return jsonify(r.json())
     except requests.Timeout:
         return jsonify({'error': {'message': 'Claude zaman aşımı (60s)'}}), 504
+    except Exception as e:
+        return jsonify({'error': {'message': str(e)}}), 500
+
+# ── OPENAI ───────────────────────────────────────────────────────────────
+
+@app.route('/openai', methods=['POST'])
+def openai_proxy():
+    if not OPENAI_KEY:
+        return jsonify({'error': {'message': 'OPENAI_KEY env var eksik'}}), 500
+    data = request.json or {}
+    model = data.get('model', 'gpt-4o')
+    try:
+        r = requests.post(
+            'https://api.openai.com/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {OPENAI_KEY}',
+                'Content-Type': 'application/json'
+            },
+            json={
+                'model': model,
+                'messages': data.get('messages', []),
+                'max_tokens': data.get('max_tokens', 1500),
+                'temperature': data.get('temperature', 0.7)
+            },
+            timeout=60
+        )
+        result = r.json()
+        # OpenAI formatını Claude formatına normalize et (frontend kolayca okusun)
+        if 'choices' in result:
+            text = result['choices'][0]['message']['content']
+            return jsonify({'content': [{'type': 'text', 'text': text}], 'model': model})
+        return jsonify(result)
+    except requests.Timeout:
+        return jsonify({'error': {'message': 'OpenAI zaman aşımı (60s)'}}), 504
     except Exception as e:
         return jsonify({'error': {'message': str(e)}}), 500
 
