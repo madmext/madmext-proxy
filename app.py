@@ -234,8 +234,18 @@ def save_users(users):
     return _users_to_json_b64(users)
 
 @app.route('/')
+@app.route('/ads')
+@app.route('/strateji')
+@app.route('/optimizasyon')
+@app.route('/hedef-kitle')
+@app.route('/tasarim')
+@app.route('/raporlar')
+@app.route('/gorevler')
+@app.route('/olustur')
+@app.route('/ayarlar')
+@app.route('/kullanicilar')
+@app.route('/ai')
 def home():
-    # Yeni app.py varsa ve kullanıcı giriş yapmamışsa login'e gönder
     if os.environ.get('SECRET_KEY') and not session.get('user_email'):
         return send_from_directory('.', 'login.html') if os.path.exists('login.html') else send_from_directory('.', 'index.html')
     return send_from_directory('.', 'index.html')
@@ -496,4 +506,3 @@ def claude_proxy():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-
