@@ -37,7 +37,7 @@ async function claude(msgs, sys = '') {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens: 2000, system: sys, messages: msgs })
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 2000, system: sys, messages: msgs })
     });
     const d = await r.json();
     return d.content?.[0]?.text || ('Hata: ' + JSON.stringify(d.error || d));
@@ -270,25 +270,54 @@ console.log('✓ Madmext shared.js yüklendi');
   } catch(e) {}
 })();
 
+// ── onConnected helper ────────────────────────────────────────────────
+// Modüller bağlantı kurulduğunda çalışacak callback'leri kaydeder.
+// Kullanım: window.onConnected(fn)  →  mx:connected event'i gelince fn() çağrılır.
+// Eğer zaten bağlıysa hemen çalıştırır.
+window.onConnected = function(fn) {
+  if (window._isConnected) { try { fn(); } catch(e) { console.error('onConnected cb error', e); } return; }
+  window.addEventListener('mx:connected', function handler() {
+    window.removeEventListener('mx:connected', handler);
+    try { fn(); } catch(e) { console.error('onConnected cb error', e); }
+  });
+};
+
 // ── Window'a expose et (modüller erişebilsin) ────────────────────────
-window.AID = AID;
+// Sabitler
+window.AID  = AID;
 window.ATTR = ATTR;
-window.api = api;
-window.ga4 = ga4;
-window.groas = groas;
-window.gav = gav;
-window.ga4val = ga4val;
-window.roasColor = roasColor;
-window.toast = toast;
-window.logAction = logAction;
-window.renderMD = renderMD;
-window.addMsg = addMsg;
-window.addClaudeMsg = addClaudeMsg;
-window.addThinking = addThinking;
-window.parseAndRenderActions = parseAndRenderActions;
-window.getBi = getBi;
-window.claude = claude;
-window.connect = connect;
-window.updateTaskBadge = updateTaskBadge;
-window.saveServerLogs = saveServerLogs;
+window.CF   = CF;
+window.AF   = AF;
+window.DF   = DF;
+
+// API & iletişim
+window.px             = px;
+window.api            = api;
+window.ga4            = ga4;
+window.claude         = claude;
+window.connect        = connect;
+
+// Log işlemleri
+window.logAction      = logAction;
 window.loadServerLogs = loadServerLogs;
+window.saveServerLogs = saveServerLogs;
+
+// Hesaplama yardımcıları
+window.gav            = gav;
+window.groas          = groas;
+window.grev           = grev;
+window.ga4val         = ga4val;
+window.roasColor      = roasColor;
+window.getBi          = getBi;
+
+// UI yardımcıları
+window.toast                = toast;
+window.renderMD             = renderMD;
+window.addMsg               = addMsg;
+window.addClaudeMsg         = addClaudeMsg;
+window.addThinking          = addThinking;
+window.parseAndRenderActions = parseAndRenderActions;
+window.updateTaskBadge      = updateTaskBadge;
+
+// Bütçe işlemleri
+window.chatApproveB = chatApproveB;
