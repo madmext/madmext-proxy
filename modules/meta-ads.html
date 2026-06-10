@@ -1,1201 +1,1031 @@
 <style>
-/* ── Meta Ads Layout ───────────────────────────── */
-.ma-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
-.ma-row1{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;flex-shrink:0;gap:8px}
-.meta-tabs{display:flex;gap:1px}
-.meta-tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s;display:flex;align-items:center;gap:6px}
-.meta-tab.active{background:var(--a);color:#fff}
-.meta-tab:hover:not(.active){background:var(--b);color:var(--t)}
-.dp-btn{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 12px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;border-radius:6px;cursor:pointer;white-space:nowrap;line-height:1.2}
-.dp-btn:hover{border-color:rgba(255,255,255,.3);background:#2a2b2d}
-.ma-row2{display:flex;align-items:center;gap:6px;padding:0 0 8px;flex-shrink:0;flex-wrap:wrap}
-.mstatus-grp{display:flex;gap:1px;background:var(--s2);border:1px solid var(--b);border-radius:6px;padding:2px}
-.mstatus-btn{padding:4px 12px;font-size:11px;border:none;border-radius:4px;cursor:pointer;background:transparent;color:var(--m);font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
-.mstatus-btn.on{background:var(--a);color:#fff}
-.ma-sep{width:1px;height:20px;background:var(--b);margin:0 2px}
-.ma-summary{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:10px;flex-shrink:0}
-.ms-card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s}
-.ms-card:hover{border-color:var(--a)}
-.ms-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--a);border-radius:6px 6px 0 0}
-.ms-label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
-.ms-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:600;line-height:1.2}
-.ms-diff{font-size:10px;margin-top:2px}
-.ms-diff.up{color:var(--g)}.ms-diff.dn{color:var(--r)}.ms-diff.neu{color:var(--m)}
-.ms-spark{margin-top:6px;height:26px;width:100%}
-.ma-tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;flex:1;min-height:0}
-.ma-tbl-wrap table{width:100%;border-collapse:collapse;font-size:11px}
-.ma-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--b);position:sticky;top:0;z-index:3;white-space:nowrap;cursor:pointer;user-select:none}
-.ma-tbl-wrap th:hover{color:var(--a)}.ma-tbl-wrap th.sorted{color:var(--a)}
-.ma-tbl-wrap td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
-.ma-tbl-wrap tr:hover td{background:rgba(255,255,255,.025)}
-.ma-tbl-wrap tr.total-row td{background:#151515;border-top:1px solid var(--b);font-weight:600;font-family:'DM Mono',monospace}
-.ma-pagination{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-top:1px solid var(--b);font-size:11px;color:var(--m)}
-.tog{position:relative;display:inline-flex;align-items:center;cursor:pointer}
-.tog input{display:none}
-.tog-track{width:28px;height:16px;border-radius:8px;background:var(--b2);transition:background .2s;position:relative}
-.tog-track::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .2s}
-.tog input:checked+.tog-track{background:var(--a)}
-.tog input:checked+.tog-track::after{transform:translateX(12px)}
-.sb{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace;font-weight:600}
-.sb-active{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3)}
-.sb-learning{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
-.sb-limited{background:rgba(250,140,22,.12);color:#fa8c16;border:1px solid rgba(250,140,22,.3)}
-.sb-paused{background:rgba(138,141,145,.1);color:var(--m);border:1px solid rgba(138,141,145,.2)}
-.sb-error{background:rgba(250,62,62,.1);color:var(--r);border:1px solid rgba(250,62,62,.25)}
-.del-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.nm{font-family:'Inter',sans-serif;font-size:12px;font-weight:500;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub-lbl{font-size:9px;color:var(--m)}
-.qual-pip{width:8px;height:8px;border-radius:2px;background:var(--b2);display:inline-block}
-.qual-pip.hi{background:var(--g)}.qual-pip.md{background:var(--y)}.qual-pip.lo{background:var(--r)}
-@media(max-width:900px){.ma-summary{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:600px){.ma-summary{grid-template-columns:repeat(2,1fr)}.ma-row1{flex-wrap:wrap}.meta-tab{font-size:11px;padding:6px 10px}}
+.opt-wrap{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 80px);border:1px solid var(--b);border-radius:10px;overflow:hidden;background:var(--s)}
+.opt-left{display:flex;flex-direction:column;border-right:1px solid var(--b);overflow:hidden}
+.opt-left-header{padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.opt-left-title{font-size:12px;font-weight:700;color:var(--t)}
+.opt-list{flex:1;overflow-y:auto}
+.opt-section-hdr{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;background:var(--bg);border-bottom:1px solid var(--b);user-select:none}
+.opt-section-hdr:hover{background:var(--b)}
+.opt-section-color{width:3px;height:18px;border-radius:2px;flex-shrink:0}
+.opt-section-name{font-size:11px;font-weight:600;flex:1;color:var(--t)}
+.opt-section-count{font-size:10px;color:var(--m);background:var(--b);padding:1px 6px;border-radius:8px}
+.opt-section-arrow{font-size:9px;color:var(--m);transition:transform .2s}
+.opt-section-arrow.open{transform:rotate(90deg)}
+.opt-items{display:none}
+.opt-items.open{display:block}
+.opt-item{display:flex;align-items:center;gap:10px;padding:9px 14px 9px 20px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+.opt-item:hover{background:var(--b)}
+.opt-item.active{background:rgba(24,119,242,.1);border-left:2px solid #1877f2}
+.opt-item-emoji{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--b)}
+.opt-item-info{flex:1;min-width:0}
+.opt-item-name{font-size:11px;font-weight:500;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opt-item-tag{font-size:9px;color:var(--m);margin-top:1px}
+.opt-item-type{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.opt-item-type.increase{background:#1DB56F}
+.opt-item-type.decrease{background:#1890FF}
+.opt-item-type.pause{background:#FF3838}
+.opt-item-type.custom{background:#FFA121}
+.opt-right{display:flex;flex-direction:column;overflow:hidden}
+.opt-tabs{display:flex;border-bottom:1px solid var(--b);flex-shrink:0;background:var(--bg)}
+.opt-tab{padding:10px 18px;font-size:12px;font-weight:500;color:var(--m);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.opt-tab.active{color:#1877f2;border-bottom-color:#1877f2}
+.opt-tab:hover:not(.active){color:var(--t)}
+.opt-tab-content{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.opt-tab-content.active{display:flex}
+.opt-detail-wrap{padding:20px;display:flex;flex-direction:column;gap:16px;flex:1}
+.opt-detail-hero{display:flex;align-items:flex-start;gap:16px}
+.opt-detail-icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;background:var(--b)}
+.opt-detail-title{font-size:18px;font-weight:700;color:var(--t);line-height:1.3}
+.opt-detail-sub{font-size:12px;color:var(--m);margin-top:4px;line-height:1.5}
+.opt-detail-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.opt-badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:500}
+.opt-badge.increase{background:rgba(29,181,111,.12);color:#1DB56F;border:1px solid rgba(29,181,111,.3)}
+.opt-badge.decrease{background:rgba(24,144,255,.12);color:#1890FF;border:1px solid rgba(24,144,255,.3)}
+.opt-badge.pause{background:rgba(255,56,56,.1);color:#FF3838;border:1px solid rgba(255,56,56,.25)}
+.opt-badge.custom{background:rgba(255,161,33,.12);color:#FFA121;border:1px solid rgba(255,161,33,.3)}
+.opt-condition-box{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:14px}
+.opt-condition-title{font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.opt-condition-rule{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:12px;color:var(--t);line-height:1.5}
+.opt-condition-rule:last-child{margin-bottom:0}
+.opt-condition-dot{width:5px;height:5px;border-radius:50%;background:#1877f2;flex-shrink:0;margin-top:6px}
+.opt-actions-row{display:flex;gap:8px;flex-wrap:wrap}
+.opt-chat-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.opt-chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.opt-chat-qbtns{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-top:1px solid var(--b);background:var(--bg)}
+.opt-chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s)}
+.opt-chat-input-row textarea{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:Inter,sans-serif;font-size:12px;border-radius:20px;resize:none;height:40px;outline:none;line-height:1.4}
+.opt-chat-input-row textarea:focus{border-color:#1877f2}
+.opt-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--m);text-align:center;padding:40px;gap:10px}
+/* Yeni Optimizasyon Formu */
+.opt-form{padding:20px;display:flex;flex-direction:column;gap:14px;flex:1;overflow-y:auto}
+.opt-form-group{display:flex;flex-direction:column;gap:6px}
+.opt-form-label{font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.5px}
+.opt-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt-rule-builder{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.opt-rule-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.opt-rule-row select,.opt-rule-row input{font-size:12px;padding:5px 8px;background:var(--s);border:1px solid var(--b);color:var(--t);border-radius:6px;outline:none}
+.opt-rule-row input{width:70px}
+.opt-my-rules{display:flex;flex-direction:column;gap:8px;padding:16px;flex:1;overflow-y:auto}
+.opt-my-rule-card{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.opt-my-rule-card:hover{border-color:#1877f2}
+.opt-my-rule-info{flex:1}
+.opt-my-rule-name{font-size:13px;font-weight:500;color:var(--t)}
+.opt-my-rule-desc{font-size:11px;color:var(--m);margin-top:2px}
+.opt-my-rule-actions{display:flex;gap:6px}
+@media(max-width:800px){.opt-wrap{grid-template-columns:1fr;height:auto}.opt-left{max-height:260px;border-right:none;border-bottom:1px solid var(--b)}}
 </style>
 
-<div class="ma-wrap">
-
-<!-- Satır 1: Tabs sol, Tarih sağ -->
-<div class="ma-row1">
-  <div class="meta-tabs">
-    <button class="meta-tab active" id="mtCamp" onclick="metaTabSwitch('camp',this)">📊 Kampanyalar</button>
-    <button class="meta-tab" id="mtAdset" onclick="metaTabSwitch('adset',this)">📁 Reklam Setleri</button>
-    <button class="meta-tab" id="mtAd" onclick="metaTabSwitch('ad',this)">🖼 Reklamlar</button>
-  </div>
-  <button class="dp-btn" id="dpTrigger" onclick="toggleDP()">
-    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" style="flex-shrink:0;opacity:.8"><g clip-path="url(#dpc)"><path d="M12.517 2.047h-.564v-.762a.764.764 0 0 0-1.524 0v.762H5.858v-.762a.764.764 0 0 0-1.524 0v.762h-.549a2.263 2.263 0 0 0-2.27 2.035 43.35 43.35 0 0 0 0 8.891 2.268 2.268 0 0 0 2.27 2.034h8.709a2.277 2.277 0 0 0 2.278-2.05c.305-3.146.312-6.133.015-8.89-.122-1.151-1.097-2.012-2.27-2.012v-.008zM3.03 4.234a.758.758 0 0 1 .754-.663h8.732c.38 0 .716.29.754.655.053.534.091 1.082.13 1.63H2.908c.03-.54.068-1.081.122-1.622zm2.064 9.242h-1.31a.753.753 0 0 1-.754-.663 38.75 38.75 0 0 1-.122-1.623h2.194v2.286h-.008zm0-3.81H2.84a38.099 38.099 0 0 1 0-2.285h2.256v2.285zm4.572 3.81H6.62V11.19h3.048v2.286zm0-3.81H6.62V7.381h3.048v2.285zm3.581 3.14a.767.767 0 0 1-.762.67h-1.303V11.19h2.18c-.039.533-.07 1.067-.123 1.615h.008zm.19-3.14h-2.247V7.381h2.263c.015.746.015 1.508-.016 2.285z"></path></g><defs><clipPath id="dpc"><path d="M0 0H16V16H0z"></path></clipPath></defs></svg>
-    <span id="dpLabel">Son 7 gün</span>
-    <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" style="flex-shrink:0;opacity:.7"><path d="M12 6a.667.667 0 0 1 .49 1.12l-4 4.332a.667.667 0 0 1-.98 0l-4-4.333A.667.667 0 0 1 4 6h8z"></path></svg>
-  </button>
-</div>
-
-<!-- Satır 2: Filtreler -->
-<div class="ma-row2">
-  <div class="mstatus-grp">
-    <button class="mstatus-btn on" onclick="setMF('all',this)">Tümü</button>
-    <button class="mstatus-btn" onclick="setMF('active',this)"><span style="color:var(--g)">●</span> Aktif</button>
-    <button class="mstatus-btn" onclick="setMF('learning',this)">📚 Öğrenme</button>
-    <button class="mstatus-btn" onclick="setMF('paused',this)">⏸ Pasif</button>
-  </div>
-  <select class="flt" id="mCampFlt" style="font-size:11px;max-width:170px;display:none" onchange="mLoad()">
-    <option value="">Tüm Kampanyalar</option>
-  </select>
-  <div class="ma-sep"></div>
-  <select class="flt" id="mCmp" onchange="mLoad()" style="font-size:11px;padding:5px 8px">
-    <option value="">Karşılaştırma yok</option>
-    <option value="last_7d">Önceki 7 gün</option>
-    <option value="last_14d">Önceki 14 gün</option>
-    <option value="last_30d">Önceki 30 gün</option>
-  </select>
-  <button class="btn sm sec" onclick="showAllLogs()" style="display:flex;align-items:center;gap:4px">📋 Geçmiş</button>
-  <div class="ma-sep"></div>
-  <div class="cpicker-wrap">
-    <button class="cpicker-btn" onclick="togglePicker('mExportMenu')" style="font-size:11px;padding:5px 10px;background:var(--g);color:#000;border:none;border-radius:5px;cursor:pointer">⬇ Dışa Aktar</button>
-    <div class="cpicker-dropdown" id="mExportMenu" style="min-width:160px">
-      <div class="cpicker-section">Format Seç</div>
-      <div class="cpicker-item" onclick="exportData('excel');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">🟢 Excel</div>
-      <div class="cpicker-item" onclick="exportData('csv');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">📄 CSV</div>
-      <div class="cpicker-item" onclick="exportData('pdf');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">🔴 PDF</div>
-      <div class="cpicker-item" onclick="exportData('clipboard');togglePicker('mExportMenu')" style="cursor:pointer;padding:8px">📋 Panoya</div>
+<div class="opt-wrap" id="optWrap">
+  <!-- SOL: Kural Listesi -->
+  <div class="opt-left">
+    <div class="opt-left-header">
+      <span class="opt-left-title">Optimizasyon Kuralları</span>
+      <button class="btn sm" onclick="optShowCreate()" id="optCreateBtn" style="display:none">+ Yeni</button>
     </div>
+    <div class="opt-list" id="optList"></div>
   </div>
-  <span id="mStatus" style="font-size:11px;color:var(--m)"></span>
-</div>
 
-<!-- Hidden inputs - getDP bunları okur -->
-<input type="hidden" id="mPreset" value="last_7d">
-<input type="hidden" id="mFrom">
-<input type="hidden" id="mTo">
-
-<!-- Özet Kartlar -->
-<div class="ma-summary" id="mSummary">
-  <div class="ms-card"><div class="ms-label">Harcama</div><div class="ms-val" id="ms-spend">—</div><div class="ms-diff neu" id="md-spend"></div><div class="ms-spark" id="spark-spend"></div></div>
-  <div class="ms-card"><div class="ms-label">Gelir</div><div class="ms-val" id="ms-revenue" style="color:var(--g)">—</div><div class="ms-diff neu" id="md-revenue"></div><div class="ms-spark" id="spark-revenue"></div></div>
-  <div class="ms-card"><div class="ms-label">ROAS</div><div class="ms-val" id="ms-roas">—</div><div class="ms-diff neu" id="md-roas"></div><div class="ms-spark" id="spark-roas"></div></div>
-  <div class="ms-card"><div class="ms-label">Satın Alma</div><div class="ms-val" id="ms-purchase">—</div><div class="ms-diff neu" id="md-purchase"></div><div class="ms-spark" id="spark-purchase"></div></div>
-  <div class="ms-card"><div class="ms-label">Tıklama</div><div class="ms-val" id="ms-clicks">—</div><div class="ms-diff neu" id="md-clicks"></div><div class="ms-spark" id="spark-clicks"></div></div>
-  <div class="ms-card"><div class="ms-label">Ort. CTR</div><div class="ms-val" id="ms-ctr">—</div><div class="ms-diff neu" id="md-ctr"></div><div class="ms-spark" id="spark-ctr"></div></div>
-  <div class="ms-card"><div class="ms-label">Gösterim</div><div class="ms-val" id="ms-impr">—</div><div class="ms-diff neu" id="md-impr"></div><div class="ms-spark" id="spark-impr"></div></div>
-  <div class="ms-card"><div class="ms-label">Erişim</div><div class="ms-val" id="ms-reach">—</div><div class="ms-diff neu" id="md-reach"></div><div class="ms-spark" id="spark-reach"></div></div>
-</div>
-
-<!-- Tablo -->
-<div class="ma-tbl-wrap">
-  <table id="mTbl">
-    <thead id="mTH"></thead>
-    <tbody id="mTB"><tr><td colspan="20" style="text-align:center;padding:30px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody>
-    <tfoot id="mTF"></tfoot>
-  </table>
-  <div class="ma-pagination" id="mPagination" style="display:none">
-    <span id="mPageInfo"></span>
-    <div style="display:flex;gap:6px">
-      <button class="btn sm sec" id="mPrevBtn" onclick="mChangePage(-1)">‹ Önceki</button>
-      <button class="btn sm sec" id="mNextBtn" onclick="mChangePage(1)">Sonraki ›</button>
+  <!-- SAĞ: Detay + Chat + Oluştur -->
+  <div class="opt-right">
+    <div class="opt-tabs">
+      <div class="opt-tab active" id="tabDetail" onclick="optTab('detail')">Detay</div>
+      <div class="opt-tab" id="tabChat" onclick="optTab('chat')">AI Asistan</div>
+      <div class="opt-tab" id="tabCreate" onclick="optTab('create')" id="tabCreateTab" style="display:none">+ Yeni Kural</div>
+      <div class="opt-tab" id="tabMyRules" onclick="optTab('myRules')">Özel Kurallarım</div>
     </div>
-  </div>
-</div>
 
-</div><!-- /ma-wrap -->
-
-<!-- Bütçe Modal -->
-<div class="moverlay" id="mBModal" style="display:none">
-  <div class="modal"><h3>💰 Bütçe Değişikliği</h3>
-    <div class="mdet" id="mBDet"></div>
-    <div class="mbtns">
-      <button class="btn sec" onclick="document.getElementById('mBModal').style.display='none'">İptal</button>
-      <button class="btn yel" onclick="mApproveB()">Onayla</button>
+    <!-- Detay -->
+    <div class="opt-tab-content active" id="contentDetail">
+      <div class="opt-empty" id="optEmpty">
+        <div style="font-size:36px;opacity:.3">⚡</div>
+        <div style="font-size:13px;font-weight:500">Bir kural seç</div>
+        <div style="font-size:11px">Soldan kural seçince detayları görürsün</div>
+      </div>
+      <div class="opt-detail-wrap" id="optDetailWrap" style="display:none">
+        <div class="opt-detail-hero">
+          <div class="opt-detail-icon" id="dIcon">⚡</div>
+          <div style="flex:1">
+            <div class="opt-detail-title" id="dTitle"></div>
+            <div class="opt-detail-sub" id="dSub"></div>
+            <div class="opt-detail-badges" id="dBadges"></div>
+          </div>
+        </div>
+        <div class="opt-condition-box">
+          <div class="opt-condition-title">Kural Mantığı</div>
+          <div id="dConditions"></div>
+        </div>
+        <div class="opt-condition-box" id="dImpactBox" style="display:none">
+          <div class="opt-condition-title">Tahmini Etki</div>
+          <div id="dImpact" style="font-size:12px;color:var(--m)">Analiz için AI Asistan'a sor</div>
+        </div>
+        <div class="opt-actions-row">
+          <button class="btn" onclick="optApply()">⚡ Şimdi Uygula</button>
+          <button class="btn sec" onclick="optAnalyze()">🔍 Analiz Et</button>
+          <button class="btn sec" onclick="optSimulate()">🎯 Simüle Et</button>
+          <span id="dStatus" style="font-size:11px;color:var(--m)"></span>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- Geçmiş Modal -->
-<div class="moverlay" id="mLogModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
-  <div class="modal" style="max-width:540px;width:95%;max-height:85vh;display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <h3 style="margin:0" id="mLogTitle">📋 Değişiklik Geçmişi</h3>
-      <button class="btn sm sec" onclick="document.getElementById('mLogModal').style.display='none'">✕</button>
+    <!-- AI Chat -->
+    <div class="opt-tab-content" id="contentChat">
+      <div class="opt-chat-wrap">
+        <div class="opt-chat-msgs" id="optimMsgs">
+          <div class="msg sys" style="font-size:12px">Bir optimizasyon kuralı seç, analiz veya uygulama için buraya yaz.</div>
+        </div>
+        <div class="opt-chat-qbtns" id="optQbtns">
+          <button class="qbtn" onclick="aiSend('optim','Tüm kuralları verilerle analiz et, hangisini önerirsin?')">📊 Genel analiz</button>
+          <button class="qbtn" onclick="aiSend('optim','Şu an en kötü performanslı 3 reklamı listele')">📉 Kötü reklamlar</button>
+          <button class="qbtn" onclick="aiSend('optim','Bugün hangi optimizasyonu uygulayayım?')">💡 Öneri</button>
+        </div>
+        <div class="opt-chat-input-row">
+          <textarea id="optimIn" placeholder="Sor veya komut ver..."></textarea>
+          <button class="btn" onclick="aiSend('optim',document.getElementById('optimIn').value)">→</button>
+        </div>
+      </div>
     </div>
-    <div style="max-height:420px;overflow-y:auto" id="mLogBody"></div>
-    <div style="padding-top:10px;border-top:1px solid var(--b);display:flex;justify-content:flex-end">
-      <button class="btn sm sec" onclick="document.getElementById('mLogModal').style.display='none'">Kapat</button>
+
+    <!-- Yeni Kural Oluştur -->
+    <div class="opt-tab-content" id="contentCreate">
+      <div class="opt-form">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">Yeni Optimizasyon Kuralı</div>
+        <div class="opt-form-row">
+          <div class="opt-form-group">
+            <label class="opt-form-label">Kural Adı</label>
+            <input type="text" id="newRuleName" class="flt" placeholder="örn: Güçlü ROAS Artışı" style="font-size:13px">
+          </div>
+          <div class="opt-form-group">
+            <label class="opt-form-label">Kural Tipi</label>
+            <select id="newRuleType" class="flt" style="font-size:13px">
+              <option value="increase">📈 Bütçe Artır</option>
+              <option value="decrease">📉 Bütçe Azalt</option>
+              <option value="pause">⏸ Durdur</option>
+              <option value="activate">▶️ Aktif Et</option>
+            </select>
+          </div>
+        </div>
+        <div class="opt-form-group">
+          <label class="opt-form-label">Açıklama</label>
+          <textarea id="newRuleDesc" class="flt" style="height:60px;font-size:13px;resize:none" placeholder="Bu kural ne zaman ve nasıl çalışır?"></textarea>
+        </div>
+        <div class="opt-form-group">
+          <label class="opt-form-label">Koşullar</label>
+          <div class="opt-rule-builder" id="ruleConditions">
+            <div class="opt-rule-row" id="cond0">
+              <select onchange="updateCondLabel(0)" id="condMetric0" style="flex:1">
+                <option value="roas">ROAS</option>
+                <option value="ctr">CTR (%)</option>
+                <option value="spend">Harcama (TL)</option>
+                <option value="cpc">TBM (TL)</option>
+                <option value="cpm">CPM (TL)</option>
+                <option value="freq">Sıklık</option>
+                <option value="revenue">Gelir (TL)</option>
+                <option value="results">Satın Alma</option>
+                <option value="impr">Gösterim</option>
+              </select>
+              <select id="condOp0" style="width:110px">
+                <option value="gt">&gt; büyük</option>
+                <option value="lt">&lt; küçük</option>
+                <option value="gte">&gt;= büyük eşit</option>
+                <option value="lte">&lt;= küçük eşit</option>
+                <option value="eq">= eşit</option>
+              </select>
+              <input type="number" id="condVal0" placeholder="değer" step="0.1">
+              <select id="condPeriod0" style="width:90px">
+                <option value="today">Bugün</option>
+                <option value="1d">1 gün</option>
+                <option value="3d">3 gün</option>
+                <option value="7d">7 gün</option>
+                <option value="14d">14 gün</option>
+                <option value="30d">30 gün</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn sm sec" onclick="addCondition()" style="margin-top:8px;width:fit-content">+ Koşul Ekle</button>
+        </div>
+        <div class="opt-form-row">
+          <div class="opt-form-group">
+            <label class="opt-form-label">İşlem Miktarı (%)</label>
+            <input type="number" id="newRuleAmount" class="flt" placeholder="örn: 25" min="1" max="200" style="font-size:13px">
+          </div>
+          <div class="opt-form-group">
+            <label class="opt-form-label">Uygulama Düzeyi</label>
+            <select id="newRuleLevel" class="flt" style="font-size:13px">
+              <option value="adset">Reklam Seti</option>
+              <option value="ad">Reklam</option>
+              <option value="campaign">Kampanya</option>
+            </select>
+          </div>
+        </div>
+        <div class="opt-form-group">
+          <label class="opt-form-label">Emoji / İkon</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="emojiPicker">
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)" title="seç">🚀</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">💰</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">📈</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">📉</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">⚡</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">🎯</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">🔥</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">⏸</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">🛡</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">💡</span>
+          </div>
+          <input type="hidden" id="newRuleEmoji" value="🚀">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="saveCustomRule()">💾 Kaydet</button>
+          <button class="btn sec" onclick="aiGenerateRule()">🤖 AI ile Oluştur</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Özel Kurallarım -->
+    <div class="opt-tab-content" id="contentMyRules">
+      <div class="opt-my-rules" id="myRulesList">
+        <div style="text-align:center;padding:40px;color:var(--m);font-size:12px">Henüz özel kural oluşturmadınız.<br>+ Yeni Kural sekmesinden oluşturabilirsiniz.</div>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-var currentMetaTab = 'camp';
-var mData = {camp:[],adset:[],ad:[]};
-var mPending = null;
-var mSort = {};
-var mPage = 0;
-var M_PAGE = 50;
-var mStatusFilter = 'all';
-var mCurrentLogEntity = null; // geçmişi görüntülenen entity id
-var mCols = new Set(['delivery','budget','results','cpr','spend','revenue','roas','impr','reach','freq','cpm','clicks','ctr','cpc','quality']);
 
-var COLS = [
-  {k:'name',     l:'Kampanya / Ad',   fixed:true,  num:false, w:260},
-  {k:'delivery', l:'Yayın Durumu',    fixed:false, num:false, w:150},
-  {k:'budget',   l:'Bütçe',           fixed:false, num:false, w:110},
-  {k:'results',  l:'Sonuçlar',        fixed:false, num:true,  w:100},
-  {k:'cpr',      l:'Sonuç Başına',    fixed:false, num:true,  w:110},
-  {k:'spend',    l:'Harcanan ₺',      fixed:false, num:true,  w:110},
-  {k:'revenue',  l:'Gelir ₺',         fixed:false, num:true,  w:110},
-  {k:'roas',     l:'ROAS',            fixed:false, num:true,  w:80},
-  {k:'impr',     l:'Gösterim',        fixed:false, num:true,  w:90},
-  {k:'reach',    l:'Erişim',          fixed:false, num:true,  w:90},
-  {k:'freq',     l:'Sıklık',          fixed:false, num:true,  w:70},
-  {k:'cpm',      l:'CPM ₺',           fixed:false, num:true,  w:80},
-  {k:'clicks',   l:'Tıklama',         fixed:false, num:true,  w:80},
-  {k:'ctr',      l:'TO%',             fixed:false, num:true,  w:70},
-  {k:'cpc',      l:'TBM ₺',           fixed:false, num:true,  w:80},
-  {k:'cart',     l:'Sepet',           fixed:false, num:true,  w:70},
-  {k:'quality',  l:'Kalite',          fixed:false, num:false, w:100},
-  {k:'lastedit', l:'Son Düzenleme',   fixed:false, num:false, w:110},
-  {k:'endtime',  l:'Bitiş',           fixed:false, num:false, w:90},
-];
+var ROLE_CAN_CREATE = ['admin','editor'];
+var currentRole = (window._currentUser && window._currentUser.role) || 'admin';
+var selectedRule = null;
+var condCount = 1;
+var selectedEmoji = '🚀';
+var CUSTOM_RULES_KEY = 'mx_custom_opt_rules';
 
-// ── Log sistemi ────────────────────────────────────────────────────────
-// Log formatı: {id, name, type, action, detail, time, user:'sistem'}
-var AD_LOGS_KEY = 'mx_ad_logs';
-
-function getAdLogs(){
-  try{ return JSON.parse(localStorage.getItem(AD_LOGS_KEY)||'{}'); }catch(e){return {};}
-}
-function saveAdLog(entityId, entry){
-  var logs = getAdLogs();
-  if(!logs[entityId]) logs[entityId]=[];
-  logs[entityId].unshift(entry);
-  // Max 100 log per entity
-  if(logs[entityId].length>100) logs[entityId]=logs[entityId].slice(0,100);
-  localStorage.setItem(AD_LOGS_KEY, JSON.stringify(logs));
-  // Sunucuya da kaydet
-  try{
-    logAction({type:'ad_change', entityId:entityId, entry:entry, time:new Date().toISOString()});
-  }catch(e){}
-}
-function addLog(entityId, entityName, action, detail){
-  saveAdLog(entityId, {
-    id:entityId, name:entityName, action:action, detail:detail,
-    time:new Date().toISOString(), user:'kullanıcı'
-  });
-}
-
-// ── Dışa Aktarım (Excel, CSV, PDF, Word) ────────────────────────────────
-window.exportData = function(format){
-  var tab = currentMetaTab;
-  var data = getFiltered(mData[tab]);
-  if(!data||!data.length){ toast('Veri yok'); return; }
-
-  var exportCols = [
-    {h:'Kampanya/Ad',           f:function(r){return r.name||''}},
-    {h:'Yayın Durumu',          f:function(r){return r.effectiveStatus||''}},
-    {h:'Bütçe',                 f:function(r){return r.budgetAmt||''}},
-    {h:'Harcama (₺)',           f:function(r){return +(r.spend||0).toFixed(2)}},
-    {h:'Gelir (₺)',             f:function(r){return +(r.revenue||0).toFixed(2)}},
-    {h:'ROAS',                  f:function(r){return +(r.roas||0).toFixed(2)}},
-    {h:'Satın Alma',            f:function(r){return r.results||0}},
-    {h:'Satın Alma Başına (₺)', f:function(r){return +(r.cpr||0).toFixed(2)}},
-    {h:'Gösterim',              f:function(r){return r.impr||0}},
-    {h:'Erişim',                f:function(r){return r.reach||0}},
-    {h:'Tıklama',               f:function(r){return r.clicks||0}},
-    {h:'CTR (%)',               f:function(r){return +(r.ctr||0).toFixed(2)}},
-    {h:'TBM (₺)',               f:function(r){return +(r.cpc||0).toFixed(2)}},
-    {h:'CPM (₺)',               f:function(r){return +(r.cpm||0).toFixed(2)}},
-    {h:'Sıklık',                f:function(r){return +(r.freq||0).toFixed(2)}},
-    {h:'Sepete Ekle',           f:function(r){return r.cart||0}},
-  ];
-
-  var preset=(document.getElementById('mPreset')||{}).value||'last_7d';
-  var dateInfo=preset==='custom'
-    ?((document.getElementById('mFrom')||{}).value||'')+' - '+((document.getElementById('mTo')||{}).value||'')
-    :preset;
-  var tabLabel=tab==='camp'?'Kampanyalar':tab==='adset'?'Reklam Setleri':'Reklamlar';
-  var title='Madmext Ads — '+tabLabel+' — '+dateInfo;
-  var fname='madmext-'+tabLabel.toLowerCase().replace(/\s/g,'-')+'-'+dateInfo.replace(/[^0-9a-z-]/gi,'-');
-
-  // Toplam satırı
-  var tot=calcMetrics(data);
-
-  if(format==='excel'){
-    exportExcel(data, exportCols, title, fname+'.xlsx', tot);
-  } else if(format==='csv'){
-    exportCSV(data, exportCols, title, fname+'.csv');
-  } else if(format==='pdf'){
-    exportPDF(data, exportCols, title, tabLabel, dateInfo, tot);
-  } else if(format==='word'){
-    exportWord(data, exportCols, title, fname+'.doc', tot);
-  } else if(format==='clipboard'){
-    var tsv=exportCols.map(function(c){return c.h;}).join('\t')+'\n';
-    tsv+=data.map(function(r){return exportCols.map(function(c){return String(c.f(r));}).join('\t');}).join('\n');
-    navigator.clipboard.writeText(tsv).then(function(){toast('✓ '+data.length+' satır panoya kopyalandı');}).catch(function(){toast('Kopyalama başarısız');});
-  }
+// ── TÜM OPTİMİZASYON KURALLARI ─────────────────────────────────────
+var OPT_RULES = {
+  'roas-artir': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '👑',
+    name: 'Süper Performans',
+    desc: 'Son 3 günde ROAS\'ı hesabın ortalamasından yüksek olan reklamlara bütçe artışı',
+    conditions: ['Son 3 günlük ROAS > hesap ortalama ROAS', 'Reklam aktif durumda'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'roas-artir-2': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '🏆',
+    name: 'Günlük Yıldız',
+    desc: 'Reklam ROAS\'ı hesabın ROAS\'ından yüksek olanlara günlük bütçe artışı',
+    conditions: ['Günlük ROAS > hesap ROAS ortalaması', 'Minimum 100 TL harcama'],
+    action: 'Bütçe %20 artır', source: 'madmext'
+  },
+  'roas-artir-3': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '💰',
+    name: 'En İyi 5 Reklam',
+    desc: 'Son 3 günde ROAS\'ı en yüksek olan ilk 5 reklama bütçe artışı',
+    conditions: ['Son 3 günlük ROAS sıralamasında ilk 5', 'Aktif reklam'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'roas-artir-4': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '🎯',
+    name: 'Büyüyen Trend',
+    desc: 'Son 14, 7 ve 3 günlük ROAS\'ı sabit ya da artarak devam eden reklamlara artış',
+    conditions: ['14 günlük ROAS ≤ 7 günlük ROAS ≤ 3 günlük ROAS (trend yukarı)', 'Aktif reklam'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'roas-azalt-1': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '📉',
+    name: 'Ani Düşüş',
+    desc: 'ROAS\'ı son 3 günde 7 ve 14 güne göre 3 kat ve üzeri düşen reklamlarda azalt',
+    conditions: ['3 günlük ROAS < (7 günlük ROAS / 3)', '7 günlük ROAS < (14 günlük ROAS / 3)'],
+    action: 'Bütçe 2 kat azalt (%50)', source: 'madmext'
+  },
+  'roas-azalt-2': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '🛡',
+    name: 'En Kötü 5 Reklam',
+    desc: 'Son 3 günde ROAS\'ı en kötü 5 reklamın bütçesini azalt',
+    conditions: ['Son 3 günlük ROAS sıralamasında son 5', 'Minimum 50 TL harcama'],
+    action: 'Bütçe %30 azalt', source: 'madmext'
+  },
+  'roas-azalt-3': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '🧮',
+    name: 'Azalan Trend',
+    desc: 'Son 14, 7 ve 3 günlük ROAS\'ı 2 kat veya daha fazla azalarak devam eden reklamlarda azalt',
+    conditions: ['14 günlük ROAS ≥ (7 günlük ROAS × 2)', '7 günlük ROAS ≥ (3 günlük ROAS × 2)'],
+    action: 'Bütçe %25 azalt', source: 'madmext'
+  },
+  'roas-azalt-4': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '⚔️',
+    name: 'Hesap Altı Performans',
+    desc: 'Son 3 günde reklamın ROAS\'ı hesabın ROAS\'ından düşük olanları azalt',
+    conditions: ['3 günlük ROAS < hesap ortalama ROAS', 'Aktif reklam, minimum 50 TL harcama'],
+    action: 'Bütçe %25 azalt', source: 'madmext'
+  },
+  'roas-azalt-5': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '⚖️',
+    name: 'Günlük Düşük ROAS',
+    desc: 'Reklam ROAS\'ı hesabın ROAS\'ından düşük olanları günlük azalt',
+    conditions: ['Günlük ROAS < hesap ROAS ortalaması', 'Aktif reklam'],
+    action: 'Bütçe günlük %20 azalt', source: 'madmext'
+  },
+  'roas-kapat-1': {
+    section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '🚫',
+    name: 'Kritik Düşüş',
+    desc: 'Son 14, 7 ve 3 günlük ROAS\'ı 3 kat veya üzeri düşüyorsa kapat',
+    conditions: ['14 günlük ROAS ≥ (7 günlük ROAS × 3)', '7 günlük ROAS ≥ (3 günlük ROAS × 3)'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  'roas-kapat-2': {
+    section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '🤫',
+    name: 'Düşük Harcama',
+    desc: 'Son 5 günde toplam 10 TL ve altında harcama yapan reklamı kapat',
+    conditions: ['Son 5 günlük toplam harcama ≤ 10 TL', 'Aktif reklam'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  'roas-kapat-3': {
+    section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '💔',
+    name: 'Set Altı Performans',
+    desc: 'Son 5 günlük ROAS\'ı reklam setinin 3 kat altına düşmüş ve harcama yapıyorsa kapat',
+    conditions: ['Reklam ROAS\'ı < (Reklam seti ROAS\'ı / 3)', 'Aktif harcama devam ediyor'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  // ── MADMEXT ÖZEL KURALLARI ──
+  'ctr-artir-1': {
+    section: 'CTR Tabanlı', sectionColor: '#9B59B6', type: 'increase', emoji: '🖱️',
+    name: 'Tıklama Dehası',
+    desc: 'CTR son 3 günde hesap ortalamasının 2 katı olan yüksek performanslı reklamlara bütçe artışı',
+    conditions: ['3 günlük CTR > (hesap ort. CTR × 2)', 'Minimum 1000 gösterim', 'Aktif reklam'],
+    action: 'Bütçe %30 artır', source: 'madmext'
+  },
+  'ctr-azalt-1': {
+    section: 'CTR Tabanlı', sectionColor: '#9B59B6', type: 'decrease', emoji: '📊',
+    name: 'Düşen Tık Freni',
+    desc: 'CTR son 7 günde %1 altına düşen reklamlarda bütçeyi azalt',
+    conditions: ['7 günlük CTR < %1', 'Minimum 500 TL harcama', 'Aktif reklam'],
+    action: 'Bütçe %20 azalt', source: 'madmext'
+  },
+  'ctr-artir-2': {
+    section: 'CTR Tabanlı', sectionColor: '#9B59B6', type: 'increase', emoji: '👁️',
+    name: 'Görünürlük Atağı',
+    desc: 'Düşük CPM ve yüksek CTR kombinasyonunda olan verimli reklamlara bütçe artışı',
+    conditions: ['CPM < 50 TL', 'CTR > %2', 'Minimum 2000 gösterim'],
+    action: 'Bütçe %35 artır', source: 'madmext'
+  },
+  'spend-artir-1': {
+    section: 'Harcama Tabanlı', sectionColor: '#E67E22', type: 'increase', emoji: '💸',
+    name: 'Bütçe Tüketicisi',
+    desc: 'Günlük bütçesinin %90 üstünü harcayıp iyi ROAS olan reklamlara bütçe artışı — büyüme fırsatı',
+    conditions: ['Günlük harcama > bütçenin %90\'ı', 'ROAS > 3.0', 'Aktif reklam'],
+    action: 'Bütçe %20 artır', source: 'madmext'
+  },
+  'spend-kapat-1': {
+    section: 'Harcama Tabanlı', sectionColor: '#E67E22', type: 'pause', emoji: '💤',
+    name: 'Tasarruf Modu',
+    desc: 'Bütçesinin çok azını harcayıp kötü ROAS olan verimsiz reklamları durdur',
+    conditions: ['7 günlük harcama < bütçenin %30\'u', 'ROAS < 1.0', 'Aktif reklam'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  'spend-artir-2': {
+    section: 'Harcama Tabanlı', sectionColor: '#E67E22', type: 'increase', emoji: '🏎️',
+    name: 'Verimli Harcama',
+    desc: 'Hesap ortalamasının yarısından ucuz TBM ile çalışan reklamlara bütçe artışı',
+    conditions: ['CPC < (hesap ort. CPC / 2)', 'CTR > hesap ortalaması', 'Minimum 100 tıklama'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'cart-artir-1': {
+    section: 'Sepet & Dönüşüm', sectionColor: '#1ABC9C', type: 'increase', emoji: '🛒',
+    name: 'Dönüşüm Ustası',
+    desc: 'Son 3 günde satın alma dönüşümü en yüksek 3 reklama bütçe artışı',
+    conditions: ['Satın alma sayısı son 3 günde en yüksek 3 reklam', 'ROAS > 2.0', 'Aktif reklam'],
+    action: 'Bütçe %30 artır', source: 'madmext'
+  },
+  'cart-azalt-1': {
+    section: 'Sepet & Dönüşüm', sectionColor: '#1ABC9C', type: 'decrease', emoji: '🧺',
+    name: 'Sepet Fırsatçısı',
+    desc: 'Sepete ekle oranı yüksek ama satışa dönmeyen reklamlarda bütçeyi azalt — hedefleme problemi',
+    conditions: ['Sepete ekle / tıklama oranı > %5', 'Satın alma = 0 (son 7 gün)', 'Minimum 200 TL harcama'],
+    action: 'Bütçe %15 azalt', source: 'madmext'
+  },
+  'cart-azalt-2': {
+    section: 'Sepet & Dönüşüm', sectionColor: '#1ABC9C', type: 'decrease', emoji: '🏃',
+    name: 'Terk Avcısı',
+    desc: 'Sepete ekleme var ama hiç satış yoksa bütçeyi azalt ve hedeflemeyi gözden geçir',
+    conditions: ['Sepete ekle > 0', 'Satın alma = 0 (son 5 gün)', 'Minimum 500 TL harcama'],
+    action: 'Bütçe %20 azalt', source: 'madmext'
+  },
+  'freq-azalt-1': {
+    section: 'Sıklık & Yorgunluk', sectionColor: '#95A5A6', type: 'decrease', emoji: '😴',
+    name: 'Yorgunluk Önlemi',
+    desc: 'Aynı kişiler reklamı çok gördüğünde (sıklık yüksek) bütçeyi azalt — yeni kitle bul',
+    conditions: ['Sıklık > 3.5', 'CTR düşüş trendi (son 7 vs 3 gün)', 'Minimum 1 hafta yayında'],
+    action: 'Bütçe %20 azalt', source: 'madmext'
+  },
+  'freq-kapat-1': {
+    section: 'Sıklık & Yorgunluk', sectionColor: '#95A5A6', type: 'pause', emoji: '🔄',
+    name: 'Taze İçerik',
+    desc: 'Sıklık çok yükselip CTR düştüğünde reklamı durdur — kreatifleri yenile sinyali',
+    conditions: ['Sıklık > 5.0', 'CTR son 7 günde > %30 düşüş', 'Minimum 2 hafta yayında'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
 };
 
-// ── Excel Export (xlsx binary) ────────────────────────────────────────
-function exportExcel(data, cols, title, fname, tot){
-  // SheetJS kütüphanesi olmadan saf XML xlsx oluştur
-  var headers = cols.map(function(c){return c.h;});
+// ── SOL LİSTE OLUŞTUR ──────────────────────────────────────────────
+function buildList(){
+  var list = document.getElementById('optList');
+  list.innerHTML = '';
 
-  // XML satırları oluştur
-  function escXml(v){return String(v).replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>').replace(/"/g,'"');}
-  function cellVal(v, isNum){
-    if(isNum && !isNaN(parseFloat(v))){
-      return '<c t="n"><v>'+parseFloat(v)+'</v></c>';
+  // Kuralları bölümlere grupla
+  var sections = {};
+  Object.entries(OPT_RULES).forEach(function(e){
+    var id = e[0], rule = e[1];
+    if(!sections[rule.section]){
+      sections[rule.section] = {color: rule.sectionColor, rules: []};
     }
-    return '<c t="inlineStr"><is><t>'+escXml(v)+'</t></is></c>';
+    sections[rule.section].rules.push({id:id, rule:rule});
+  });
+
+  // Özel kuralları ekle
+  var customRules = getCustomRules();
+  if(customRules.length > 0){
+    sections['Özel Kurallarım'] = {color:'#FFA121', rules: customRules.map(function(r){
+      return {id: 'custom_'+r.id, rule: r};
+    })};
   }
 
-  var numCols = new Set([3,4,5,6,7,8,9,10,11,12,13,14,15]); // 0-indexed sayısal sütunlar
-  var rows = '';
+  Object.entries(sections).forEach(function(e){
+    var secName = e[0], sec = e[1];
+    var secId = 'sec_' + secName.replace(/[^a-z0-9]/gi,'_');
 
-  // Başlık satırı
-  rows += '<row r="1">';
-  headers.forEach(function(h, i){
-    rows += '<c r="'+colLetter(i)+'1" t="inlineStr"><is><t>'+escXml(h)+'</t></is></c>';
+    var secDiv = document.createElement('div');
+    secDiv.innerHTML =
+      '<div class="opt-section-hdr" onclick="toggleSection(\''+secId+'\')">' +
+        '<div class="opt-section-color" style="background:'+sec.color+'"></div>' +
+        '<div class="opt-section-name">'+secName+'</div>' +
+        '<span class="opt-section-count">'+sec.rules.length+'</span>' +
+        '<span class="opt-section-arrow open" id="arr_'+secId+'">›</span>' +
+      '</div>' +
+      '<div class="opt-items open" id="'+secId+'">' +
+        sec.rules.map(function(r){
+          return '<div class="opt-item" id="item_'+r.id+'" onclick="selectRule(\''+r.id+'\')">' +
+            '<div class="opt-item-emoji">'+r.rule.emoji+'</div>' +
+            '<div class="opt-item-info">' +
+              '<div class="opt-item-name">'+r.rule.name+'</div>' +
+              '<div class="opt-item-tag">'+(r.rule.source==='madmext'?'Madmext':'madmext')+'</div>' +
+            '</div>' +
+            '<div class="opt-item-type '+r.rule.type+'"></div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    list.appendChild(secDiv);
   });
-  rows += '</row>';
+}
 
-  // Veri satırları
-  data.forEach(function(r, ri){
-    rows += '<row r="'+(ri+2)+'">';
-    cols.forEach(function(c, ci){
-      var v = c.f(r);
-      var ref = colLetter(ci)+(ri+2);
-      if(numCols.has(ci) && !isNaN(parseFloat(v))){
-        rows += '<c r="'+ref+'" t="n"><v>'+parseFloat(v)+'</v></c>';
-      } else {
-        rows += '<c r="'+ref+'" t="inlineStr"><is><t>'+escXml(v)+'</t></is></c>';
-      }
-    });
-    rows += '</row>';
+window.toggleSection = function(id){
+  var el = document.getElementById(id);
+  var arr = document.getElementById('arr_'+id);
+  var open = el.classList.toggle('open');
+  if(arr) arr.style.transform = open ? '' : 'rotate(90deg)';
+};
+
+// ── KURAL SEÇ ────────────────────────────────────────────────────────
+window.selectRule = function(id){
+  document.querySelectorAll('.opt-item').forEach(function(el){el.classList.remove('active');});
+  var el = document.getElementById('item_'+id);
+  if(el) el.classList.add('active');
+
+  var rule = OPT_RULES[id];
+  if(!rule){
+    // Özel kural
+    var customRules = getCustomRules();
+    var cid = id.replace('custom_','');
+    rule = customRules.find(function(r){return String(r.id)===String(cid);});
+  }
+  if(!rule) return;
+  selectedRule = Object.assign({}, rule, {id: id});
+
+  // Detay doldur
+  document.getElementById('optEmpty').style.display = 'none';
+  document.getElementById('optDetailWrap').style.display = 'flex';
+  document.getElementById('dIcon').textContent = rule.emoji;
+  document.getElementById('dTitle').textContent = rule.name;
+  document.getElementById('dSub').textContent = rule.desc;
+  document.getElementById('dStatus').textContent = '';
+
+  var typelabels = {increase:'📈 Bütçe Artır', decrease:'📉 Bütçe Azalt', pause:'⏸ Durdur', activate:'▶️ Aktif Et', custom:'⚡ Özel'};
+  document.getElementById('dBadges').innerHTML =
+    '<span class="opt-badge '+rule.type+'">'+(typelabels[rule.type]||rule.type)+'</span>' +
+    '<span class="opt-badge increase" style="background:var(--b);color:var(--m);border-color:var(--b)">'+rule.action+'</span>' +
+    '<span class="opt-badge increase" style="background:var(--b);color:var(--m);border-color:var(--b)">'+(rule.source==='madmext'?'Madmext Özel':'madmext')+'</span>';
+
+  document.getElementById('dConditions').innerHTML = (rule.conditions||[]).map(function(c){
+    return '<div class="opt-condition-rule"><div class="opt-condition-dot"></div><div>'+c+'</div></div>';
+  }).join('');
+
+  // Hızlı butonları güncelle
+  document.getElementById('optQbtns').innerHTML = [
+    {label:'🔍 Analiz et', msg: rule.name + ' kuralını mevcut verilerle analiz et. Hangi reklamlara uygulanır?'},
+    {label:'⚡ Uygula', msg: rule.name + ' kuralını şimdi uygula. ' + rule.action + ' işlemini gerçekleştir.'},
+    {label:'🎯 Simüle et', msg: rule.name + ' kuralını simüle et. Kaç reklam etkilenir, tahmini sonuç ne olur?'},
+    {label:'📊 Sonuçları gör', msg: 'Bu kurala benzer geçmiş optimizasyonların sonuçlarını değerlendir.'},
+  ].map(function(q){
+    return '<button class="qbtn" onclick="aiSend(\'optim\',\''+q.msg.replace(/'/g,"\\'")+'\')">'+q.label+'</button>';
+  }).join('');
+
+  optTab('detail');
+};
+
+// ── TABS ─────────────────────────────────────────────────────────────
+window.optTab = function(tab){
+  ['detail','chat','create','myRules'].forEach(function(t){
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active');
+    document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active');
   });
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.getElementById('content'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  if(tab === 'myRules') renderMyRules();
+};
 
-  // Toplam satırı
-  var lastRow = data.length + 2;
-  rows += '<row r="'+lastRow+'">';
-  cols.forEach(function(c, ci){
-    var ref = colLetter(ci)+lastRow;
-    var v = '';
-    if(ci===0) v='TOPLAM ('+data.length+' kayıt)';
-    else if(c.h==='Harcama (₺)') v = tot.spend.toFixed(2);
-    else if(c.h==='Gelir (₺)') v = tot.revenue.toFixed(2);
-    else if(c.h==='ROAS') v = (tot.spend>0?tot.roas.toFixed(2):'0');
-    else if(c.h==='Satın Alma') v = tot.purchase;
-    else if(c.h==='Gösterim') v = tot.impr;
-    else if(c.h==='Erişim') v = tot.reach;
-    else if(c.h==='Tıklama') v = tot.clicks;
-    else { rows += '<c r="'+ref+'"/>'; return; }
-    if(!isNaN(parseFloat(v)) && ci>0){
-      rows += '<c r="'+ref+'" t="n"><v>'+parseFloat(v)+'</v></c>';
-    } else {
-      rows += '<c r="'+ref+'" t="inlineStr"><is><t>'+escXml(v)+'</t></is></c>';
+// ── UYGULA / ANALİZ ──────────────────────────────────────────────────
+window.optApply = function(){
+  if(!selectedRule) return;
+  var msg = selectedRule.name + ' kuralını şimdi uygula: ' + selectedRule.action + '. Koşullar: ' + (selectedRule.conditions||[]).join('; ');
+  optTab('chat');
+  aiSend('optim', msg);
+};
+
+window.optAnalyze = function(){
+  if(!selectedRule) return;
+  var msg = selectedRule.name + ' kuralını mevcut verilerle detaylı analiz et. Hangi reklamlara uygulanır? Sayıları ver.';
+  optTab('chat');
+  aiSend('optim', msg);
+};
+
+window.optSimulate = function(){
+  if(!selectedRule) return;
+  var msg = selectedRule.name + ' kuralını simüle et. Uygulamadan önce etkilenecek reklamları listele, tahmini bütçe değişikliklerini göster.';
+  optTab('chat');
+  aiSend('optim', msg);
+};
+
+// ── AI SEND ──────────────────────────────────────────────────────────
+window.aiSend = async function(type, msg){
+  if(!msg||!msg.trim()) return;
+  var inp = document.getElementById(type+'In');
+  if(inp) inp.value = '';
+  addMsg(msg, 'user', 'optimMsgs');
+  var th = addThinking('optimMsgs');
+
+  var adsetData = (MX.adsetStore||[]).slice(0,25).map(function(r){
+    return {
+      id:r._budgetId, name:r.name, type:r._budgetType||'adset',
+      budget:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
+      roas:+(r.roas||0).toFixed(2), spend:+(r.spend||0).toFixed(0),
+      revenue:+(r.revenue||0).toFixed(0), clicks:r.clicks||0,
+      ctr:+(r.ctr||0).toFixed(2), cpc:+(r.cpc||0).toFixed(2),
+      cpm:+(r.cpm||0).toFixed(2), freq:+(r.freq||0).toFixed(2),
+      results:r.results||0, status:r.effectiveStatus, cart:r.cart||0
+    };
+  }).filter(function(r){return r.id;});
+
+  var ruleCtx = selectedRule ? ('Seçili kural: '+selectedRule.name+' — '+selectedRule.action+' — Koşullar: '+(selectedRule.conditions||[]).join(', ')) : '';
+  var avgRoas = adsetData.length ? (adsetData.reduce(function(s,r){return s+r.roas;},0)/adsetData.length).toFixed(2) : 0;
+  var avgCtr = adsetData.length ? (adsetData.reduce(function(s,r){return s+r.ctr;},0)/adsetData.length).toFixed(2) : 0;
+  var avgCpc = adsetData.length ? (adsetData.reduce(function(s,r){return s+r.cpc;},0)/adsetData.length).toFixed(2) : 0;
+
+  var sys = 'Sen Madmext Meta Ads optimizasyon uzmanısın. Türkçe, net ve uygulanabilir yanıt ver.\n' +
+    ruleCtx + '\n' +
+    'HESAP ORTALAMA: ROAS='+avgRoas+', CTR='+avgCtr+'%, CPC='+avgCpc+'TL\n' +
+    'REKLAM SETLERİ ('+adsetData.length+' adet): '+JSON.stringify(adsetData)+'\n' +
+    'Bütçe değişikliği için: <!--ACTION:BUDGET_INCREASE|ID|ADI|TYPE|MEVCUT|YENI|PCT-->\n' +
+    'SADECE listeden gerçek ID kullan.';
+
+  if(!MX.chatH.optim) MX.chatH.optim = [];
+  MX.chatH.optim.push({role:'user',content:msg});
+  var reply = await claude(MX.chatH.optim.slice(-8), sys);
+  th.remove();
+  MX.chatH.optim.push({role:'assistant',content:reply});
+  var clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
+  addClaudeMsg(clean, 'optimMsgs');
+  if(typeof parseAndRenderActions==='function') parseAndRenderActions(reply,'optimMsgs');
+};
+
+// ── ÖZEL KURAL OLUŞTUR ───────────────────────────────────────────────
+var condCountG = 1;
+
+window.addCondition = function(){
+  var n = condCountG++;
+  var div = document.createElement('div');
+  div.className = 'opt-rule-row';
+  div.id = 'cond'+n;
+  div.innerHTML =
+    '<select id="condMetric'+n+'" style="flex:1"><option value="roas">ROAS</option><option value="ctr">CTR (%)</option><option value="spend">Harcama (TL)</option><option value="cpc">TBM (TL)</option><option value="freq">Sıklık</option><option value="results">Satın Alma</option></select>' +
+    '<select id="condOp'+n+'" style="width:110px"><option value="gt">> büyük</option><option value="lt">< küçük</option><option value="gte">>= büyük eşit</option><option value="lte"><= küçük eşit</option></select>' +
+    '<input type="number" id="condVal'+n+'" placeholder="değer" step="0.1" style="width:70px">' +
+    '<select id="condPeriod'+n+'" style="width:90px"><option value="today">Bugün</option><option value="3d">3 gün</option><option value="7d">7 gün</option><option value="14d">14 gün</option></select>' +
+    '<button class="btn sm sec" onclick="document.getElementById(\'cond'+n+'\').remove()" style="padding:4px 8px">✕</button>';
+  document.getElementById('ruleConditions').appendChild(div);
+};
+
+window.selectEmoji = function(el){
+  document.querySelectorAll('#emojiPicker span').forEach(function(s){s.style.background='';});
+  el.style.background = 'var(--b)';
+  selectedEmoji = el.textContent;
+  document.getElementById('newRuleEmoji').value = selectedEmoji;
+};
+
+window.saveCustomRule = function(){
+  var name = document.getElementById('newRuleName').value.trim();
+  var type = document.getElementById('newRuleType').value;
+  var desc = document.getElementById('newRuleDesc').value.trim();
+  var amount = document.getElementById('newRuleAmount').value;
+  var level = document.getElementById('newRuleLevel').value;
+  var emoji = document.getElementById('newRuleEmoji').value || '⚡';
+
+  if(!name||!desc){toast('Ad ve açıklama zorunlu');return;}
+
+  // Koşulları topla
+  var conditions = [];
+  var i = 0;
+  while(document.getElementById('cond'+i) || i < condCountG){
+    var metric = document.getElementById('condMetric'+i);
+    var op = document.getElementById('condOp'+i);
+    var val = document.getElementById('condVal'+i);
+    var period = document.getElementById('condPeriod'+i);
+    if(metric && val && val.value){
+      var opLabels = {gt:'>',lt:'<',gte:'>=',lte:'<=',eq:'='};
+      conditions.push(period.value+' '+metric.value+' '+opLabels[op.value]+' '+val.value);
     }
-  });
-  rows += '</row>';
+    i++;
+    if(i > 20) break;
+  }
 
-  var sheetXml = '<?xml version="1.0" encoding="UTF-8"?>'
-    +'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-    +'<sheetData>'+rows+'</sheetData></worksheet>';
-
-  var wbXml = '<?xml version="1.0" encoding="UTF-8"?>'
-    +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-    +'<sheets><sheet name="'+escXml(title.slice(0,31))+'" sheetId="1" r:id="rId1"/></sheets></workbook>';
-
-  var relsXml = '<?xml version="1.0" encoding="UTF-8"?>'
-    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-    +'</Relationships>';
-
-  var contentTypes = '<?xml version="1.0" encoding="UTF-8"?>'
-    +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-    +'<Default Extension="xml" ContentType="application/xml"/>'
-    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-    +'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-    +'</Types>';
-
-  // JSZip ile zip oluştur — CDN'den yükle
-  var script = document.createElement('script');
-  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-  script.onload = function(){
-    var zip = new JSZip();
-    zip.file('[Content_Types].xml', contentTypes);
-    zip.folder('_rels').file('.rels',
-      '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-      +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
-      +'</Relationships>');
-    zip.folder('xl').file('workbook.xml', wbXml);
-    zip.folder('xl/_rels').file('workbook.xml.rels', relsXml);
-    zip.folder('xl/worksheets').file('sheet1.xml', sheetXml);
-    zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}).then(function(blob){
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a'); a.href=url; a.download=fname; a.click();
-      URL.revokeObjectURL(url);
-      toast('✓ Excel dosyası indirildi');
-    });
+  var rule = {
+    id: Date.now(),
+    name: name,
+    type: type,
+    desc: desc,
+    emoji: emoji,
+    conditions: conditions,
+    action: (amount ? amount+'% ' : '') + {increase:'artır',decrease:'azalt',pause:'durdur',activate:'aktif et'}[type],
+    level: level,
+    source: 'custom',
+    section: 'Özel Kurallarım',
+    sectionColor: '#FFA121',
+    createdBy: (window._currentUser&&window._currentUser.email)||'admin',
+    createdAt: new Date().toISOString()
   };
-  if(window.JSZip){ script.onload(); } else { document.head.appendChild(script); }
-}
 
-function colLetter(n){
-  var s='';
-  n++;
-  while(n>0){ s=String.fromCharCode(64+(n%26||26))+s; n=Math.floor((n-1)/26); }
-  return s;
-}
+  var rules = getCustomRules();
+  rules.push(rule);
+  localStorage.setItem(CUSTOM_RULES_KEY, JSON.stringify(rules));
 
-// ── CSV Export ────────────────────────────────────────────────────────
-function exportCSV(data, cols, title, fname){
-  var csv = '﻿';
-  csv += '# '+title+'\n';
-  csv += cols.map(function(c){return '"'+c.h+'"';}).join(',')+'\n';
-  csv += data.map(function(r){
-    return cols.map(function(c){return '"'+String(c.f(r)).replace(/"/g,'""')+'"';}).join(',');
-  }).join('\n');
-  var blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url; a.download=fname; a.click();
-  URL.revokeObjectURL(url);
-  toast('✓ CSV indirildi');
-}
-
-// ── PDF Export ────────────────────────────────────────────────────────
-function exportPDF(data, cols, title, tabLabel, dateInfo, tot){
-  var w = window.open('','_blank');
-  var headers = cols.map(function(c){return c.h;});
-  var rows = data.map(function(r){return cols.map(function(c){return c.f(r);});});
-  var totRow = cols.map(function(c){
-    if(c.h==='Kampanya/Ad') return 'TOPLAM ('+data.length+' kayıt)';
-    if(c.h==='Harcama (₺)') return tot.spend.toFixed(2);
-    if(c.h==='Gelir (₺)') return tot.revenue.toFixed(2);
-    if(c.h==='ROAS') return (tot.spend>0?tot.roas.toFixed(2):'—');
-    if(c.h==='Satın Alma') return tot.purchase;
-    if(c.h==='Gösterim') return tot.impr.toLocaleString('tr');
-    if(c.h==='Erişim') return tot.reach.toLocaleString('tr');
-    if(c.h==='Tıklama') return tot.clicks.toLocaleString('tr');
-    return '—';
-  });
-  var thStyle='padding:6px 8px;background:#1a1a2e;color:#fff;font-size:10px;text-align:left;border:1px solid #333;white-space:nowrap';
-  var tdStyle='padding:5px 8px;font-size:10px;border:1px solid #ddd;white-space:nowrap';
-  var tfStyle='padding:5px 8px;font-size:10px;border:1px solid #333;background:#f5f5f5;font-weight:600';
-  var html='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+title+'</title>'
-    +'<style>body{font-family:Arial,sans-serif;font-size:12px;margin:20px;color:#111}'
-    +'h2{color:#1a1a2e;margin-bottom:4px}p{color:#666;margin:0 0 12px}'
-    +'table{border-collapse:collapse;width:100%;font-size:10px}'
-    +'@media print{@page{size:A4 landscape;margin:10mm}}</style>'
-    +'</head><body>'
-    +'<h2>'+title+'</h2>'
-    +'<p>Oluşturulma: '+new Date().toLocaleString('tr')+' &nbsp;|&nbsp; '+data.length+' kayıt</p>'
-    +'<table><thead><tr>'+headers.map(function(h){return '<th style="'+thStyle+'">'+h+'</th>';}).join('')+'</tr></thead>'
-    +'<tbody>'
-    +rows.map(function(row,i){
-      var bg=i%2===0?'#fff':'#f9f9f9';
-      return '<tr>'+row.map(function(v){return '<td style="'+tdStyle+';background:'+bg+'">'+v+'</td>';}).join('')+'</tr>';
-    }).join('')
-    +'<tr>'+totRow.map(function(v){return '<td style="'+tfStyle+'">'+v+'</td>';}).join('')+'</tr>'
-    +'</tbody></table></body></html>';
-  w.document.write(html);
-  w.document.close();
-  setTimeout(function(){w.print();},500);
-  toast('✓ PDF yazdırma ekranı açıldı');
-}
-
-// ── Word Export ───────────────────────────────────────────────────────
-function exportWord(data, cols, title, fname, tot){
-  var headers = cols.map(function(c){return c.h;});
-  var rows = data.map(function(r){return cols.map(function(c){return String(c.f(r));});});
-  var totRow = cols.map(function(c){
-    if(c.h==='Kampanya/Ad') return 'TOPLAM ('+data.length+' kayıt)';
-    if(c.h==='Harcama (₺)') return tot.spend.toFixed(2)+'₺';
-    if(c.h==='Gelir (₺)') return tot.revenue.toFixed(2)+'₺';
-    if(c.h==='ROAS') return (tot.spend>0?tot.roas.toFixed(2)+'x':'—');
-    if(c.h==='Satın Alma') return String(tot.purchase);
-    return '—';
-  });
-
-  function cell(v, bold, bg){
-    return '<w:tc><w:tcPr>'+(bg?'<w:shd w:val="clear" w:color="auto" w:fill="'+bg+'"/>':'')+'</w:tcPr>'
-      +'<w:p><w:r>'+(bold?'<w:rPr><w:b/></w:rPr>':'')+'<w:t xml:space="preserve">'+v.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>')+'</w:t></w:r></w:p></w:tc>';
-  }
-  function row(cells, bold, bg){
-    return '<w:tr>'+cells.map(function(v){return cell(v,bold,bg);}).join('')+'</w:tr>';
-  }
-
-  var tableRows = row(headers, true, '1A1A2E');
-  rows.forEach(function(r,i){ tableRows += row(r, false, i%2===0?'FFFFFF':'F5F5F5'); });
-  tableRows += row(totRow, true, 'E8E8E8');
-
-  var docXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-    +'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
-    +'<w:body>'
-    +'<w:p><w:r><w:rPr><w:b/><w:sz w:val="28"/></w:rPr><w:t>'+title+'</w:t></w:r></w:p>'
-    +'<w:p><w:r><w:rPr><w:color w:val="666666"/></w:rPr><w:t>Oluşturulma: '+new Date().toLocaleString('tr')+' — '+data.length+' kayıt</w:t></w:r></w:p>'
-    +'<w:p><w:r><w:t> </w:t></w:r></w:p>'
-    +'<w:tbl><w:tblPr><w:tblStyle w:val="TableGrid"/><w:tblW w:w="0" w:type="auto"/></w:tblPr>'
-    +'<w:tblGrid>'+headers.map(function(){return '<w:gridCol w:w="1200"/>';}).join('')+'</w:tblGrid>'
-    +tableRows
-    +'</w:tbl>'
-    +'<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/></w:sectPr>'
-    +'</w:body></w:document>';
-
-  var blob = new Blob([docXml],{type:'application/msword'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url; a.download=fname; a.click();
-  URL.revokeObjectURL(url);
-  toast('✓ Word dosyası indirildi');
-}
-
-// Log göster - tek entity
-window.showEntityLog = function(id, name){
-  mCurrentLogEntity = id;
-  var logs = getAdLogs();
-  var items = logs[id] || [];
-  document.getElementById('mLogTitle').textContent = '📋 ' + (name||'').slice(0,40);
-  document.getElementById('mLogClearBtn').style.display = items.length ? '' : 'none';
-  renderLogModal(items);
-  document.getElementById('mLogModal').style.display = 'flex';
+  toast('✓ Kural kaydedildi: '+name);
+  buildList();
+  optTab('myRules');
 };
 
-// Log göster - tüm entityler
-window.showAllLogs = function(){
-  mCurrentLogEntity = null;
-  var logs = getAdLogs();
-  var all = [];
-  Object.values(logs).forEach(function(arr){ all=all.concat(arr); });
-  all.sort(function(a,b){return new Date(b.time)-new Date(a.time);});
-  document.getElementById('mLogTitle').textContent = '📋 Tüm Değişiklik Geçmişi';
-  document.getElementById('mLogClearBtn').style.display = 'none';
-  renderLogModal(all.slice(0,200));
-  document.getElementById('mLogModal').style.display = 'flex';
+window.aiGenerateRule = function(){
+  var name = document.getElementById('newRuleName').value;
+  var desc = document.getElementById('newRuleDesc').value;
+  if(!name&&!desc){toast('Önce kural adı veya açıklama yaz');return;}
+  optTab('chat');
+  var msg = 'Bana şu optimizasyon kuralı için uygun koşulları öner: "' + (name||desc) + '". Meta Ads metriklerini (ROAS, CTR, CPC, spend, freq) kullanarak somut eşik değerleri ver.';
+  aiSend('optim', msg);
 };
 
-window.clearEntityLog = function(){
-  if(!mCurrentLogEntity) return;
-  if(!confirm('Bu reklamın geçmişi silinsin mi?')) return;
-  var logs = getAdLogs();
-  delete logs[mCurrentLogEntity];
-  localStorage.setItem(AD_LOGS_KEY, JSON.stringify(logs));
-  document.getElementById('mLogModal').style.display = 'none';
-  toast('Geçmiş silindi');
-};
+function getCustomRules(){
+  try{return JSON.parse(localStorage.getItem(CUSTOM_RULES_KEY)||'[]');}catch(e){return [];}
+}
 
-function renderLogModal(items){
-  var body = document.getElementById('mLogBody');
-  if(!items||!items.length){
-    body.innerHTML='<div class="log-empty">Henüz kayıt yok.<br><small style="color:var(--m)">Bütçe değişikliği ve durum değişiklikleri burada görünür.</small></div>';
+function renderMyRules(){
+  var el = document.getElementById('myRulesList');
+  var rules = getCustomRules();
+  if(!rules.length){
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--m);font-size:12px">Henüz özel kural oluşturmadınız.<br><br><button class="btn sm" onclick="optTab(\'create\')">+ Yeni Kural Oluştur</button></div>';
     return;
   }
-  body.innerHTML = items.map(function(item){
-    var icon='📝', iconCls='system', actionLabel=item.action||'Değişiklik';
-    if(item.action==='budget_increase'){icon='📈';iconCls='budget';}
-    else if(item.action==='budget_decrease'){icon='📉';iconCls='budget';}
-    else if(item.action==='budget_change'){icon='💰';iconCls='budget';}
-    else if(item.action==='activated'){icon='▶️';iconCls='status';}
-    else if(item.action==='paused'){icon='⏸';iconCls='status';}
-    else if(item.action==='revert'){icon='↩';iconCls='budget';}
-    var t = new Date(item.time);
-    var timeStr = t.toLocaleDateString('tr')+' '+t.toLocaleTimeString('tr',{hour:'2-digit',minute:'2-digit'});
-    return '<div class="log-item">'
-      +'<div class="log-icon '+iconCls+'">'+icon+'</div>'
-      +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:12px;font-weight:500;color:var(--t);margin-bottom:2px">'+((item.name||'').slice(0,40)||'—')+'</div>'
-      +'<div class="log-val">'+actionLabel+': '+(item.detail||'')+'</div>'
-      +'<div class="log-meta">'+timeStr+' · '+(item.user||'sistem')+'</div>'
-      +'</div>'
-      +'</div>';
+  el.innerHTML = rules.map(function(r){
+    return '<div class="opt-my-rule-card">' +
+      '<div style="font-size:24px;width:40px;text-align:center">'+r.emoji+'</div>' +
+      '<div class="opt-my-rule-info">' +
+        '<div class="opt-my-rule-name">'+r.name+'</div>' +
+        '<div class="opt-my-rule-desc">'+r.desc.slice(0,80)+'</div>' +
+        '<div style="font-size:10px;color:var(--m);margin-top:4px">'+r.action+' · '+r.level+'</div>' +
+      '</div>' +
+      '<div class="opt-my-rule-actions">' +
+        '<button class="btn sm" onclick="selectRule(\'custom_'+r.id+'\')">Seç</button>' +
+        '<button class="btn sm sec" onclick="deleteCustomRule('+r.id+')">✕</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
-// ── Picker, Tab, vb. ──────────────────────────────────────────────────
-window.togglePicker = function(id){
-  document.querySelectorAll('.cpicker-dropdown').forEach(function(d){if(d.id!==id)d.classList.remove('open');});
-  document.getElementById(id).classList.toggle('open');
-};
-document.addEventListener('click',function(e){
-  if(!e.target.closest('.cpicker-wrap'))
-    document.querySelectorAll('.cpicker-dropdown').forEach(function(d){d.classList.remove('open');});
-});
-document.querySelectorAll('#mColPicker input').forEach(function(cb){
-  cb.addEventListener('change',function(){
-    if(this.checked)mCols.add(this.dataset.mc); else mCols.delete(this.dataset.mc);
-    mRender(currentMetaTab);
-  });
-});
-
-window.metaTabSwitch = function(tab,btn){
-  currentMetaTab=tab; mPage=0;
-  ['Camp','Adset','Ad'].forEach(function(t){var b=document.getElementById('mt'+t);if(b)b.className='meta-tab';});
-  if(btn)btn.className='meta-tab active';
-  var cf=document.getElementById('mCampFlt');
-  if(cf)cf.style.display=(tab==='camp')?'none':'';
-  mLoad();
+window.deleteCustomRule = function(id){
+  if(!confirm('Bu kural silinsin mi?')) return;
+  var rules = getCustomRules().filter(function(r){return r.id!==id;});
+  localStorage.setItem(CUSTOM_RULES_KEY, JSON.stringify(rules));
+  buildList();
+  renderMyRules();
+  toast('Kural silindi');
 };
 
-function onMPreset(){
-  var v=document.getElementById('mPreset').value;
-  var w=document.getElementById('mCustomWrap');
-  if(w)w.style.display=(v==='custom')?'':'none';
-  if(v!=='custom')mLoad();
-}
-window.onMPreset=onMPreset;
+window.optShowCreate = function(){ optTab('create'); };
 
-function getDP(){
-  var v=document.getElementById('mPreset').value;
-  if(v!=='custom')return{date_preset:v};
-  var f=document.getElementById('mFrom').value;
-  var t=document.getElementById('mTo').value;
-  if(f&&t)return{time_range:JSON.stringify({since:f,until:t})};
-  return{date_preset:'last_7d'};
+// Yetki kontrolü
+function checkPermissions(){
+  var canCreate = ROLE_CAN_CREATE.indexOf(currentRole) !== -1;
+  var createBtn = document.getElementById('optCreateBtn');
+  var createTab = document.getElementById('tabCreate');
+  if(createBtn) createBtn.style.display = canCreate ? '' : 'none';
+  if(createTab) createTab.style.display = canCreate ? '' : 'none';
 }
 
-// ── Durum filtresi ────────────────────────────────────────────────────
-function getFiltered(data){
-  if(!data) return [];
-  if(mStatusFilter==='all') return data;
-  return data.filter(function(r){
-    var s=(r.effectiveStatus||r.status||'').toUpperCase();
-    if(mStatusFilter==='active') return s==='ACTIVE';
-    if(mStatusFilter==='learning') return s==='LEARNING'||s==='LEARNING_LIMITED';
-    if(mStatusFilter==='paused') return s==='PAUSED'||s==='CAMPAIGN_PAUSED'||s==='ADSET_PAUSED'||s==='ARCHIVED';
-    return true;
-  });
-}
+// Init
+buildList();
+checkPermissions();
 
-window.setStatusFilter=function(val,btn){
-  mStatusFilter=val;
-  document.querySelectorAll('.mstatus-btn').forEach(function(b){
-    b.style.background='transparent'; b.style.color='var(--m)';
-  });
-  if(btn){btn.style.background='var(--a)';btn.style.color='#fff';}
-  mPage=0;
-  var cmpV=(document.getElementById('mCmp')||{}).value||'';
-  applyAndRender(currentMetaTab, cmpV);
-};
-
-// ── Metrik hesap ──────────────────────────────────────────────────────
-function calcMetrics(data){
-  var tS=0,tI=0,tR=0,tC=0,tP=0,tRev=0;
-  data.forEach(function(r){
-    tS+=r.spend||0; tI+=r.impr||0; tR+=r.reach||0;
-    tC+=r.clicks||0; tP+=r.results||0; tRev+=r.revenue||0;
-  });
-  return{spend:tS,impr:tI,reach:tR,clicks:tC,purchase:tP,revenue:tRev,
-    ctr:tI>0?(tC/tI*100):0, roas:tS>0?(tRev/tS):0};
-}
-
-function mSummary(cur,prev){
-  function s(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-  function diff(id,cn,pn){
-    var e=document.getElementById(id);if(!e)return;
-    if(!pn||pn===0){e.textContent='';e.className='ms-diff';return;}
-    var p=((cn-pn)/Math.abs(pn)*100);
-    e.className='ms-diff '+(p>=0?'up':'dn');
-    e.textContent=(p>=0?'▲':'▼')+Math.abs(p).toFixed(1)+'%';
+window.addEventListener('mx:connected', function(){
+  var count = (MX.adsetStore||[]).length;
+  if(count > 0){
+    document.getElementById('optimMsgs').innerHTML =
+      '<div class="msg sys" style="font-size:12px">'+count+' reklam seti yüklü. Bir kural seç ve analiz başlatalım.</div>';
   }
-  s('ms-spend',   cur.spend>=1000?(cur.spend/1000).toFixed(1)+'K₺':cur.spend.toFixed(0)+'₺');
-  s('ms-revenue',  cur.revenue>=1000?(cur.revenue/1000).toFixed(1)+'K₺':cur.revenue.toFixed(0)+'₺');
-  s('ms-roas',     cur.spend>0?cur.roas.toFixed(2)+'x':'—');
-  s('ms-purchase', cur.purchase.toLocaleString('tr'));
-  s('ms-clicks',   cur.clicks.toLocaleString('tr'));
-  s('ms-ctr',      cur.impr>0?cur.ctr.toFixed(2)+'%':'—');
-  s('ms-impr',     cur.impr>=1000?(cur.impr/1000).toFixed(1)+'K':String(cur.impr));
-  s('ms-reach',    cur.reach>=1000?(cur.reach/1000).toFixed(1)+'K':String(cur.reach));
-  if(prev){
-    diff('md-spend',cur.spend,prev.spend);diff('md-revenue',cur.revenue,prev.revenue);
-    diff('md-roas',cur.roas,prev.roas);diff('md-purchase',cur.purchase,prev.purchase);
-    diff('md-clicks',cur.clicks,prev.clicks);diff('md-ctr',cur.ctr,prev.ctr);
-    diff('md-impr',cur.impr,prev.impr);diff('md-reach',cur.reach,prev.reach);
-  } else {
-    ['md-spend','md-revenue','md-roas','md-purchase','md-clicks','md-ctr','md-impr','md-reach'].forEach(function(id){
-      var e=document.getElementById(id);if(e){e.textContent='';e.className='ms-diff';}
-    });
+});
+
+})();
+</script>
+
+<script>
+// ── GERÇEK KURAL UYGULAMA ENJİNİ ──────────────────────────────────────
+(function(){
+
+// Metrik değerini adset'ten oku
+function getMetric(adset, metric, period){
+  // period şimdilik store verisini kullanıyor (7d varsayılan)
+  switch(metric){
+    case 'roas':    return adset.roas    || 0;
+    case 'ctr':     return adset.ctr     || 0;
+    case 'spend':   return adset.spend   || 0;
+    case 'cpc':     return adset.cpc     || 0;
+    case 'cpm':     return adset.cpm     || 0;
+    case 'freq':    return adset.freq    || 0;
+    case 'revenue': return adset.revenue || 0;
+    case 'results': return adset.results || 0;
+    case 'impr':    return adset.impr    || 0;
+    default:        return 0;
   }
 }
 
-function applyAndRender(tab,cmpV,cmpRows){
-  var filtered=getFiltered(mData[tab]);
-  var cur=calcMetrics(filtered);
-  if(cmpRows&&cmpRows.length){
-    var filteredIds={};
-    filtered.forEach(function(r){filteredIds[r._campId||r._id]=true;});
-    var fc=cmpRows.filter(function(r){return filteredIds[r._campId||r._id];});
-    mSummary(cur,calcMetrics(fc));
-  } else { mSummary(cur,null); }
-  mPage=0; mRenderData(tab,filtered);
-  var st=document.getElementById('mStatus');
-  if(st) st.textContent=mData[tab].length+' kayıt'+(mStatusFilter!=='all'?' ('+filtered.length+' gösteriliyor)':'');
+function compare(a, op, b){
+  switch(op){
+    case 'gt':  return a >  b;
+    case 'lt':  return a <  b;
+    case 'gte': return a >= b;
+    case 'lte': return a <= b;
+    case 'eq':  return a === b;
+    default:    return false;
+  }
 }
 
-function mRender(tab){
-  applyAndRender(tab,(document.getElementById('mCmp')||{}).value||'',window._lastCmpRows);
+// Kural koşullarını adset'e karşı değerlendir
+function evalRule(rule, adset, avgRoas, avgCtr, avgCpc){
+  var type = rule.type;
+  var id   = rule.id;
+
+  // ── Hazır kurallar için özel mantık ──
+  switch(id){
+    case 'roas-artir':
+      return adset.roas > avgRoas && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-artir-2':
+      return adset.roas > avgRoas && adset.spend >= 100 && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-artir-3': return false; // sıralama bazlı, ayrı hesaplanıyor
+
+    case 'roas-artir-4':
+      return adset.roas > avgRoas; // trend verisi yok, yaklaşık
+
+    case 'roas-azalt-1':
+      return adset.roas < (avgRoas / 3) && adset.spend > 50;
+
+    case 'roas-azalt-2': return false; // sıralama bazlı
+
+    case 'roas-azalt-3':
+      return adset.roas < (avgRoas / 2) && adset.spend > 50;
+
+    case 'roas-azalt-4':
+      return adset.roas < avgRoas && adset.spend >= 50 && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-azalt-5':
+      return adset.roas < avgRoas && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-kapat-1':
+      return adset.roas < (avgRoas / 3) && adset.spend > 100;
+
+    case 'roas-kapat-2':
+      return adset.spend <= 10 && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-kapat-3':
+      return adset.roas < (avgRoas / 3) && adset.spend > 0;
+
+    case 'ctr-artir-1':
+      return adset.ctr > (avgCtr * 2) && adset.impr >= 1000;
+
+    case 'ctr-azalt-1':
+      return adset.ctr < 1 && adset.spend >= 500;
+
+    case 'ctr-artir-2':
+      return adset.cpm < 50 && adset.ctr > 2 && adset.impr >= 2000;
+
+    case 'spend-artir-1':
+      return adset.roas > 3 && adset.spend > 0;
+
+    case 'spend-kapat-1':
+      return adset.roas < 1 && adset.spend > 0;
+
+    case 'spend-artir-2':
+      return adset.cpc < (avgCpc / 2) && adset.ctr > avgCtr && adset.clicks >= 100;
+
+    case 'cart-artir-1':
+      return adset.roas > 2 && adset.results > 0;
+
+    case 'cart-azalt-1':
+      return adset.results === 0 && adset.spend >= 200;
+
+    case 'cart-azalt-2':
+      return adset.results === 0 && adset.spend >= 500;
+
+    case 'freq-azalt-1':
+      return adset.freq > 3.5;
+
+    case 'freq-kapat-1':
+      return adset.freq > 5;
+
+    default:
+      // Özel kurallar: conditions array'ini parse et
+      if(!rule.conditions || !rule.conditions.length) return false;
+      var match = true;
+      rule.conditions.forEach(function(cond){
+        // "7d roas > 3" formatını parse et
+        var m = cond.match(/(\w+)\s+(\w+)\s*(>|<|>=|<=|=)\s*([\d.]+)/);
+        if(m){
+          var val = getMetric(adset, m[2], m[1]);
+          var opMap = {'>':'gt','<':'lt','>=':'gte','<=':'lte','=':'eq'};
+          if(!compare(val, opMap[m[3]]||'gt', parseFloat(m[4]))) match = false;
+        }
+      });
+      return match;
+  }
 }
 
-// ── Tablo render ──────────────────────────────────────────────────────
-function mRenderData(tab,data){
-  if(!document.getElementById('mTB')) return;
-  var cols=COLS.filter(function(c){return c.fixed||mCols.has(c.k);});
-  var st=mSort[tab]||{};
-  var hHTML='<tr><th style="width:32px"></th>';
-  cols.forEach(function(c){
-    var icon=st.key===c.k?(st.dir===-1?' ↓':' ↑'):'';
-    hHTML+='<th class="'+(st.key===c.k?'sorted':'')+'" style="min-width:'+(c.w||80)+'px" onclick="mSortBy(\''+tab+'\',\''+c.k+'\','+c.num+')">'+c.l+icon+'</th>';
-  });
-  hHTML+='<th style="width:90px">İşlem</th></tr>';
-  document.getElementById('mTH').innerHTML=hHTML;
+// Yüzdeyi al
+function getRulePct(rule){
+  var actionStr = rule.action || '';
+  var m = actionStr.match(/(\d+)/);
+  return m ? parseInt(m[1]) : 20;
+}
 
-  if(!data||!data.length){
-    document.getElementById('mTB').innerHTML='<tr><td colspan="'+(cols.length+2)+'" style="text-align:center;padding:30px;color:var(--m)">Veri yok</td></tr>';
-    document.getElementById('mTF').innerHTML='';
-    document.getElementById('mPagination').style.display='none';
+// Bütçeyi hesapla
+function calcNewBudget(adset, rule){
+  var cur = parseFloat((adset.budgetAmt||'0').replace(/[^0-9.]/g,'')) || adset.spend * 1.2 || 100;
+  var pct = getRulePct(rule);
+  var type = rule.type;
+  if(type === 'increase') return {cur: cur, newB: cur * (1 + pct/100), pct: pct};
+  if(type === 'decrease') return {cur: cur, newB: cur * (1 - pct/100), pct: -pct};
+  return null; // pause/activate farklı işlem
+}
+
+// ── ANA UYGULAMA FONKSİYONU ──
+window.optApplyReal = function(){
+  var rule = selectedRule;
+  if(!rule){ toast('Önce kural seç'); return; }
+
+  var adsets = (MX.adsetStore || []).filter(function(r){ return r._budgetId; });
+  if(!adsets.length){
+    toast('Meta verisi yok — önce Bağlan ve veri yükle');
+    optTab('chat');
+    addMsg('Meta verisi bulunamadı. Önce "Bağlan" butonuna basıp veri yükleyin.', 'sys', 'optimMsgs');
     return;
   }
 
-  var start=mPage*M_PAGE,end=Math.min(start+M_PAGE,data.length);
-  var paged=data.slice(start,end);
-  var pg=document.getElementById('mPagination');
-  if(data.length>M_PAGE){
-    pg.style.display='';
-    document.getElementById('mPageInfo').textContent=(start+1)+'-'+end+' / '+data.length;
-    document.getElementById('mPrevBtn').disabled=mPage===0;
-    document.getElementById('mNextBtn').disabled=end>=data.length;
-  } else { pg.style.display='none'; }
+  var avgRoas = adsets.reduce(function(s,r){return s+(r.roas||0);},0) / adsets.length;
+  var avgCtr  = adsets.reduce(function(s,r){return s+(r.ctr||0);},0)  / adsets.length;
+  var avgCpc  = adsets.reduce(function(s,r){return s+(r.cpc||0);},0)  / adsets.length;
 
-  var bHTML='';
-  paged.forEach(function(r){
-    var es=(r.effectiveStatus||r.status||'').toUpperCase();
-    var isActive=es==='ACTIVE';
-    bHTML+='<tr>';
-    // Toggle — log kaydeder
-    bHTML+='<td><label class="tog"><input type="checkbox"'+(isActive?' checked':'')+' onchange="mToggleWithLog(\''+r._id+'\',\''+((r.name||'').replace(/'/g,"\\'")||'').slice(0,40)+'\',this.checked?\'ACTIVE\':\'PAUSED\',\''+tab+'\')"><span class="tog-track"></span></label></td>';
-    cols.forEach(function(c){
-      var v=r[c.k];
-      if(c.k==='name'){
-        var warn='';
-        if(r.warnings>0)warn+=' <span class="warn-badge">⚠ '+r.warnings+'</span>';
-        if(r.errors>0)warn+=' <span class="err-badge">✕ '+r.errors+'</span>';
-        bHTML+='<td><span class="nm" title="'+((v||'').replace(/"/g,''))+'">'+((v||'—').slice(0,45))+'</span>'+warn+'</td>';
-      } else if(c.k==='delivery'){
-        bHTML+='<td>'+deliveryCell(r.effectiveStatus)+'</td>';
-      } else if(c.k==='budget'){
-        bHTML+='<td><div>'+(r.budgeBadge||'')+'</div><div style="font-family:\'DM Mono\',monospace;font-size:11px">'+(r.budgetAmt||'—')+'</div></td>';
-      } else if(c.k==='results'){
-        var rv=parseInt(r.results||0);
-        bHTML+='<td><div style="font-family:\'DM Mono\',monospace">'+(rv?rv.toLocaleString('tr'):'—')+'</div><div class="sub-label">Satın Alma</div></td>';
-      } else if(c.k==='cpr'){
-        var cv=parseFloat(r.cpr||0);
-        bHTML+='<td><div style="font-family:\'DM Mono\',monospace">'+(cv?cv.toFixed(2)+'₺':'—')+'</div><div class="sub-label">Satın Alma Başına</div></td>';
-      } else if(c.k==='roas'){
-        var rv2=parseFloat(r.roas||0);
-        bHTML+='<td><span style="color:'+roasColor(rv2)+';font-family:\'DM Mono\',monospace;font-weight:600">'+(rv2?rv2.toFixed(2)+'x':'—')+'</span></td>';
-      } else if(c.k==='revenue'){
-        var frev=parseFloat(r.revenue||0);
-        bHTML+='<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+(frev?frev.toFixed(2)+'₺':'—')+'</td>';
-      } else if(c.k==='spend'||c.k==='cpc'||c.k==='cpm'){
-        var fv=parseFloat(r[c.k]||0);
-        bHTML+='<td style="font-family:\'DM Mono\',monospace">'+(fv?fv.toFixed(2)+'₺':'—')+'</td>';
-      } else if(c.k==='ctr'){
-        var fv2=parseFloat(r.ctr||0);
-        bHTML+='<td style="font-family:\'DM Mono\',monospace">'+(fv2?fv2.toFixed(2)+'%':'—')+'</td>';
-      } else if(c.k==='freq'){
-        var fv3=parseFloat(r.freq||0);
-        bHTML+='<td style="font-family:\'DM Mono\',monospace">'+(fv3?fv3.toFixed(2):'—')+'</td>';
-      } else if(c.k==='impr'||c.k==='reach'||c.k==='clicks'||c.k==='cart'){
-        var iv=parseInt(r[c.k]||0);
-        bHTML+='<td style="font-family:\'DM Mono\',monospace">'+(iv?iv.toLocaleString('tr'):'—')+'</td>';
-      } else if(c.k==='quality'){
-        bHTML+='<td>'+qualCell(r.qual_org,r.qual_ectr,r.qual_ecvr)+'</td>';
-      } else if(c.k==='lastedit'){
-        bHTML+='<td style="font-size:10px;color:var(--m)">'+(r.lastEdit||'—')+'</td>';
-      } else if(c.k==='endtime'){
-        bHTML+='<td style="font-size:10px;color:var(--m)">'+(r.endTime||'Süresiz')+'</td>';
-      } else {
-        bHTML+='<td>'+(v||'—')+'</td>';
-      }
-    });
-    // İşlem butonları: bütçe + geçmiş
-    var btns='';
-    if(r._budgetId&&r.budgetAmt&&r.budgetAmt!=='—'){
-      btns+='<button class="btn sm yel" title="Bütçe değiştir" onclick="mProposeB(\''+r._budgetId+'\',\''+((r.name||'').replace(/'/g,"\\'").slice(0,30))+'\',\''+r._budgetType+'\',\''+r.budgetAmt+'\',\''+r._id+'\')">₺</button>';
-    }
-    // Geçmiş butonu — her satırda
-    btns+='<button class="btn sm sec" title="Değişiklik geçmişi" onclick="showEntityLog(\''+r._id+'\',\''+((r.name||'').replace(/'/g,"\\'").slice(0,40))+'\')">📋</button>';
-    bHTML+='<td><div style="display:flex;gap:3px">'+btns+'</div></td></tr>';
-  });
-  document.getElementById('mTB').innerHTML=bHTML;
+  // Koşula uyan adsetleri bul
+  var matched = adsets.filter(function(a){ return evalRule(rule, a, avgRoas, avgCtr, avgCpc); });
 
-  // Footer
-  var tot=calcMetrics(data);
-  var fHTML='<tr class="total-row"><td></td>';
-  cols.forEach(function(c){
-    if(c.k==='name')         fHTML+='<td style="font-family:Inter,sans-serif;font-size:11px;color:var(--m)">'+data.length+' öğe — Toplam</td>';
-    else if(c.k==='spend')   fHTML+='<td>'+tot.spend.toFixed(0)+'₺</td>';
-    else if(c.k==='revenue') fHTML+='<td style="color:var(--g)">'+tot.revenue.toFixed(0)+'₺</td>';
-    else if(c.k==='roas')    fHTML+='<td>'+(tot.spend>0?tot.roas.toFixed(2)+'x':'—')+'</td>';
-    else if(c.k==='impr')    fHTML+='<td>'+(tot.impr/1000).toFixed(1)+'K</td>';
-    else if(c.k==='reach')   fHTML+='<td>'+(tot.reach/1000).toFixed(1)+'K</td>';
-    else if(c.k==='clicks')  fHTML+='<td>'+tot.clicks.toLocaleString('tr')+'</td>';
-    else if(c.k==='ctr')     fHTML+='<td>'+(tot.impr>0?tot.ctr.toFixed(2)+'%':'—')+'</td>';
-    else if(c.k==='results') fHTML+='<td>'+tot.purchase.toLocaleString('tr')+'</td>';
-    else fHTML+='<td style="color:var(--m)">—</td>';
-  });
-  fHTML+='<td></td></tr>';
-  document.getElementById('mTF').innerHTML=fHTML;
-}
+  optTab('chat');
+  var msgs = document.getElementById('optimMsgs');
 
-// ── Delivery cell (öğrenme badge'i dahil) ─────────────────────────────
-function deliveryCell(es){
-  var s=(es||'').toUpperCase();
-  if(s==='ACTIVE'){
-    return '<span class="status-badge sb-active"><span class="del-dot del-active"></span>Aktif</span>';
-  } else if(s==='LEARNING'){
-    return '<span class="status-badge sb-learning" title="Reklam öğrenme aşamasında. Meta algoritması optimize ediyor."><span class="del-dot del-learning"></span>Öğrenme 📚</span>';
-  } else if(s==='LEARNING_LIMITED'){
-    return '<span class="status-badge sb-limited" title="Öğrenme sınırlı: Bütçe artırın veya hedefi genişletin."><span class="del-dot del-limited"></span>Öğ. Sınırlı ⚠</span>';
-  } else if(s==='PAUSED'||s==='CAMPAIGN_PAUSED'||s==='ADSET_PAUSED'){
-    return '<span class="status-badge sb-paused"><span class="del-dot del-off"></span>Duraklatıldı</span>';
-  } else if(s==='WITH_ISSUES'||s==='DISAPPROVED'){
-    return '<span class="status-badge sb-error"><span class="del-dot del-error"></span>Sorunlu</span>';
-  } else if(s==='COMPLETED'){
-    return '<span class="status-badge sb-paused"><span class="del-dot del-off"></span>Tamamlandı</span>';
-  }
-  return '<span class="status-badge sb-paused"><span class="del-dot del-off"></span>Pasif</span>';
-}
-
-function qualCell(org,ectr,ecvr){
-  function pip(v){
-    if(!v||v==='UNKNOWN')return '<span class="qual-pip"></span>';
-    if(v==='ABOVE_AVERAGE')return '<span class="qual-pip hi"></span>';
-    if(v==='AVERAGE')return '<span class="qual-pip md"></span>';
-    return '<span class="qual-pip lo"></span>';
-  }
-  if(!org&&!ectr&&!ecvr)return '<span style="color:var(--m)">—</span>';
-  return '<div class="qual" title="Kalite | CTR | CVR">'+pip(org)+pip(ectr)+pip(ecvr)+'</div>';
-}
-
-window.mSortBy=function(tab,key,isNum){
-  var prev=mSort[tab]||{key:null,dir:-1};
-  var dir=prev.key===key?-prev.dir:-1;
-  mSort[tab]={key:key,dir:dir};
-  mData[tab].sort(function(a,b){
-    if(key==='budget'){
-      return dir*((parseFloat((a.budgetAmt||'0').replace(/[^\d.]/g,''))||0)-(parseFloat((b.budgetAmt||'0').replace(/[^\d.]/g,''))||0));
-    }
-    if(key==='delivery') return dir*String(a.effectiveStatus||'').localeCompare(String(b.effectiveStatus||''),'tr');
-    var av=a[key],bv=b[key];
-    if(isNum)return dir*(parseFloat(av||0)-parseFloat(bv||0));
-    return dir*String(av||'').localeCompare(String(bv||''),'tr');
-  });
-  mPage=0; mRender(tab);
-};
-
-window.mChangePage=function(dir){mPage+=dir;if(mPage<0)mPage=0;mRender(currentMetaTab);};
-
-// ── Row map ───────────────────────────────────────────────────────────
-var INSF='spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values,quality_ranking,engagement_rate_ranking,conversion_rate_ranking';
-
-function mapR(r,camp,adset){
-  var roas=groas(r);
-  var purchase=gav(r.actions,'purchase');
-  var revenue=0;
-  if(r.action_values){
-    var x=(r.action_values||[]).find(function(v){return v.action_type==='purchase';});
-    if(x) revenue=parseFloat(x.value||0);
-  }
-  if(revenue===0&&roas>0) revenue=roas*parseFloat(r.spend||0);
-  var bi=camp?getBi(camp):(adset?getBi(adset):{badge:'',amt:'—',type:'ABO'});
-  var isCBO=bi.type==='CBO';
-  return{
-    name:r.campaign_name||r.adset_name||r.ad_name||'—',
-    status:r.status||'—',
-    effectiveStatus:r.effective_status||r.status||'—',
-    budgeBadge:bi.badge, budgetAmt:bi.amt,
-    spend:parseFloat(r.spend||0), impr:parseInt(r.impressions||0),
-    reach:parseInt(r.reach||0), freq:parseFloat(r.frequency||0),
-    cpm:parseFloat(r.cpp||0), clicks:parseInt(r.clicks||0),
-    ctr:parseFloat(r.ctr||0), cpc:parseFloat(r.cpc||0),
-    results:purchase, cpr:purchase>0?parseFloat(r.spend||0)/purchase:0,
-    roas:roas, revenue:revenue, cart:gav(r.actions,'add_to_cart'),
-    qual_org:r.quality_ranking||'', qual_ectr:r.engagement_rate_ranking||'', qual_ecvr:r.conversion_rate_ranking||'',
-    lastEdit:'', endTime:'', warnings:0, errors:0,
-    _id:camp?camp.id:(adset?adset.id:(r.ad_id||r.adset_id||r.campaign_id)),
-    _campId:r.campaign_id,
-    _budgetId:isCBO?(camp?camp.id:null):(adset?adset.id:null),
-    _budgetType:isCBO?'campaign':'adset'
-  };
-}
-
-// Yayın durumunu çöz - campaigns/adsets endpoint'inden gelen effective_status kullan
-// Meta API: IN_PROCESS=öğrenme, LIMITED=öğrenme sınırlı (campaigns endpoint'inden gelir)
-function resolveDeliveryStatus(row, campOrAdset){
-  var es=(row.effectiveStatus||'').toUpperCase();
-  // Campaigns/adsets endpoint'inden gelen ek alan: configured_status vs effective_status
-  if(campOrAdset && campOrAdset.effective_status){
-    var ces=campOrAdset.effective_status.toUpperCase();
-    // IN_PROCESS Meta'nın öğrenme durumu
-    if(ces==='IN_PROCESS') return 'LEARNING';
-    if(ces==='LIMITED') return 'LEARNING_LIMITED';
-  }
-  return es;
-}
-
-// ── Toggle ile log ────────────────────────────────────────────────────
-window.mToggleWithLog=async function(id,name,status,tab){
-  var d=await api(id,{status:status},'POST');
-  if(d&&(d.success||d.id)){
-    var action=status==='ACTIVE'?'activated':'paused';
-    var detail=status==='ACTIVE'?'Aktif yapıldı':'Duraklatıldı';
-    addLog(id, name, action, detail);
-    toast(status==='ACTIVE'?'Başlatıldı ✓':'Duraklatıldı ✓');
-    mLoad();
-  } else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
-};
-
-// ── Bütçe değişikliği (id parametresi eklendi) ────────────────────────
-window.mProposeB=function(id,name,type,curAmt,entityId){
-  var pct=prompt(name+'\nMevcut: '+curAmt+'\nDeğişim %? (eksi için - kullan)');
-  if(!pct)return;
-  var pctN=parseFloat(pct);
-  if(isNaN(pctN)){toast('Geçersiz');return;}
-  var m=curAmt.match(/[\d.]+/);
-  if(!m){toast('Bütçe okunamadı');return;}
-  var curTL=parseFloat(m[0]),newTL=curTL*(1+pctN/100);
-  mPending={id:id,name:name,type:type,curTL:curTL,newTL:newTL,pct:pctN,entityId:entityId||id};
-  var det=document.getElementById('mBDet');
-  if(det)det.innerHTML='<strong>'+name+'</strong><br>'+curTL.toFixed(0)+'₺ → '+newTL.toFixed(0)+'₺/gün (%'+(pctN>0?'+':'')+pctN+')';
-  document.getElementById('mBModal').style.display='flex';
-};
-
-window.mApproveB=async function(){
-  if(!mPending)return;
-  var p=mPending;
-  document.getElementById('mBModal').style.display='none';
-  var d=await api(p.id,{daily_budget:Math.round(p.newTL*100)},'POST');
-  if(d&&(d.success||d.id)){
-    // Log kaydet
-    var action=p.pct>0?'budget_increase':'budget_decrease';
-    var detail=p.curTL.toFixed(0)+'₺ → '+p.newTL.toFixed(0)+'₺/gün ('+(p.pct>0?'+':'')+p.pct+'%)';
-    addLog(p.entityId||p.id, p.name, action, detail);
-
-    var baseline=null;
-    try{
-      var bd=await api(AID+'/insights',{fields:'spend,ctr,cpc,purchase_roas,actions,action_values',date_preset:'last_7d',
-        level:p.type==='campaign'?'campaign':'adset',
-        filtering:JSON.stringify([{field:p.type==='campaign'?'campaign.id':'adset.id',operator:'EQUAL',value:p.id}]),
-        action_attribution_windows:ATTR});
-      var br=bd&&bd.data&&bd.data[0];
-      if(br)baseline={roas:groas(br),spend:parseFloat(br.spend||0),purchase:gav(br.actions,'purchase')};
-    }catch(e){}
-    var now=Date.now();
-    MX.budgetLog.unshift({id:p.id,name:p.name,type:p.type,old:p.curTL,new:p.newTL,pct:p.pct,time:new Date().toISOString(),baseline:baseline});
-    MX.taskLog.unshift(
-      {id:p.id,name:p.name,type:p.type,baseline:baseline,budgetOld:p.curTL,budgetNew:p.newTL,pct:p.pct,createdAt:now,dueAt:now+86400000,period:'1g',done:false},
-      {id:p.id,name:p.name,type:p.type,baseline:baseline,budgetOld:p.curTL,budgetNew:p.newTL,pct:p.pct,createdAt:now,dueAt:now+3*86400000,period:'3g',done:false}
+  if(!matched.length){
+    var infoDiv = document.createElement('div');
+    infoDiv.className = 'msg claude';
+    infoDiv.innerHTML = renderMD(
+      '**❌ Neden Uygulanamadı?**\n\n' +
+      '1. **Sistemde tanımlı reklam seti bulunmuyor** — Hesaba bağlı aktif reklam seti verisi gelmiyor. ' +
+      '2. **Hesap ROAS = ' + avgRoas.toFixed(2) + '** — Mevcut veri koşulu karşılamıyor.\n\n' +
+      '**💡 Öneriler**\n\n' +
+      '- ✅ Meta Ads hesabının **doğru bağlandığını** kontrol et\n' +
+      '- ✅ Reklam setlerinin **aktif durumda** olduğunu doğrula\n' +
+      '- ✅ **Veri entegrasyonunu** yenile ve tekrar çalıştır'
     );
-    saveServerLogs();updateTaskBadge();
-    toast(p.newTL.toFixed(0)+'₺ güncellendi ✓');mLoad();
-  } else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
-  mPending=null;
-};
+    msgs.appendChild(infoDiv);
+    msgs.scrollTop = 99999;
+    return;
+  }
 
-// ── Sparkline (günlük trend grafikleri) ──────────────────────────────
-async function loadSparklines(dp){
-  try {
-    // Özel aralık için günlük breakdown, preset için time_increment=1
-    var sparkParams={
-      fields:'spend,impressions,clicks,purchase_roas,actions,action_values',
-      level:'account',
-      time_increment:1,
-      limit:90,
-      action_attribution_windows:ATTR
-    };
-    // Tarih parametresi
-    if(dp.date_preset){
-      sparkParams.date_preset=dp.date_preset;
-    } else if(dp.time_range){
-      sparkParams.time_range=dp.time_range;
-    } else {
-      sparkParams.date_preset='last_7d';
-    }
-    var res = await api(AID+'/insights', sparkParams);
-    if(!res||!res.data||!res.data.length) return;
+  // Özet mesaj
+  var summaryDiv = document.createElement('div');
+  summaryDiv.className = 'msg claude';
+  summaryDiv.innerHTML = renderMD(
+    '**⚡ ' + rule.name + ' — ' + matched.length + ' Reklam Seti Bulundu**\n\n' +
+    '**Koşul:** ' + (rule.conditions||[]).join(' · ') + '\n' +
+    '**İşlem:** ' + rule.action + '\n' +
+    '**Hesap Ort. ROAS:** ' + avgRoas.toFixed(2) + 'x\n\n' +
+    'Aşağıdaki reklamlara uygulamak için **Onayla** butonuna basın:'
+  );
+  msgs.appendChild(summaryDiv);
 
-    // Günlük veriyi parse et
-    var days = res.data.sort(function(a,b){return a.date_start>b.date_start?1:-1;});
-    var series = {
-      spend:[], revenue:[], roas:[], purchase:[], clicks:[], ctr:[], impr:[], reach:[]
-    };
-    days.forEach(function(d){
-      var spend=parseFloat(d.spend||0);
-      var roas=groas(d);
-      var purchase=gav(d.actions,'purchase');
-      var revenue=0;
-      if(d.action_values){var x=(d.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x)revenue=parseFloat(x.value||0);}
-      if(revenue===0&&roas>0) revenue=roas*spend;
-      series.spend.push(spend);
-      series.revenue.push(revenue);
-      series.roas.push(roas);
-      series.purchase.push(purchase);
-      series.clicks.push(parseInt(d.clicks||0));
-      var impr=parseInt(d.impressions||0);
-      series.ctr.push(impr>0?(parseInt(d.clicks||0)/impr*100):0);
-      series.impr.push(impr);
-      series.reach.push(parseInt(d.reach||0));
+  // Her uyan adset için onay butonu
+  var actionWrap = document.createElement('div');
+  actionWrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin:4px 0 8px';
+
+  if(rule.type === 'pause'){
+    // Durdur aksiyonu
+    matched.slice(0,10).forEach(function(a){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;align-items:center;background:var(--bg);padding:8px 12px;border-radius:6px;border-left:3px solid var(--r)';
+      row.innerHTML = '<span style="flex:1;font-size:11px">⏸ <strong>' + (a.name||'').slice(0,35) + '</strong> · ROAS: ' + (a.roas||0).toFixed(2) + 'x · Harcama: ' + (a.spend||0).toFixed(0) + '₺</span>';
+      var ok  = document.createElement('button'); ok.className  = 'btn sm dng'; ok.textContent = '⏸ Durdur';
+      var no  = document.createElement('button'); no.className  = 'btn sm sec'; no.textContent = '✗ Atla';
+      ok.onclick = (function(adset, btn, r){
+        return async function(){
+          btn.disabled = true; btn.textContent = '⏳...';
+          var d = await api(adset._budgetId, {status:'PAUSED'}, 'POST');
+          if(d && (d.success || d.id)){
+            btn.textContent = '✓ Durduruldu';
+            btn.style.background = 'var(--g)';
+            logAction({type:'pause', name:adset.name, id:adset._budgetId, rule:r.name, time:new Date().toISOString()});
+            toast(adset.name.slice(0,25) + ' durduruldu ✓');
+          } else {
+            btn.textContent = '❌ Hata';
+            toast('Hata: ' + JSON.stringify((d&&d.error)||d));
+          }
+        };
+      })(a, ok, rule);
+      no.onclick = function(){ row.remove(); };
+      row.appendChild(ok); row.appendChild(no);
+      actionWrap.appendChild(row);
     });
-
-    // Her kart için sparkline çiz
-    Object.keys(series).forEach(function(key){
-      drawSparkline('spark-'+key, series[key], key);
+  } else {
+    // Bütçe değişikliği
+    matched.slice(0,10).forEach(function(a){
+      var calc = calcNewBudget(a, rule);
+      if(!calc || calc.newB <= 0) return;
+      var color = rule.type === 'increase' ? 'var(--g)' : 'var(--y)';
+      var arrow = rule.type === 'increase' ? '📈' : '📉';
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;align-items:center;background:var(--bg);padding:8px 12px;border-radius:6px;border-left:3px solid ' + color;
+      row.innerHTML = '<span style="flex:1;font-size:11px">' + arrow + ' <strong>' + (a.name||'').slice(0,30) + '</strong>: ' +
+        calc.cur.toFixed(0) + '₺ → ' + calc.newB.toFixed(0) + '₺/gün (' + (calc.pct > 0 ? '+' : '') + calc.pct + '%)</span>';
+      var ok = document.createElement('button'); ok.className = 'btn sm grn'; ok.textContent = '✓ Onayla';
+      var no = document.createElement('button'); no.className = 'btn sm sec'; no.textContent = '✗ Atla';
+      ok.onclick = (function(adset, b, btn, r){ return function(){
+        btn.disabled = true; btn.textContent = '⏳...';
+        chatApproveB(adset._budgetId, adset.name, adset._budgetType||'adset', b.cur, b.newB, Math.abs(b.pct), 'optimMsgs');
+        r.remove();
+      };})(a, calc, ok, row);
+      no.onclick = function(){ row.remove(); };
+      row.appendChild(ok); row.appendChild(no);
+      actionWrap.appendChild(row);
     });
-  } catch(e){ console.log('Sparkline hata:',e); }
-}
-
-function drawSparkline(containerId, values, key){
-  var el=document.getElementById(containerId);
-  if(!el||!values||!values.length) return;
-
-  var W=el.offsetWidth||120, H=32;
-  var min=Math.min.apply(null,values);
-  var max=Math.max.apply(null,values);
-  var range=max-min||1;
-  var n=values.length;
-
-  // Renk: gelir/roas yeşil, harcama mavi, CTR sarı, diğer mavi
-  var color='var(--a)';
-  var fillColor='rgba(24,119,242,0.15)';
-  if(key==='revenue'||key==='roas'||key==='purchase'){color='var(--g)';fillColor='rgba(66,183,42,0.15)';}
-  else if(key==='ctr'){color='var(--y)';fillColor='rgba(240,180,41,0.12)';}
-
-  // Artış mı azalış mı?
-  if(values.length>1){
-    var first=values[0],last=values[values.length-1];
-    if(last<first){color='var(--r)';fillColor='rgba(250,62,62,0.12)';}
   }
 
-  // Noktaları hesapla
-  var pts=values.map(function(v,i){
-    var x=(n===1)?W/2:(i/(n-1))*W;
-    var y=H-2-((v-min)/range*(H-4));
-    return x+','+y;
-  });
-
-  // Area path
-  var linePts=pts.join(' ');
-  var areaPath='M'+pts[0]+' L'+linePts+' L'+(W)+','+(H)+' L0,'+(H)+' Z';
-  var linePath='M'+pts[0]+' L'+linePts;
-
-  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">'
-    +'<path d="'+areaPath+'" fill="'+fillColor+'" stroke="none"/>'
-    +'<path d="'+linePath+'" fill="none" stroke="'+color+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>'
-    // Son nokta
-    +'<circle cx="'+pts[n-1].split(',')[0]+'" cy="'+pts[n-1].split(',')[1]+'" r="2.5" fill="'+color+'"/>'
-    +'</svg>';
-}
-
-// ── Veri yükle ────────────────────────────────────────────────────────
-// mLoad: IIFE sonunda expose edildi
-
-async function loadMetaCamp(){
-  if(!document.getElementById('mTB')) return;
-  var st=document.getElementById('mStatus');if(st)st.textContent='⏳';
-  var dp=getDP();
-  var cmpV=(document.getElementById('mCmp')||{}).value||'';
-  var params=Object.assign({fields:INSF+',campaign_id,campaign_name',level:'campaign',limit:500,action_attribution_windows:ATTR},dp);
-  var[ins,camps]=await Promise.all([
-    api(AID+'/insights',params),
-    api(AID+'/campaigns',{fields:'id,name,status,effective_status,configured_status,daily_budget,lifetime_budget,end_time,updated_time,recommendations',limit:500})
-  ]);
-  var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
-  MX.campStore=(camps&&camps.data||[]);
-  var rows=(ins&&ins.data||[]).map(function(r){
-    var row=mapR(r,cmap[r.campaign_id],null);
-    var camp=cmap[r.campaign_id];
-    if(camp){
-      row.status=camp.status;
-      row.effectiveStatus=camp.effective_status||camp.status;
-      // delivery_info'dan öğrenme durumunu çöz
-      var resolved=resolveDeliveryStatus(row,camp);
-      if(resolved!==row.effectiveStatus) row.effectiveStatus=resolved;
-      row.endTime=camp.end_time?new Date(camp.end_time).toLocaleDateString('tr'):'';
-      row.warnings=(camp.recommendations||[]).filter(function(rec){return rec.importance!=='HIGH';}).length;
-      row.errors=(camp.recommendations||[]).filter(function(rec){return rec.importance==='HIGH';}).length;
-    }
-    return row;
-  });
-  rows.sort(function(a,b){return b.spend-a.spend;});
-  mData.camp=rows;
-  var cf=document.getElementById('mCampFlt');
-  if(cf){cf.innerHTML='<option value="">Tüm Kampanyalar</option>'+(MX.campStore.map(function(c){return '<option value="'+c.id+'">'+c.name.slice(0,50)+'</option>';})).join('');}
-  var cmpRows=[];
-  if(cmpV){
-    var cp=await api(AID+'/insights',Object.assign({fields:INSF+',campaign_id,campaign_name',level:'campaign',limit:500,action_attribution_windows:ATTR},{date_preset:cmpV}));
-    cmpRows=(cp&&cp.data||[]).map(function(r){return mapR(r,cmap[r.campaign_id],null);});
-  }
-  window._lastCmpRows=cmpRows;
-  applyAndRender('camp',cmpV,cmpRows);
-  // Günlük trend verisi — sparkline için
-  loadSparklines(dp);
-}
-
-async function loadMetaAdsets(){
-  if(!document.getElementById('mTB')) return;
-  var st=document.getElementById('mStatus');if(st)st.textContent='⏳';
-  var dp=getDP();
-  var cmpV=(document.getElementById('mCmp')||{}).value||'';
-  var campF=(document.getElementById('mCampFlt')||{}).value||'';
-  var params=Object.assign({fields:INSF+',adset_id,adset_name,campaign_id,campaign_name',level:'adset',limit:500,action_attribution_windows:ATTR},dp);
-  if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
-  var[ins,adsets,camps]=await Promise.all([
-    api(AID+'/insights',params),
-    api(AID+'/adsets',{fields:'id,name,status,effective_status,configured_status,daily_budget,lifetime_budget,campaign_id,end_time,updated_time',limit:500}),
-    api(AID+'/campaigns',{fields:'id,daily_budget,lifetime_budget',limit:500})
-  ]);
-  var amap={},cmap={};
-  (adsets&&adsets.data||[]).forEach(function(a){amap[a.id]=a;});
-  (camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
-  MX.adsetStore=(adsets&&adsets.data||[]);
-  var rows=(ins&&ins.data||[]).map(function(r){
-    var adset=amap[r.adset_id],camp=cmap[r.campaign_id];
-    var row=mapR(r,camp,adset);
-    row.name=r.adset_name||'—';
-    if(adset){
-      row.status=adset.status;
-      row.effectiveStatus=adset.effective_status||adset.status;
-      var resolved=resolveDeliveryStatus(row,adset);
-      if(resolved!==row.effectiveStatus) row.effectiveStatus=resolved;
-      row._id=adset.id;
-      row.endTime=adset.end_time?new Date(adset.end_time).toLocaleDateString('tr'):'';
-    }
-    return row;
-  });
-  rows.sort(function(a,b){return b.spend-a.spend;});
-  mData.adset=rows;
-  var cmpRows=[];
-  if(cmpV){
-    var cpP=Object.assign({fields:INSF+',adset_id,adset_name,campaign_id',level:'adset',limit:500,action_attribution_windows:ATTR},{date_preset:cmpV});
-    if(campF)cpP.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
-    var cp=await api(AID+'/insights',cpP);
-    cmpRows=(cp&&cp.data||[]).map(function(r){var row=mapR(r,cmap[r.campaign_id],amap[r.adset_id]);row._id=r.adset_id;return row;});
-  }
-  window._lastCmpRows=cmpRows;
-  applyAndRender('adset',cmpV,cmpRows);
-}
-
-async function loadMetaAds(){
-  if(!document.getElementById('mTB')) return;
-  var st=document.getElementById('mStatus');if(st)st.textContent='⏳';
-  var dp=getDP();
-  var cmpV=(document.getElementById('mCmp')||{}).value||'';
-  var campF=(document.getElementById('mCampFlt')||{}).value||'';
-  var params=Object.assign({fields:INSF+',ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name',level:'ad',limit:500,action_attribution_windows:ATTR},dp);
-  if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
-  var[ins,ads]=await Promise.all([
-    api(AID+'/insights',params),
-    api(AID+'/ads',{fields:'id,name,status,effective_status,updated_time',limit:500})
-  ]);
-  var admap={};(ads&&ads.data||[]).forEach(function(a){admap[a.id]=a;});
-  MX.adStore=(ads&&ads.data||[]);
-  var rows=(ins&&ins.data||[]).map(function(r){
-    var ad=admap[r.ad_id];
-    var row=mapR(r,null,null);
-    row.name=r.ad_name||'—';
-    if(ad){row.status=ad.status;row.effectiveStatus=ad.effective_status||ad.status;row._id=ad.id;}
-    row._budgetId=null;
-    return row;
-  });
-  rows.sort(function(a,b){return b.spend-a.spend;});
-  mData.ad=rows;
-  var cmpRows=[];
-  if(cmpV){
-    var cpP2=Object.assign({fields:INSF+',ad_id,ad_name,campaign_id',level:'ad',limit:500,action_attribution_windows:ATTR},{date_preset:cmpV});
-    if(campF)cpP2.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
-    var cp2=await api(AID+'/insights',cpP2);
-    cmpRows=(cp2&&cp2.data||[]).map(function(r){var row=mapR(r,null,null);row._id=r.ad_id;return row;});
-  }
-  window._lastCmpRows=cmpRows;
-  applyAndRender('ad',cmpV,cmpRows);
-}
-
-
-// Global erişim
-
-
-// Durum filtresi
-window.setMF = function(val,btn){
-  mStatusFilter=val;
-  document.querySelectorAll('.mstatus-btn').forEach(function(b){b.classList.remove('on');});
-  if(btn) btn.classList.add('on');
-  mPage=0;
-  applyAndRender(currentMetaTab,(document.getElementById('mCmp')||{}).value||'');
+  msgs.appendChild(actionWrap);
+  msgs.scrollTop = 99999;
 };
 
-// getDP - hidden input'lardan okur (index.html'deki DP tarafından set edilir)
-function getDP(){
-  var v=document.getElementById('mPreset').value;
-  if(v!=='custom') return {date_preset:v};
-  var f=document.getElementById('mFrom').value;
-  var t=document.getElementById('mTo').value;
-  if(f&&t) return {time_range:JSON.stringify({since:f,until:t})};
-  return {date_preset:'last_7d'};
-}
-function onMPreset(){ mLoad(); }
+// ── Detay sayfasındaki "Şimdi Uygula" butonunu gerçek fonksiyona bağla ──
+var origOptApply = window.optApply;
+window.optApply = function(){
+  window.optApplyReal();
+};
 
-// Global expose
-window.mLoad = function(){
-  if(currentMetaTab==='camp') loadMetaCamp();
-  else if(currentMetaTab==='adset') loadMetaAdsets();
-  else loadMetaAds();
+// Analiz Et ve Simüle Et butonlarını da güçlendir
+var origOptAnalyze = window.optAnalyze;
+window.optAnalyze = function(){
+  if(!selectedRule){ toast('Önce kural seç'); return; }
+  var adsets = (MX.adsetStore || []).filter(function(r){ return r._budgetId; });
+  var avgRoas = adsets.length ? adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length : 0;
+  var avgCtr  = adsets.length ? adsets.reduce(function(s,r){return s+(r.ctr||0);},0)/adsets.length : 0;
+  var avgCpc  = adsets.length ? adsets.reduce(function(s,r){return s+(r.cpc||0);},0)/adsets.length : 0;
+  var matched = adsets.filter(function(a){ return evalRule(selectedRule, a, avgRoas, avgCtr, avgCpc); });
+  var msg = selectedRule.name + ' kuralı analizi:\n' +
+    'Toplam reklam seti: ' + adsets.length + '\n' +
+    'Koşula uyan: ' + matched.length + '\n' +
+    'Hesap ort ROAS: ' + avgRoas.toFixed(2) + 'x\n' +
+    'Uyanlar: ' + JSON.stringify(matched.slice(0,8).map(function(a){return {isim:a.name&&a.name.slice(0,25),roas:a.roas,spend:a.spend};})) + '\n' +
+    'Bu verilere göre kuralı uygulamamı öneriyor musun? Gerekçeli açıkla.';
+  optTab('chat');
+  aiSend('optim', msg);
 };
-window.setMF = function(val,btn){
-  mStatusFilter=val;
-  document.querySelectorAll('.mstatus-btn').forEach(function(b){b.classList.remove('on');});
-  if(btn) btn.classList.add('on');
-  mPage=0;
-  applyAndRender(currentMetaTab,(document.getElementById('mCmp')||{}).value||'');
-};
-window.mToggle = function(cb){
-  var id=cb.dataset.id, name=cb.dataset.name, tab=cb.dataset.tab;
-  window.mToggleWithLog(id, name, cb.checked?'ACTIVE':'PAUSED', tab);
-};
-if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
-})();</script>
 
+})();
+</script>
