@@ -147,7 +147,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 <div class="app">
 <div id="sidebarOverlay" onclick="closeSidebar()"></div>
 <div class="sidebar">
-  <div class="sidebar-logo"><div class="logo">Madmext <span>Ads</span></div></div>
+  <div class="sidebar-logo"><div class="logo" onclick="nav('dashboard',null)" style="cursor:pointer">Madmext <span>Ads</span></div></div>
   <div class="sidebar-section">Ana Menü</div>
   <div class="nav-item active" onclick="closeSidebar();nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
   <div class="sidebar-section">Reklam</div>
@@ -235,7 +235,6 @@ async function nav(page, el) {
   if(_navBusy) return;
   _navBusy = true;
 
-  // Önceki modülün listener'larını temizle
   window.__moduleListeners.forEach(function(fn){
     window.removeEventListener('mx:connected', fn);
   });
@@ -243,8 +242,28 @@ async function nav(page, el) {
 
   window.currentPage = page;
 
+  // URL güncelle
+  var urlMap = {
+    'dashboard': '/', 'meta-ads': '/ads', 'strateji': '/strateji',
+    'optimizasyon': '/optimizasyon', 'hedef-kitle': '/hedef-kitle',
+    'tasarim': '/tasarim', 'raporlar': '/raporlar', 'gorevler': '/gorevler',
+    'create': '/olustur', 'ayarlar': '/ayarlar', 'kullanicilar': '/kullanicilar',
+    'claude-chat': '/ai'
+  };
+  var newUrl = urlMap[page] || ('/' + page);
+  history.pushState({page: page}, '', newUrl);
+
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-  if(el) el.classList.add('active');
+  if(el){
+    el.classList.add('active');
+  } else {
+    // URL'den gelen navigasyonda aktif item'i bul
+    document.querySelectorAll('.nav-item').forEach(function(n){
+      if(n.getAttribute('onclick') && n.getAttribute('onclick').indexOf("'"+page+"'") !== -1){
+        n.classList.add('active');
+      }
+    });
+  }
 
   var meta = PAGES[page] || {title:page, sub:''};
   document.getElementById('pageTitle').textContent = meta.title;
@@ -252,6 +271,24 @@ async function nav(page, el) {
 
   await loadModule(page);
   _navBusy = false;
+}
+
+// Geri/ileri butonları
+window.addEventListener('popstate', function(e){
+  var page = (e.state && e.state.page) || urlToPage(location.pathname);
+  if(page) nav(page, null);
+});
+
+// URL'den sayfa adını bul
+function urlToPage(path){
+  var map = {
+    '/': 'dashboard', '/ads': 'meta-ads', '/strateji': 'strateji',
+    '/optimizasyon': 'optimizasyon', '/hedef-kitle': 'hedef-kitle',
+    '/tasarim': 'tasarim', '/raporlar': 'raporlar', '/gorevler': 'gorevler',
+    '/olustur': 'create', '/ayarlar': 'ayarlar', '/kullanicilar': 'kullanicilar',
+    '/ai': 'claude-chat'
+  };
+  return map[path] || null;
 }
 
 async function loadModule(page) {
@@ -325,7 +362,9 @@ var _defaultUrl = 'https://web-production-e5865.up.railway.app';
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || _defaultUrl;
 if(!localStorage.getItem('proxyUrl')) localStorage.setItem('proxyUrl', _defaultUrl);
 initUser();
-nav('dashboard', document.querySelector('.nav-item.active'));
+// Başlangıçta URL'e göre sayfa yükle
+var startPage = urlToPage(location.pathname) || 'dashboard';
+nav(startPage, null);
 setInterval(updateTaskBadge, 60000);
 // Otomatik bağlan - shared.js yüklenene kadar bekle
 (function autoConnect(){
