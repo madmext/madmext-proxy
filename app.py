@@ -34,6 +34,10 @@ log_lock = threading.Lock()
 _users_cache = None
 _users_lock = threading.Lock()
 
+# ── GA4 token cache — 50 dakika geçerli, her istekte OAuth çağrısı yapılmaz ──
+_ga4_token_cache = {'token': None, 'expires_at': 0}
+_ga4_token_lock = threading.Lock()
+
 def read_logs():
     try:
         if os.path.exists(LOG_FILE):
@@ -49,13 +53,26 @@ def write_logs(data):
             json.dump(data, f, ensure_ascii=False, indent=2)
 
 def get_ga4_token():
-    r = requests.post('https://oauth2.googleapis.com/token', data={
-        'client_id': GA4_CLIENT_ID,
-        'client_secret': GA4_CLIENT_SECRET,
-        'refresh_token': GA4_REFRESH_TOKEN,
-        'grant_type': 'refresh_token'
-    })
-    return r.json().get('access_token')
+    import time
+    with _ga4_token_lock:
+        now = time.time()
+        if _ga4_token_cache['token'] and now < _ga4_token_cache['expires_at']:
+            return _ga4_token_cache['token']
+        try:
+            r = requests.post('https://oauth2.googleapis.com/token', data={
+                'client_id': GA4_CLIENT_ID,
+                'client_secret': GA4_CLIENT_SECRET,
+                'refresh_token': GA4_REFRESH_TOKEN,
+                'grant_type': 'refresh_token'
+            }, timeout=10)
+            token = r.json().get('access_token')
+            if token:
+                _ga4_token_cache['token'] = token
+                _ga4_token_cache['expires_at'] = now + 2900  # 50 dk cache
+            return token
+        except Exception as e:
+            print('GA4 token hata:', e)
+            return None
 
 # ── STATIC FILES ──────────────────────────────────────────────────────────
 
@@ -192,14 +209,17 @@ def _users_to_json_b64(users):
 
 def get_users():
     global _users_cache
-    # 1. PostgreSQL
-    pg = db_get_users()
-    if pg is not None:
-        return pg if pg else _default_admin()
-    # 2. In-memory cache (session süresince geçerli)
+    # 1. In-memory cache — en hızlı, DB bağlantısı gerektirmez
     with _users_lock:
         if _users_cache is not None:
             return list(_users_cache)
+    # 2. PostgreSQL — sadece cache boşsa sorgula
+    pg = db_get_users()
+    if pg is not None:
+        result = pg if pg else _default_admin()
+        with _users_lock:
+            _users_cache = list(result)
+        return result
     # 3. USERS_JSON env var
     env_users = _load_users_from_env()
     if env_users:
@@ -416,7 +436,8 @@ def ga4_proxy():
         url = f'https://analyticsdata.googleapis.com/v1beta/properties/{GA4_PROPERTY_ID}:{report_type}'
         r = requests.post(url,
             headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
-            json=data.get('body', {})
+            json=data.get('body', {}),
+            timeout=15
         )
         return jsonify(r.json())
     except Exception as e:
@@ -475,9 +496,9 @@ def meta_proxy():
             param_list.append((k, v))
 
     if method == 'POST':
-        r = requests.post(url, params=param_list)
+        r = requests.post(url, params=param_list, timeout=20)
     else:
-        r = requests.get(url, params=param_list)
+        r = requests.get(url, params=param_list, timeout=20)
     result = r.json()
     if method == 'POST' and (result.get('success') or result.get('id')):
         try:
@@ -498,10 +519,15 @@ def meta_proxy():
 @app.route('/claude', methods=['POST'])
 def claude_proxy():
     data = request.json
-    r = requests.post('https://api.anthropic.com/v1/messages',
-        headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-        json=data)
-    return jsonify(r.json())
+    try:
+        r = requests.post('https://api.anthropic.com/v1/messages',
+            headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
+            json=data, timeout=60)
+        return jsonify(r.json())
+    except requests.Timeout:
+        return jsonify({'error': {'message': 'Claude zaman aşımı (60s)'}}), 504
+    except Exception as e:
+        return jsonify({'error': {'message': str(e)}}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
