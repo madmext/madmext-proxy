@@ -305,7 +305,7 @@ async function loadModule(page) {
   el.innerHTML = '<div class="module-loading">⏳ Yükleniyor...</div>';
 
   try {
-    var r = await fetch('/modules/' + meta.module + '.html?v=' + Date.now());
+    var r = await fetch('/modules/' + meta.module + '.html?v=2026.1');
     if(!r.ok) throw new Error('HTTP ' + r.status);
     var html = await r.text();
 
@@ -361,19 +361,21 @@ async function createCamp() {
 var _defaultUrl = 'https://web-production-e5865.up.railway.app';
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || _defaultUrl;
 if(!localStorage.getItem('proxyUrl')) localStorage.setItem('proxyUrl', _defaultUrl);
-initUser();
-// Her zaman dashboard ile başla
-nav('dashboard', null);
-// URL'den sayfa değiştirilmişse popstate ile handle edilir
+
+// Hangi sayfadan açıldıysa onu belirle (popstate için de kullanılır)
+var _startPage = urlToPage(location.pathname) || 'dashboard';
+
+// initUser ve nav PARALEL — ikisi birbirinden bağımsız
+Promise.all([
+  initUser(),
+  nav(_startPage, null)
+]);
+
+// connect() bağımsız başlat — modüller zaten mx:connected event'ini dinliyor
+connect();
+
+// Task badge her dakika güncelle
 setInterval(updateTaskBadge, 60000);
-// Otomatik bağlan - shared.js yüklenene kadar bekle
-(function autoConnect(){
-  if(typeof connect === 'function'){
-    connect();
-  } else {
-    setTimeout(autoConnect, 100);
-  }
-})();
 </script>
 
 <style id="dp-global-styles">
