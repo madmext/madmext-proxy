@@ -12,7 +12,1038 @@
 .opt-section-arrow{font-size:9px;color:var(--m);transition:transform .2s}
 .opt-section-arrow.open{transform:rotate(90deg)}
 .opt-items{display:none}
+.opt-items.open{display:block}<style>
+.opt-wrap{display:grid;grid-template-columns:300px 1fr;gap:0;height:calc(100vh - 80px);border:1px solid var(--b);border-radius:10px;overflow:hidden;background:var(--s)}
+.opt-left{display:flex;flex-direction:column;border-right:1px solid var(--b);overflow:hidden}
+.opt-left-header{padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.opt-left-title{font-size:12px;font-weight:700;color:var(--t)}
+.opt-list{flex:1;overflow-y:auto}
+.opt-section-hdr{display:flex;align-items:center;gap:8px;padding:8px 14px;cursor:pointer;background:var(--bg);border-bottom:1px solid var(--b);user-select:none}
+.opt-section-hdr:hover{background:var(--b)}
+.opt-section-color{width:3px;height:18px;border-radius:2px;flex-shrink:0}
+.opt-section-name{font-size:11px;font-weight:600;flex:1;color:var(--t)}
+.opt-section-count{font-size:10px;color:var(--m);background:var(--b);padding:1px 6px;border-radius:8px}
+.opt-section-arrow{font-size:9px;color:var(--m);transition:transform .2s}
+.opt-section-arrow.open{transform:rotate(90deg)}
+.opt-items{display:none}
 .opt-items.open{display:block}
+.opt-item{display:flex;align-items:center;gap:10px;padding:9px 14px 9px 20px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+.opt-item:hover{background:var(--b)}
+.opt-item.active{background:rgba(24,119,242,.1);border-left:2px solid #1877f2}
+.opt-item-emoji{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:var(--b)}
+.opt-item-info{flex:1;min-width:0}
+.opt-item-name{font-size:11px;font-weight:500;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opt-item-tag{font-size:9px;color:var(--m);margin-top:1px}
+.opt-item-type{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.opt-item-type.increase{background:#1DB56F}
+.opt-item-type.decrease{background:#1890FF}
+.opt-item-type.pause{background:#FF3838}
+.opt-item-type.custom{background:#FFA121}
+.opt-right{display:flex;flex-direction:column;overflow:hidden}
+.opt-tabs{display:flex;border-bottom:1px solid var(--b);flex-shrink:0;background:var(--bg)}
+.opt-tab{padding:10px 18px;font-size:12px;font-weight:500;color:var(--m);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.opt-tab.active{color:#1877f2;border-bottom-color:#1877f2}
+.opt-tab:hover:not(.active){color:var(--t)}
+.opt-tab-content{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.opt-tab-content.active{display:flex}
+.opt-detail-wrap{padding:20px;display:flex;flex-direction:column;gap:16px;flex:1}
+.opt-detail-hero{display:flex;align-items:flex-start;gap:16px}
+.opt-detail-icon{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;background:var(--b)}
+.opt-detail-title{font-size:18px;font-weight:700;color:var(--t);line-height:1.3}
+.opt-detail-sub{font-size:12px;color:var(--m);margin-top:4px;line-height:1.5}
+.opt-detail-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.opt-badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:500}
+.opt-badge.increase{background:rgba(29,181,111,.12);color:#1DB56F;border:1px solid rgba(29,181,111,.3)}
+.opt-badge.decrease{background:rgba(24,144,255,.12);color:#1890FF;border:1px solid rgba(24,144,255,.3)}
+.opt-badge.pause{background:rgba(255,56,56,.1);color:#FF3838;border:1px solid rgba(255,56,56,.25)}
+.opt-badge.custom{background:rgba(255,161,33,.12);color:#FFA121;border:1px solid rgba(255,161,33,.3)}
+.opt-condition-box{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:14px}
+.opt-condition-title{font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.opt-condition-rule{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:12px;color:var(--t);line-height:1.5}
+.opt-condition-rule:last-child{margin-bottom:0}
+.opt-condition-dot{width:5px;height:5px;border-radius:50%;background:#1877f2;flex-shrink:0;margin-top:6px}
+.opt-actions-row{display:flex;gap:8px;flex-wrap:wrap}
+.opt-chat-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.opt-chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.opt-chat-qbtns{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-top:1px solid var(--b);background:var(--bg)}
+.opt-chat-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s)}
+.opt-chat-input-row textarea{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:8px 12px;font-family:Inter,sans-serif;font-size:12px;border-radius:20px;resize:none;height:40px;outline:none;line-height:1.4}
+.opt-chat-input-row textarea:focus{border-color:#1877f2}
+.opt-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;color:var(--m);text-align:center;padding:40px;gap:10px}
+/* Yeni Optimizasyon Formu */
+.opt-form{padding:20px;display:flex;flex-direction:column;gap:14px;flex:1;overflow-y:auto}
+.opt-form-group{display:flex;flex-direction:column;gap:6px}
+.opt-form-label{font-size:11px;font-weight:600;color:var(--m);text-transform:uppercase;letter-spacing:.5px}
+.opt-form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.opt-rule-builder{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.opt-rule-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.opt-rule-row select,.opt-rule-row input{font-size:12px;padding:5px 8px;background:var(--s);border:1px solid var(--b);color:var(--t);border-radius:6px;outline:none}
+.opt-rule-row input{width:70px}
+.opt-my-rules{display:flex;flex-direction:column;gap:8px;padding:16px;flex:1;overflow-y:auto}
+.opt-my-rule-card{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px}
+.opt-my-rule-card:hover{border-color:#1877f2}
+.opt-my-rule-info{flex:1}
+.opt-my-rule-name{font-size:13px;font-weight:500;color:var(--t)}
+.opt-my-rule-desc{font-size:11px;color:var(--m);margin-top:2px}
+.opt-my-rule-actions{display:flex;gap:6px}
+@media(max-width:800px){.opt-wrap{grid-template-columns:1fr;height:auto}.opt-left{max-height:260px;border-right:none;border-bottom:1px solid var(--b)}}
+</style>
+
+<div class="opt-wrap" id="optWrap">
+  <!-- SOL: Kural Listesi -->
+  <div class="opt-left">
+    <div class="opt-left-header">
+      <span class="opt-left-title">Optimizasyon Kuralları</span>
+      <button class="btn sm" onclick="optShowCreate()" id="optCreateBtn" style="display:none">+ Yeni</button>
+    </div>
+    <div class="opt-list" id="optList"></div>
+  </div>
+
+  <!-- SAĞ: Detay + Chat + Oluştur -->
+  <div class="opt-right">
+    <div class="opt-tabs">
+      <div class="opt-tab active" id="tabDetail" onclick="optTab('detail')">Detay</div>
+      <div class="opt-tab" id="tabChat" onclick="optTab('chat')">AI Asistan</div>
+      <div class="opt-tab" id="tabCreate" onclick="optTab('create')" id="tabCreateTab" style="display:none">+ Yeni Kural</div>
+      <div class="opt-tab" id="tabMyRules" onclick="optTab('myRules')">Özel Kurallarım</div>
+    </div>
+
+    <!-- Detay -->
+    <div class="opt-tab-content active" id="contentDetail">
+      <div class="opt-empty" id="optEmpty">
+        <div style="font-size:36px;opacity:.3">⚡</div>
+        <div style="font-size:13px;font-weight:500">Bir kural seç</div>
+        <div style="font-size:11px">Soldan kural seçince detayları görürsün</div>
+      </div>
+      <div class="opt-detail-wrap" id="optDetailWrap" style="display:none">
+        <div class="opt-detail-hero">
+          <div class="opt-detail-icon" id="dIcon">⚡</div>
+          <div style="flex:1">
+            <div class="opt-detail-title" id="dTitle"></div>
+            <div class="opt-detail-sub" id="dSub"></div>
+            <div class="opt-detail-badges" id="dBadges"></div>
+          </div>
+        </div>
+        <div class="opt-condition-box">
+          <div class="opt-condition-title">Kural Mantığı</div>
+          <div id="dConditions"></div>
+        </div>
+        <div class="opt-condition-box" id="dImpactBox" style="display:none">
+          <div class="opt-condition-title">Tahmini Etki</div>
+          <div id="dImpact" style="font-size:12px;color:var(--m)">Analiz için AI Asistan'a sor</div>
+        </div>
+        <div class="opt-actions-row">
+          <button class="btn" onclick="optApply()">⚡ Şimdi Uygula</button>
+          <button class="btn sec" onclick="optAnalyze()">🔍 Analiz Et</button>
+          <button class="btn sec" onclick="optSimulate()">🎯 Simüle Et</button>
+          <span id="dStatus" style="font-size:11px;color:var(--m)"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Chat -->
+    <div class="opt-tab-content" id="contentChat">
+      <div class="opt-chat-wrap">
+        <div class="opt-chat-msgs" id="optimMsgs">
+          <div class="msg sys" style="font-size:12px">Bir optimizasyon kuralı seç, analiz veya uygulama için buraya yaz.</div>
+        </div>
+        <div class="opt-chat-qbtns" id="optQbtns">
+          <button class="qbtn" onclick="aiSend('optim','Tüm kuralları verilerle analiz et, hangisini önerirsin?')">📊 Genel analiz</button>
+          <button class="qbtn" onclick="aiSend('optim','Şu an en kötü performanslı 3 reklamı listele')">📉 Kötü reklamlar</button>
+          <button class="qbtn" onclick="aiSend('optim','Bugün hangi optimizasyonu uygulayayım?')">💡 Öneri</button>
+        </div>
+        <div class="opt-chat-input-row">
+          <textarea id="optimIn" placeholder="Sor veya komut ver..."></textarea>
+          <button class="btn" onclick="aiSend('optim',document.getElementById('optimIn').value)">→</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Yeni Kural Oluştur -->
+    <div class="opt-tab-content" id="contentCreate">
+      <div class="opt-form">
+        <div style="font-size:14px;font-weight:600;color:var(--t)">Yeni Optimizasyon Kuralı</div>
+        <div class="opt-form-row">
+          <div class="opt-form-group">
+            <label class="opt-form-label">Kural Adı</label>
+            <input type="text" id="newRuleName" class="flt" placeholder="örn: Güçlü ROAS Artışı" style="font-size:13px">
+          </div>
+          <div class="opt-form-group">
+            <label class="opt-form-label">Kural Tipi</label>
+            <select id="newRuleType" class="flt" style="font-size:13px">
+              <option value="increase">📈 Bütçe Artır</option>
+              <option value="decrease">📉 Bütçe Azalt</option>
+              <option value="pause">⏸ Durdur</option>
+              <option value="activate">▶️ Aktif Et</option>
+            </select>
+          </div>
+        </div>
+        <div class="opt-form-group">
+          <label class="opt-form-label">Açıklama</label>
+          <textarea id="newRuleDesc" class="flt" style="height:60px;font-size:13px;resize:none" placeholder="Bu kural ne zaman ve nasıl çalışır?"></textarea>
+        </div>
+        <div class="opt-form-group">
+          <label class="opt-form-label">Koşullar</label>
+          <div class="opt-rule-builder" id="ruleConditions">
+            <div class="opt-rule-row" id="cond0">
+              <select onchange="updateCondLabel(0)" id="condMetric0" style="flex:1">
+                <option value="roas">ROAS</option>
+                <option value="ctr">CTR (%)</option>
+                <option value="spend">Harcama (TL)</option>
+                <option value="cpc">TBM (TL)</option>
+                <option value="cpm">CPM (TL)</option>
+                <option value="freq">Sıklık</option>
+                <option value="revenue">Gelir (TL)</option>
+                <option value="results">Satın Alma</option>
+                <option value="impr">Gösterim</option>
+              </select>
+              <select id="condOp0" style="width:110px">
+                <option value="gt">&gt; büyük</option>
+                <option value="lt">&lt; küçük</option>
+                <option value="gte">&gt;= büyük eşit</option>
+                <option value="lte">&lt;= küçük eşit</option>
+                <option value="eq">= eşit</option>
+              </select>
+              <input type="number" id="condVal0" placeholder="değer" step="0.1">
+              <select id="condPeriod0" style="width:90px">
+                <option value="today">Bugün</option>
+                <option value="1d">1 gün</option>
+                <option value="3d">3 gün</option>
+                <option value="7d">7 gün</option>
+                <option value="14d">14 gün</option>
+                <option value="30d">30 gün</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn sm sec" onclick="addCondition()" style="margin-top:8px;width:fit-content">+ Koşul Ekle</button>
+        </div>
+        <div class="opt-form-row">
+          <div class="opt-form-group">
+            <label class="opt-form-label">İşlem Miktarı (%)</label>
+            <input type="number" id="newRuleAmount" class="flt" placeholder="örn: 25" min="1" max="200" style="font-size:13px">
+          </div>
+          <div class="opt-form-group">
+            <label class="opt-form-label">Uygulama Düzeyi</label>
+            <select id="newRuleLevel" class="flt" style="font-size:13px">
+              <option value="adset">Reklam Seti</option>
+              <option value="ad">Reklam</option>
+              <option value="campaign">Kampanya</option>
+            </select>
+          </div>
+        </div>
+        <div class="opt-form-group">
+          <label class="opt-form-label">Emoji / İkon</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="emojiPicker">
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)" title="seç">🚀</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">💰</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">📈</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">📉</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">⚡</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">🎯</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">🔥</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">⏸</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">🛡</span>
+            <span style="font-size:18px;cursor:pointer;padding:4px;border-radius:4px" onclick="selectEmoji(this)">💡</span>
+          </div>
+          <input type="hidden" id="newRuleEmoji" value="🚀">
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="saveCustomRule()">💾 Kaydet</button>
+          <button class="btn sec" onclick="aiGenerateRule()">🤖 AI ile Oluştur</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Özel Kurallarım -->
+    <div class="opt-tab-content" id="contentMyRules">
+      <div class="opt-my-rules" id="myRulesList">
+        <div style="text-align:center;padding:40px;color:var(--m);font-size:12px">Henüz özel kural oluşturmadınız.<br>+ Yeni Kural sekmesinden oluşturabilirsiniz.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+var ROLE_CAN_CREATE = ['admin','editor'];
+var currentRole = (window._currentUser && window._currentUser.role) || 'admin';
+var selectedRule = null;
+var condCount = 1;
+var selectedEmoji = '🚀';
+var CUSTOM_RULES_KEY = 'mx_custom_opt_rules';
+
+// ── TÜM OPTİMİZASYON KURALLARI ─────────────────────────────────────
+var OPT_RULES = {
+  'roas-artir': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '👑',
+    name: 'Süper Performans',
+    desc: 'Son 3 günde ROAS\'ı hesabın ortalamasından yüksek olan reklamlara bütçe artışı',
+    conditions: ['Son 3 günlük ROAS > hesap ortalama ROAS', 'Reklam aktif durumda'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'roas-artir-2': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '🏆',
+    name: 'Günlük Yıldız',
+    desc: 'Reklam ROAS\'ı hesabın ROAS\'ından yüksek olanlara günlük bütçe artışı',
+    conditions: ['Günlük ROAS > hesap ROAS ortalaması', 'Minimum 100 TL harcama'],
+    action: 'Bütçe %20 artır', source: 'madmext'
+  },
+  'roas-artir-3': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '💰',
+    name: 'En İyi 5 Reklam',
+    desc: 'Son 3 günde ROAS\'ı en yüksek olan ilk 5 reklama bütçe artışı',
+    conditions: ['Son 3 günlük ROAS sıralamasında ilk 5', 'Aktif reklam'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'roas-artir-4': {
+    section: 'ROAS Tabanlı — Artırma', sectionColor: '#1DB56F', type: 'increase', emoji: '🎯',
+    name: 'Büyüyen Trend',
+    desc: 'Son 14, 7 ve 3 günlük ROAS\'ı sabit ya da artarak devam eden reklamlara artış',
+    conditions: ['14 günlük ROAS ≤ 7 günlük ROAS ≤ 3 günlük ROAS (trend yukarı)', 'Aktif reklam'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'roas-azalt-1': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '📉',
+    name: 'Ani Düşüş',
+    desc: 'ROAS\'ı son 3 günde 7 ve 14 güne göre 3 kat ve üzeri düşen reklamlarda azalt',
+    conditions: ['3 günlük ROAS < (7 günlük ROAS / 3)', '7 günlük ROAS < (14 günlük ROAS / 3)'],
+    action: 'Bütçe 2 kat azalt (%50)', source: 'madmext'
+  },
+  'roas-azalt-2': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '🛡',
+    name: 'En Kötü 5 Reklam',
+    desc: 'Son 3 günde ROAS\'ı en kötü 5 reklamın bütçesini azalt',
+    conditions: ['Son 3 günlük ROAS sıralamasında son 5', 'Minimum 50 TL harcama'],
+    action: 'Bütçe %30 azalt', source: 'madmext'
+  },
+  'roas-azalt-3': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '🧮',
+    name: 'Azalan Trend',
+    desc: 'Son 14, 7 ve 3 günlük ROAS\'ı 2 kat veya daha fazla azalarak devam eden reklamlarda azalt',
+    conditions: ['14 günlük ROAS ≥ (7 günlük ROAS × 2)', '7 günlük ROAS ≥ (3 günlük ROAS × 2)'],
+    action: 'Bütçe %25 azalt', source: 'madmext'
+  },
+  'roas-azalt-4': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '⚔️',
+    name: 'Hesap Altı Performans',
+    desc: 'Son 3 günde reklamın ROAS\'ı hesabın ROAS\'ından düşük olanları azalt',
+    conditions: ['3 günlük ROAS < hesap ortalama ROAS', 'Aktif reklam, minimum 50 TL harcama'],
+    action: 'Bütçe %25 azalt', source: 'madmext'
+  },
+  'roas-azalt-5': {
+    section: 'ROAS Tabanlı — Azaltma', sectionColor: '#1890FF', type: 'decrease', emoji: '⚖️',
+    name: 'Günlük Düşük ROAS',
+    desc: 'Reklam ROAS\'ı hesabın ROAS\'ından düşük olanları günlük azalt',
+    conditions: ['Günlük ROAS < hesap ROAS ortalaması', 'Aktif reklam'],
+    action: 'Bütçe günlük %20 azalt', source: 'madmext'
+  },
+  'roas-kapat-1': {
+    section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '🚫',
+    name: 'Kritik Düşüş',
+    desc: 'Son 14, 7 ve 3 günlük ROAS\'ı 3 kat veya üzeri düşüyorsa kapat',
+    conditions: ['14 günlük ROAS ≥ (7 günlük ROAS × 3)', '7 günlük ROAS ≥ (3 günlük ROAS × 3)'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  'roas-kapat-2': {
+    section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '🤫',
+    name: 'Düşük Harcama',
+    desc: 'Son 5 günde toplam 10 TL ve altında harcama yapan reklamı kapat',
+    conditions: ['Son 5 günlük toplam harcama ≤ 10 TL', 'Aktif reklam'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  'roas-kapat-3': {
+    section: 'ROAS Tabanlı — Kapatma', sectionColor: '#FF3838', type: 'pause', emoji: '💔',
+    name: 'Set Altı Performans',
+    desc: 'Son 5 günlük ROAS\'ı reklam setinin 3 kat altına düşmüş ve harcama yapıyorsa kapat',
+    conditions: ['Reklam ROAS\'ı < (Reklam seti ROAS\'ı / 3)', 'Aktif harcama devam ediyor'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  // ── MADMEXT ÖZEL KURALLARI ──
+  'ctr-artir-1': {
+    section: 'CTR Tabanlı', sectionColor: '#9B59B6', type: 'increase', emoji: '🖱️',
+    name: 'Tıklama Dehası',
+    desc: 'CTR son 3 günde hesap ortalamasının 2 katı olan yüksek performanslı reklamlara bütçe artışı',
+    conditions: ['3 günlük CTR > (hesap ort. CTR × 2)', 'Minimum 1000 gösterim', 'Aktif reklam'],
+    action: 'Bütçe %30 artır', source: 'madmext'
+  },
+  'ctr-azalt-1': {
+    section: 'CTR Tabanlı', sectionColor: '#9B59B6', type: 'decrease', emoji: '📊',
+    name: 'Düşen Tık Freni',
+    desc: 'CTR son 7 günde %1 altına düşen reklamlarda bütçeyi azalt',
+    conditions: ['7 günlük CTR < %1', 'Minimum 500 TL harcama', 'Aktif reklam'],
+    action: 'Bütçe %20 azalt', source: 'madmext'
+  },
+  'ctr-artir-2': {
+    section: 'CTR Tabanlı', sectionColor: '#9B59B6', type: 'increase', emoji: '👁️',
+    name: 'Görünürlük Atağı',
+    desc: 'Düşük CPM ve yüksek CTR kombinasyonunda olan verimli reklamlara bütçe artışı',
+    conditions: ['CPM < 50 TL', 'CTR > %2', 'Minimum 2000 gösterim'],
+    action: 'Bütçe %35 artır', source: 'madmext'
+  },
+  'spend-artir-1': {
+    section: 'Harcama Tabanlı', sectionColor: '#E67E22', type: 'increase', emoji: '💸',
+    name: 'Bütçe Tüketicisi',
+    desc: 'Günlük bütçesinin %90 üstünü harcayıp iyi ROAS olan reklamlara bütçe artışı — büyüme fırsatı',
+    conditions: ['Günlük harcama > bütçenin %90\'ı', 'ROAS > 3.0', 'Aktif reklam'],
+    action: 'Bütçe %20 artır', source: 'madmext'
+  },
+  'spend-kapat-1': {
+    section: 'Harcama Tabanlı', sectionColor: '#E67E22', type: 'pause', emoji: '💤',
+    name: 'Tasarruf Modu',
+    desc: 'Bütçesinin çok azını harcayıp kötü ROAS olan verimsiz reklamları durdur',
+    conditions: ['7 günlük harcama < bütçenin %30\'u', 'ROAS < 1.0', 'Aktif reklam'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+  'spend-artir-2': {
+    section: 'Harcama Tabanlı', sectionColor: '#E67E22', type: 'increase', emoji: '🏎️',
+    name: 'Verimli Harcama',
+    desc: 'Hesap ortalamasının yarısından ucuz TBM ile çalışan reklamlara bütçe artışı',
+    conditions: ['CPC < (hesap ort. CPC / 2)', 'CTR > hesap ortalaması', 'Minimum 100 tıklama'],
+    action: 'Bütçe %25 artır', source: 'madmext'
+  },
+  'cart-artir-1': {
+    section: 'Sepet & Dönüşüm', sectionColor: '#1ABC9C', type: 'increase', emoji: '🛒',
+    name: 'Dönüşüm Ustası',
+    desc: 'Son 3 günde satın alma dönüşümü en yüksek 3 reklama bütçe artışı',
+    conditions: ['Satın alma sayısı son 3 günde en yüksek 3 reklam', 'ROAS > 2.0', 'Aktif reklam'],
+    action: 'Bütçe %30 artır', source: 'madmext'
+  },
+  'cart-azalt-1': {
+    section: 'Sepet & Dönüşüm', sectionColor: '#1ABC9C', type: 'decrease', emoji: '🧺',
+    name: 'Sepet Fırsatçısı',
+    desc: 'Sepete ekle oranı yüksek ama satışa dönmeyen reklamlarda bütçeyi azalt — hedefleme problemi',
+    conditions: ['Sepete ekle / tıklama oranı > %5', 'Satın alma = 0 (son 7 gün)', 'Minimum 200 TL harcama'],
+    action: 'Bütçe %15 azalt', source: 'madmext'
+  },
+  'cart-azalt-2': {
+    section: 'Sepet & Dönüşüm', sectionColor: '#1ABC9C', type: 'decrease', emoji: '🏃',
+    name: 'Terk Avcısı',
+    desc: 'Sepete ekleme var ama hiç satış yoksa bütçeyi azalt ve hedeflemeyi gözden geçir',
+    conditions: ['Sepete ekle > 0', 'Satın alma = 0 (son 5 gün)', 'Minimum 500 TL harcama'],
+    action: 'Bütçe %20 azalt', source: 'madmext'
+  },
+  'freq-azalt-1': {
+    section: 'Sıklık & Yorgunluk', sectionColor: '#95A5A6', type: 'decrease', emoji: '😴',
+    name: 'Yorgunluk Önlemi',
+    desc: 'Aynı kişiler reklamı çok gördüğünde (sıklık yüksek) bütçeyi azalt — yeni kitle bul',
+    conditions: ['Sıklık > 3.5', 'CTR düşüş trendi (son 7 vs 3 gün)', 'Minimum 1 hafta yayında'],
+    action: 'Bütçe %20 azalt', source: 'madmext'
+  },
+  'freq-kapat-1': {
+    section: 'Sıklık & Yorgunluk', sectionColor: '#95A5A6', type: 'pause', emoji: '🔄',
+    name: 'Taze İçerik',
+    desc: 'Sıklık çok yükselip CTR düştüğünde reklamı durdur — kreatifleri yenile sinyali',
+    conditions: ['Sıklık > 5.0', 'CTR son 7 günde > %30 düşüş', 'Minimum 2 hafta yayında'],
+    action: 'Reklamı duraklat', source: 'madmext'
+  },
+};
+
+// ── SOL LİSTE OLUŞTUR ──────────────────────────────────────────────
+function buildList(){
+  var list = document.getElementById('optList');
+  list.innerHTML = '';
+
+  // Kuralları bölümlere grupla
+  var sections = {};
+  Object.entries(OPT_RULES).forEach(function(e){
+    var id = e[0], rule = e[1];
+    if(!sections[rule.section]){
+      sections[rule.section] = {color: rule.sectionColor, rules: []};
+    }
+    sections[rule.section].rules.push({id:id, rule:rule});
+  });
+
+  // Özel kuralları ekle
+  var customRules = getCustomRules();
+  if(customRules.length > 0){
+    sections['Özel Kurallarım'] = {color:'#FFA121', rules: customRules.map(function(r){
+      return {id: 'custom_'+r.id, rule: r};
+    })};
+  }
+
+  Object.entries(sections).forEach(function(e){
+    var secName = e[0], sec = e[1];
+    var secId = 'sec_' + secName.replace(/[^a-z0-9]/gi,'_');
+
+    var secDiv = document.createElement('div');
+    secDiv.innerHTML =
+      '<div class="opt-section-hdr" onclick="toggleSection(\''+secId+'\')">' +
+        '<div class="opt-section-color" style="background:'+sec.color+'"></div>' +
+        '<div class="opt-section-name">'+secName+'</div>' +
+        '<span class="opt-section-count">'+sec.rules.length+'</span>' +
+        '<span class="opt-section-arrow open" id="arr_'+secId+'">›</span>' +
+      '</div>' +
+      '<div class="opt-items open" id="'+secId+'">' +
+        sec.rules.map(function(r){
+          return '<div class="opt-item" id="item_'+r.id+'" onclick="selectRule(\''+r.id+'\')">' +
+            '<div class="opt-item-emoji">'+r.rule.emoji+'</div>' +
+            '<div class="opt-item-info">' +
+              '<div class="opt-item-name">'+r.rule.name+'</div>' +
+              '<div class="opt-item-tag">'+(r.rule.source==='madmext'?'Madmext':'madmext')+'</div>' +
+            '</div>' +
+            '<div class="opt-item-type '+r.rule.type+'"></div>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    list.appendChild(secDiv);
+  });
+}
+
+window.toggleSection = function(id){
+  var el = document.getElementById(id);
+  var arr = document.getElementById('arr_'+id);
+  var open = el.classList.toggle('open');
+  if(arr) arr.style.transform = open ? '' : 'rotate(90deg)';
+};
+
+// ── KURAL SEÇ ────────────────────────────────────────────────────────
+window.selectRule = function(id){
+  document.querySelectorAll('.opt-item').forEach(function(el){el.classList.remove('active');});
+  var el = document.getElementById('item_'+id);
+  if(el) el.classList.add('active');
+
+  var rule = OPT_RULES[id];
+  if(!rule){
+    // Özel kural
+    var customRules = getCustomRules();
+    var cid = id.replace('custom_','');
+    rule = customRules.find(function(r){return String(r.id)===String(cid);});
+  }
+  if(!rule) return;
+  selectedRule = Object.assign({}, rule, {id: id});
+
+  // Detay doldur
+  document.getElementById('optEmpty').style.display = 'none';
+  document.getElementById('optDetailWrap').style.display = 'flex';
+  document.getElementById('dIcon').textContent = rule.emoji;
+  document.getElementById('dTitle').textContent = rule.name;
+  document.getElementById('dSub').textContent = rule.desc;
+  document.getElementById('dStatus').textContent = '';
+
+  var typelabels = {increase:'📈 Bütçe Artır', decrease:'📉 Bütçe Azalt', pause:'⏸ Durdur', activate:'▶️ Aktif Et', custom:'⚡ Özel'};
+  document.getElementById('dBadges').innerHTML =
+    '<span class="opt-badge '+rule.type+'">'+(typelabels[rule.type]||rule.type)+'</span>' +
+    '<span class="opt-badge increase" style="background:var(--b);color:var(--m);border-color:var(--b)">'+rule.action+'</span>' +
+    '<span class="opt-badge increase" style="background:var(--b);color:var(--m);border-color:var(--b)">'+(rule.source==='madmext'?'Madmext Özel':'madmext')+'</span>';
+
+  document.getElementById('dConditions').innerHTML = (rule.conditions||[]).map(function(c){
+    return '<div class="opt-condition-rule"><div class="opt-condition-dot"></div><div>'+c+'</div></div>';
+  }).join('');
+
+  // Hızlı butonları güncelle
+  document.getElementById('optQbtns').innerHTML = [
+    {label:'🔍 Analiz et', msg: rule.name + ' kuralını mevcut verilerle analiz et. Hangi reklamlara uygulanır?'},
+    {label:'⚡ Uygula', msg: rule.name + ' kuralını şimdi uygula. ' + rule.action + ' işlemini gerçekleştir.'},
+    {label:'🎯 Simüle et', msg: rule.name + ' kuralını simüle et. Kaç reklam etkilenir, tahmini sonuç ne olur?'},
+    {label:'📊 Sonuçları gör', msg: 'Bu kurala benzer geçmiş optimizasyonların sonuçlarını değerlendir.'},
+  ].map(function(q){
+    return '<button class="qbtn" onclick="aiSend(\'optim\',\''+q.msg.replace(/'/g,"\\'")+'\')">'+q.label+'</button>';
+  }).join('');
+
+  optTab('detail');
+};
+
+// ── TABS ─────────────────────────────────────────────────────────────
+window.optTab = function(tab){
+  ['detail','chat','create','myRules'].forEach(function(t){
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active');
+    document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active');
+  });
+  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  document.getElementById('content'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  if(tab === 'myRules') renderMyRules();
+};
+
+// ── UYGULA / ANALİZ ──────────────────────────────────────────────────
+window.optApply = function(){
+  if(!selectedRule) return;
+  var msg = selectedRule.name + ' kuralını şimdi uygula: ' + selectedRule.action + '. Koşullar: ' + (selectedRule.conditions||[]).join('; ');
+  optTab('chat');
+  aiSend('optim', msg);
+};
+
+window.optAnalyze = function(){
+  if(!selectedRule) return;
+  var msg = selectedRule.name + ' kuralını mevcut verilerle detaylı analiz et. Hangi reklamlara uygulanır? Sayıları ver.';
+  optTab('chat');
+  aiSend('optim', msg);
+};
+
+window.optSimulate = function(){
+  if(!selectedRule) return;
+  var msg = selectedRule.name + ' kuralını simüle et. Uygulamadan önce etkilenecek reklamları listele, tahmini bütçe değişikliklerini göster.';
+  optTab('chat');
+  aiSend('optim', msg);
+};
+
+// ── AI SEND ──────────────────────────────────────────────────────────
+window.aiSend = async function(type, msg){
+  if(!msg||!msg.trim()) return;
+  var inp = document.getElementById(type+'In');
+  if(inp) inp.value = '';
+  addMsg(msg, 'user', 'optimMsgs');
+  var th = addThinking('optimMsgs');
+
+  var adsetData = (MX.adsetStore||[]).slice(0,25).map(function(r){
+    return {
+      id:r._budgetId, name:r.name, type:r._budgetType||'adset',
+      budget:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
+      roas:+(r.roas||0).toFixed(2), spend:+(r.spend||0).toFixed(0),
+      revenue:+(r.revenue||0).toFixed(0), clicks:r.clicks||0,
+      ctr:+(r.ctr||0).toFixed(2), cpc:+(r.cpc||0).toFixed(2),
+      cpm:+(r.cpm||0).toFixed(2), freq:+(r.freq||0).toFixed(2),
+      results:r.results||0, status:r.effectiveStatus, cart:r.cart||0
+    };
+  }).filter(function(r){return r.id;});
+
+  var ruleCtx = selectedRule ? ('Seçili kural: '+selectedRule.name+' — '+selectedRule.action+' — Koşullar: '+(selectedRule.conditions||[]).join(', ')) : '';
+  var avgRoas = adsetData.length ? (adsetData.reduce(function(s,r){return s+r.roas;},0)/adsetData.length).toFixed(2) : 0;
+  var avgCtr = adsetData.length ? (adsetData.reduce(function(s,r){return s+r.ctr;},0)/adsetData.length).toFixed(2) : 0;
+  var avgCpc = adsetData.length ? (adsetData.reduce(function(s,r){return s+r.cpc;},0)/adsetData.length).toFixed(2) : 0;
+
+  var sys = 'Sen Madmext Meta Ads optimizasyon uzmanısın. Türkçe, net ve uygulanabilir yanıt ver.\n' +
+    ruleCtx + '\n' +
+    'HESAP ORTALAMA: ROAS='+avgRoas+', CTR='+avgCtr+'%, CPC='+avgCpc+'TL\n' +
+    'REKLAM SETLERİ ('+adsetData.length+' adet): '+JSON.stringify(adsetData)+'\n' +
+    'Bütçe değişikliği için: <!--ACTION:BUDGET_INCREASE|ID|ADI|TYPE|MEVCUT|YENI|PCT-->\n' +
+    'SADECE listeden gerçek ID kullan.';
+
+  if(!MX.chatH.optim) MX.chatH.optim = [];
+  MX.chatH.optim.push({role:'user',content:msg});
+  var reply = await claude(MX.chatH.optim.slice(-8), sys);
+  th.remove();
+  MX.chatH.optim.push({role:'assistant',content:reply});
+  var clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
+  addClaudeMsg(clean, 'optimMsgs');
+  if(typeof parseAndRenderActions==='function') parseAndRenderActions(reply,'optimMsgs');
+};
+
+// ── ÖZEL KURAL OLUŞTUR ───────────────────────────────────────────────
+var condCountG = 1;
+
+window.addCondition = function(){
+  var n = condCountG++;
+  var div = document.createElement('div');
+  div.className = 'opt-rule-row';
+  div.id = 'cond'+n;
+  div.innerHTML =
+    '<select id="condMetric'+n+'" style="flex:1"><option value="roas">ROAS</option><option value="ctr">CTR (%)</option><option value="spend">Harcama (TL)</option><option value="cpc">TBM (TL)</option><option value="freq">Sıklık</option><option value="results">Satın Alma</option></select>' +
+    '<select id="condOp'+n+'" style="width:110px"><option value="gt">> büyük</option><option value="lt">< küçük</option><option value="gte">>= büyük eşit</option><option value="lte"><= küçük eşit</option></select>' +
+    '<input type="number" id="condVal'+n+'" placeholder="değer" step="0.1" style="width:70px">' +
+    '<select id="condPeriod'+n+'" style="width:90px"><option value="today">Bugün</option><option value="3d">3 gün</option><option value="7d">7 gün</option><option value="14d">14 gün</option></select>' +
+    '<button class="btn sm sec" onclick="document.getElementById(\'cond'+n+'\').remove()" style="padding:4px 8px">✕</button>';
+  document.getElementById('ruleConditions').appendChild(div);
+};
+
+window.selectEmoji = function(el){
+  document.querySelectorAll('#emojiPicker span').forEach(function(s){s.style.background='';});
+  el.style.background = 'var(--b)';
+  selectedEmoji = el.textContent;
+  document.getElementById('newRuleEmoji').value = selectedEmoji;
+};
+
+window.saveCustomRule = function(){
+  var name = document.getElementById('newRuleName').value.trim();
+  var type = document.getElementById('newRuleType').value;
+  var desc = document.getElementById('newRuleDesc').value.trim();
+  var amount = document.getElementById('newRuleAmount').value;
+  var level = document.getElementById('newRuleLevel').value;
+  var emoji = document.getElementById('newRuleEmoji').value || '⚡';
+
+  if(!name||!desc){toast('Ad ve açıklama zorunlu');return;}
+
+  // Koşulları topla
+  var conditions = [];
+  var i = 0;
+  while(document.getElementById('cond'+i) || i < condCountG){
+    var metric = document.getElementById('condMetric'+i);
+    var op = document.getElementById('condOp'+i);
+    var val = document.getElementById('condVal'+i);
+    var period = document.getElementById('condPeriod'+i);
+    if(metric && val && val.value){
+      var opLabels = {gt:'>',lt:'<',gte:'>=',lte:'<=',eq:'='};
+      conditions.push(period.value+' '+metric.value+' '+opLabels[op.value]+' '+val.value);
+    }
+    i++;
+    if(i > 20) break;
+  }
+
+  var rule = {
+    id: Date.now(),
+    name: name,
+    type: type,
+    desc: desc,
+    emoji: emoji,
+    conditions: conditions,
+    action: (amount ? amount+'% ' : '') + {increase:'artır',decrease:'azalt',pause:'durdur',activate:'aktif et'}[type],
+    level: level,
+    source: 'custom',
+    section: 'Özel Kurallarım',
+    sectionColor: '#FFA121',
+    createdBy: (window._currentUser&&window._currentUser.email)||'admin',
+    createdAt: new Date().toISOString()
+  };
+
+  var rules = getCustomRules();
+  rules.push(rule);
+  localStorage.setItem(CUSTOM_RULES_KEY, JSON.stringify(rules));
+
+  toast('✓ Kural kaydedildi: '+name);
+  buildList();
+  optTab('myRules');
+};
+
+window.aiGenerateRule = function(){
+  var name = document.getElementById('newRuleName').value;
+  var desc = document.getElementById('newRuleDesc').value;
+  if(!name&&!desc){toast('Önce kural adı veya açıklama yaz');return;}
+  optTab('chat');
+  var msg = 'Bana şu optimizasyon kuralı için uygun koşulları öner: "' + (name||desc) + '". Meta Ads metriklerini (ROAS, CTR, CPC, spend, freq) kullanarak somut eşik değerleri ver.';
+  aiSend('optim', msg);
+};
+
+function getCustomRules(){
+  try{return JSON.parse(localStorage.getItem(CUSTOM_RULES_KEY)||'[]');}catch(e){return [];}
+}
+
+function renderMyRules(){
+  var el = document.getElementById('myRulesList');
+  var rules = getCustomRules();
+  if(!rules.length){
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--m);font-size:12px">Henüz özel kural oluşturmadınız.<br><br><button class="btn sm" onclick="optTab(\'create\')">+ Yeni Kural Oluştur</button></div>';
+    return;
+  }
+  el.innerHTML = rules.map(function(r){
+    return '<div class="opt-my-rule-card">' +
+      '<div style="font-size:24px;width:40px;text-align:center">'+r.emoji+'</div>' +
+      '<div class="opt-my-rule-info">' +
+        '<div class="opt-my-rule-name">'+r.name+'</div>' +
+        '<div class="opt-my-rule-desc">'+r.desc.slice(0,80)+'</div>' +
+        '<div style="font-size:10px;color:var(--m);margin-top:4px">'+r.action+' · '+r.level+'</div>' +
+      '</div>' +
+      '<div class="opt-my-rule-actions">' +
+        '<button class="btn sm" onclick="selectRule(\'custom_'+r.id+'\')">Seç</button>' +
+        '<button class="btn sm sec" onclick="deleteCustomRule('+r.id+')">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+window.deleteCustomRule = function(id){
+  if(!confirm('Bu kural silinsin mi?')) return;
+  var rules = getCustomRules().filter(function(r){return r.id!==id;});
+  localStorage.setItem(CUSTOM_RULES_KEY, JSON.stringify(rules));
+  buildList();
+  renderMyRules();
+  toast('Kural silindi');
+};
+
+window.optShowCreate = function(){ optTab('create'); };
+
+// Yetki kontrolü
+function checkPermissions(){
+  var canCreate = ROLE_CAN_CREATE.indexOf(currentRole) !== -1;
+  var createBtn = document.getElementById('optCreateBtn');
+  var createTab = document.getElementById('tabCreate');
+  if(createBtn) createBtn.style.display = canCreate ? '' : 'none';
+  if(createTab) createTab.style.display = canCreate ? '' : 'none';
+}
+
+// Init
+buildList();
+checkPermissions();
+
+window.addEventListener('mx:connected', function(){
+  var count = (MX.adsetStore||[]).length;
+  if(count > 0){
+    document.getElementById('optimMsgs').innerHTML =
+      '<div class="msg sys" style="font-size:12px">'+count+' reklam seti yüklü. Bir kural seç ve analiz başlatalım.</div>';
+  }
+});
+
+})();
+</script>
+
+<script>
+// ── GERÇEK KURAL UYGULAMA ENJİNİ ──────────────────────────────────────
+(function(){
+
+// Metrik değerini adset'ten oku
+function getMetric(adset, metric, period){
+  // period şimdilik store verisini kullanıyor (7d varsayılan)
+  switch(metric){
+    case 'roas':    return adset.roas    || 0;
+    case 'ctr':     return adset.ctr     || 0;
+    case 'spend':   return adset.spend   || 0;
+    case 'cpc':     return adset.cpc     || 0;
+    case 'cpm':     return adset.cpm     || 0;
+    case 'freq':    return adset.freq    || 0;
+    case 'revenue': return adset.revenue || 0;
+    case 'results': return adset.results || 0;
+    case 'impr':    return adset.impr    || 0;
+    default:        return 0;
+  }
+}
+
+function compare(a, op, b){
+  switch(op){
+    case 'gt':  return a >  b;
+    case 'lt':  return a <  b;
+    case 'gte': return a >= b;
+    case 'lte': return a <= b;
+    case 'eq':  return a === b;
+    default:    return false;
+  }
+}
+
+// Kural koşullarını adset'e karşı değerlendir
+function evalRule(rule, adset, avgRoas, avgCtr, avgCpc){
+  var type = rule.type;
+  var id   = rule.id;
+
+  // ── Hazır kurallar için özel mantık ──
+  switch(id){
+    case 'roas-artir':
+      return adset.roas > avgRoas && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-artir-2':
+      return adset.roas > avgRoas && adset.spend >= 100 && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-artir-3': return false; // sıralama bazlı, ayrı hesaplanıyor
+
+    case 'roas-artir-4':
+      return adset.roas > avgRoas; // trend verisi yok, yaklaşık
+
+    case 'roas-azalt-1':
+      return adset.roas < (avgRoas / 3) && adset.spend > 50;
+
+    case 'roas-azalt-2': return false; // sıralama bazlı
+
+    case 'roas-azalt-3':
+      return adset.roas < (avgRoas / 2) && adset.spend > 50;
+
+    case 'roas-azalt-4':
+      return adset.roas < avgRoas && adset.spend >= 50 && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-azalt-5':
+      return adset.roas < avgRoas && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-kapat-1':
+      return adset.roas < (avgRoas / 3) && adset.spend > 100;
+
+    case 'roas-kapat-2':
+      return adset.spend <= 10 && (adset.effectiveStatus||adset.status||'').toUpperCase() === 'ACTIVE';
+
+    case 'roas-kapat-3':
+      return adset.roas < (avgRoas / 3) && adset.spend > 0;
+
+    case 'ctr-artir-1':
+      return adset.ctr > (avgCtr * 2) && adset.impr >= 1000;
+
+    case 'ctr-azalt-1':
+      return adset.ctr < 1 && adset.spend >= 500;
+
+    case 'ctr-artir-2':
+      return adset.cpm < 50 && adset.ctr > 2 && adset.impr >= 2000;
+
+    case 'spend-artir-1':
+      return adset.roas > 3 && adset.spend > 0;
+
+    case 'spend-kapat-1':
+      return adset.roas < 1 && adset.spend > 0;
+
+    case 'spend-artir-2':
+      return adset.cpc < (avgCpc / 2) && adset.ctr > avgCtr && adset.clicks >= 100;
+
+    case 'cart-artir-1':
+      return adset.roas > 2 && adset.results > 0;
+
+    case 'cart-azalt-1':
+      return adset.results === 0 && adset.spend >= 200;
+
+    case 'cart-azalt-2':
+      return adset.results === 0 && adset.spend >= 500;
+
+    case 'freq-azalt-1':
+      return adset.freq > 3.5;
+
+    case 'freq-kapat-1':
+      return adset.freq > 5;
+
+    default:
+      // Özel kurallar: conditions array'ini parse et
+      if(!rule.conditions || !rule.conditions.length) return false;
+      var match = true;
+      rule.conditions.forEach(function(cond){
+        // "7d roas > 3" formatını parse et
+        var m = cond.match(/(\w+)\s+(\w+)\s*(>|<|>=|<=|=)\s*([\d.]+)/);
+        if(m){
+          var val = getMetric(adset, m[2], m[1]);
+          var opMap = {'>':'gt','<':'lt','>=':'gte','<=':'lte','=':'eq'};
+          if(!compare(val, opMap[m[3]]||'gt', parseFloat(m[4]))) match = false;
+        }
+      });
+      return match;
+  }
+}
+
+// Yüzdeyi al
+function getRulePct(rule){
+  var actionStr = rule.action || '';
+  var m = actionStr.match(/(\d+)/);
+  return m ? parseInt(m[1]) : 20;
+}
+
+// Bütçeyi hesapla
+function calcNewBudget(adset, rule){
+  var cur = parseFloat((adset.budgetAmt||'0').replace(/[^0-9.]/g,'')) || adset.spend * 1.2 || 100;
+  var pct = getRulePct(rule);
+  var type = rule.type;
+  if(type === 'increase') return {cur: cur, newB: cur * (1 + pct/100), pct: pct};
+  if(type === 'decrease') return {cur: cur, newB: cur * (1 - pct/100), pct: -pct};
+  return null; // pause/activate farklı işlem
+}
+
+// ── ANA UYGULAMA FONKSİYONU ──
+window.optApplyReal = function(){
+  var rule = selectedRule;
+  if(!rule){ toast('Önce kural seç'); return; }
+
+  var adsets = (MX.adsetStore || []).filter(function(r){ return r._budgetId; });
+  if(!adsets.length){
+    toast('Meta verisi yok — önce Bağlan ve veri yükle');
+    optTab('chat');
+    addMsg('Meta verisi bulunamadı. Önce "Bağlan" butonuna basıp veri yükleyin.', 'sys', 'optimMsgs');
+    return;
+  }
+
+  var avgRoas = adsets.reduce(function(s,r){return s+(r.roas||0);},0) / adsets.length;
+  var avgCtr  = adsets.reduce(function(s,r){return s+(r.ctr||0);},0)  / adsets.length;
+  var avgCpc  = adsets.reduce(function(s,r){return s+(r.cpc||0);},0)  / adsets.length;
+
+  // Koşula uyan adsetleri bul
+  var matched = adsets.filter(function(a){ return evalRule(rule, a, avgRoas, avgCtr, avgCpc); });
+
+  optTab('chat');
+  var msgs = document.getElementById('optimMsgs');
+
+  if(!matched.length){
+    var infoDiv = document.createElement('div');
+    infoDiv.className = 'msg claude';
+    infoDiv.innerHTML = renderMD(
+      '**❌ Neden Uygulanamadı?**\n\n' +
+      '1. **Sistemde tanımlı reklam seti bulunmuyor** — Hesaba bağlı aktif reklam seti verisi gelmiyor. ' +
+      '2. **Hesap ROAS = ' + avgRoas.toFixed(2) + '** — Mevcut veri koşulu karşılamıyor.\n\n' +
+      '**💡 Öneriler**\n\n' +
+      '- ✅ Meta Ads hesabının **doğru bağlandığını** kontrol et\n' +
+      '- ✅ Reklam setlerinin **aktif durumda** olduğunu doğrula\n' +
+      '- ✅ **Veri entegrasyonunu** yenile ve tekrar çalıştır'
+    );
+    msgs.appendChild(infoDiv);
+    msgs.scrollTop = 99999;
+    return;
+  }
+
+  // Özet mesaj
+  var summaryDiv = document.createElement('div');
+  summaryDiv.className = 'msg claude';
+  summaryDiv.innerHTML = renderMD(
+    '**⚡ ' + rule.name + ' — ' + matched.length + ' Reklam Seti Bulundu**\n\n' +
+    '**Koşul:** ' + (rule.conditions||[]).join(' · ') + '\n' +
+    '**İşlem:** ' + rule.action + '\n' +
+    '**Hesap Ort. ROAS:** ' + avgRoas.toFixed(2) + 'x\n\n' +
+    'Aşağıdaki reklamlara uygulamak için **Onayla** butonuna basın:'
+  );
+  msgs.appendChild(summaryDiv);
+
+  // Her uyan adset için onay butonu
+  var actionWrap = document.createElement('div');
+  actionWrap.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin:4px 0 8px';
+
+  if(rule.type === 'pause'){
+    // Durdur aksiyonu
+    matched.slice(0,10).forEach(function(a){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;align-items:center;background:var(--bg);padding:8px 12px;border-radius:6px;border-left:3px solid var(--r)';
+      row.innerHTML = '<span style="flex:1;font-size:11px">⏸ <strong>' + (a.name||'').slice(0,35) + '</strong> · ROAS: ' + (a.roas||0).toFixed(2) + 'x · Harcama: ' + (a.spend||0).toFixed(0) + '₺</span>';
+      var ok  = document.createElement('button'); ok.className  = 'btn sm dng'; ok.textContent = '⏸ Durdur';
+      var no  = document.createElement('button'); no.className  = 'btn sm sec'; no.textContent = '✗ Atla';
+      ok.onclick = (function(adset, btn, r){
+        return async function(){
+          btn.disabled = true; btn.textContent = '⏳...';
+          var d = await api(adset._budgetId, {status:'PAUSED'}, 'POST');
+          if(d && (d.success || d.id)){
+            btn.textContent = '✓ Durduruldu';
+            btn.style.background = 'var(--g)';
+            logAction({type:'pause', name:adset.name, id:adset._budgetId, rule:r.name, time:new Date().toISOString()});
+            toast(adset.name.slice(0,25) + ' durduruldu ✓');
+          } else {
+            btn.textContent = '❌ Hata';
+            toast('Hata: ' + JSON.stringify((d&&d.error)||d));
+          }
+        };
+      })(a, ok, rule);
+      no.onclick = function(){ row.remove(); };
+      row.appendChild(ok); row.appendChild(no);
+      actionWrap.appendChild(row);
+    });
+  } else {
+    // Bütçe değişikliği
+    matched.slice(0,10).forEach(function(a){
+      var calc = calcNewBudget(a, rule);
+      if(!calc || calc.newB <= 0) return;
+      var color = rule.type === 'increase' ? 'var(--g)' : 'var(--y)';
+      var arrow = rule.type === 'increase' ? '📈' : '📉';
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;align-items:center;background:var(--bg);padding:8px 12px;border-radius:6px;border-left:3px solid ' + color;
+      row.innerHTML = '<span style="flex:1;font-size:11px">' + arrow + ' <strong>' + (a.name||'').slice(0,30) + '</strong>: ' +
+        calc.cur.toFixed(0) + '₺ → ' + calc.newB.toFixed(0) + '₺/gün (' + (calc.pct > 0 ? '+' : '') + calc.pct + '%)</span>';
+      var ok = document.createElement('button'); ok.className = 'btn sm grn'; ok.textContent = '✓ Onayla';
+      var no = document.createElement('button'); no.className = 'btn sm sec'; no.textContent = '✗ Atla';
+      ok.onclick = (function(adset, b, btn, r){ return function(){
+        btn.disabled = true; btn.textContent = '⏳...';
+        chatApproveB(adset._budgetId, adset.name, adset._budgetType||'adset', b.cur, b.newB, Math.abs(b.pct), 'optimMsgs');
+        r.remove();
+      };})(a, calc, ok, row);
+      no.onclick = function(){ row.remove(); };
+      row.appendChild(ok); row.appendChild(no);
+      actionWrap.appendChild(row);
+    });
+  }
+
+  msgs.appendChild(actionWrap);
+  msgs.scrollTop = 99999;
+};
+
+// ── Detay sayfasındaki "Şimdi Uygula" butonunu gerçek fonksiyona bağla ──
+var origOptApply = window.optApply;
+window.optApply = function(){
+  window.optApplyReal();
+};
+
+// Analiz Et ve Simüle Et butonlarını da güçlendir
+var origOptAnalyze = window.optAnalyze;
+window.optAnalyze = function(){
+  if(!selectedRule){ toast('Önce kural seç'); return; }
+  var adsets = (MX.adsetStore || []).filter(function(r){ return r._budgetId; });
+  var avgRoas = adsets.length ? adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length : 0;
+  var avgCtr  = adsets.length ? adsets.reduce(function(s,r){return s+(r.ctr||0);},0)/adsets.length : 0;
+  var avgCpc  = adsets.length ? adsets.reduce(function(s,r){return s+(r.cpc||0);},0)/adsets.length : 0;
+  var matched = adsets.filter(function(a){ return evalRule(selectedRule, a, avgRoas, avgCtr, avgCpc); });
+  var msg = selectedRule.name + ' kuralı analizi:\n' +
+    'Toplam reklam seti: ' + adsets.length + '\n' +
+    'Koşula uyan: ' + matched.length + '\n' +
+    'Hesap ort ROAS: ' + avgRoas.toFixed(2) + 'x\n' +
+    'Uyanlar: ' + JSON.stringify(matched.slice(0,8).map(function(a){return {isim:a.name&&a.name.slice(0,25),roas:a.roas,spend:a.spend};})) + '\n' +
+    'Bu verilere göre kuralı uygulamamı öneriyor musun? Gerekçeli açıkla.';
+  optTab('chat');
+  aiSend('optim', msg);
+};
+
+})();
+</script>
+
 .opt-item{display:flex;align-items:center;gap:10px;padding:9px 14px 9px 20px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
 .opt-item:hover{background:var(--b)}
 .opt-item.active{background:rgba(24,119,242,.1);border-left:2px solid #1877f2}
