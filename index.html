@@ -378,7 +378,8 @@ Promise.all([
   nav(_startPage, null)
 ]);
 
-// connect() bağımsız başlat — modüller zaten mx:connected event'ini dinliyor
+// connect() bağımsız başlat
+updateConnBadge('', 'Bağlanıyor...');
 connect();
 
 // Bağlantı badge'ini güncelle
@@ -397,20 +398,11 @@ window.toggleConnEdit = function(){
   ed.style.display = show ? 'flex' : 'none';
 };
 
-// connect() tamamlanınca badge'i güncelle
-var _origConnect = window.connect;
-window.connect = async function(){
-  updateConnBadge('', 'Bağlanıyor...');
-  await _origConnect();
-  // Dot durumunu shared.js'deki dot'tan oku
-  var dot = document.getElementById('dot');
-  if(dot && dot.classList.contains('on')){
-    updateConnBadge('on', 'Bağlı ✓');
-    document.getElementById('connEdit').style.display = 'none';
-  } else {
-    updateConnBadge('err', 'Bağlantı hatası');
-  }
-};
+// mx:connected ve connect sonucu badge güncelle
+window.addEventListener('mx:connected', function(){
+  updateConnBadge('on', 'Bağlı ✓');
+  document.getElementById('connEdit').style.display = 'none';
+});
 
 // Task badge her dakika güncelle
 setInterval(updateTaskBadge, 60000);
