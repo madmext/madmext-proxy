@@ -1,484 +1,390 @@
 <style>
-.cc-wrap{display:flex;flex-direction:column;height:calc(100vh - 80px);gap:0}
-.cc-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--b);background:var(--s);flex-shrink:0}
-.cc-title{display:flex;align-items:center;gap:10px}
-.cc-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.cc-name{font-size:14px;font-weight:600}
-.cc-sub{font-size:11px;color:var(--m)}
-.cc-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.cc-msg{display:flex;gap:10px;max-width:85%;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.cc-msg.user{align-self:flex-end;flex-direction:row-reverse}
-.cc-msg-bubble{padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
-.cc-msg.user .cc-msg-bubble{background:#1877f2;color:#fff;border-radius:12px 2px 12px 12px}
-.cc-msg.ai .cc-msg-bubble{background:var(--s2);color:var(--t);border:1px solid var(--b);border-radius:2px 12px 12px 12px}
-.cc-msg.sys .cc-msg-bubble{background:transparent;color:var(--m);font-size:11px;text-align:center;border:none;padding:4px}
-.cc-msg-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px}
-.cc-thinking{display:flex;gap:4px;padding:12px 16px;align-items:center}
-.cc-dot{width:6px;height:6px;border-radius:50%;background:var(--m);animation:bounce .8s infinite}
-.cc-dot:nth-child(2){animation-delay:.15s}.cc-dot:nth-child(3){animation-delay:.3s}
-@keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
-.cc-toolbar{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
-.cc-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
-.cc-input{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px 14px;font-family:Inter,sans-serif;font-size:13px;border-radius:20px;resize:none;height:44px;max-height:120px;line-height:1.4;transition:border-color .15s;outline:none}
-.cc-input:focus{border-color:#1877f2}
-.cc-send{width:40px;height:40px;border-radius:50%;background:#1877f2;border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;margin-top:2px}
-.cc-send:hover{background:#1565d8;transform:scale(1.05)}
-.cc-send:disabled{background:var(--b2);cursor:default;transform:none}
-.cc-context{font-size:10px;color:var(--m);padding:4px 16px;border-top:1px solid var(--b);background:var(--bg);flex-shrink:0}
+/* ── Arena layout ── */
+.arena-wrap{display:flex;flex-direction:column;height:calc(100vh - 80px);gap:0}
+.arena-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--b);background:var(--s);flex-shrink:0;gap:10px;flex-wrap:wrap}
+.arena-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.arena-models{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.model-toggle{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;border:1px solid var(--b2);background:var(--s2);cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;transition:all .15s;user-select:none}
+.model-toggle input{width:12px;height:12px;cursor:pointer;accent-color:var(--a)}
+.model-toggle.claude-t{border-color:rgba(100,180,255,.4)}
+.model-toggle.gpt-t{border-color:rgba(16,185,129,.4)}
+.model-toggle.o1-t{border-color:rgba(240,180,41,.4)}
+.model-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-claude{background:#64b4ff}.dot-gpt{background:#10b981}.dot-o1{background:#f0b429}
+
+/* ── Sohbet alanı ── */
+.arena-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.arena-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+
+/* ── Mesaj satırı ── */
+.arena-row{display:flex;flex-direction:column;gap:6px}
+.arena-user-msg{align-self:flex-end;background:var(--a);color:#fff;padding:9px 14px;border-radius:12px 2px 12px 12px;font-size:13px;line-height:1.6;max-width:70%;white-space:pre-wrap;word-break:break-word}
+
+/* ── AI yanıtları grid ── */
+.arena-responses{display:grid;gap:10px}
+.arena-responses.cols-1{grid-template-columns:1fr}
+.arena-responses.cols-2{grid-template-columns:1fr 1fr}
+.arena-card{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:hidden}
+.arena-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--b);font-size:11px;font-weight:600;font-family:'DM Mono',monospace}
+.arena-card-hdr.claude-hdr{background:rgba(100,180,255,.07);color:#64b4ff}
+.arena-card-hdr.gpt-hdr{background:rgba(16,185,129,.07);color:#10b981}
+.arena-card-hdr.o1-hdr{background:rgba(240,180,41,.07);color:#f0b429}
+.arena-card-body{padding:12px 14px;font-size:13px;line-height:1.7;color:var(--t)}
+.arena-card-body.thinking-anim{color:var(--m);font-style:italic}
+
+/* Denetim modu: fark highlight */
+.arena-card.conflict{border-color:var(--y)}
+.arena-card.agree{border-color:var(--g)}
+
+/* ── Puan verme ── */
+.arena-vote{display:flex;gap:6px;padding:6px 12px 8px;border-top:1px solid var(--b)}
+.vote-btn{background:none;border:1px solid var(--b2);color:var(--m);font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
+.vote-btn:hover{border-color:var(--a);color:var(--a)}
+.vote-btn.voted{background:var(--g);border-color:var(--g);color:#000;font-weight:700}
+
+/* ── Denetim özeti ── */
+.audit-summary{background:var(--s2);border:1px solid var(--b);border-left:3px solid var(--y);border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.7;margin-top:4px}
+.audit-summary strong{color:var(--y)}
+
+/* ── Alt toolbar + input ── */
+.arena-toolbar{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
+.arena-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
+.arena-input{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px 14px;font-family:Inter,sans-serif;font-size:13px;border-radius:20px;resize:none;height:44px;max-height:120px;line-height:1.4;transition:border-color .15s;outline:none}
+.arena-input:focus{border-color:var(--a)}
+.arena-send{width:40px;height:40px;border-radius:50%;background:var(--a);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;margin-top:2px}
+.arena-send:hover{background:#1565d8;transform:scale(1.05)}
+.arena-send:disabled{background:var(--b2);cursor:default;transform:none}
+.arena-ctx{font-size:10px;color:var(--m);padding:3px 16px;border-top:1px solid var(--b);background:var(--bg);flex-shrink:0}
+
+/* Markdown */
+.arena-card-body table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
+.arena-card-body th{background:var(--bg);padding:6px 10px;color:var(--m);font-size:10px;border:1px solid var(--b);position:static;cursor:default}
+.arena-card-body td{padding:6px 10px;border:1px solid rgba(255,255,255,.06);font-family:'DM Mono',monospace}
+.arena-card-body h3{color:var(--a);margin:8px 0 4px;font-size:13px;font-weight:600}
+.arena-card-body strong{color:var(--y)}
+.arena-card-body ul{padding-left:16px;margin:5px 0}
+.arena-card-body li{margin-bottom:2px}
+.arena-card-body code{background:var(--b);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px}
+.arena-card-body hr{border:none;border-top:1px solid var(--b);margin:8px 0}
+
+/* Skor tablosu */
+.score-bar{display:flex;gap:12px;padding:6px 16px;background:var(--bg);border-top:1px solid var(--b);font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;flex-wrap:wrap}
+.score-item{display:flex;align-items:center;gap:5px}
+.score-label{color:var(--m)}
+.score-val{font-weight:700}
 </style>
 
-<div class="cc-wrap">
-  <div class="cc-header">
-    <div class="cc-title">
-      <div class="cc-avatar">🤖</div>
-      <div>
-        <div class="cc-name">Claude AI Asistan</div>
-        <div class="cc-sub" id="ccSub">Meta verilerinize erişimim var</div>
+<div class="arena-wrap">
+
+  <!-- Header -->
+  <div class="arena-header">
+    <div class="arena-title">⚔️ AI Arena <span class="nav-ai">DENETIM</span></div>
+    <div class="arena-models">
+      <label class="model-toggle claude-t">
+        <div class="model-dot dot-claude"></div>
+        <input type="checkbox" id="useClause" checked> Claude Sonnet
+      </label>
+      <label class="model-toggle gpt-t">
+        <div class="model-dot dot-gpt"></div>
+        <input type="checkbox" id="useGpt" checked> GPT-4o
+      </label>
+      <label class="model-toggle o1-t">
+        <div class="model-dot dot-o1"></div>
+        <input type="checkbox" id="useO1"> o3-mini
+      </label>
+      <button class="btn sm sec" onclick="arenaClear()">🗑 Temizle</button>
+      <button class="btn sm sec" onclick="arenaExport()">📋 Kopyala</button>
+    </div>
+  </div>
+
+  <!-- Mesajlar -->
+  <div class="arena-body">
+    <div class="arena-msgs" id="arenaMsgs">
+      <div style="text-align:center;color:var(--m);font-size:12px;padding:20px 0">
+        Claude ve ChatGPT aynı soruya yanıt verir. Hangisi daha iyi? Oy ver, puanları takip et.<br>
+        <span style="color:var(--a)">⚔️ İki AI denetimli rekabet modunda çalışıyor.</span>
       </div>
     </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn sm sec" onclick="ccClear()">🗑 Temizle</button>
-      <button class="btn sm sec" onclick="ccExport()">📋 Kopyala</button>
-    </div>
   </div>
 
-  <div class="cc-msgs" id="ccMsgs">
-    <div class="cc-msg sys"><div class="cc-msg-bubble">Madmext Ads paneline hoş geldiniz. Meta kampanya verilerinizi analiz edebilir, bütçe önerisi yapabilir, optimizasyon uygulayabilirim. Ne yapmamı istersiniz?</div></div>
+  <!-- Skor -->
+  <div class="score-bar" id="scoreBar">
+    <span class="score-item"><div class="model-dot dot-claude" style="width:6px;height:6px"></div><span class="score-label">Claude:</span><span class="score-val" id="scoreClaudeEl">0</span></span>
+    <span class="score-item"><div class="model-dot dot-gpt" style="width:6px;height:6px"></div><span class="score-label">GPT-4o:</span><span class="score-val" id="scoreGptEl">0</span></span>
+    <span class="score-item"><div class="model-dot dot-o1" style="width:6px;height:6px"></div><span class="score-label">o3-mini:</span><span class="score-val" id="scoreO1El">0</span></span>
+    <span class="score-item" style="margin-left:auto"><span class="score-label">Toplam soru:</span><span class="score-val" id="scoreTotalEl">0</span></span>
   </div>
 
-  <div class="cc-toolbar">
-    <button class="qbtn" onclick="ccSend('Kampanyalarımın genel performansını özetle')">📊 Performans özeti</button>
-    <button class="qbtn" onclick="ccSend('Hangi kampanyalarda bütçe artırmalıyım?')">💰 Bütçe önerisi</button>
-    <button class="qbtn" onclick="ccSend('ROAS düşük olan reklamları listele ve ne yapmalıyım söyle')">📉 Düşük ROAS</button>
-    <button class="qbtn" onclick="ccSend('Bu hafta hangi reklamları kapatmalıyım?')">🔴 Kapatılacaklar</button>
-    <button class="qbtn" onclick="ccSend('Hesabın toplam harcama ve gelir özeti')">💵 Harcama özeti</button>
-    <button class="qbtn" onclick="ccSend('En iyi ve en kötü 3 kampanyamı karşılaştır')">⚖️ Karşılaştır</button>
+  <!-- Hızlı sorular -->
+  <div class="arena-toolbar">
+    <button class="qbtn" onclick="arenaSend('Kampanya performansımı analiz et ve en kritik 3 aksiyonu öner')">📊 Performans analizi</button>
+    <button class="qbtn" onclick="arenaSend('Hangi reklam setlerinde bütçe artırmalıyım? Gerekçeli açıkla')">💰 Bütçe önerisi</button>
+    <button class="qbtn" onclick="arenaSend('ROAS düşük kampanyalar için optimizasyon stratejisi')">📉 Optimizasyon</button>
+    <button class="qbtn" onclick="arenaSend('Bu ay için 30 günlük reklam stratejisi öner')">🗓 Strateji</button>
+    <button class="qbtn" onclick="arenaSend('En yüksek potansiyelli hedef kitle segmentleri hangileri?')">🎯 Hedef kitle</button>
   </div>
 
-  <div class="cc-input-row">
-    <textarea class="cc-input" id="ccInput" placeholder="Meta kampanyalarınız hakkında bir şey sorun..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ccSend();}"></textarea>
-    <button class="cc-send" id="ccSendBtn" onclick="ccSend()">↑</button>
+  <!-- Input -->
+  <div class="arena-input-row">
+    <textarea class="arena-input" id="arenaInput" placeholder="Her iki AI'a aynı soruyu sor..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();arenaSend();}"></textarea>
+    <button class="arena-send" id="arenaSendBtn" onclick="arenaSend()">↑</button>
   </div>
 
-  <div class="cc-context" id="ccContext">Bağlı değil — önce Bağlan butonuna basın</div>
+  <div class="arena-ctx" id="arenaCtx">Bağlı değil — önce Bağlan butonuna basın</div>
 </div>
 
 <script>
 (function(){
 
-var ccHistory = [];
-var ccTyping = false;
+var arenaHistory = {claude:[], gpt:[], o1:[]};
+var arenaScores  = {claude:0, gpt:0, o1:0, total:0};
+var arenabusy    = false;
+var proxyUrl     = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
 
-function updateContext(){
-  var el = document.getElementById('ccContext');
-  var sub = document.getElementById('ccSub');
-  var camps = (MX.campStore||[]).length;
-  var adsets = (MX.adsetStore||[]).length;
-  var ads = (MX.adStore||[]).length;
-  if(camps||adsets||ads){
-    var txt = camps + ' kampanya, ' + adsets + ' reklam seti, ' + ads + ' reklam yüklü';
-    el.textContent = txt;
-    sub.textContent = txt;
-  }
+// ── Sistem promptu ────────────────────────────────────────────────────
+function buildSys(){
+  var camps  = (MX.campStore  || []).slice(0,10).map(function(r){ return {k:r.name&&r.name.slice(0,30), h:r.spend, roas:r.roas, satis:r.purchase}; });
+  var adsets = (MX.adsetStore || []).slice(0,12).map(function(r){ return {k:r.name&&r.name.slice(0,30), h:r.spend, roas:r.roas}; });
+  var hasMeta = camps.length > 0;
+  return 'Madmext erkek/kadın tekstil e-ticaret markası için Meta Ads uzmanısın. Türkçe yanıt ver. Kısa, net, aksiyonable ol.' +
+    (hasMeta ? '\nKAMPANYA VERİSİ: ' + JSON.stringify(camps) + '\nREKLAM SETİ: ' + JSON.stringify(adsets) : '\nMeta verisi yok — genel öneri yap.');
 }
 
-// ── Hazır cevaplar (token harcamaz) ──────────────────────────────
-function quickReply(msg){
-  var camps = MX.campStore||[];
-  var adsets = MX.adsetStore||[];
-
-  // Performans özeti
-  if(msg.indexOf('Performans')!==-1 && msg.indexOf('özeti')!==-1){
-    if(!adsets.length) return null;
-    var totalSpend=0,totalRev=0,totalClicks=0,totalImpr=0,activeCount=0;
-    adsets.forEach(function(r){
-      totalSpend+=r.spend||0; totalRev+=r.revenue||0;
-      totalClicks+=r.clicks||0; totalImpr+=r.impr||0;
-      if((r.effectiveStatus||'').toUpperCase()==='ACTIVE') activeCount++;
-    });
-    var roas = totalSpend>0?(totalRev/totalSpend).toFixed(2):0;
-    var ctr = totalImpr>0?(totalClicks/totalImpr*100).toFixed(2):0;
-    return '**Hesap Performans Özeti**
-
-' +
-      '💰 Toplam Harcama: **' + totalSpend.toFixed(0) + ' TL**
-' +
-      '📈 Toplam Gelir: **' + totalRev.toFixed(0) + ' TL**
-' +
-      '🎯 Ortalama ROAS: **' + roas + 'x**
-' +
-      '🖱️ Toplam Tıklama: **' + totalClicks.toLocaleString('tr') + '**
-' +
-      '👁️ Gösterim: **' + (totalImpr/1000).toFixed(0) + 'K**
-' +
-      '📊 CTR: **%' + ctr + '**
-' +
-      '✅ Aktif Reklam Seti: **' + activeCount + ' / ' + adsets.length + '**';
-  }
-
-  // Harcama özeti
-  if(msg.indexOf('Harcama')!==-1 && msg.indexOf('özeti')!==-1){
-    if(!adsets.length) return null;
-    var sorted = adsets.slice().sort(function(a,b){return (b.spend||0)-(a.spend||0);});
-    var top5 = sorted.slice(0,5);
-    var total = adsets.reduce(function(s,r){return s+(r.spend||0);},0);
-    return '**Harcama Dağılımı**
-
-Toplam: **' + total.toFixed(0) + ' TL**
-
-**En Çok Harcayan 5:**
-' +
-      top5.map(function(r,i){
-        return (i+1)+'. '+r.name.slice(0,35)+' — **'+(r.spend||0).toFixed(0)+'TL** (ROAS: '+(r.roas||0).toFixed(1)+'x)';
-      }).join('
-');
-  }
-
-  // Düşük ROAS
-  if(msg.indexOf('ROAS')!==-1 && (msg.indexOf('düşük')!==-1||msg.indexOf('Düşük')!==-1)){
-    if(!adsets.length) return null;
-    var avgRoas = adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length;
-    var low = adsets.filter(function(r){return (r.roas||0)<avgRoas && (r.spend||0)>50;})
-      .sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,8);
-    if(!low.length) return 'Tüm reklam setleri hesap ROAS ortalamasının (' + avgRoas.toFixed(2) + 'x) üstünde görünüyor.';
-    return '**Düşük ROAS Reklam Setleri** (ort: ' + avgRoas.toFixed(2) + 'x)
-
-' +
-      low.map(function(r,i){
-        return (i+1)+'. '+r.name.slice(0,35)+'
-   ROAS: **'+(r.roas||0).toFixed(2)+'x** | Harcama: '+(r.spend||0).toFixed(0)+'TL';
-      }).join('
-');
-  }
-
-  // Kapatılacaklar
-  if(msg.indexOf('kapat')!==-1||msg.indexOf('Kapat')!==-1){
-    if(!adsets.length) return null;
-    var avgR = adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length;
-    var toStop = adsets.filter(function(r){
-      return (r.effectiveStatus||'').toUpperCase()==='ACTIVE' && 
-             (r.roas||0) < avgR*0.5 && (r.spend||0) > 100;
-    }).sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,6);
-    if(!toStop.length) return 'Kapatılması önerilen kritik reklam seti bulunamadı.';
-    return '**Kapatılması Önerilen Reklam Setleri**
-*(ROAS hesap ortalamasının %50 altı)*
-
-' +
-      toStop.map(function(r,i){
-        return (i+1)+'. '+r.name.slice(0,35)+'
-   ROAS: **'+(r.roas||0).toFixed(2)+'x** | Harcama: '+(r.spend||0).toFixed(0)+'TL';
-      }).join('
-');
-  }
-
-  // Bütçe önerisi
-  if(msg.indexOf('Bütçe')!==-1 && msg.indexOf('önerisi')!==-1){
-    if(!adsets.length) return null;
-    var avgR2 = adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length;
-    var increase = adsets.filter(function(r){return (r.roas||0)>avgR2*1.5 && (r.effectiveStatus||'').toUpperCase()==='ACTIVE';})
-      .sort(function(a,b){return (b.roas||0)-(a.roas||0);}).slice(0,3);
-    var decrease = adsets.filter(function(r){return (r.roas||0)<avgR2*0.7 && (r.spend||0)>100;})
-      .sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,3);
-    return '**Bütçe Optimizasyon Önerisi**
-
-' +
-      '📈 **Artırılması önerilen:**
-' +
-      (increase.length ? increase.map(function(r){
-        return '• '+r.name.slice(0,35)+' (ROAS: '+(r.roas||0).toFixed(2)+'x) → %20 artır';
-      }).join('
-') : 'Yok') + '
-
-' +
-      '📉 **Azaltılması önerilen:**
-' +
-      (decrease.length ? decrease.map(function(r){
-        return '• '+r.name.slice(0,35)+' (ROAS: '+(r.roas||0).toFixed(2)+'x) → %20 azalt';
-      }).join('
-') : 'Yok');
-  }
-
-  // Karşılaştır
-  if(msg.indexOf('arşılaştır')!==-1||msg.indexOf('en iyi')!==-1||msg.indexOf('en kötü')!==-1){
-    if(!adsets.length) return null;
-    var sorted2 = adsets.slice().sort(function(a,b){return (b.roas||0)-(a.roas||0);});
-    var top3 = sorted2.slice(0,3);
-    var bot3 = sorted2.slice(-3).reverse();
-    return '**En İyi vs En Kötü 3 Reklam Seti**
-
-' +
-      '🏆 **En İyi:**
-' + top3.map(function(r,i){
-        return (i+1)+'. '+r.name.slice(0,30)+' — ROAS: **'+(r.roas||0).toFixed(2)+'x**, Gelir: '+(r.revenue||0).toFixed(0)+'TL';
-      }).join('
-') + '
-
-' +
-      '⚠️ **En Kötü:**
-' + bot3.map(function(r,i){
-        return (i+1)+'. '+r.name.slice(0,30)+' — ROAS: **'+(r.roas||0).toFixed(2)+'x**, Harcama: '+(r.spend||0).toFixed(0)+'TL';
-      }).join('
-');
-  }
-
-  return null; // Bilinmiyor, Claude'a gönder
-}
-
-window.ccSend = function(preMsg){
-  var msg = preMsg || (document.getElementById('ccInput').value||'').trim();
-  if(!msg||ccTyping) return;
-  document.getElementById('ccInput').value = '';
-
-  // Hazır cevap var mı?
-  var quick = quickReply(msg);
-  if(quick){
-    addCCMsg(msg, 'user');
-    addCCMsg(quick, 'ai');
-    return;
-  }
-
-  // User mesajı
-  addCCMsg(msg, 'user');
-  ccHistory.push({role:'user', content:msg});
-
-  // Thinking
-  var th = addCCThinking();
-  ccTyping = true;
-  document.getElementById('ccSendBtn').disabled = true;
-
-  // Meta verisi yükle (yoksa API'den çek)
-  ccLoadMetaAndSend(msg);
-};
-
-window.ccLoadMetaAndSend = async function(msg){
-  var containerId = 'ccMsgs';
-  
-  // Önce mevcut store'a bak
-  var campData = (MX.campStore||[]).slice(0,15).map(function(c){
-    return {id:c.id, name:c.name, status:c.status, effective_status:c.effective_status};
+// ── API çağrıları ─────────────────────────────────────────────────────
+async function callClaude(messages, sys){
+  var r = await fetch(proxyUrl + '/claude', {
+    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+    body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1200, system:sys, messages:messages})
   });
-  var adsetData = (MX.adsetStore||[]).slice(0,20).map(function(r){
-    return {
-      id:r._budgetId, name:r.name,
-      budget:parseFloat((r.budgetAmt||'0').replace(/[^\d.]/g,'')),
-      roas:+(r.roas||0).toFixed(2), spend:+(r.spend||0).toFixed(0),
-      revenue:+(r.revenue||0).toFixed(0), clicks:r.clicks||0,
-      ctr:+(r.ctr||0).toFixed(2), cpc:+(r.cpc||0).toFixed(2),
-      status:r.effectiveStatus
-    };
-  }).filter(function(r){return r.id;});
+  var d = await r.json();
+  return (d.content && d.content[0] && d.content[0].text) || ('Hata: ' + JSON.stringify(d.error||d));
+}
 
-  // Store boşsa Meta API'den direkt çek
-  if(!campData.length && window._isConnected){
-    try{
-      var insRes = await api(AID+'/insights',{
-        fields:'campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,purchase_roas,actions,action_values',
-        level:'campaign', date_preset:'last_7d', limit:20,
-        action_attribution_windows:'["1d_click","7d_click"]'
-      });
-      if(insRes && insRes.data){
-        campData = insRes.data.map(function(r){
-          var roas = 0;
-          if(r.purchase_roas && r.purchase_roas[0]) roas = parseFloat(r.purchase_roas[0].value||0);
-          var purchase = 0;
-          if(r.actions) r.actions.forEach(function(a){if(a.action_type==='purchase')purchase=parseInt(a.value||0);});
-          var revenue = 0;
-          if(r.action_values) r.action_values.forEach(function(a){if(a.action_type==='purchase')revenue=parseFloat(a.value||0);});
-          return {
-            id:r.campaign_id, name:r.campaign_name||'—',
-            spend:+(parseFloat(r.spend||0)).toFixed(0),
-            roas:+roas.toFixed(2), purchase:purchase, revenue:+revenue.toFixed(0),
-            clicks:parseInt(r.clicks||0), ctr:+(parseFloat(r.ctr||0)).toFixed(2),
-            cpc:+(parseFloat(r.cpc||0)).toFixed(2)
-          };
-        });
+async function callGPT(messages, sys, model){
+  model = model || 'gpt-4o';
+  var msgs = [{role:'system', content:sys}].concat(messages);
+  var r = await fetch(proxyUrl + '/openai', {
+    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
+    body: JSON.stringify({model:model, max_tokens:1200, messages:msgs})
+  });
+  var d = await r.json();
+  return (d.content && d.content[0] && d.content[0].text) || ('Hata: ' + JSON.stringify(d.error||d));
+}
+
+// ── Gönder ───────────────────────────────────────────────────────────
+window.arenaSend = async function(preMsg){
+  if(arenabusy) return;
+  var msg = preMsg || (document.getElementById('arenaInput').value||'').trim();
+  if(!msg) return;
+  document.getElementById('arenaInput').value = '';
+
+  var useC  = document.getElementById('useClause').checked;
+  var useG  = document.getElementById('useGpt').checked;
+  var useO  = document.getElementById('useO1').checked;
+  if(!useC && !useG && !useO){ toast('En az bir model seçili olmalı'); return; }
+
+  arenabusy = true;
+  document.getElementById('arenaSendBtn').disabled = true;
+
+  var row = document.createElement('div');
+  row.className = 'arena-row';
+
+  // Kullanıcı mesajı
+  var userDiv = document.createElement('div');
+  userDiv.className = 'arena-user-msg';
+  userDiv.textContent = msg;
+  row.appendChild(userDiv);
+
+  // Yanıt kartları + thinking placeholder
+  var cols = (useC?1:0)+(useG?1:0)+(useO?1:0);
+  var grid = document.createElement('div');
+  grid.className = 'arena-responses cols-' + Math.min(cols, 2);
+
+  var cards = {};
+  if(useC)  cards.claude = makeCard('claude', '🟣 Claude Sonnet', grid);
+  if(useG)  cards.gpt    = makeCard('gpt',    '🟢 GPT-4o',        grid);
+  if(useO)  cards.o1     = makeCard('o1',     '🟡 o3-mini',       grid);
+
+  row.appendChild(grid);
+  document.getElementById('arenaMsgs').appendChild(row);
+  document.getElementById('arenaMsgs').scrollTop = 99999;
+
+  var sys = buildSys();
+
+  // History push
+  if(useC)  arenaHistory.claude.push({role:'user', content:msg});
+  if(useG)  arenaHistory.gpt.push({role:'user',    content:msg});
+  if(useO)  arenaHistory.o1.push({role:'user',     content:msg});
+
+  // Paralel istek
+  var promises = [];
+  if(useC) promises.push(callClaude(arenaHistory.claude.slice(-8), sys).then(function(t){ return {key:'claude', text:t}; }).catch(function(e){ return {key:'claude', text:'Hata: '+e.message}; }));
+  if(useG) promises.push(callGPT(arenaHistory.gpt.slice(-8), sys, 'gpt-4o').then(function(t){ return {key:'gpt', text:t}; }).catch(function(e){ return {key:'gpt', text:'Hata: '+e.message}; }));
+  if(useO) promises.push(callGPT(arenaHistory.o1.slice(-8), sys, 'o3-mini').then(function(t){ return {key:'o1', text:t}; }).catch(function(e){ return {key:'o1', text:'Hata: '+e.message}; }));
+
+  // Her yanıt gelince anında göster (race)
+  var results = {};
+  var pending = promises.map(function(p){
+    return p.then(function(res){
+      results[res.key] = res.text;
+      // Kartı güncelle
+      var card = cards[res.key];
+      if(card){
+        var body = card.querySelector('.arena-card-body');
+        body.classList.remove('thinking-anim');
+        body.innerHTML = renderMD(res.text);
+        // History güncelle
+        arenaHistory[res.key].push({role:'assistant', content:res.text});
+        // Oy butonlarını ekle
+        addVoteButtons(card, res.key, row);
       }
-      // Adset verisi de çek
-      var adRes = await api(AID+'/insights',{
-        fields:'adset_id,adset_name,spend,ctr,cpc,purchase_roas,actions,action_values',
-        level:'adset', date_preset:'last_7d', limit:30,
-        action_attribution_windows:'["1d_click","7d_click"]'
-      });
-      if(adRes && adRes.data){
-        adsetData = adRes.data.map(function(r){
-          var roas=0;
-          if(r.purchase_roas&&r.purchase_roas[0])roas=parseFloat(r.purchase_roas[0].value||0);
-          var revenue=0;
-          if(r.action_values)r.action_values.forEach(function(a){if(a.action_type==='purchase')revenue=parseFloat(a.value||0);});
-          return {
-            id:r.adset_id, name:r.adset_name||'—',
-            spend:+(parseFloat(r.spend||0)).toFixed(0),
-            roas:+roas.toFixed(2), revenue:+revenue.toFixed(0),
-            ctr:+(parseFloat(r.ctr||0)).toFixed(2), cpc:+(parseFloat(r.cpc||0)).toFixed(2)
-          };
-        });
-      }
-      updateContext();
-    }catch(e){ console.log('Meta fetch err:',e); }
-  }
-
-  var dataInfo = campData.length
-    ? campData.length + ' kampanya, ' + adsetData.length + ' reklam seti verisi mevcut'
-    : 'Meta bağlantısı yok — önce Bağlan butonuna basın';
-
-  var sys = "Sen Madmext reklam yöneticisinin AI asistanısın. Meta Graph API verilerine erişimin var.\n" +
-    "Türkçe yanıt ver. Kısa ve net ol. Sayıları TL cinsinden göster. Tablolar kullan.\n" +
-    "VERİ DURUMU: " + dataInfo + "\n" +
-    "KAMPANYALAR (son 7 gün): " + JSON.stringify(campData) + "\n" +
-    "REKLAM SETLERİ (son 7 gün): " + JSON.stringify(adsetData) + "\n" +
-    "Bütçe değişikliği için: <!--ACTION:BUDGET_INCREASE|ID|ADI|adset|MEVCUT|YENI|PCT-->\n" +
-    "SADECE gerçek ID kullan. Veri yoksa 'Bağlan butonuna basın' de.";
-
-  // Direkt API çağrısı - shared.js bağımlılığı yok
-  var proxyUrl = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
-  fetch(proxyUrl + '/claude', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    credentials: 'include',
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 1500,
-      system: sys,
-      messages: ccHistory.slice(-8)
-    })
-  }).then(function(r){ return r.json(); })
-  .then(function(data){
-    th.remove();
-    ccTyping = false;
-    document.getElementById('ccSendBtn').disabled = false;
-    var reply = (data.content && data.content[0] && data.content[0].text) || 
-                (data.error && ('Hata: ' + (data.error.message||JSON.stringify(data.error)))) || 
-                'Cevap alınamadı';
-    ccHistory.push({role:'assistant', content:reply});
-    var clean = reply.replace(/<!--ACTION:[^>]*-->/g,'').trim();
-    addCCMsg(clean, 'ai');
-    if(typeof parseAndRenderActions === 'function'){
-      parseAndRenderActions(reply, 'ccMsgs');
-    }
-    document.getElementById('ccMsgs').scrollTop = 9999;
-  }).catch(function(e){
-    th.remove();
-    ccTyping = false;
-    document.getElementById('ccSendBtn').disabled = false;
-    addCCMsg('Bağlantı hatası: ' + e.message + '. Bağlan butonuna basın.', 'sys');
-  });
-};
-
-function addCCMsg(text, role){
-  var msgs = document.getElementById('ccMsgs');
-  var div = document.createElement('div');
-  div.className = 'cc-msg ' + role;
-  if(role === 'user'){
-    div.innerHTML = '<div class="cc-msg-bubble">' + escHtml(text) + '</div>';
-  } else if(role === 'ai'){
-    div.innerHTML =
-      '<div class="cc-msg-avatar">🤖</div>' +
-      '<div class="cc-msg-bubble">' + markdownToHtml(text) + '</div>';
-  } else {
-    div.innerHTML = '<div class="cc-msg-bubble">' + text + '</div>';
-  }
-  msgs.appendChild(div);
-  msgs.scrollTop = 9999;
-  return div;
-}
-
-function addCCThinking(){
-  var msgs = document.getElementById('ccMsgs');
-  var div = document.createElement('div');
-  div.className = 'cc-msg ai';
-  div.innerHTML = '<div class="cc-msg-avatar">🤖</div><div class="cc-thinking"><div class="cc-dot"></div><div class="cc-dot"></div><div class="cc-dot"></div></div>';
-  msgs.appendChild(div);
-  msgs.scrollTop = 9999;
-  return div;
-}
-
-function escHtml(t){
-  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function markdownToHtml(t){
-  return escHtml(t)
-    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g,'<em>$1</em>')
-    .replace(/`([^`]+)`/g,'<code style="background:var(--b);padding:1px 4px;border-radius:3px;font-family:monospace">$1</code>')
-    .replace(/\n- /g,'\n• ')
-    .replace(/\n/g,'<br>');
-}
-
-window.ccClear = function(){
-  ccHistory = [];
-  var msgs = document.getElementById('ccMsgs');
-  msgs.innerHTML = '<div class="cc-msg sys"><div class="cc-msg-bubble">Sohbet temizlendi. Yeni bir soru sorabilirsiniz.</div></div>';
-};
-
-window.ccExport = function(){
-  var text = ccHistory.map(function(m){
-    return (m.role==='user'?'Siz: ':'Claude: ') + m.content;
-  }).join('\n\n');
-  navigator.clipboard.writeText(text).then(function(){toast('Sohbet kopyalandı');});
-};
-
-// Bağlan ve Meta verilerini çek
-function ccConnect(){
-  var dot = document.getElementById('dot');
-  var isDotGreen = dot && dot.classList.contains('green');
-  
-  if(window._isConnected && (MX.campStore||[]).length > 0){
-    // Zaten bağlı ve veri var
-    updateContext();
-    return;
-  }
-  
-  // Bağlı değilse veya veri yoksa bağlan
-  document.getElementById('ccContext').textContent = 'Bağlanıyor...';
-  
-  // connect() shared.js'de tanımlı
-  if(typeof connect === 'function'){
-    connect().then(function(){
-      // Bağlandı, şimdi Meta kampanya verilerini çek
-      ccLoadMetaData();
-    }).catch(function(){
-      ccLoadMetaData(); // yine de dene
+      document.getElementById('arenaMsgs').scrollTop = 99999;
     });
+  });
+
+  await Promise.all(pending);
+
+  // Denetim özeti: çakışma var mı?
+  if(Object.keys(results).length >= 2){
+    addAuditSummary(row, results, msg);
+  }
+
+  arenaScores.total++;
+  updateScoreBar();
+  arenabusy = false;
+  document.getElementById('arenaSendBtn').disabled = false;
+  document.getElementById('arenaMsgs').scrollTop = 99999;
+};
+
+// ── Kart oluştur ──────────────────────────────────────────────────────
+function makeCard(key, label, grid){
+  var card = document.createElement('div');
+  card.className = 'arena-card';
+  card.dataset.key = key;
+  card.innerHTML =
+    '<div class="arena-card-hdr ' + key + '-hdr">' +
+      '<span>' + label + '</span>' +
+      '<span style="font-size:9px;opacity:.6">düşünüyor...</span>' +
+    '</div>' +
+    '<div class="arena-card-body thinking-anim">▋</div>';
+  grid.appendChild(card);
+  return card;
+}
+
+// ── Oy butonu ekle ────────────────────────────────────────────────────
+function addVoteButtons(card, key, row){
+  var voteDiv = document.createElement('div');
+  voteDiv.className = 'arena-vote';
+  voteDiv.innerHTML =
+    '<span style="font-size:10px;color:var(--m);margin-right:4px">Bu yanıt:</span>' +
+    '<button class="vote-btn" onclick="arenaVote(this,\''+key+'\',\'win\',this.closest(\'.arena-row\'))">👍 Daha iyi</button>' +
+    '<button class="vote-btn" onclick="arenaVote(this,\''+key+'\',\'lose\',this.closest(\'.arena-row\'))">👎 Zayıf</button>' +
+    '<button class="vote-btn" onclick="arenaVote(this,\''+key+'\',\'ok\',this.closest(\'.arena-row\'))">🤝 Yeterli</button>';
+  card.appendChild(voteDiv);
+  // Header'daki "düşünüyor..." kaldır
+  var hdr = card.querySelector('.arena-card-hdr span:last-child');
+  if(hdr) hdr.textContent = '';
+}
+
+// ── Denetim özeti ─────────────────────────────────────────────────────
+function addAuditSummary(row, results, question){
+  // Basit çakışma tespiti: Kelime benzerliği
+  var texts = Object.values(results);
+  if(texts.length < 2) return;
+
+  // Her yanıttan ilk 3 tavsiye kelimesini al ve karşılaştır
+  var summary = document.createElement('div');
+  summary.className = 'audit-summary';
+
+  var keys = Object.keys(results);
+  var labels = {claude:'Claude', gpt:'GPT-4o', o1:'o3-mini'};
+
+  // Uzunluk karşılaştırması (basit farklılık sinyali)
+  var wordCounts = {};
+  keys.forEach(function(k){ wordCounts[k] = results[k].split(/\s+/).length; });
+  var maxKey = keys.reduce(function(a,b){ return wordCounts[a]>wordCounts[b]?a:b; });
+  var minKey = keys.reduce(function(a,b){ return wordCounts[a]<wordCounts[b]?a:b; });
+
+  var hasConflict = (wordCounts[maxKey] / wordCounts[minKey]) > 1.8;
+
+  summary.innerHTML =
+    '<strong>🔍 Denetim Notu</strong> — ' +
+    (hasConflict
+      ? labels[maxKey] + ' daha kapsamlı yanıt verdi (' + wordCounts[maxKey] + ' kelime vs ' + wordCounts[minKey] + ' kelime). Detay farkı var — her iki yanıtı karşılaştırın.'
+      : 'Her iki model benzer kapsamda yanıt verdi. Oy vererek hangisinin daha isabetli olduğunu işaretleyin.') +
+    '<br><span style="font-size:10px;color:var(--m)">Oy verildikçe hangi AI bu hesaba daha uygun analiz yapıyor ölçülür.</span>';
+
+  if(hasConflict){
+    // Çakışan kartları sarıyla vurgula
+    Object.keys(results).forEach(function(k){
+      var card = row.querySelector('[data-key="'+k+'"]');
+      if(card && k === minKey) card.classList.add('conflict');
+    });
+  }
+
+  row.appendChild(summary);
+}
+
+// ── Oy ver ────────────────────────────────────────────────────────────
+window.arenaVote = function(btn, key, type, row){
+  // Aynı satırdaki tüm vote-btn'leri disable et
+  if(row) row.querySelectorAll('.vote-btn').forEach(function(b){ b.disabled = true; });
+  btn.classList.add('voted');
+
+  if(type === 'win'){
+    arenaScores[key]++;
+    toast(({claude:'Claude',gpt:'GPT-4o',o1:'o3-mini'}[key]) + ' bu turda kazandı 🏆');
+    // Kazanan kartı yeşil yap
+    var card = btn.closest('.arena-card');
+    if(card) card.classList.add('agree');
+  } else if(type === 'lose'){
+    toast('Geri bildirim kaydedildi 👍');
+  }
+  updateScoreBar();
+};
+
+// ── Skor güncelle ────────────────────────────────────────────────────
+function updateScoreBar(){
+  document.getElementById('scoreClaudeEl').textContent = arenaScores.claude;
+  document.getElementById('scoreGptEl').textContent    = arenaScores.gpt;
+  document.getElementById('scoreO1El').textContent     = arenaScores.o1;
+  document.getElementById('scoreTotalEl').textContent  = arenaScores.total;
+}
+
+// ── Temizle / Kopyala ─────────────────────────────────────────────────
+window.arenaClear = function(){
+  arenaHistory = {claude:[], gpt:[], o1:[]};
+  arenaScores  = {claude:0, gpt:0, o1:0, total:0};
+  updateScoreBar();
+  document.getElementById('arenaMsgs').innerHTML =
+    '<div style="text-align:center;color:var(--m);font-size:12px;padding:20px 0">Arena temizlendi. Yeni soru sorabilirsiniz.</div>';
+};
+
+window.arenaExport = function(){
+  var lines = [];
+  Object.keys(arenaHistory).forEach(function(k){
+    arenaHistory[k].forEach(function(m){
+      lines.push('[' + k.toUpperCase() + '|' + m.role + '] ' + m.content);
+    });
+  });
+  lines.push('\nSKOR — Claude:' + arenaScores.claude + ' GPT:' + arenaScores.gpt + ' o3:' + arenaScores.o1);
+  navigator.clipboard.writeText(lines.join('\n\n')).then(function(){ toast('Arena sohbeti kopyalandı'); });
+};
+
+// ── Context güncelle ─────────────────────────────────────────────────
+function updateCtx(){
+  var camps  = (MX.campStore  || []).length;
+  var adsets = (MX.adsetStore || []).length;
+  var el = document.getElementById('arenaCtx');
+  if(camps || adsets){
+    el.textContent = camps + ' kampanya, ' + adsets + ' reklam seti yüklü — her iki AI da bu veriyi görüyor';
   } else {
-    setTimeout(function(){
-      if(typeof connect === 'function') connect();
-      setTimeout(ccLoadMetaData, 1500);
-    }, 500);
+    el.textContent = 'Meta verisi yok — Bağlan butonuna basın (bağlantısız da çalışır)';
   }
 }
 
-function ccLoadMetaData(){
-  // Kampanya + Reklam Setleri + Reklamları paralel yükle
-  var fns = ['loadMetaCamp','loadMetaAdsets','loadMetaAds'];
-  fns.forEach(function(fn){
-    if(typeof window[fn] === 'function'){
-      try{ window[fn](); }catch(e){}
-    }
-  });
-  // 4 sn bekle, sonra güncelle
-  setTimeout(function(){
-    var camps = (MX.campStore||[]).length;
-    var adsets = (MX.adsetStore||[]).length;
-    updateContext();
-    var msgs = document.getElementById('ccMsgs');
-    if(msgs){
-      var txt = camps > 0
-        ? camps + ' kampanya, ' + adsets + ' reklam seti yüklendi. Soru sorabilirsiniz.'
-        : 'Meta verisi yüklenemedi. Bağlantıyı kontrol edin.';
-      msgs.innerHTML = '<div class="cc-msg sys"><div class="cc-msg-bubble">'+txt+'</div></div>';
-    }
-  }, 4000);
-}
-
-window.addEventListener('mx:connected', function(){
-  updateContext();
-  ccLoadMetaData();
-});
-
-// Sayfa açılınca otomatik bağlan
-setTimeout(ccConnect, 300);
+window.addEventListener('mx:connected', updateCtx);
+updateCtx();
 
 })();
 </script>
