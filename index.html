@@ -372,6 +372,27 @@ if(!localStorage.getItem('proxyUrl')) localStorage.setItem('proxyUrl', _defaultU
 // Hangi sayfadan açıldıysa onu belirle (popstate için de kullanılır)
 var _startPage = urlToPage(location.pathname) || 'dashboard';
 
+// Bağlantı badge fonksiyonları — connect()'ten ÖNCE tanımlanmalı
+function updateConnBadge(state, text){
+  var dot = document.getElementById('dot');
+  var lbl = document.getElementById('connLabel');
+  if(dot){ dot.className = 'dot' + (state==='on'?' on':state==='err'?' err':''); }
+  if(lbl){ lbl.textContent = text; lbl.style.color = state==='on'?'var(--g)':state==='err'?'var(--r)':'var(--m)'; }
+}
+window.updateConnBadge = updateConnBadge;
+
+window.toggleConnEdit = function(){
+  var ed = document.getElementById('connEdit');
+  var show = ed.style.display === 'none';
+  ed.style.display = show ? 'flex' : 'none';
+};
+
+window.addEventListener('mx:connected', function(){
+  updateConnBadge('on', 'Bağlı ✓');
+  var ed = document.getElementById('connEdit');
+  if(ed) ed.style.display = 'none';
+});
+
 // initUser ve nav PARALEL — ikisi birbirinden bağımsız
 Promise.all([
   initUser(),
@@ -381,28 +402,6 @@ Promise.all([
 // connect() bağımsız başlat
 updateConnBadge('', 'Bağlanıyor...');
 connect();
-
-// Bağlantı badge'ini güncelle
-function updateConnBadge(state, text){
-  var dot = document.getElementById('dot');
-  var lbl = document.getElementById('connLabel');
-  if(dot){ dot.className = 'dot' + (state==='on'?' on':state==='err'?' err':''); }
-  if(lbl){ lbl.textContent = text; lbl.style.color = state==='on'?'var(--g)':state==='err'?'var(--r)':'var(--m)'; }
-}
-window.updateConnBadge = updateConnBadge;
-
-// URL düzenleme toggle
-window.toggleConnEdit = function(){
-  var ed = document.getElementById('connEdit');
-  var show = ed.style.display === 'none';
-  ed.style.display = show ? 'flex' : 'none';
-};
-
-// mx:connected ve connect sonucu badge güncelle
-window.addEventListener('mx:connected', function(){
-  updateConnBadge('on', 'Bağlı ✓');
-  document.getElementById('connEdit').style.display = 'none';
-});
 
 // Task badge her dakika güncelle
 setInterval(updateTaskBadge, 60000);
