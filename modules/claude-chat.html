@@ -1,386 +1,338 @@
 <style>
-/* ── Arena layout ── */
-.arena-wrap{display:flex;flex-direction:column;height:calc(100vh - 80px);gap:0}
+.arena-wrap{display:flex;flex-direction:column;height:calc(100vh - 80px)}
 .arena-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--b);background:var(--s);flex-shrink:0;gap:10px;flex-wrap:wrap}
 .arena-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
-.arena-models{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.model-toggle{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:6px;border:1px solid var(--b2);background:var(--s2);cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;transition:all .15s;user-select:none}
-.model-toggle input{width:12px;height:12px;cursor:pointer;accent-color:var(--a)}
-.model-toggle.claude-t{border-color:rgba(100,180,255,.4)}
-.model-toggle.gpt-t{border-color:rgba(16,185,129,.4)}
-.model-toggle.o1-t{border-color:rgba(240,180,41,.4)}
-.model-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.dot-claude{background:#64b4ff}.dot-gpt{background:#10b981}.dot-o1{background:#f0b429}
-
-/* ── Sohbet alanı ── */
-.arena-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.arena-modes{display:flex;gap:6px;flex-wrap:wrap}
+.mode-btn{padding:5px 11px;border-radius:6px;border:1px solid var(--b2);background:var(--s2);color:var(--m);font-size:11px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s}
+.mode-btn.active{border-color:var(--a);color:var(--a);background:rgba(24,119,242,.1)}
 .arena-msgs{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
-
-/* ── Mesaj satırı ── */
-.arena-row{display:flex;flex-direction:column;gap:6px}
-.arena-user-msg{align-self:flex-end;background:var(--a);color:#fff;padding:9px 14px;border-radius:12px 2px 12px 12px;font-size:13px;line-height:1.6;max-width:70%;white-space:pre-wrap;word-break:break-word}
-
-/* ── AI yanıtları grid ── */
-.arena-responses{display:grid;gap:10px}
-.arena-responses.cols-1{grid-template-columns:1fr}
-.arena-responses.cols-2{grid-template-columns:1fr 1fr}
-.arena-card{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:hidden}
+.arena-row{display:flex;flex-direction:column;gap:8px}
+.arena-user-msg{align-self:flex-end;background:var(--a);color:#fff;padding:9px 14px;border-radius:12px 2px 12px 12px;font-size:13px;line-height:1.6;max-width:72%;white-space:pre-wrap;word-break:break-word}
+.arena-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.arena-card{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
 .arena-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--b);font-size:11px;font-weight:600;font-family:'DM Mono',monospace}
-.arena-card-hdr.claude-hdr{background:rgba(100,180,255,.07);color:#64b4ff}
-.arena-card-hdr.gpt-hdr{background:rgba(16,185,129,.07);color:#10b981}
-.arena-card-hdr.o1-hdr{background:rgba(240,180,41,.07);color:#f0b429}
-.arena-card-body{padding:12px 14px;font-size:13px;line-height:1.7;color:var(--t)}
-.arena-card-body.thinking-anim{color:var(--m);font-style:italic}
-
-/* Denetim modu: fark highlight */
-.arena-card.conflict{border-color:var(--y)}
-.arena-card.agree{border-color:var(--g)}
-
-/* ── Puan verme ── */
-.arena-vote{display:flex;gap:6px;padding:6px 12px 8px;border-top:1px solid var(--b)}
+.hdr-a{background:rgba(100,180,255,.08);color:#64b4ff}
+.hdr-b{background:rgba(250,100,100,.08);color:#fa6464}
+.arena-card-body{padding:12px 14px;font-size:13px;line-height:1.7;color:var(--t);flex:1}
+.arena-card-body.thinking{color:var(--m);font-style:italic}
+.arena-vote{display:flex;gap:5px;padding:6px 12px 8px;border-top:1px solid var(--b)}
 .vote-btn{background:none;border:1px solid var(--b2);color:var(--m);font-size:10px;padding:3px 8px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s}
 .vote-btn:hover{border-color:var(--a);color:var(--a)}
-.vote-btn.voted{background:var(--g);border-color:var(--g);color:#000;font-weight:700}
-
-/* ── Denetim özeti ── */
-.audit-summary{background:var(--s2);border:1px solid var(--b);border-left:3px solid var(--y);border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.7;margin-top:4px}
-.audit-summary strong{color:var(--y)}
-
-/* ── Alt toolbar + input ── */
+.vote-btn.voted-win{background:var(--g);border-color:var(--g);color:#000;font-weight:700}
+.vote-btn.voted-lose{background:var(--b2);border-color:var(--b2);color:var(--m)}
+.audit-box{background:var(--s2);border:1px solid var(--b);border-left:3px solid var(--y);border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.7}
+.audit-box strong{color:var(--y)}
+.score-bar{display:flex;gap:14px;padding:5px 16px;background:var(--bg);border-top:1px solid var(--b);font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;flex-wrap:wrap;align-items:center}
+.score-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+.dot-a{background:#64b4ff}.dot-b{background:#fa6464}
 .arena-toolbar{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
 .arena-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--b);background:var(--s);flex-shrink:0}
-.arena-input{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px 14px;font-family:Inter,sans-serif;font-size:13px;border-radius:20px;resize:none;height:44px;max-height:120px;line-height:1.4;transition:border-color .15s;outline:none}
+.arena-input{flex:1;background:var(--bg);border:1px solid var(--b);color:var(--t);padding:10px 14px;font-family:Inter,sans-serif;font-size:13px;border-radius:20px;resize:none;height:44px;max-height:120px;line-height:1.4;outline:none;transition:border-color .15s}
 .arena-input:focus{border-color:var(--a)}
 .arena-send{width:40px;height:40px;border-radius:50%;background:var(--a);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;margin-top:2px}
 .arena-send:hover{background:#1565d8;transform:scale(1.05)}
 .arena-send:disabled{background:var(--b2);cursor:default;transform:none}
 .arena-ctx{font-size:10px;color:var(--m);padding:3px 16px;border-top:1px solid var(--b);background:var(--bg);flex-shrink:0}
-
 /* Markdown */
 .arena-card-body table{width:100%;border-collapse:collapse;margin:8px 0;font-size:12px}
-.arena-card-body th{background:var(--bg);padding:6px 10px;color:var(--m);font-size:10px;border:1px solid var(--b);position:static;cursor:default}
-.arena-card-body td{padding:6px 10px;border:1px solid rgba(255,255,255,.06);font-family:'DM Mono',monospace}
-.arena-card-body h3{color:var(--a);margin:8px 0 4px;font-size:13px;font-weight:600}
+.arena-card-body th{background:var(--bg);padding:5px 9px;color:var(--m);font-size:10px;border:1px solid var(--b);position:static;cursor:default}
+.arena-card-body td{padding:5px 9px;border:1px solid rgba(255,255,255,.05);font-family:'DM Mono',monospace;font-size:11px}
+.arena-card-body h3{color:var(--a);margin:8px 0 3px;font-size:13px;font-weight:600}
 .arena-card-body strong{color:var(--y)}
-.arena-card-body ul{padding-left:16px;margin:5px 0}
+.arena-card-body ul{padding-left:14px;margin:4px 0}
 .arena-card-body li{margin-bottom:2px}
-.arena-card-body code{background:var(--b);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:12px}
-.arena-card-body hr{border:none;border-top:1px solid var(--b);margin:8px 0}
-
-/* Skor tablosu */
-.score-bar{display:flex;gap:12px;padding:6px 16px;background:var(--bg);border-top:1px solid var(--b);font-size:11px;font-family:'DM Mono',monospace;flex-shrink:0;flex-wrap:wrap}
-.score-item{display:flex;align-items:center;gap:5px}
-.score-label{color:var(--m)}
-.score-val{font-weight:700}
+.arena-card-body code{background:var(--b);padding:1px 4px;border-radius:3px;font-family:monospace;font-size:11px}
+.arena-card-body hr{border:none;border-top:1px solid var(--b);margin:7px 0}
+.arena-card.winner{border-color:var(--g)}
+.arena-card.loser{opacity:.65}
 </style>
 
 <div class="arena-wrap">
-
-  <!-- Header -->
   <div class="arena-header">
-    <div class="arena-title">⚔️ AI Arena <span class="nav-ai">DENETIM</span></div>
-    <div class="arena-models">
-      <label class="model-toggle claude-t">
-        <div class="model-dot dot-claude"></div>
-        <input type="checkbox" id="useClause" checked> Claude Sonnet
-      </label>
-      <label class="model-toggle gpt-t">
-        <div class="model-dot dot-gpt"></div>
-        <input type="checkbox" id="useGpt" checked> GPT-4o
-      </label>
-      <label class="model-toggle o1-t">
-        <div class="model-dot dot-o1"></div>
-        <input type="checkbox" id="useO1"> o3-mini
-      </label>
+    <div class="arena-title">⚔️ Claude Arena <span class="nav-ai">DENETİM</span></div>
+    <div class="arena-modes">
+      <button class="mode-btn active" id="modeBtn0" onclick="setMode(0)">🥊 Strateji vs Eleştiri</button>
+      <button class="mode-btn" id="modeBtn1" onclick="setMode(1)">🎯 Agresif vs Temkinli</button>
+      <button class="mode-btn" id="modeBtn2" onclick="setMode(2)">🧪 Kısa vs Detaylı</button>
+      <button class="mode-btn" id="modeBtn3" onclick="setMode(3)">🔴 Optimist vs Kötümser</button>
+    </div>
+    <div style="display:flex;gap:6px">
       <button class="btn sm sec" onclick="arenaClear()">🗑 Temizle</button>
       <button class="btn sm sec" onclick="arenaExport()">📋 Kopyala</button>
     </div>
   </div>
 
-  <!-- Mesajlar -->
-  <div class="arena-body">
-    <div class="arena-msgs" id="arenaMsgs">
-      <div style="text-align:center;color:var(--m);font-size:12px;padding:20px 0">
-        Claude ve ChatGPT aynı soruya yanıt verir. Hangisi daha iyi? Oy ver, puanları takip et.<br>
-        <span style="color:var(--a)">⚔️ İki AI denetimli rekabet modunda çalışıyor.</span>
-      </div>
+  <div class="arena-msgs" id="arenaMsgs">
+    <div style="text-align:center;color:var(--m);font-size:12px;padding:24px 0;line-height:1.9">
+      İki Claude aynı soruyu <strong style="color:var(--t)">farklı bakış açılarıyla</strong> yanıtlar.<br>
+      Hangisi daha isabetli? Oy ver, kazananı belirle.<br>
+      <span style="color:var(--a);font-size:11px">Mod seçerek farklı perspektif kombinasyonları dene.</span>
     </div>
   </div>
 
-  <!-- Skor -->
-  <div class="score-bar" id="scoreBar">
-    <span class="score-item"><div class="model-dot dot-claude" style="width:6px;height:6px"></div><span class="score-label">Claude:</span><span class="score-val" id="scoreClaudeEl">0</span></span>
-    <span class="score-item"><div class="model-dot dot-gpt" style="width:6px;height:6px"></div><span class="score-label">GPT-4o:</span><span class="score-val" id="scoreGptEl">0</span></span>
-    <span class="score-item"><div class="model-dot dot-o1" style="width:6px;height:6px"></div><span class="score-label">o3-mini:</span><span class="score-val" id="scoreO1El">0</span></span>
-    <span class="score-item" style="margin-left:auto"><span class="score-label">Toplam soru:</span><span class="score-val" id="scoreTotalEl">0</span></span>
+  <div class="score-bar">
+    <span><span class="score-dot dot-a"></span><span style="color:var(--m)">A:</span> <strong id="scoreA">0</strong></span>
+    <span><span class="score-dot dot-b"></span><span style="color:var(--m)">B:</span> <strong id="scoreB">0</strong></span>
+    <span style="color:var(--m)">Beraberlik: <strong id="scoreDraw">0</strong></span>
+    <span style="margin-left:auto;color:var(--m)">Toplam: <strong id="scoreTotal">0</strong></span>
+    <span id="scoreLeader" style="color:var(--g);font-size:10px"></span>
   </div>
 
-  <!-- Hızlı sorular -->
   <div class="arena-toolbar">
     <button class="qbtn" onclick="arenaSend('Kampanya performansımı analiz et ve en kritik 3 aksiyonu öner')">📊 Performans analizi</button>
-    <button class="qbtn" onclick="arenaSend('Hangi reklam setlerinde bütçe artırmalıyım? Gerekçeli açıkla')">💰 Bütçe önerisi</button>
+    <button class="qbtn" onclick="arenaSend('Hangi reklam setlerinde bütçe artırmalıyım?')">💰 Bütçe önerisi</button>
     <button class="qbtn" onclick="arenaSend('ROAS düşük kampanyalar için optimizasyon stratejisi')">📉 Optimizasyon</button>
     <button class="qbtn" onclick="arenaSend('Bu ay için 30 günlük reklam stratejisi öner')">🗓 Strateji</button>
     <button class="qbtn" onclick="arenaSend('En yüksek potansiyelli hedef kitle segmentleri hangileri?')">🎯 Hedef kitle</button>
+    <button class="qbtn" onclick="arenaSend('Reklam metinlerimi nasıl iyileştirebilirim?')">✍️ Reklam metni</button>
   </div>
 
-  <!-- Input -->
   <div class="arena-input-row">
-    <textarea class="arena-input" id="arenaInput" placeholder="Her iki AI'a aynı soruyu sor..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();arenaSend();}"></textarea>
+    <textarea class="arena-input" id="arenaInput" placeholder="Her iki Claude'a aynı soruyu sor, farklı perspektiflerden yanıt al..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();arenaSend();}"></textarea>
     <button class="arena-send" id="arenaSendBtn" onclick="arenaSend()">↑</button>
   </div>
-
   <div class="arena-ctx" id="arenaCtx">Bağlı değil — önce Bağlan butonuna basın</div>
 </div>
 
 <script>
 (function(){
 
-var arenaHistory = {claude:[], gpt:[], o1:[]};
-var arenaScores  = {claude:0, gpt:0, o1:0, total:0};
-var arenabusy    = false;
-var proxyUrl     = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
+var MODES = [
+  {
+    label: '🥊 Strateji vs Eleştiri',
+    a: { name: '🔵 Claude A — Stratejist', cls: 'hdr-a',
+         role: 'Sen bir büyüme odaklı Meta Ads stratejistsin. Fırsatları öne çıkar, büyüme potansiyelini vurgula, aksiyonable öneriler ver. Türkçe, kısa ve net.' },
+    b: { name: '🔴 Claude B — Eleştirmen', cls: 'hdr-b',
+         role: 'Sen sert bir reklam denetçisisin. Riskleri, zayıf noktaları ve gözden kaçanları öne çıkar. Stratejistin önerilerini sorgula. Türkçe, eleştirel ve net.' }
+  },
+  {
+    label: '🎯 Agresif vs Temkinli',
+    a: { name: '🔵 Claude A — Agresif', cls: 'hdr-a',
+         role: 'Sen agresif büyüme peşindeki bir performans pazarlamacısısın. Yüksek bütçe artışları, cesur kararlar öner. Risk almaktan çekinme. Türkçe.' },
+    b: { name: '🔴 Claude B — Temkinli', cls: 'hdr-b',
+         role: 'Sen veri odaklı, temkinli bir medya planlayıcısısın. Her kararı kanıtla destekle, küçük adımlar öner, riski minimize et. Türkçe.' }
+  },
+  {
+    label: '🧪 Kısa vs Detaylı',
+    a: { name: '🔵 Claude A — Özet', cls: 'hdr-a',
+         role: 'Çok kısa yanıt ver. Maksimum 5 madde, her madde tek cümle. Sadece en kritik noktalar. Türkçe.' },
+    b: { name: '🔴 Claude B — Detaylı', cls: 'hdr-b',
+         role: 'Çok detaylı ve kapsamlı yanıt ver. Tablo kullan, her noktayı açıkla, örnekler ver. Türkçe.' }
+  },
+  {
+    label: '🔴 Optimist vs Kötümser',
+    a: { name: '🔵 Claude A — Optimist', cls: 'hdr-a',
+         role: 'Her şeyin olumlu tarafını vurgula. Başarı fırsatlarını, iyi giden metrikleri öne çıkar. Türkçe.' },
+    b: { name: '🔴 Claude B — Kötümser', cls: 'hdr-b',
+         role: 'Neyin yanlış gidebileceğini söyle. Kötü metrikleri, tehlikeleri ve başarısızlık senaryolarını öne çıkar. Türkçe.' }
+  }
+];
 
-// ── Sistem promptu ────────────────────────────────────────────────────
-function buildSys(){
-  var camps  = (MX.campStore  || []).slice(0,10).map(function(r){ return {k:r.name&&r.name.slice(0,30), h:r.spend, roas:r.roas, satis:r.purchase}; });
-  var adsets = (MX.adsetStore || []).slice(0,12).map(function(r){ return {k:r.name&&r.name.slice(0,30), h:r.spend, roas:r.roas}; });
-  var hasMeta = camps.length > 0;
-  return 'Madmext erkek/kadın tekstil e-ticaret markası için Meta Ads uzmanısın. Türkçe yanıt ver. Kısa, net, aksiyonable ol.' +
-    (hasMeta ? '\nKAMPANYA VERİSİ: ' + JSON.stringify(camps) + '\nREKLAM SETİ: ' + JSON.stringify(adsets) : '\nMeta verisi yok — genel öneri yap.');
+var currentMode = 0;
+var histA = [], histB = [];
+var scores = {a:0, b:0, draw:0, total:0};
+var busy = false;
+var proxyUrl = localStorage.getItem('proxyUrl') || 'https://web-production-e5865.up.railway.app';
+
+function setMode(idx){
+  currentMode = idx;
+  document.querySelectorAll('.mode-btn').forEach(function(b,i){ b.classList.toggle('active', i===idx); });
+  histA = []; histB = [];
+  toast('Mod: ' + MODES[idx].label);
+}
+window.setMode = setMode;
+
+function buildDataCtx(){
+  var camps  = (MX.campStore  || []).slice(0,10).map(function(r){ return {k:(r.name||'').slice(0,28), spend:r.spend, roas:r.roas}; });
+  var adsets = (MX.adsetStore || []).slice(0,12).map(function(r){ return {k:(r.name||'').slice(0,28), spend:r.spend, roas:r.roas}; });
+  return (camps.length
+    ? '\nKAMPANYA VERİSİ:' + JSON.stringify(camps) + '\nREKLAM SETİ:' + JSON.stringify(adsets)
+    : '\nMeta verisi yok — genel öneri yap.');
 }
 
-// ── API çağrıları ─────────────────────────────────────────────────────
 async function callClaude(messages, sys){
   var r = await fetch(proxyUrl + '/claude', {
     method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-    body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1200, system:sys, messages:messages})
+    body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:1000, system:sys, messages:messages})
   });
   var d = await r.json();
-  return (d.content && d.content[0] && d.content[0].text) || ('Hata: ' + JSON.stringify(d.error||d));
+  return (d.content&&d.content[0]&&d.content[0].text) || ('Hata: '+JSON.stringify(d.error||d));
 }
 
-async function callGPT(messages, sys, model){
-  model = model || 'gpt-4o';
-  var msgs = [{role:'system', content:sys}].concat(messages);
-  var r = await fetch(proxyUrl + '/openai', {
-    method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include',
-    body: JSON.stringify({model:model, max_tokens:1200, messages:msgs})
-  });
-  var d = await r.json();
-  return (d.content && d.content[0] && d.content[0].text) || ('Hata: ' + JSON.stringify(d.error||d));
-}
-
-// ── Gönder ───────────────────────────────────────────────────────────
 window.arenaSend = async function(preMsg){
-  if(arenabusy) return;
+  if(busy) return;
   var msg = preMsg || (document.getElementById('arenaInput').value||'').trim();
   if(!msg) return;
   document.getElementById('arenaInput').value = '';
-
-  var useC  = document.getElementById('useClause').checked;
-  var useG  = document.getElementById('useGpt').checked;
-  var useO  = document.getElementById('useO1').checked;
-  if(!useC && !useG && !useO){ toast('En az bir model seçili olmalı'); return; }
-
-  arenabusy = true;
+  busy = true;
   document.getElementById('arenaSendBtn').disabled = true;
 
+  var mode = MODES[currentMode];
+  var dataCtx = buildDataCtx();
+  var sysA = 'Madmext tekstil e-ticaret Meta Ads. ' + mode.a.role + dataCtx;
+  var sysB = 'Madmext tekstil e-ticaret Meta Ads. ' + mode.b.role + dataCtx;
+
+  // Satır oluştur
   var row = document.createElement('div');
   row.className = 'arena-row';
 
-  // Kullanıcı mesajı
   var userDiv = document.createElement('div');
   userDiv.className = 'arena-user-msg';
   userDiv.textContent = msg;
   row.appendChild(userDiv);
 
-  // Yanıt kartları + thinking placeholder
-  var cols = (useC?1:0)+(useG?1:0)+(useO?1:0);
+  // Grid
   var grid = document.createElement('div');
-  grid.className = 'arena-responses cols-' + Math.min(cols, 2);
+  grid.className = 'arena-grid';
 
-  var cards = {};
-  if(useC)  cards.claude = makeCard('claude', '🟣 Claude Sonnet', grid);
-  if(useG)  cards.gpt    = makeCard('gpt',    '🟢 GPT-4o',        grid);
-  if(useO)  cards.o1     = makeCard('o1',     '🟡 o3-mini',       grid);
-
+  var cardA = makeCard('a', mode.a.name, mode.a.cls, grid);
+  var cardB = makeCard('b', mode.b.name, mode.b.cls, grid);
   row.appendChild(grid);
+
   document.getElementById('arenaMsgs').appendChild(row);
-  document.getElementById('arenaMsgs').scrollTop = 99999;
+  scrollBottom();
 
-  var sys = buildSys();
+  // History
+  histA.push({role:'user', content:msg});
+  histB.push({role:'user', content:msg});
 
-  // History push
-  if(useC)  arenaHistory.claude.push({role:'user', content:msg});
-  if(useG)  arenaHistory.gpt.push({role:'user',    content:msg});
-  if(useO)  arenaHistory.o1.push({role:'user',     content:msg});
-
-  // Paralel istek
-  var promises = [];
-  if(useC) promises.push(callClaude(arenaHistory.claude.slice(-8), sys).then(function(t){ return {key:'claude', text:t}; }).catch(function(e){ return {key:'claude', text:'Hata: '+e.message}; }));
-  if(useG) promises.push(callGPT(arenaHistory.gpt.slice(-8), sys, 'gpt-4o').then(function(t){ return {key:'gpt', text:t}; }).catch(function(e){ return {key:'gpt', text:'Hata: '+e.message}; }));
-  if(useO) promises.push(callGPT(arenaHistory.o1.slice(-8), sys, 'o3-mini').then(function(t){ return {key:'o1', text:t}; }).catch(function(e){ return {key:'o1', text:'Hata: '+e.message}; }));
-
-  // Her yanıt gelince anında göster (race)
+  // Paralel çağrı
   var results = {};
-  var pending = promises.map(function(p){
-    return p.then(function(res){
-      results[res.key] = res.text;
-      // Kartı güncelle
-      var card = cards[res.key];
-      if(card){
-        var body = card.querySelector('.arena-card-body');
-        body.classList.remove('thinking-anim');
-        body.innerHTML = renderMD(res.text);
-        // History güncelle
-        arenaHistory[res.key].push({role:'assistant', content:res.text});
-        // Oy butonlarını ekle
-        addVoteButtons(card, res.key, row);
-      }
-      document.getElementById('arenaMsgs').scrollTop = 99999;
-    });
-  });
+  await Promise.all([
+    callClaude(histA.slice(-8), sysA).then(function(t){
+      results.a = t;
+      fillCard(cardA, t, 'a', row);
+      histA.push({role:'assistant', content:t});
+    }).catch(function(e){
+      results.a = 'Hata: ' + e.message;
+      fillCard(cardA, results.a, 'a', row);
+    }),
+    callClaude(histB.slice(-8), sysB).then(function(t){
+      results.b = t;
+      fillCard(cardB, t, 'b', row);
+      histB.push({role:'assistant', content:t});
+    }).catch(function(e){
+      results.b = 'Hata: ' + e.message;
+      fillCard(cardB, results.b, 'b', row);
+    })
+  ]);
 
-  await Promise.all(pending);
+  // Denetim notu
+  addAudit(row, results, mode);
 
-  // Denetim özeti: çakışma var mı?
-  if(Object.keys(results).length >= 2){
-    addAuditSummary(row, results, msg);
-  }
-
-  arenaScores.total++;
-  updateScoreBar();
-  arenabusy = false;
+  scores.total++;
+  updateScores();
+  busy = false;
   document.getElementById('arenaSendBtn').disabled = false;
-  document.getElementById('arenaMsgs').scrollTop = 99999;
+  scrollBottom();
 };
 
-// ── Kart oluştur ──────────────────────────────────────────────────────
-function makeCard(key, label, grid){
+function makeCard(key, name, hdrCls, grid){
   var card = document.createElement('div');
   card.className = 'arena-card';
   card.dataset.key = key;
   card.innerHTML =
-    '<div class="arena-card-hdr ' + key + '-hdr">' +
-      '<span>' + label + '</span>' +
-      '<span style="font-size:9px;opacity:.6">düşünüyor...</span>' +
-    '</div>' +
-    '<div class="arena-card-body thinking-anim">▋</div>';
+    '<div class="arena-card-hdr '+hdrCls+'"><span>'+name+'</span><span style="font-size:9px;opacity:.5">düşünüyor...</span></div>' +
+    '<div class="arena-card-body thinking">▋</div>';
   grid.appendChild(card);
   return card;
 }
 
-// ── Oy butonu ekle ────────────────────────────────────────────────────
-function addVoteButtons(card, key, row){
+function fillCard(card, text, key, row){
+  var body = card.querySelector('.arena-card-body');
+  body.classList.remove('thinking');
+  body.innerHTML = renderMD(text);
+  // Header'daki "düşünüyor" kaldır
+  var hdrSpan = card.querySelector('.arena-card-hdr span:last-child');
+  if(hdrSpan) hdrSpan.textContent = '';
+  // Oy butonları
   var voteDiv = document.createElement('div');
   voteDiv.className = 'arena-vote';
   voteDiv.innerHTML =
-    '<span style="font-size:10px;color:var(--m);margin-right:4px">Bu yanıt:</span>' +
-    '<button class="vote-btn" onclick="arenaVote(this,\''+key+'\',\'win\',this.closest(\'.arena-row\'))">👍 Daha iyi</button>' +
-    '<button class="vote-btn" onclick="arenaVote(this,\''+key+'\',\'lose\',this.closest(\'.arena-row\'))">👎 Zayıf</button>' +
-    '<button class="vote-btn" onclick="arenaVote(this,\''+key+'\',\'ok\',this.closest(\'.arena-row\'))">🤝 Yeterli</button>';
+    '<button class="vote-btn" onclick="castVote(\''+key+'\',\'win\',this)">👍 Daha iyi</button>' +
+    '<button class="vote-btn" onclick="castVote(\''+key+'\',\'draw\',this)">🤝 Berabere</button>' +
+    '<button class="vote-btn" onclick="castVote(\''+key+'\',\'lose\',this)">👎 Zayıf</button>';
   card.appendChild(voteDiv);
-  // Header'daki "düşünüyor..." kaldır
-  var hdr = card.querySelector('.arena-card-hdr span:last-child');
-  if(hdr) hdr.textContent = '';
+  scrollBottom();
 }
 
-// ── Denetim özeti ─────────────────────────────────────────────────────
-function addAuditSummary(row, results, question){
-  // Basit çakışma tespiti: Kelime benzerliği
-  var texts = Object.values(results);
-  if(texts.length < 2) return;
-
-  // Her yanıttan ilk 3 tavsiye kelimesini al ve karşılaştır
-  var summary = document.createElement('div');
-  summary.className = 'audit-summary';
-
-  var keys = Object.keys(results);
-  var labels = {claude:'Claude', gpt:'GPT-4o', o1:'o3-mini'};
-
-  // Uzunluk karşılaştırması (basit farklılık sinyali)
-  var wordCounts = {};
-  keys.forEach(function(k){ wordCounts[k] = results[k].split(/\s+/).length; });
-  var maxKey = keys.reduce(function(a,b){ return wordCounts[a]>wordCounts[b]?a:b; });
-  var minKey = keys.reduce(function(a,b){ return wordCounts[a]<wordCounts[b]?a:b; });
-
-  var hasConflict = (wordCounts[maxKey] / wordCounts[minKey]) > 1.8;
-
-  summary.innerHTML =
-    '<strong>🔍 Denetim Notu</strong> — ' +
-    (hasConflict
-      ? labels[maxKey] + ' daha kapsamlı yanıt verdi (' + wordCounts[maxKey] + ' kelime vs ' + wordCounts[minKey] + ' kelime). Detay farkı var — her iki yanıtı karşılaştırın.'
-      : 'Her iki model benzer kapsamda yanıt verdi. Oy vererek hangisinin daha isabetli olduğunu işaretleyin.') +
-    '<br><span style="font-size:10px;color:var(--m)">Oy verildikçe hangi AI bu hesaba daha uygun analiz yapıyor ölçülür.</span>';
-
-  if(hasConflict){
-    // Çakışan kartları sarıyla vurgula
-    Object.keys(results).forEach(function(k){
-      var card = row.querySelector('[data-key="'+k+'"]');
-      if(card && k === minKey) card.classList.add('conflict');
-    });
+function addAudit(row, results, mode){
+  var wA = (results.a||'').split(/\s+/).length;
+  var wB = (results.b||'').split(/\s+/).length;
+  var diff = Math.abs(wA - wB);
+  var note;
+  if(diff > wA * 0.6){
+    note = (wA > wB ? mode.a.name : mode.b.name) + ' çok daha kapsamlı yanıt verdi (' + Math.max(wA,wB) + ' vs ' + Math.min(wA,wB) + ' kelime). Detay farkı büyük — her ikisini dikkatli karşılaştır.';
+  } else {
+    note = 'Her iki yanıt benzer kapsamda. Bakış açısı farkına odaklan, hangisi daha isabetli?';
   }
-
-  row.appendChild(summary);
+  var box = document.createElement('div');
+  box.className = 'audit-box';
+  box.innerHTML = '<strong>🔍 Denetim:</strong> ' + note + '<br><span style="font-size:10px;color:var(--m)">Mod: ' + mode.label + '</span>';
+  row.appendChild(box);
 }
 
-// ── Oy ver ────────────────────────────────────────────────────────────
-window.arenaVote = function(btn, key, type, row){
-  // Aynı satırdaki tüm vote-btn'leri disable et
-  if(row) row.querySelectorAll('.vote-btn').forEach(function(b){ b.disabled = true; });
-  btn.classList.add('voted');
+window.castVote = function(key, type, btn){
+  var row = btn.closest('.arena-row');
+  // Tüm oy butonlarını kilitle
+  row.querySelectorAll('.vote-btn').forEach(function(b){ b.disabled = true; });
+  btn.classList.add(type === 'win' ? 'voted-win' : 'voted-lose');
 
   if(type === 'win'){
-    arenaScores[key]++;
-    toast(({claude:'Claude',gpt:'GPT-4o',o1:'o3-mini'}[key]) + ' bu turda kazandı 🏆');
-    // Kazanan kartı yeşil yap
-    var card = btn.closest('.arena-card');
-    if(card) card.classList.add('agree');
-  } else if(type === 'lose'){
-    toast('Geri bildirim kaydedildi 👍');
+    scores[key]++;
+    var card = row.querySelector('[data-key="'+key+'"]');
+    if(card) card.classList.add('winner');
+    // Rakip kartı soluklaştır
+    var other = row.querySelector('[data-key="'+(key==='a'?'b':'a')+'"]');
+    if(other) other.classList.add('loser');
+    toast((key==='a'?'A':'B') + ' bu turu kazandı 🏆');
+  } else if(type === 'draw'){
+    scores.draw++;
+    toast('Beraberlik 🤝');
+  } else {
+    toast('Geri bildirim kaydedildi');
   }
-  updateScoreBar();
+  updateScores();
 };
 
-// ── Skor güncelle ────────────────────────────────────────────────────
-function updateScoreBar(){
-  document.getElementById('scoreClaudeEl').textContent = arenaScores.claude;
-  document.getElementById('scoreGptEl').textContent    = arenaScores.gpt;
-  document.getElementById('scoreO1El').textContent     = arenaScores.o1;
-  document.getElementById('scoreTotalEl').textContent  = arenaScores.total;
+function updateScores(){
+  document.getElementById('scoreA').textContent = scores.a;
+  document.getElementById('scoreB').textContent = scores.b;
+  document.getElementById('scoreDraw').textContent = scores.draw;
+  document.getElementById('scoreTotal').textContent = scores.total;
+  var leader = document.getElementById('scoreLeader');
+  if(scores.a > scores.b) leader.textContent = '← A önde';
+  else if(scores.b > scores.a) leader.textContent = 'B önde →';
+  else leader.textContent = '';
 }
 
-// ── Temizle / Kopyala ─────────────────────────────────────────────────
 window.arenaClear = function(){
-  arenaHistory = {claude:[], gpt:[], o1:[]};
-  arenaScores  = {claude:0, gpt:0, o1:0, total:0};
-  updateScoreBar();
+  histA = []; histB = [];
+  scores = {a:0, b:0, draw:0, total:0};
+  updateScores();
   document.getElementById('arenaMsgs').innerHTML =
-    '<div style="text-align:center;color:var(--m);font-size:12px;padding:20px 0">Arena temizlendi. Yeni soru sorabilirsiniz.</div>';
+    '<div style="text-align:center;color:var(--m);font-size:12px;padding:24px 0">Arena temizlendi.</div>';
 };
 
 window.arenaExport = function(){
-  var lines = [];
-  Object.keys(arenaHistory).forEach(function(k){
-    arenaHistory[k].forEach(function(m){
-      lines.push('[' + k.toUpperCase() + '|' + m.role + '] ' + m.content);
-    });
+  var lines = ['=== CLAUDE ARENA SONUÇLARI ===','Skor — A:'+scores.a+' B:'+scores.b+' Beraberlik:'+scores.draw,''];
+  histA.forEach(function(m,i){
+    if(m.role==='user') lines.push('SORU: '+m.content);
+    else lines.push('A: '+m.content);
+    if(histB[i]) lines.push('B: '+histB[i].content);
+    lines.push('');
   });
-  lines.push('\nSKOR — Claude:' + arenaScores.claude + ' GPT:' + arenaScores.gpt + ' o3:' + arenaScores.o1);
-  navigator.clipboard.writeText(lines.join('\n\n')).then(function(){ toast('Arena sohbeti kopyalandı'); });
+  navigator.clipboard.writeText(lines.join('\n')).then(function(){ toast('Kopyalandı ✓'); });
 };
 
-// ── Context güncelle ─────────────────────────────────────────────────
+function scrollBottom(){ document.getElementById('arenaMsgs').scrollTop = 99999; }
+
 function updateCtx(){
-  var camps  = (MX.campStore  || []).length;
-  var adsets = (MX.adsetStore || []).length;
+  var camps = (MX.campStore||[]).length;
   var el = document.getElementById('arenaCtx');
-  if(camps || adsets){
-    el.textContent = camps + ' kampanya, ' + adsets + ' reklam seti yüklü — her iki AI da bu veriyi görüyor';
-  } else {
-    el.textContent = 'Meta verisi yok — Bağlan butonuna basın (bağlantısız da çalışır)';
-  }
+  el.textContent = camps
+    ? camps + ' kampanya yüklü — her iki Claude da Meta verisini görüyor'
+    : 'Meta verisi yok — Bağlan butonuna basın (bağlantısız da çalışır)';
 }
 
 window.addEventListener('mx:connected', updateCtx);
