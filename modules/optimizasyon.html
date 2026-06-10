@@ -896,25 +896,55 @@ window.optApplyReal = function(){
   var rule = selectedRule;
   if(!rule){ toast('Önce kural seç'); return; }
 
-  // MX.adsetStore: zenginleştirilmiş mapR() verisi (spend, roas, ctr vs. mevcut)
-  // _budgetId null olabilir (ABO'larda adset.id, CBO'larda campaign.id kullanılır)
+  // Veri yoksa doğrudan API'den çek
   var adsets = (MX.adsetStore || []).filter(function(r){ return r.spend > 0 || r.roas > 0; });
   if(!adsets.length){
-    // Meta Ads sekmesinden veri yüklenmemiş
+    if(!window._isConnected){ toast('Önce Bağlan butonuna bas'); return; }
     optTab('chat');
-    var noDataDiv = document.createElement('div');
-    noDataDiv.className = 'msg claude';
-    noDataDiv.innerHTML = renderMD(
-      '**⚠️ Meta verisi yüklenmemiş**\n\n' +
-      'Optimizasyon kuralını çalıştırmak için önce Meta Ads verisini yükleyin:\n\n' +
-      '1. Sol menüden **Meta Ads** sayfasına git\n' +
-      '2. **Bağlan** butonuna bas\n' +
-      '3. Veri yüklendikten sonra bu sayfaya geri dön\n\n' +
-      '_Not: Meta Ads sayfasında "Reklam Setleri" sekmesini açman yeterli._'
-    );
-    document.getElementById('optimMsgs').appendChild(noDataDiv);
-    document.getElementById('optimMsgs').scrollTop = 99999;
-    return;
+    addMsg('Reklam seti verisi çekiliyor...', 'sys', 'optimMsgs');
+    try {
+      var insRes = await api(window.AID + '/insights', {
+        fields: 'adset_id,adset_name,spend,impressions,clicks,ctr,cpc,cpp,frequency,purchase_roas,actions,action_values',
+        level: 'adset', date_preset: 'last_7d', limit: 200,
+        action_attribution_windows: window.ATTR
+      });
+      var adsetRes = await api(window.AID + '/adsets', {
+        fields: 'id,name,status,effective_status,daily_budget,lifetime_budget,campaign_id', limit: 200
+      });
+      var amap = {};
+      ((adsetRes && adsetRes.data) || []).forEach(function(a){ amap[a.id] = a; });
+      adsets = ((insRes && insRes.data) || []).map(function(r){
+        var a = amap[r.adset_id] || {};
+        var roas = (r.purchase_roas && r.purchase_roas[0]) ? parseFloat(r.purchase_roas[0].value||0) : 0;
+        var purchase = 0; var revenue = 0;
+        if(r.actions) r.actions.forEach(function(x){ if(x.action_type==='purchase') purchase=parseInt(x.value||0); });
+        if(r.action_values) r.action_values.forEach(function(x){ if(x.action_type==='purchase') revenue=parseFloat(x.value||0); });
+        var daily = a.daily_budget ? parseInt(a.daily_budget)/100 : 0;
+        var lifetime = a.lifetime_budget ? parseInt(a.lifetime_budget)/100 : 0;
+        var budgetAmt = daily ? daily.toFixed(0)+'₺/gün' : (lifetime ? lifetime.toFixed(0)+'₺ toplam' : '—');
+        var budgetType = daily ? 'adset' : (lifetime ? 'adset' : 'adset');
+        return {
+          name: r.adset_name || '—',
+          spend: parseFloat(r.spend||0), roas: roas, revenue: revenue,
+          clicks: parseInt(r.clicks||0), ctr: parseFloat(r.ctr||0),
+          cpc: parseFloat(r.cpc||0), cpm: parseFloat(r.cpp||0),
+          freq: parseFloat(r.frequency||0), results: purchase, impr: parseInt(r.impressions||0),
+          effectiveStatus: a.effective_status || a.status || 'ACTIVE',
+          budgetAmt: budgetAmt, _budgetType: budgetType,
+          _budgetId: a.id || r.adset_id,
+          _id: a.id || r.adset_id
+        };
+      }).filter(function(r){ return r.spend > 0; });
+      MX.adsetStore = adsets;
+      if(!adsets.length){
+        addMsg('Aktif harcaması olan reklam seti bulunamadı. Tarih aralığını kontrol edin.', 'sys', 'optimMsgs');
+        return;
+      }
+      addMsg(adsets.length + ' reklam seti yüklendi. Kural uygulanıyor...', 'sys', 'optimMsgs');
+    } catch(e) {
+      addMsg('Veri çekilemedi: ' + e.message, 'sys', 'optimMsgs');
+      return;
+    }
   }
 
   var avgRoas = adsets.reduce(function(s,r){return s+(r.roas||0);},0) / adsets.length;
