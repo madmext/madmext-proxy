@@ -362,9 +362,9 @@ var _defaultUrl = 'https://web-production-e5865.up.railway.app';
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || _defaultUrl;
 if(!localStorage.getItem('proxyUrl')) localStorage.setItem('proxyUrl', _defaultUrl);
 initUser();
-// Başlangıçta URL'e göre sayfa yükle
-var startPage = urlToPage(location.pathname) || 'dashboard';
-nav(startPage, null);
+// Her zaman dashboard ile başla
+nav('dashboard', null);
+// URL'den sayfa değiştirilmişse popstate ile handle edilir
 setInterval(updateTaskBadge, 60000);
 // Otomatik bağlan - shared.js yüklenene kadar bekle
 (function autoConnect(){
