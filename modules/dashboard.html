@@ -555,18 +555,17 @@ function renderAlerts(){
 // loadDashboard'u wrap et
 var _origLoad = loadDashboard;
 window.loadDashboard = async function(){
-  // Önce uyarı panelini yükleniyor göster
-  renderAlerts();
-  // Dashboard verilerini yükle
-  await _origLoad();
-  // Adset verisi yoksa yükle
+  renderAlerts(); // önce loading göster
+  await _origLoad(); // dashboard verilerini çek (Meta + GA4)
+
+  // Adset verisi yoksa yükle ve bekle
   if(!(MX.adsetStore||[]).length && typeof loadMetaAdsets==='function'){
-    await loadMetaAdsets();
+    await new Promise(function(resolve){
+      loadMetaAdsets().then(resolve).catch(resolve);
+      setTimeout(resolve, 8000); // max 8 sn bekle
+    });
   }
-  // Uyarıları güncelle
-  renderAlerts();
-  // 3 sn sonra tekrar güncelle (veriler geç gelebilir)
-  setTimeout(renderAlerts, 3000);
+  renderAlerts(); // veri geldi, uyarıları göster
 };
 
 if(window._isConnected){
