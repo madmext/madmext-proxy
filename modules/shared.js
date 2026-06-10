@@ -269,3 +269,26 @@ console.log('✓ Madmext shared.js yüklendi');
     }
   } catch(e) {}
 })();
+
+// ── Window'a expose et (modüller erişebilsin) ────────────────────────
+window.AID = AID;
+window.ATTR = ATTR;
+window.api = api;
+window.ga4 = ga4;
+window.groas = groas;
+window.gav = gav;
+window.ga4val = ga4val;
+window.roasColor = roasColor;
+window.toast = toast;
+window.logAction = logAction;
+window.renderMD = renderMD;
+window.addMsg = addMsg;
+window.addClaudeMsg = addClaudeMsg;
+window.addThinking = addThinking;
+window.parseAndRenderActions = parseAndRenderActions;
+window.getBi = getBi;
+window.claude = claude;
+window.connect = connect;
+window.updateTaskBadge = updateTaskBadge;
+window.saveServerLogs = saveServerLogs;
+window.loadServerLogs = loadServerLogs;
