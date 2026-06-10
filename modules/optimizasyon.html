@@ -901,13 +901,8 @@ window.addEventListener('mx:connected', function(){
   }
 });
 
-})();
-</script>
 
-<script>
-// ── GERÇEK KURAL UYGULAMA ENJİNİ ──────────────────────────────────────
-(function(){
-
+// ── KURAL UYGULAMA ENJİNİ (entegre) ──
 // Metrik değerini adset'ten oku
 function getMetric(adset, metric, period){
   // period şimdilik store verisini kullanıyor (7d varsayılan)
@@ -1248,10 +1243,8 @@ window.optAnalyze = function(){
   aiSend('optim', msg);
 };
 
-})();
-</script>
 
-<script>
+// ── LOG + LEVEL (entegre) ──
 // Log sekmesini bağlantı kurulunca güncelle
 window.addEventListener('mx:connected', function(){
   // Sunucu loglarını yükle
@@ -1259,4 +1252,7 @@ window.addEventListener('mx:connected', function(){
 });
 // Sayfa açılışında log'u yükle (önceki session varsa)
 if(typeof renderLog === 'function') renderLog();
+})();
 </script>
+
+
