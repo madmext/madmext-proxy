@@ -73,6 +73,23 @@
 .opt-my-rule-desc{font-size:11px;color:var(--m);margin-top:2px}
 .opt-my-rule-actions{display:flex;gap:6px}
 @media(max-width:800px){.opt-wrap{grid-template-columns:1fr;height:auto}.opt-left{max-height:260px;border-right:none;border-bottom:1px solid var(--b)}}
+/* Seviye butonları */
+.opt-lvl-btn{background:var(--s2);border:1px solid var(--b2);color:var(--m);padding:3px 9px;border-radius:4px;font-size:10px;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s}
+.opt-lvl-btn:hover{color:var(--t)}
+.opt-lvl-btn.active{background:rgba(24,119,242,.15);border-color:var(--a);color:var(--a);font-weight:700}
+/* Log kartları */
+.log-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.log-card.increase{border-left:3px solid var(--g)}
+.log-card.decrease{border-left:3px solid var(--y)}
+.log-card.pause{border-left:3px solid var(--r)}
+.log-card.budget_change{border-left:3px solid var(--a)}
+.log-icon{font-size:20px;flex-shrink:0;margin-top:2px}
+.log-info{flex:1;min-width:0}
+.log-name{font-size:13px;font-weight:600;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-detail{font-size:11px;color:var(--m);margin-top:3px;line-height:1.6}
+.log-time{font-size:10px;color:var(--m);font-family:'DM Mono',monospace;white-space:nowrap;text-align:right}
+.log-change{font-family:'DM Mono',monospace;font-size:13px;font-weight:700;text-align:right;white-space:nowrap}
+.log-change.up{color:var(--g)}.log-change.dn{color:var(--r)}.log-change.pause{color:var(--r)}
 </style>
 
 <div class="opt-wrap" id="optWrap">
@@ -87,11 +104,35 @@
 
   <!-- SAĞ: Detay + Chat + Oluştur -->
   <div class="opt-right">
+    <!-- Filtre çubuğu: Seviye + Parametre seçimi -->
+    <div id="optFilterBar" style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--b);background:var(--bg);flex-wrap:wrap;flex-shrink:0">
+      <span style="font-size:10px;color:var(--m);font-weight:600">SEVİYE:</span>
+      <div style="display:flex;gap:4px">
+        <button class="opt-lvl-btn active" id="lvlAll"    onclick="setLevel('all')"     >Tümü</button>
+        <button class="opt-lvl-btn"        id="lvlCamp"   onclick="setLevel('campaign')" >Kampanya</button>
+        <button class="opt-lvl-btn"        id="lvlAdset"  onclick="setLevel('adset')"    >Reklam Seti</button>
+        <button class="opt-lvl-btn"        id="lvlAd"     onclick="setLevel('ad')"       >Reklam</button>
+      </div>
+      <span style="font-size:10px;color:var(--m);font-weight:600;margin-left:8px">MİN. ROAS:</span>
+      <input type="number" id="optMinRoas" value="0" min="0" step="0.5" style="width:54px;padding:3px 6px;background:var(--s);border:1px solid var(--b2);color:var(--t);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace">
+      <span style="font-size:10px;color:var(--m);font-weight:600">MİN. HARCAMA:</span>
+      <input type="number" id="optMinSpend" value="0" min="0" step="50" style="width:64px;padding:3px 6px;background:var(--s);border:1px solid var(--b2);color:var(--t);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace">
+      <span style="font-size:10px;color:var(--m)">₺</span>
+      <span style="font-size:10px;color:var(--m);font-weight:600;margin-left:4px">SIRA:</span>
+      <select id="optSortBy" style="padding:3px 6px;background:var(--s);border:1px solid var(--b2);color:var(--t);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace">
+        <option value="roas_desc">ROAS ↓</option>
+        <option value="roas_asc">ROAS ↑</option>
+        <option value="spend_desc">Harcama ↓</option>
+        <option value="spend_asc">Harcama ↑</option>
+        <option value="ctr_desc">CTR ↓</option>
+      </select>
+    </div>
     <div class="opt-tabs">
-      <div class="opt-tab active" id="tabDetail" onclick="optTab('detail')">Detay</div>
-      <div class="opt-tab" id="tabChat" onclick="optTab('chat')">AI Asistan</div>
-      <div class="opt-tab" id="tabCreate" onclick="optTab('create')" id="tabCreateTab" style="display:none">+ Yeni Kural</div>
-      <div class="opt-tab" id="tabMyRules" onclick="optTab('myRules')">Özel Kurallarım</div>
+      <div class="opt-tab active" id="tabDetail"   onclick="optTab('detail')">Detay</div>
+      <div class="opt-tab"        id="tabChat"     onclick="optTab('chat')">AI Asistan</div>
+      <div class="opt-tab"        id="tabCreate"   onclick="optTab('create')" style="display:none">+ Yeni Kural</div>
+      <div class="opt-tab"        id="tabMyRules"  onclick="optTab('myRules')">Özel Kurallarım</div>
+      <div class="opt-tab"        id="tabLog"      onclick="optTab('log')">📋 İşlem Geçmişi</div>
     </div>
 
     <!-- Detay -->
@@ -245,6 +286,24 @@
       <div class="opt-my-rules" id="myRulesList">
         <div style="text-align:center;padding:40px;color:var(--m);font-size:12px">Henüz özel kural oluşturmadınız.<br>+ Yeni Kural sekmesinden oluşturabilirsiniz.</div>
       </div>
+    </div>
+
+    <!-- İşlem Geçmişi / Log -->
+    <div class="opt-tab-content" id="contentLog" style="flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--b);flex-shrink:0;background:var(--bg)">
+        <span style="font-size:11px;font-weight:700;color:var(--t)">📋 Uygulanan İşlemler</span>
+        <div style="display:flex;gap:6px">
+          <select id="logFilterType" onchange="renderLog()" style="padding:3px 8px;background:var(--s);border:1px solid var(--b2);color:var(--t);border-radius:4px;font-size:11px;font-family:'DM Mono',monospace">
+            <option value="all">Tüm işlemler</option>
+            <option value="budget_increase">Bütçe Artırma</option>
+            <option value="budget_change">Bütçe Değişikliği</option>
+            <option value="pause">Durdurma</option>
+          </select>
+          <button class="btn sm sec" onclick="renderLog()">↻ Yenile</button>
+          <button class="btn sm dng" onclick="clearLog()">🗑 Temizle</button>
+        </div>
+      </div>
+      <div id="logList" style="flex:1;overflow-y:auto;padding:12px 16px"></div>
     </div>
   </div>
 </div>
@@ -532,13 +591,18 @@ window.selectRule = function(id){
 
 // ── TABS ─────────────────────────────────────────────────────────────
 window.optTab = function(tab){
-  ['detail','chat','create','myRules'].forEach(function(t){
-    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active');
-    document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1)).classList.remove('active');
+  ['detail','chat','create','myRules','log'].forEach(function(t){
+    var tabEl = document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1));
+    var contEl = document.getElementById('content'+t.charAt(0).toUpperCase()+t.slice(1));
+    if(tabEl) tabEl.classList.remove('active');
+    if(contEl) contEl.classList.remove('active');
   });
-  document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
-  document.getElementById('content'+tab.charAt(0).toUpperCase()+tab.slice(1)).classList.add('active');
+  var selTab = document.getElementById('tab'+tab.charAt(0).toUpperCase()+tab.slice(1));
+  var selCont = document.getElementById('content'+tab.charAt(0).toUpperCase()+tab.slice(1));
+  if(selTab) selTab.classList.add('active');
+  if(selCont) selCont.classList.add('active');
   if(tab === 'myRules') renderMyRules();
+  if(tab === 'log') renderLog();
 };
 
 // ── UYGULA / ANALİZ ──────────────────────────────────────────────────
@@ -727,7 +791,96 @@ window.deleteCustomRule = function(id){
 
 window.optShowCreate = function(){ optTab('create'); };
 
-// Yetki kontrolü
+// ── SEVİYE FİLTRESİ ──────────────────────────────────────────────
+var _currentLevel = 'all';
+window.setLevel = function(lvl){
+  _currentLevel = lvl;
+  ['all','campaign','adset','ad'].forEach(function(l){
+    var btn = document.getElementById('lvl' + l.charAt(0).toUpperCase() + l.slice(1));
+    if(!btn) return;
+    btn.classList.toggle('active', l === lvl);
+  });
+};
+
+// ── LOG RENDER ────────────────────────────────────────────────────
+window.renderLog = function(){
+  var el = document.getElementById('logList');
+  if(!el) return;
+
+  // Hem MX.budgetLog hem server actionLog'u birleştir
+  var logs = (MX.budgetLog || []).slice();
+
+  // Filtre
+  var ftype = (document.getElementById('logFilterType') || {}).value || 'all';
+  if(ftype !== 'all'){
+    logs = logs.filter(function(l){ return (l.type||'budget_increase') === ftype; });
+  }
+
+  if(!logs.length){
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--m);font-size:12px">' +
+      'Henüz işlem yapılmamış.<br>Kural uygulayınca burada görünür.</div>';
+    return;
+  }
+
+  el.innerHTML = logs.map(function(l){
+    var type    = l.type || 'budget_increase';
+    var icon    = type==='pause'?'⏸':type==='budget_increase'||l.new>l.old?'📈':'📉';
+    var cls     = type==='pause'?'pause':(l.new>l.old?'increase':'decrease');
+    var change  = '';
+    var changeCls = '';
+    if(type === 'pause'){
+      change = 'Durduruldu'; changeCls = 'pause';
+    } else if(l.old !== undefined && l.new !== undefined){
+      var diff = l.new - l.old;
+      var pct  = l.old > 0 ? (diff/l.old*100).toFixed(1) : 0;
+      change = (diff>0?'+':'')+diff.toFixed(0)+'₺ ('+(diff>0?'+':'')+pct+'%)';
+      changeCls = diff>0?'up':'dn';
+    }
+    var time = l.time ? new Date(l.time).toLocaleString('tr',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+    var ruleLabel = l.rule ? ('<span style="background:rgba(24,119,242,.1);color:var(--a);padding:1px 6px;border-radius:3px;font-size:10px;font-family:'DM Mono',monospace">'+l.rule+'</span> ') : '';
+    var baseRoas  = (l.baseline && l.baseline.roas) ? 'Baseline ROAS: <b>'+l.baseline.roas.toFixed(2)+'x</b> · ' : '';
+    var entityType = l.entityType || l.type || (l.pct ? 'budget' : '—');
+
+    return '<div class="log-card '+cls+'">' +
+      '<div class="log-icon">'+icon+'</div>' +
+      '<div class="log-info">' +
+        '<div class="log-name">'+(l.name||'—')+'</div>' +
+        '<div class="log-detail">'+ruleLabel+baseRoas+
+          (l.old!==undefined?l.old.toFixed(0)+'₺':'')+(l.new!==undefined?' → '+l.new.toFixed(0)+'₺/gün':'')+
+          ' · '+entityType+
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="log-change '+changeCls+'">'+change+'</div>' +
+        '<div class="log-time">'+time+'</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+};
+
+window.clearLog = function(){
+  if(!confirm('Tüm işlem geçmişi silinsin mi?')) return;
+  MX.budgetLog = [];
+  saveServerLogs();
+  renderLog();
+  toast('Geçmiş temizlendi');
+};
+
+// ── OPT APPLY: Filtre parametrelerini de uygula ───────────────────
+// Mevcut optApplyReal üzerine filtre wrapper
+var _origOptApplyReal = window.optApplyReal;
+window.optApplyReal = async function(){
+  // Filtre değerlerini geçici olarak MX'e yaz ki motor okusun
+  window._optFilter = {
+    level:    _currentLevel,
+    minRoas:  parseFloat(document.getElementById('optMinRoas')  && document.getElementById('optMinRoas').value  || 0),
+    minSpend: parseFloat(document.getElementById('optMinSpend') && document.getElementById('optMinSpend').value || 0),
+    sortBy:   document.getElementById('optSortBy') ? document.getElementById('optSortBy').value : 'roas_desc'
+  };
+  await _origOptApplyReal();
+};
+
+// ── Yetki kontrolü
 function checkPermissions(){
   var canCreate = ROLE_CAN_CREATE.indexOf(currentRole) !== -1;
   var createBtn = document.getElementById('optCreateBtn');
@@ -897,7 +1050,28 @@ window.optApplyReal = function(){
   if(!rule){ toast('Önce kural seç'); return; }
 
   // Veri yoksa doğrudan API'den çek
-  var adsets = (MX.adsetStore || []).filter(function(r){ return r.spend > 0 || r.roas > 0; });
+  var _f = window._optFilter || {};
+  var adsets = (MX.adsetStore || []).filter(function(r){
+    if(!(r.spend > 0 || r.roas > 0)) return false;
+    if(_f.minRoas  && (r.roas  ||0) < _f.minRoas)  return false;
+    if(_f.minSpend && (r.spend ||0) < _f.minSpend) return false;
+    // Seviye filtresi
+    if(_f.level && _f.level !== 'all'){
+      if(_f.level === 'campaign' && r._budgetType !== 'campaign') return false;
+      if(_f.level === 'adset'    && r._budgetType === 'campaign') return false;
+    }
+    return true;
+  });
+  // Sıralama
+  var _s = (_f.sortBy || 'roas_desc');
+  adsets.sort(function(a,b){
+    if(_s==='roas_desc')  return (b.roas||0)-(a.roas||0);
+    if(_s==='roas_asc')   return (a.roas||0)-(b.roas||0);
+    if(_s==='spend_desc') return (b.spend||0)-(a.spend||0);
+    if(_s==='spend_asc')  return (a.spend||0)-(b.spend||0);
+    if(_s==='ctr_desc')   return (b.ctr||0)-(a.ctr||0);
+    return 0;
+  });
   if(!adsets.length){
     if(!window._isConnected){ toast('Önce Bağlan butonuna bas'); return; }
     optTab('chat');
@@ -1075,4 +1249,14 @@ window.optAnalyze = function(){
 };
 
 })();
+</script>
+
+<script>
+// Log sekmesini bağlantı kurulunca güncelle
+window.addEventListener('mx:connected', function(){
+  // Sunucu loglarını yükle
+  loadServerLogs().then(function(){ renderLog(); });
+});
+// Sayfa açılışında log'u yükle (önceki session varsa)
+if(typeof renderLog === 'function') renderLog();
 </script>
