@@ -305,7 +305,7 @@ async function loadModule(page) {
   el.innerHTML = '<div class="module-loading">⏳ Yükleniyor...</div>';
 
   try {
-    var r = await fetch('/modules/' + meta.module + '.html?v=2026.1');
+    var r = await fetch('/modules/' + meta.module + '.html?v=2026.2');
     if(!r.ok) throw new Error('HTTP ' + r.status);
     var html = await r.text();
 
