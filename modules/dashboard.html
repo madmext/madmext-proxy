@@ -172,17 +172,17 @@
 // ── Global değişkenleri al ──────────────────────────────────────────────
 // shared.js <script src> ile global scope'ta yükleniyor
 // (new Function) içinden global scope'a erişim var
-var _g = (new Function('return {AID:typeof AID!=="undefined"?AID:null,ATTR:typeof ATTR!=="undefined"?ATTR:null,api:typeof api!=="undefined"?api:null,ga4:typeof ga4!=="undefined"?ga4:null,groas:typeof groas!=="undefined"?groas:null,gav:typeof gav!=="undefined"?gav:null,ga4val:typeof ga4val!=="undefined"?ga4val:null,roasColor:typeof roasColor!=="undefined"?roasColor:null,toast:typeof toast!=="undefined"?toast:null,logAction:typeof logAction!=="undefined"?logAction:null}'))();
-var AID = _g.AID || 'act_1346348685568168';
-var ATTR = _g.ATTR || '["7d_click","1d_view"]';
-var api = _g.api || function(){console.error('api() yok');return Promise.resolve({error:{message:'api bağlı değil'}});};
-var ga4 = _g.ga4 || function(){return Promise.resolve(null);};
-var groas = _g.groas || function(r){if(!r)return 0;var x=(r.purchase_roas||[]);if(Array.isArray(x)&&x[0])return parseFloat(x[0].value||0);if(typeof x==='number')return x;return 0;};
-var gav = _g.gav || function(actions,type){if(!actions)return 0;var x=actions.find(function(a){return a.action_type===type;});return x?parseInt(x.value||0):0;};
-var ga4val = _g.ga4val || function(res,idx){return res&&res.rows&&res.rows[0]?res.rows[0].metricValues[idx].value:'0';};
-var roasColor = _g.roasColor || function(r){return r>=3?'var(--g)':r>=1.5?'var(--y)':'var(--r)';};
-var toast = _g.toast || function(m){console.log(m);};
-var logAction = _g.logAction || function(){};
+// Shared fonksiyonları window üzerinden direkt al
+var AID      = window.AID      || 'act_1346348685568168';
+var ATTR     = window.ATTR     || '["7d_click","1d_view"]';
+var api      = window.api      || function(){ return Promise.resolve({error:{message:'api yok'}}); };
+var ga4      = window.ga4      || function(){ return Promise.resolve(null); };
+var groas    = window.groas    || function(r){ if(!r)return 0; var x=(r.purchase_roas||[]); return Array.isArray(x)&&x[0]?parseFloat(x[0].value||0):0; };
+var gav      = window.gav      || function(a,t){ if(!a)return 0; var x=a.find(function(v){return v.action_type===t;}); return x?parseInt(x.value||0):0; };
+var ga4val   = window.ga4val   || function(r,i,j){ return r&&r.rows&&r.rows[j||0]&&r.rows[j||0].metricValues&&r.rows[j||0].metricValues[i||0]?r.rows[j||0].metricValues[i||0].value:'0'; };
+var roasColor= window.roasColor|| function(v){ return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)'; };
+var toast    = window.toast    || function(m){ console.log(m); };
+var logAction= window.logAction|| function(){}
 // ── Tarih yardımcıları ─────────────────────────────────────────────────
 function getDashDP(){
   var v=document.getElementById('dashPreset').value;
