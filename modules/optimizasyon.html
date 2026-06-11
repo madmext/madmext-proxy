@@ -837,7 +837,7 @@ window.renderLog = function(){
       changeCls = diff>0?'up':'dn';
     }
     var time = l.time ? new Date(l.time).toLocaleString('tr',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
-    var ruleLabel = l.rule ? ('<span style="background:rgba(24,119,242,.1);color:var(--a);padding:1px 6px;border-radius:3px;font-size:10px;font-family:'DM Mono',monospace">'+l.rule+'</span> ') : '';
+    var ruleLabel = l.rule ? ('<span style="background:rgba(24,119,242,.1);color:var(--a);padding:1px 6px;border-radius:3px;font-size:10px;font-family:DM Mono,monospace">'+l.rule+'</span> ') : '';
     var baseRoas  = (l.baseline && l.baseline.roas) ? 'Baseline ROAS: <b>'+l.baseline.roas.toFixed(2)+'x</b> · ' : '';
     var entityType = l.entityType || l.type || (l.pct ? 'budget' : '—');
 
@@ -1044,7 +1044,7 @@ function calcNewBudget(adset, rule){
 }
 
 // ── ANA UYGULAMA FONKSİYONU ──
-window.optApplyReal = function(){
+window.optApplyReal = async function(){
   var rule = selectedRule;
   if(!rule){ toast('Önce kural seç'); return; }
 
