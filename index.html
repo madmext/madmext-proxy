@@ -328,11 +328,15 @@ async function loadModule(page) {
     el.innerHTML = tmp.innerHTML;
 
     // new Function ile çalıştır — IIFE scope korunur, window erişimi tam
+    // Önceki modülün script tag'lerini temizle
+    document.querySelectorAll('script[data-module]').forEach(function(s){ s.remove(); });
+
     scripts.forEach(function(code){
       try {
-        // new Function global scope'ta çalışır, window/document erişimi tam
-        var fn = new Function(code);
-        fn.call(window);
+        var s = document.createElement('script');
+        s.setAttribute('data-module', page);
+        s.textContent = code;
+        (document.head || document.body).appendChild(s);
       } catch(e){
         console.error('[loadModule] script hatası:', e.message, e);
       }
