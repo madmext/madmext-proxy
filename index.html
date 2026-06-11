@@ -327,13 +327,17 @@ async function loadModule(page) {
 
     el.innerHTML = tmp.innerHTML;
 
-    // Script tag ile çalıştır — global scope garantili, sıralı
+    // new Function ile çalıştır — IIFE scope korunur, window erişimi tam
     scripts.forEach(function(code){
-      var s = document.createElement('script');
-      s.textContent = code;
-      document.body.appendChild(s);
+      try {
+        // new Function global scope'ta çalışır, window/document erişimi tam
+        var fn = new Function(code);
+        fn.call(window);
+      } catch(e){
+        console.error('[loadModule] script hatası:', e.message, e);
+      }
     });
-    // Script'ler sync çalışır (inline script tag), hemen connected dispatch
+    // Scriptler sync çalıştı, connected dispatch et
     if(window._isConnected){
       window.dispatchEvent(new CustomEvent('mx:connected'));
     }
@@ -736,4 +740,3 @@ window.addEventListener('resize',function(){
 </script>
 </body>
 </html>
- 
