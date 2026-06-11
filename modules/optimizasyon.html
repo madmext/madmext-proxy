@@ -309,7 +309,7 @@
 </div>
 
 <script>
-(function(){
+
 
 var ROLE_CAN_CREATE = ['admin','editor'];
 var currentRole = (window._currentUser && window._currentUser.role) || 'admin';
@@ -889,6 +889,10 @@ function checkPermissions(){
   if(createTab) createTab.style.display = canCreate ? '' : 'none';
 }
 
+// Expose et — new Function scope'undan window üzerinden erişilebilsin
+window.optBuildList = buildList;
+window.optCheckPerms = checkPermissions;
+
 // Init
 buildList();
 checkPermissions();
@@ -1252,7 +1256,5 @@ window.addEventListener('mx:connected', function(){
 });
 // Sayfa açılışında log'u yükle (önceki session varsa)
 if(typeof renderLog === 'function') renderLog();
-})();
+
 </script>
-
-
