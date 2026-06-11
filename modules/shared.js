@@ -99,10 +99,19 @@ function grev(r) { const av = r.action_values; if (!av) return 0; const x = av.f
 function roasColor(v) { return v >= 3 ? 'var(--g)' : v >= 1.5 ? 'var(--y)' : 'var(--r)'; }
 function ga4val(resp, metricIdx = 0, rowIdx = 0) { return resp?.rows?.[rowIdx]?.metricValues?.[metricIdx]?.value || '0'; }
 
-function getBi(c) {
+function getBi(c, isAdset) {
+  // isAdset=true ise bütçe adset seviyesinde (ABO), false/undefined ise kampanya (CBO)
   if (!c) return { type: 'ABO', badge: '<span class="bge abo">ABO</span>', amt: '—' };
-  if (c.daily_budget) return { type: 'CBO', badge: '<span class="bge cbo">CBO</span>', amt: (parseInt(c.daily_budget) / 100).toFixed(0) + '₺/gün' };
-  if (c.lifetime_budget) return { type: 'CBO', badge: '<span class="bge cbo">CBO</span>', amt: (parseInt(c.lifetime_budget) / 100).toFixed(0) + '₺ toplam' };
+  if (c.daily_budget) {
+    var amt = (parseInt(c.daily_budget) / 100).toFixed(0) + '₺/gün';
+    if (isAdset) return { type: 'ABO', badge: '<span class="bge abo">ABO</span>', amt: amt };
+    return { type: 'CBO', badge: '<span class="bge cbo">CBO</span>', amt: amt };
+  }
+  if (c.lifetime_budget) {
+    var amt2 = (parseInt(c.lifetime_budget) / 100).toFixed(0) + '₺ toplam';
+    if (isAdset) return { type: 'ABO', badge: '<span class="bge abo">ABO</span>', amt: amt2 };
+    return { type: 'CBO', badge: '<span class="bge cbo">CBO</span>', amt: amt2 };
+  }
   return { type: 'ABO', badge: '<span class="bge abo">ABO</span>', amt: '—' };
 }
 
