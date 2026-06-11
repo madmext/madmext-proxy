@@ -328,25 +328,24 @@ async function loadModule(page) {
     el.innerHTML = tmp.innerHTML;
 
     // new Function ile çalıştır — IIFE scope korunur, window erişimi tam
-    // Önceki modülün script tag'lerini temizle
-    document.querySelectorAll('script[data-module]').forEach(function(s){ s.remove(); });
-
     scripts.forEach(function(code){
       try {
-        var s = document.createElement('script');
-        s.setAttribute('data-module', page);
-        s.textContent = code;
-        (document.head || document.body).appendChild(s);
+        var tmp2 = document.createElement('textarea');
+        tmp2.innerHTML = code;
+        (new Function(tmp2.value))();
       } catch(e){
-        console.error('[loadModule] script hatası:', e.message, e);
+        try {
+          var s = document.createElement('script');
+          var tmp3 = document.createElement('textarea');
+          tmp3.innerHTML = code;
+          s.textContent = tmp3.value;
+          document.body.appendChild(s);
+        } catch(e2){ console.error('[loadModule] script hatası:', e2); }
       }
     });
-    // Script'ler çalıştı — connected dispatch et
-    // setTimeout 0: mevcut call stack bitmeden önce dispatch etme
+    // Script'ler sync çalıştı — şimdi dispatch et
     if(window._isConnected){
-      setTimeout(function(){
-        window.dispatchEvent(new CustomEvent('mx:connected'));
-      }, 0);
+      window.dispatchEvent(new CustomEvent('mx:connected'));
     }
 
   } catch(e) {
