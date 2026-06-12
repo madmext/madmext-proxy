@@ -162,11 +162,11 @@
 
 <script>
 (function(){
-// Shared değişkenlerini window'dan al
+// Shared değişkenlerini window'dan al — IIFE scope dışına erişim için zorunlu
 var AID  = window.AID  || 'act_1346348685568168';
 var ATTR = window.ATTR || '["7d_click","1d_view"]';
-var api  = window.api;
-var MX   = window.MX;
+var api  = window.api  || function(){ return Promise.resolve({error:{message:'api yok'}}); };
+var MX   = window.MX   || {budgetLog:[],taskLog:[],adsetStore:[],campStore:[],adStore:[]};
 
 var currentMetaTab = 'camp';
 var mData = {camp:[],adset:[],ad:[]};
@@ -848,8 +848,8 @@ function mapR(r,camp,adset){
     if(x) revenue=parseFloat(x.value||0);
   }
   if(revenue===0&&roas>0) revenue=roas*parseFloat(r.spend||0);
-  var bi=camp?getBi(camp):(adset?getBi(adset):{badge:'',amt:'—',type:'ABO'});
-  var isCBO=bi.type==='CBO';
+  var bi=camp&&(camp.daily_budget||camp.lifetime_budget)?getBi(camp,false):(adset?getBi(adset,true):{badge:'<span class="bge abo">ABO</span>',amt:'—',type:'ABO'});
+  var isCBO=bi.type==='CBO'&&!!(camp&&(camp.daily_budget||camp.lifetime_budget));
   return{
     name:r.campaign_name||r.adset_name||r.ad_name||'—',
     status:r.status||'—',
