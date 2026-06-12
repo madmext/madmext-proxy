@@ -141,27 +141,13 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
-/* ═══════════════════════════════════════════════════════════
-   MOBİL LAYOUT — SADECE ≤600px — WEB'E ETKİ ETMEZ
-   ═══════════════════════════════════════════════════════════ */
+/* Mobil topbar */
 @media(max-width:600px){
-  /* Topbar */
   .conn-label-text{ display:none !important; }
-  #connEdit input{ width:110px !important; }
-  .topbar{ padding:0 8px !important; height:46px !important; min-height:46px !important; }
+  #connEdit input{ width:120px !important; }
+  .topbar{ padding:0 10px !important; }
   #pageTitle{ font-size:13px !important; }
   #pageSub{ display:none !important; }
-
-  /* Page başlık alanı */
-  .topbar > div:nth-child(2){ gap:4px !important; }
-  #topUserName{ font-size:11px !important; }
-  #topUserRole{ display:none !important; }
-
-  /* Content alanı */
-  .content{ padding:0 !important; }
-
-  /* Sidebar overlay tıklanabilir */
-  #sidebarOverlay{ cursor:pointer; }
 }
 </style>
 </head>
@@ -413,9 +399,6 @@ window.addEventListener('mx:connected', function(){
   var ed = document.getElementById('connEdit');
   if(ed) ed.style.display = 'none';
 });
-
-// 1. initUser — auth kontrolü (bağımsız)
-initUser();
 
 // 2. İlk sayfayı HEMEN yükle — bağlantı bekleme
 var _startPage = urlToPage(location.pathname) || 'dashboard';
@@ -715,7 +698,7 @@ function ddpApply(){
 <script>
 // ── Auth / User ──────────────────────────────────────────
 window._currentUser = null;
-async function initUser(){
+window.initUser = async function initUser(){
   try{
     var r = await fetch('/auth/me',{credentials:'include'});
     var ct = r.headers.get('content-type')||'';
@@ -732,7 +715,10 @@ async function initUser(){
     if(rl) rl.textContent = labels[u.role] || u.role;
   } catch(e){ console.log('Auth:', e.message); }
 }
-function doLogout(){
+// Auth kontrolü — tanım bittikten hemen sonra çağır
+window.initUser();
+
+window.doLogout = function doLogout(){
   fetch('/auth/logout',{method:'POST',credentials:'include'})
     .then(function(){ window.location.href = '/login'; })
     .catch(function(){ window.location.href = '/login'; });
