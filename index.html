@@ -141,76 +141,27 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
-/* ── MOBİL STILLER (max-width:768px) ── */
-@media(max-width:768px){
-
-  /* Topbar kompakt */
+/* ═══════════════════════════════════════════════════════════
+   MOBİL LAYOUT — SADECE ≤600px — WEB'E ETKİ ETMEZ
+   ═══════════════════════════════════════════════════════════ */
+@media(max-width:600px){
+  /* Topbar */
   .conn-label-text{ display:none !important; }
   #connEdit input{ width:110px !important; }
-  .topbar{
-    padding:6px 12px !important;
-    min-height:48px;
-  }
-  #pageTitle{ font-size:14px !important; font-weight:700; }
+  .topbar{ padding:0 8px !important; height:46px !important; min-height:46px !important; }
+  #pageTitle{ font-size:13px !important; }
   #pageSub{ display:none !important; }
 
-  /* Bağlan badge küçük */
-  #connBadge{ padding:3px 8px !important; }
+  /* Page başlık alanı */
+  .topbar > div:nth-child(2){ gap:4px !important; }
+  #topUserName{ font-size:11px !important; }
+  #topUserRole{ display:none !important; }
 
-  /* Content padding azalt */
-  .content{ padding:10px !important; }
+  /* Content alanı */
+  .content{ padding:0 !important; }
 
-  /* Dashboard kartları mobilde 2 kolon */
-  .dash-grid{
-    grid-template-columns:1fr 1fr !important;
-    gap:8px !important;
-    margin-bottom:12px !important;
-  }
-  .dash-card{ padding:10px 12px 8px !important; }
-  .dash-val{ font-size:17px !important; }
-  .dash-label{ font-size:8px !important; }
-  .dash-spark{ height:28px !important; }
-
-  /* Toolbar kompakt */
-  .dash-toolbar{
-    gap:5px !important;
-    margin-bottom:10px !important;
-    flex-wrap:nowrap !important;
-    overflow-x:auto;
-    padding-bottom:4px;
-    -webkit-overflow-scrolling:touch;
-  }
-  .dash-toolbar::-webkit-scrollbar{ display:none; }
-  .dash-preset{ padding:4px 8px !important; font-size:10px !important; white-space:nowrap; }
-  #ddpLabel{ font-size:10px !important; }
-
-  /* Channel grid tek kolon */
-  .channel-grid{ grid-template-columns:1fr !important; gap:8px !important; }
-
-  /* Rank grid tek kolon */
-  .db-rank-grid{ grid-template-columns:1fr !important; gap:8px !important; }
-
-  /* GA4 tablo mobil scroll */
-  #ga4SourceTable{ font-size:11px; }
-
-  /* Reklam listesi (Meta Ads) daha görünür */
-  .tbl-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .lcard{ padding:10px 12px !important; }
-  .lname{ font-size:12px !important; }
-  .lch{ font-size:14px !important; }
-  .lmeta{ font-size:10px !important; }
-
-  /* Alert kartlar */
-  .db-alert{ padding:9px 12px !important; }
-  .db-alert-title{ font-size:11px !important; }
-  .db-alert-desc{ font-size:10px !important; }
-  .db-alert-action{ font-size:10px !important; }
-
-  /* Sticky header — meta ads tab çubuğu */
-  .meta-tabs{ position:sticky; top:0; z-index:10; background:var(--s); }
-
-  /* Sayfa alt boşluk */
-  .content > *:last-child{ margin-bottom:80px; }
+  /* Sidebar overlay tıklanabilir */
+  #sidebarOverlay{ cursor:pointer; }
 }
 </style>
 </head>
