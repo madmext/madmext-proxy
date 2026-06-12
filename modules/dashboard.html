@@ -57,6 +57,58 @@
 .db-rank-name{flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .db-rank-val{font-family:'DM Mono',monospace;font-size:11px;flex-shrink:0}
 @media(max-width:768px){.db-rank-grid{grid-template-columns:1fr}}
+
+/* ── Dashboard Mobil Stiller ── */
+@media(max-width:768px){
+  /* Toolbar scroll edilebilir, boşluksuz */
+  .dash-toolbar{
+    flex-wrap:nowrap !important;
+    overflow-x:auto;
+    gap:5px !important;
+    margin-bottom:10px !important;
+    padding-bottom:2px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .dash-toolbar::-webkit-scrollbar{ display:none; }
+  .dash-preset{ white-space:nowrap; font-size:10px !important; padding:4px 8px !important; }
+
+  /* 2 kolonlu kart grid */
+  .dash-grid{
+    grid-template-columns:1fr 1fr !important;
+    gap:8px !important;
+    margin-bottom:12px !important;
+  }
+  .dash-card{ padding:10px 12px 8px !important; }
+  .dash-val{ font-size:16px !important; }
+  .dash-label{ font-size:8px !important; }
+  .dash-src{ font-size:7px !important; }
+  .dash-spark{ height:26px !important; }
+  .dash-diff{ font-size:9px !important; }
+
+  /* Channel kartlar tek kolon */
+  .channel-grid{ grid-template-columns:1fr !important; gap:8px !important; }
+  .channel-card{ padding:12px !important; }
+
+  /* Rank grid tek kolon */
+  .db-rank-grid{ grid-template-columns:1fr !important; gap:8px !important; }
+
+  /* Alert kompakt */
+  .db-alert{ padding:8px 10px !important; gap:8px !important; }
+  .db-alert-icon{ font-size:14px !important; }
+  .db-alert-title{ font-size:11px !important; }
+  .db-alert-desc{ font-size:10px !important; line-height:1.3 !important; }
+  .db-alert-action{ font-size:10px !important; }
+
+  /* GA4 tablo font */
+  #ga4SourceTable td, #ga4SourceTable th{ font-size:10px !important; padding:5px 6px !important; }
+
+  /* Meta/GA4 kanal kartları */
+  #metaChannelDetail, #ga4ChannelDetail{
+    font-size:11px !important;
+  }
+  .channel-row{ font-size:11px !important; padding:4px 0 !important; }
+}
 </style>
 
 <!-- Uyarılar -->
@@ -172,7 +224,7 @@
 // ── Global değişkenleri al ──────────────────────────────────────────────
 // shared.js <script src> ile global scope'ta yükleniyor
 // (new Function) içinden global scope'a erişim var
-// Shared fonksiyonları window üzerinden direkt al
+// Shared fonksiyonları window üzerinden direkt al — new Function scope sorunu yok
 var AID      = window.AID      || 'act_1346348685568168';
 var ATTR     = window.ATTR     || '["7d_click","1d_view"]';
 var api      = window.api      || function(){ return Promise.resolve({error:{message:'api yok'}}); };
