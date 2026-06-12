@@ -49,19 +49,6 @@
 .qual-pip.hi{background:var(--g)}.qual-pip.md{background:var(--y)}.qual-pip.lo{background:var(--r)}
 @media(max-width:900px){.ma-summary{grid-template-columns:repeat(4,1fr)}}
 @media(max-width:600px){.ma-summary{grid-template-columns:repeat(2,1fr)}.ma-row1{flex-wrap:wrap}.meta-tab{font-size:11px;padding:6px 10px}}
-
-/* ── Budget Popup ── */
-.budget-popup-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
-.budget-popup{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:20px 24px;min-width:300px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.budget-popup h3{font-size:14px;font-weight:700;margin-bottom:4px;color:var(--t)}
-.budget-popup .bp-sub{font-size:11px;color:var(--m);margin-bottom:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.budget-popup .bp-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-.budget-popup .bp-label{font-size:11px;color:var(--m);width:80px;flex-shrink:0}
-.budget-popup .bp-input{flex:1;background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:8px 10px;border-radius:6px;font-family:'DM Mono',monospace;font-size:13px;outline:none}
-.budget-popup .bp-input:focus{border-color:var(--a)}
-.budget-popup .bp-unit{font-size:11px;color:var(--m);font-family:'DM Mono',monospace;width:40px}
-.budget-popup .bp-btns{display:flex;gap:8px;margin-top:14px}
-.budget-popup .bp-btns button{flex:1}
 </style>
 
 <div class="ma-wrap">
@@ -175,6 +162,12 @@
 
 <script>
 (function(){
+// Shared değişkenlerini window'dan al
+var AID  = window.AID  || 'act_1346348685568168';
+var ATTR = window.ATTR || '["7d_click","1d_view"]';
+var api  = window.api;
+var MX   = window.MX;
+
 var currentMetaTab = 'camp';
 var mData = {camp:[],adset:[],ad:[]};
 var mPending = null;
@@ -730,13 +723,7 @@ function mRenderData(tab,data){
       } else if(c.k==='delivery'){
         bHTML+='<td>'+deliveryCell(r.effectiveStatus)+'</td>';
       } else if(c.k==='budget'){
-        var _bAmt=r.budgetAmt||'—';
-        var _bHasEdit=r._budgetId&&_bAmt!=='—';
-        var _bABO=!r._budgetId&&r._id; // ABO: adset bütçesi var ama _budgetId yok
-        var _bEditBtn=_bHasEdit?
-          ' <span style="cursor:pointer;opacity:.5;font-size:10px;margin-left:2px" title="Bütçe düzenle" onclick="openBudgetPopup(event,\''+(r._budgetId||'')+'\'\,\''+((r.name||'').replace(/'/g,"\\'").slice(0,30))+'\'\,\''+r._budgetType+'\'\,\''+_bAmt+'\'\,\''+r._id+'\')">✎</span>':
-          (_bABO?' <span style="cursor:pointer;opacity:.5;font-size:10px;margin-left:2px" title="ABO bütçe düzenle" onclick="openABOPopup(event,\''+r._id+'\'\,\''+((r.name||'').replace(/'/g,"\\'").slice(0,30))+'\'\,\''+(r._campId||'')+'\')">✎</span>':'');
-        bHTML+='<td><div>'+(r.budgeBadge||'')+'</div><div style="font-family:\'DM Mono\',monospace;font-size:11px;display:flex;align-items:center">'+_bAmt+_bEditBtn+'</div></td>';
+        bHTML+='<td><div>'+(r.budgeBadge||'')+'</div><div style="font-family:\'DM Mono\',monospace;font-size:11px">'+(r.budgetAmt||'—')+'</div></td>';
       } else if(c.k==='results'){
         var rv=parseInt(r.results||0);
         bHTML+='<td><div style="font-family:\'DM Mono\',monospace">'+(rv?rv.toLocaleString('tr'):'—')+'</div><div class="sub-label">Satın Alma</div></td>';
@@ -861,8 +848,8 @@ function mapR(r,camp,adset){
     if(x) revenue=parseFloat(x.value||0);
   }
   if(revenue===0&&roas>0) revenue=roas*parseFloat(r.spend||0);
-  var bi=camp&&(camp.daily_budget||camp.lifetime_budget)?getBi(camp,false):(adset?getBi(adset,true):{badge:'<span class="bge abo">ABO</span>',amt:'—',type:'ABO'});
-  var isCBO=bi.type==='CBO'&&!!(camp&&(camp.daily_budget||camp.lifetime_budget));
+  var bi=camp?getBi(camp):(adset?getBi(adset):{badge:'',amt:'—',type:'ABO'});
+  var isCBO=bi.type==='CBO';
   return{
     name:r.campaign_name||r.adset_name||r.ad_name||'—',
     status:r.status||'—',
@@ -1147,31 +1134,18 @@ async function loadMetaAds(){
   var campF=(document.getElementById('mCampFlt')||{}).value||'';
   var params=Object.assign({fields:INSF+',ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name',level:'ad',limit:500,action_attribution_windows:ATTR},dp);
   if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
-  var[ins,ads,adsets,camps]=await Promise.all([
+  var[ins,ads]=await Promise.all([
     api(AID+'/insights',params),
-    api(AID+'/ads',{fields:'id,name,status,effective_status,adset_id,updated_time',limit:500}),
-    api(AID+'/adsets',{fields:'id,name,daily_budget,lifetime_budget,campaign_id',limit:500}),
-    api(AID+'/campaigns',{fields:'id,daily_budget,lifetime_budget',limit:500})
+    api(AID+'/ads',{fields:'id,name,status,effective_status,updated_time',limit:500})
   ]);
   var admap={};(ads&&ads.data||[]).forEach(function(a){admap[a.id]=a;});
-  var asetmap={};(adsets&&adsets.data||[]).forEach(function(a){asetmap[a.id]=a;});
-  var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.adStore=(ads&&ads.data||[]);
   var rows=(ins&&ins.data||[]).map(function(r){
     var ad=admap[r.ad_id];
-    var adset=asetmap[r.adset_id]||(ad&&asetmap[ad.adset_id]);
-    var camp=cmap[r.campaign_id];
-    var row=mapR(r,camp,adset);
+    var row=mapR(r,null,null);
     row.name=r.ad_name||'—';
     if(ad){row.status=ad.status;row.effectiveStatus=ad.effective_status||ad.status;row._id=ad.id;}
-    // Reklam seviyesinde bütçe: kampanya CBO ise kampanya bütçesi, ABO ise adset bütçesi
-    if(!row._budgetId){
-      if(camp&&(camp.daily_budget||camp.lifetime_budget)){
-        row._budgetId=camp.id; row._budgetType='campaign';
-      } else if(adset&&(adset.daily_budget||adset.lifetime_budget)){
-        row._budgetId=adset.id; row._budgetType='adset';
-      }
-    }
+    row._budgetId=null;
     return row;
   });
   rows.sort(function(a,b){return b.spend-a.spend;});
@@ -1229,169 +1203,5 @@ window.mToggle = function(cb){
   window.mToggleWithLog(id, name, cb.checked?'ACTIVE':'PAUSED', tab);
 };
 if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
-})();
-// ── BÜTÇE POPUP ──────────────────────────────────────────────────────
+})();</script>
 
-window.openBudgetPopup = function(ev, budgetId, name, budgetType, budgetAmt, entityId){
-  ev && ev.stopPropagation();
-  // Mevcut popup varsa kaldır
-  var existing = document.getElementById('budgetPopupOverlay');
-  if(existing) existing.remove();
-
-  var curTL = parseFloat(budgetAmt.replace(/[^0-9.]/g,'')) || 0;
-  var isDaily = budgetAmt.toLowerCase().includes('gün');
-  var periodLabel = isDaily ? '/gün' : ' toplam';
-
-  var overlay = document.createElement('div');
-  overlay.id = 'budgetPopupOverlay';
-  overlay.className = 'budget-popup-overlay';
-  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
-
-  overlay.innerHTML = `
-    <div class="budget-popup">
-      <h3>✎ Bütçe Düzenle</h3>
-      <div class="bp-sub">${name}</div>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <span class="bge ${budgetType==='campaign'?'cbo':'abo'}" style="font-size:10px">${budgetType==='campaign'?'CBO':'ABO'}</span>
-        <span style="font-size:11px;color:var(--m)">Mevcut: <b style="color:var(--t);font-family:'DM Mono',monospace">${budgetAmt}</b></span>
-      </div>
-      <div class="bp-row">
-        <span class="bp-label">Yeni Bütçe</span>
-        <input id="bpInput" class="bp-input" type="number" min="1" step="1" value="${curTL.toFixed(0)}" placeholder="TL">
-        <span class="bp-unit">${periodLabel}</span>
-      </div>
-      <div id="bpPreview" style="font-size:11px;color:var(--m);margin-bottom:4px;min-height:16px"></div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-        ${[-20,-10,10,20,30,50].map(p => `<button class="btn sm sec" style="font-size:10px" onclick="bpSetPct(${p})">${p>0?'+':''}${p}%</button>`).join('')}
-      </div>
-      <div class="bp-btns">
-        <button class="btn sec" onclick="document.getElementById('budgetPopupOverlay').remove()">İptal</button>
-        <button class="btn grn" onclick="bpApply('${budgetId}','${name}','${budgetType}','${entityId}',${curTL},${isDaily?1:0})">✓ Uygula</button>
-      </div>
-    </div>`;
-
-  document.body.appendChild(overlay);
-
-  var inp = document.getElementById('bpInput');
-  inp.focus(); inp.select();
-  inp.oninput = function(){
-    var newV = parseFloat(inp.value)||0;
-    var diff = newV - curTL;
-    var pct = curTL > 0 ? (diff/curTL*100).toFixed(1) : 0;
-    var prev = document.getElementById('bpPreview');
-    if(newV && newV !== curTL){
-      prev.innerHTML = (diff>0?'<span style="color:var(--g)">+':'<span style="color:var(--r)">') + diff.toFixed(0) + '₺ (' + (diff>0?'+':'') + pct + '%)</span>';
-    } else {
-      prev.innerHTML = '';
-    }
-  };
-  inp.onkeydown = function(e){ if(e.key==='Enter') document.querySelector('.bp-btns .btn.grn').click(); };
-};
-
-window.bpSetPct = function(pct){
-  var inp = document.getElementById('bpInput');
-  var cur = parseFloat(inp.getAttribute('data-orig') || inp.value) || 0;
-  if(!inp.getAttribute('data-orig')) inp.setAttribute('data-orig', cur);
-  inp.value = Math.round(cur * (1 + pct/100));
-  inp.oninput();
-};
-
-window.bpApply = async function(budgetId, name, budgetType, entityId, curTL, isDaily){
-  var inp = document.getElementById('bpInput');
-  var newTL = parseFloat(inp.value);
-  if(!newTL || newTL <= 0){ toast('Geçerli bir bütçe girin'); return; }
-  if(newTL === curTL){ toast('Bütçe değişmedi'); return; }
-
-  var btn = document.querySelector('#budgetPopupOverlay .btn.grn');
-  btn.disabled = true; btn.textContent = '⏳...';
-
-  var pct = curTL > 0 ? Math.round((newTL-curTL)/curTL*100) : 0;
-  var param = isDaily ? {daily_budget: Math.round(newTL*100)} : {lifetime_budget: Math.round(newTL*100)};
-  var d = await api(budgetId, param, 'POST');
-
-  if(d && (d.success || d.id)){
-    // Log
-    var logEntry = {id:budgetId, name:name, type:budgetType, old:curTL, new:newTL, pct:pct, time:new Date().toISOString()};
-    MX.budgetLog.unshift(logEntry);
-    logAction({type: pct>0?'budget_increase':'budget_decrease', name:name, entityType:budgetType, from:curTL, to:newTL, pct:pct, time:new Date().toISOString()});
-    // Görev oluştur
-    var now = Date.now();
-    MX.taskLog.unshift(
-      {id:budgetId,name:name,type:budgetType,baseline:null,budgetOld:curTL,budgetNew:newTL,pct:pct,createdAt:now,dueAt:now+86400000,period:'1g',done:false},
-      {id:budgetId,name:name,type:budgetType,baseline:null,budgetOld:curTL,budgetNew:newTL,pct:pct,createdAt:now,dueAt:now+3*86400000,period:'3g',done:false}
-    );
-    saveServerLogs();
-    updateTaskBadge();
-    toast('✓ ' + name.slice(0,25) + ': ' + curTL.toFixed(0) + '₺ → ' + newTL.toFixed(0) + '₺');
-    document.getElementById('budgetPopupOverlay').remove();
-    // Tabloyu yenile
-    setTimeout(function(){ if(currentTab==='campaign') loadMetaCamp(); else if(currentTab==='adset') loadMetaAdsets(); }, 500);
-  } else {
-    toast('Hata: ' + JSON.stringify((d&&d.error)||d));
-    btn.disabled = false; btn.textContent = '✓ Uygula';
-  }
-};
-
-// ABO popup — adset'lerin individual bütçeleri
-window.openABOPopup = async function(ev, adsetId, name, campId){
-  ev && ev.stopPropagation();
-  var existing = document.getElementById('budgetPopupOverlay');
-  if(existing) existing.remove();
-
-  var overlay = document.createElement('div');
-  overlay.id = 'budgetPopupOverlay';
-  overlay.className = 'budget-popup-overlay';
-  overlay.onclick = function(e){ if(e.target===overlay) overlay.remove(); };
-  overlay.innerHTML = '<div class="budget-popup"><h3>✎ ABO Bütçe Düzenle</h3><div class="bp-sub">'+name+'</div><div style="text-align:center;padding:20px;color:var(--m)">Yükleniyor...</div></div>';
-  document.body.appendChild(overlay);
-
-  // Adset bütçesini çek
-  var adsetData = await api(adsetId, {fields:'id,name,daily_budget,lifetime_budget,status'});
-  if(!adsetData || adsetData.error){
-    overlay.querySelector('.budget-popup div:last-child').innerHTML = '<div style="color:var(--r)">Veri alınamadı</div>';
-    return;
-  }
-
-  var daily = adsetData.daily_budget ? parseInt(adsetData.daily_budget)/100 : 0;
-  var lifetime = adsetData.lifetime_budget ? parseInt(adsetData.lifetime_budget)/100 : 0;
-  var curTL = daily || lifetime;
-  var isDaily = !!daily;
-  var periodLabel = isDaily ? '/gün' : ' toplam';
-
-  var popup = overlay.querySelector('.budget-popup');
-  popup.innerHTML = `
-    <h3>✎ ABO Bütçe Düzenle</h3>
-    <div class="bp-sub">${name}</div>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <span class="bge abo" style="font-size:10px">ABO</span>
-      <span style="font-size:11px;color:var(--m)">Mevcut: <b style="color:var(--t);font-family:'DM Mono',monospace">${curTL.toFixed(0)}₺${periodLabel}</b></span>
-    </div>
-    <div class="bp-row">
-      <span class="bp-label">Yeni Bütçe</span>
-      <input id="bpInput" class="bp-input" type="number" min="1" step="1" value="${curTL.toFixed(0)}">
-      <span class="bp-unit">${periodLabel}</span>
-    </div>
-    <div id="bpPreview" style="font-size:11px;color:var(--m);margin-bottom:4px;min-height:16px"></div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-      ${[-20,-10,10,20,30,50].map(p => `<button class="btn sm sec" style="font-size:10px" onclick="bpSetPct(${p})">${p>0?'+':''}${p}%</button>`).join('')}
-    </div>
-    <div class="bp-btns">
-      <button class="btn sec" onclick="document.getElementById('budgetPopupOverlay').remove()">İptal</button>
-      <button class="btn grn" onclick="bpApply('${adsetId}','${name}','adset','${adsetId}',${curTL},${isDaily?1:0})">✓ Uygula</button>
-    </div>`;
-
-  var inp = popup.querySelector('#bpInput');
-  inp.focus(); inp.select();
-  inp.oninput = function(){
-    var newV = parseFloat(inp.value)||0;
-    var diff = newV - curTL;
-    var pct = curTL > 0 ? (diff/curTL*100).toFixed(1) : 0;
-    var prev = popup.querySelector('#bpPreview');
-    if(newV && newV !== curTL){
-      prev.innerHTML = (diff>0?'<span style="color:var(--g)">+':'<span style="color:var(--r)">') + diff.toFixed(0) + '₺ (' + (diff>0?'+':'') + pct + '%)</span>';
-    } else prev.innerHTML = '';
-  };
-  inp.onkeydown = function(e){ if(e.key==='Enter') popup.querySelector('.btn.grn').click(); };
-};
-
-</script>
