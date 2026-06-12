@@ -1147,18 +1147,31 @@ async function loadMetaAds(){
   var campF=(document.getElementById('mCampFlt')||{}).value||'';
   var params=Object.assign({fields:INSF+',ad_id,ad_name,adset_id,adset_name,campaign_id,campaign_name',level:'ad',limit:500,action_attribution_windows:ATTR},dp);
   if(campF)params.filtering=JSON.stringify([{field:'campaign.id',operator:'EQUAL',value:campF}]);
-  var[ins,ads]=await Promise.all([
+  var[ins,ads,adsets,camps]=await Promise.all([
     api(AID+'/insights',params),
-    api(AID+'/ads',{fields:'id,name,status,effective_status,updated_time',limit:500})
+    api(AID+'/ads',{fields:'id,name,status,effective_status,adset_id,updated_time',limit:500}),
+    api(AID+'/adsets',{fields:'id,name,daily_budget,lifetime_budget,campaign_id',limit:500}),
+    api(AID+'/campaigns',{fields:'id,daily_budget,lifetime_budget',limit:500})
   ]);
   var admap={};(ads&&ads.data||[]).forEach(function(a){admap[a.id]=a;});
+  var asetmap={};(adsets&&adsets.data||[]).forEach(function(a){asetmap[a.id]=a;});
+  var cmap={};(camps&&camps.data||[]).forEach(function(c){cmap[c.id]=c;});
   MX.adStore=(ads&&ads.data||[]);
   var rows=(ins&&ins.data||[]).map(function(r){
     var ad=admap[r.ad_id];
-    var row=mapR(r,null,null);
+    var adset=asetmap[r.adset_id]||(ad&&asetmap[ad.adset_id]);
+    var camp=cmap[r.campaign_id];
+    var row=mapR(r,camp,adset);
     row.name=r.ad_name||'—';
     if(ad){row.status=ad.status;row.effectiveStatus=ad.effective_status||ad.status;row._id=ad.id;}
-    row._budgetId=null;
+    // Reklam seviyesinde bütçe: kampanya CBO ise kampanya bütçesi, ABO ise adset bütçesi
+    if(!row._budgetId){
+      if(camp&&(camp.daily_budget||camp.lifetime_budget)){
+        row._budgetId=camp.id; row._budgetType='campaign';
+      } else if(adset&&(adset.daily_budget||adset.lifetime_budget)){
+        row._budgetId=adset.id; row._budgetType='adset';
+      }
+    }
     return row;
   });
   rows.sort(function(a,b){return b.spend-a.spend;});
