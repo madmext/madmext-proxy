@@ -172,7 +172,9 @@
 // ── Global değişkenleri al ──────────────────────────────────────────────
 // shared.js <script src> ile global scope'ta yükleniyor
 // (new Function) içinden global scope'a erişim var
-// Shared fonksiyonları window üzerinden direkt al — new Function scope sorunu yok
+// ── Shared fonksiyonları DOĞRUDAN window'dan al ──────────────────────
+// new Function iç scope'u izole olduğundan _g yöntemi çalışmıyor.
+// window.xxx her zaman erişilebilir.
 var AID      = window.AID      || 'act_1346348685568168';
 var ATTR     = window.ATTR     || '["7d_click","1d_view"]';
 var api      = window.api      || function(){ return Promise.resolve({error:{message:'api yok'}}); };
@@ -182,10 +184,7 @@ var gav      = window.gav      || function(a,t){ if(!a)return 0; var x=a.find(fu
 var ga4val   = window.ga4val   || function(r,i){ return r&&r.rows&&r.rows[0]?r.rows[0].metricValues[i||0].value:'0'; };
 var roasColor= window.roasColor|| function(v){ return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)'; };
 var toast    = window.toast    || function(m){ console.log(m); };
-var logAction= window.logAction|| function(){};
-// ── Tarih yardımcıları ─────────────────────────────────────────────────
-function getDashDP(){
-  var v=document.getElementById('dashPreset').value;
+var logAction= window.logAction|| function(){}
   if(v!=='custom') return {preset:v};
   var f=document.getElementById('dashFrom').value;
   var t=document.getElementById('dashTo').value;
