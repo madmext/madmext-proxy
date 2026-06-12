@@ -172,9 +172,7 @@
 // ── Global değişkenleri al ──────────────────────────────────────────────
 // shared.js <script src> ile global scope'ta yükleniyor
 // (new Function) içinden global scope'a erişim var
-// ── Shared fonksiyonları DOĞRUDAN window'dan al ──────────────────────
-// new Function iç scope'u izole olduğundan _g yöntemi çalışmıyor.
-// window.xxx her zaman erişilebilir.
+// Shared fonksiyonları window üzerinden direkt al
 var AID      = window.AID      || 'act_1346348685568168';
 var ATTR     = window.ATTR     || '["7d_click","1d_view"]';
 var api      = window.api      || function(){ return Promise.resolve({error:{message:'api yok'}}); };
@@ -184,7 +182,10 @@ var gav      = window.gav      || function(a,t){ if(!a)return 0; var x=a.find(fu
 var ga4val   = window.ga4val   || function(r,i){ return r&&r.rows&&r.rows[0]?r.rows[0].metricValues[i||0].value:'0'; };
 var roasColor= window.roasColor|| function(v){ return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)'; };
 var toast    = window.toast    || function(m){ console.log(m); };
-var logAction= window.logAction|| function(){}
+var logAction= window.logAction|| function(){};
+// ── Tarih yardımcıları ─────────────────────────────────────────────────
+function getDashDP(){
+  var v=document.getElementById('dashPreset').value;
   if(v!=='custom') return {preset:v};
   var f=document.getElementById('dashFrom').value;
   var t=document.getElementById('dashTo').value;
@@ -480,7 +481,7 @@ function renderAlerts(){
     alerts.push({type:'red',icon:'🚨',
       title:errors.length+' reklamda sorun var — yayınlanmıyor!',
       desc:errors.slice(0,2).map(function(r){return r.name.slice(0,40);}).join(', '),
-      action:'Meta Ads'e Git',fn:"nav('meta-ads',null)"});
+      action:'Meta Ads\u2019e Git',fn:"nav('meta-ads',null)"});
   }
 
   // ROAS < 1 ve harcama yapan
@@ -548,7 +549,7 @@ function renderAlerts(){
     var worst = withSpend.slice().sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,5);
     var cols=['#f0b429','#8a8d91','#cd7f32','#666','#444'];
     document.getElementById('dbBest').innerHTML = best.map(function(r,i){
-      return '<div class="db-rank-item" onclick="nav('meta-ads',null)">'+
+      return '<div class="db-rank-item" onclick="nav(\'meta-ads\',null)">'+
         '<div class="db-rank-num" style="background:'+cols[i]+'">'+( i+1)+'</div>'+
         '<div class="db-rank-name" title="'+r.name+'">'+r.name.slice(0,38)+'</div>'+
         '<div class="db-rank-val" style="color:var(--g)">'+( r.roas||0).toFixed(2)+'x</div>'+
@@ -556,7 +557,7 @@ function renderAlerts(){
     }).join('');
     document.getElementById('dbWorst').innerHTML = worst.map(function(r,i){
       var bad=(r.roas||0)<1;
-      return '<div class="db-rank-item" onclick="nav('meta-ads',null)">'+
+      return '<div class="db-rank-item" onclick="nav(\'meta-ads\',null)">'+
         '<div class="db-rank-num" style="background:'+(bad?'var(--r)':'var(--y)')+'">'+( i+1)+'</div>'+
         '<div class="db-rank-name" title="'+r.name+'">'+r.name.slice(0,38)+'</div>'+
         '<div class="db-rank-val" style="color:'+(bad?'var(--r)':'var(--y)')+'">'+( r.roas||0).toFixed(2)+'x</div>'+
