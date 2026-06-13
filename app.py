@@ -27,6 +27,13 @@ GA4_REFRESH_TOKEN = os.environ.get('GA4_REFRESH_TOKEN', '')
 GA4_CLIENT_ID = os.environ.get('GA4_CLIENT_ID', '')
 GA4_CLIENT_SECRET = os.environ.get('GA4_CLIENT_SECRET', '')
 
+# Google Ads
+GADS_DEVELOPER_TOKEN = os.environ.get('GADS_DEVELOPER_TOKEN', '')
+GADS_CLIENT_ID = os.environ.get('GADS_CLIENT_ID', '')
+GADS_CLIENT_SECRET = os.environ.get('GADS_CLIENT_SECRET', '')
+GADS_REFRESH_TOKEN = os.environ.get('GADS_REFRESH_TOKEN', '')
+GADS_CUSTOMER_ID = os.environ.get('GADS_CUSTOMER_ID', '')  # 123-456-7890 formatında
+
 LOG_FILE = 'madmext_logs.json'
 log_lock = threading.Lock()
 
@@ -265,8 +272,6 @@ def save_users(users):
 @app.route('/ayarlar')
 @app.route('/kullanicilar')
 @app.route('/ai')
-@app.route('/google-ads')
-@app.route('/seo')
 def home():
     if os.environ.get('SECRET_KEY') and not session.get('user_email'):
         return send_from_directory('.', 'login.html') if os.path.exists('login.html') else send_from_directory('.', 'index.html')
@@ -514,6 +519,182 @@ def meta_proxy():
             write_logs(current)
         except: pass
     return jsonify(result)
+
+
+# ── GOOGLE ADS ───────────────────────────────────────────────────────────
+
+def gads_get_token():
+    """Google Ads için access token al"""
+    if not GADS_REFRESH_TOKEN or not GADS_CLIENT_ID or not GADS_CLIENT_SECRET:
+        return None
+    try:
+        r = requests.post('https://oauth2.googleapis.com/token', data={
+            'client_id': GADS_CLIENT_ID,
+            'client_secret': GADS_CLIENT_SECRET,
+            'refresh_token': GADS_REFRESH_TOKEN,
+            'grant_type': 'refresh_token'
+        }, timeout=10)
+        data = r.json()
+        return data.get('access_token')
+    except Exception as e:
+        print(f'Google Ads token hatası: {e}')
+        return None
+
+def gads_customer_id():
+    """Customer ID'yi temizle (tire ve boşlukları kaldır)"""
+    return GADS_CUSTOMER_ID.replace('-', '').replace(' ', '')
+
+@app.route('/gads/campaigns', methods=['POST'])
+def gads_campaigns():
+    """Google Ads kampanyaları getir"""
+    token = gads_get_token()
+    if not token:
+        return jsonify({'error': 'Google Ads yapılandırılmamış. GADS_REFRESH_TOKEN, GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_CUSTOMER_ID ve GADS_DEVELOPER_TOKEN Railway değişkenlerini ekleyin.', 'configured': False})
+
+    data = request.json or {}
+    date_range = data.get('date_range', 'LAST_7_DAYS')
+
+    query = f"""
+        SELECT
+          campaign.id,
+          campaign.name,
+          campaign.status,
+          campaign.advertising_channel_type,
+          campaign_budget.amount_micros,
+          campaign_budget.type,
+          metrics.cost_micros,
+          metrics.conversions,
+          metrics.conversions_value,
+          metrics.clicks,
+          metrics.impressions,
+          metrics.ctr,
+          metrics.average_cpc,
+          metrics.cost_per_conversion
+        FROM campaign
+        WHERE segments.date DURING {date_range}
+          AND campaign.status != 'REMOVED'
+        ORDER BY metrics.cost_micros DESC
+        LIMIT 100
+    """
+
+    cid = gads_customer_id()
+    url = f'https://googleads.googleapis.com/v17/customers/{cid}/googleAds:search'
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'developer-token': GADS_DEVELOPER_TOKEN,
+        'Content-Type': 'application/json'
+    }
+    # Login customer ID gerekebilir (MCC hesabı için)
+    login_cid = data.get('login_customer_id', '')
+    if login_cid:
+        headers['login-customer-id'] = login_cid.replace('-', '')
+
+    try:
+        r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
+        result = r.json()
+        if 'error' in result:
+            return jsonify({'error': result['error'].get('message', 'Google Ads API hatası'), 'configured': True})
+        # Veriyi normalize et
+        rows = []
+        for row in result.get('results', []):
+            camp = row.get('campaign', {})
+            budget = row.get('campaignBudget', {})
+            metrics = row.get('metrics', {})
+            rows.append({
+                'id': camp.get('id', ''),
+                'name': camp.get('name', ''),
+                'status': camp.get('status', ''),
+                'type': camp.get('advertisingChannelType', ''),
+                'budget_micros': budget.get('amountMicros', 0),
+                'budget_type': budget.get('type', ''),
+                'cost_micros': metrics.get('costMicros', 0),
+                'cost': round(int(metrics.get('costMicros', 0)) / 1_000_000, 2),
+                'conversions': round(float(metrics.get('conversions', 0)), 1),
+                'conversions_value': round(float(metrics.get('conversionsValue', 0)), 2),
+                'clicks': int(metrics.get('clicks', 0)),
+                'impressions': int(metrics.get('impressions', 0)),
+                'ctr': round(float(metrics.get('ctr', 0)) * 100, 2),
+                'avg_cpc': round(int(metrics.get('averageCpc', 0)) / 1_000_000, 2),
+                'cpa': round(int(metrics.get('costPerConversion', 0)) / 1_000_000, 2),
+            })
+        return jsonify({'rows': rows, 'configured': True})
+    except Exception as e:
+        return jsonify({'error': str(e), 'configured': True})
+
+
+@app.route('/gads/adgroups', methods=['POST'])
+def gads_adgroups():
+    """Google Ads reklam gruplarını getir"""
+    token = gads_get_token()
+    if not token:
+        return jsonify({'error': 'Google Ads yapılandırılmamış.', 'configured': False})
+
+    data = request.json or {}
+    date_range = data.get('date_range', 'LAST_7_DAYS')
+    campaign_id = data.get('campaign_id', '')
+
+    where_extra = f"AND campaign.id = '{campaign_id}'" if campaign_id else ''
+    query = f"""
+        SELECT
+          ad_group.id, ad_group.name, ad_group.status,
+          campaign.id, campaign.name,
+          metrics.cost_micros, metrics.conversions,
+          metrics.clicks, metrics.impressions, metrics.ctr, metrics.cpa_micros
+        FROM ad_group
+        WHERE segments.date DURING {date_range}
+          AND ad_group.status != 'REMOVED'
+          {where_extra}
+        ORDER BY metrics.cost_micros DESC
+        LIMIT 100
+    """
+
+    cid = gads_customer_id()
+    url = f'https://googleads.googleapis.com/v17/customers/{cid}/googleAds:search'
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'developer-token': GADS_DEVELOPER_TOKEN,
+        'Content-Type': 'application/json'
+    }
+    try:
+        r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
+        result = r.json()
+        rows = []
+        for row in result.get('results', []):
+            ag = row.get('adGroup', {})
+            camp = row.get('campaign', {})
+            metrics = row.get('metrics', {})
+            rows.append({
+                'id': ag.get('id', ''),
+                'name': ag.get('name', ''),
+                'status': ag.get('status', ''),
+                'campaign_id': camp.get('id', ''),
+                'campaign_name': camp.get('name', ''),
+                'cost': round(int(metrics.get('costMicros', 0)) / 1_000_000, 2),
+                'conversions': round(float(metrics.get('conversions', 0)), 1),
+                'clicks': int(metrics.get('clicks', 0)),
+                'impressions': int(metrics.get('impressions', 0)),
+                'ctr': round(float(metrics.get('ctr', 0)) * 100, 2),
+                'cpa': round(int(metrics.get('cpaMicros', 0)) / 1_000_000, 2),
+            })
+        return jsonify({'rows': rows, 'configured': True})
+    except Exception as e:
+        return jsonify({'error': str(e), 'configured': True})
+
+
+@app.route('/gads/status', methods=['GET'])
+def gads_status():
+    """Google Ads bağlantı durumunu kontrol et"""
+    configured = bool(GADS_DEVELOPER_TOKEN and GADS_CLIENT_ID and GADS_CLIENT_SECRET and GADS_REFRESH_TOKEN and GADS_CUSTOMER_ID)
+    if not configured:
+        missing = []
+        if not GADS_DEVELOPER_TOKEN: missing.append('GADS_DEVELOPER_TOKEN')
+        if not GADS_CLIENT_ID: missing.append('GADS_CLIENT_ID')
+        if not GADS_CLIENT_SECRET: missing.append('GADS_CLIENT_SECRET')
+        if not GADS_REFRESH_TOKEN: missing.append('GADS_REFRESH_TOKEN')
+        if not GADS_CUSTOMER_ID: missing.append('GADS_CUSTOMER_ID')
+        return jsonify({'configured': False, 'missing': missing})
+    token = gads_get_token()
+    return jsonify({'configured': True, 'token_ok': bool(token), 'customer_id': GADS_CUSTOMER_ID})
 
 
 # ── CLAUDE ────────────────────────────────────────────────────────────────
