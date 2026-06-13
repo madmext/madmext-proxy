@@ -34,13 +34,14 @@
   <!-- Tarih Seçici -->
   <div class="date-picker-row">
     <button class="btn sm sec" onclick="rpLoad()">🔄 Yenile</button>
-    <select class="flt" id="rpPreset" onchange="rpLoad()" style="font-size:11px">
-      <option value="last_7d">Son 7 gün</option>
-      <option value="last_14d">Son 14 gün</option>
-      <option value="last_30d">Son 30 gün</option>
-      <option value="this_month">Bu ay</option>
-      <option value="last_month">Geçen ay</option>
-    </select>
+    <button class="dp-btn" id="rpDpTrigger" onclick="rpDpToggle()">
+      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" style="flex-shrink:0;opacity:.8"><g clip-path="url(#rdpc)"><path d="M12.517 2.047h-.564v-.762a.764.764 0 0 0-1.524 0v.762H5.858v-.762a.764.764 0 0 0-1.524 0v.762h-.549a2.263 2.263 0 0 0-2.27 2.035 43.35 43.35 0 0 0 0 8.891 2.268 2.268 0 0 0 2.27 2.034h8.709a2.277 2.277 0 0 0 2.278-2.05c.305-3.146.312-6.133.015-8.89-.122-1.151-1.097-2.012-2.27-2.012v-.008zM3.03 4.234a.758.758 0 0 1 .754-.663h8.732c.38 0 .716.29.754.655.053.534.091 1.082.13 1.63H2.908c.03-.54.068-1.081.122-1.622zm2.064 9.242h-1.31a.753.753 0 0 1-.754-.663 38.75 38.75 0 0 1-.122-1.623h2.194v2.286h-.008zm0-3.81H2.84a38.099 38.099 0 0 1 0-2.285h2.256v2.285zm4.572 3.81H6.62V11.19h3.048v2.286zm0-3.81H6.62V7.381h3.048v2.285zm3.581 3.14a.767.767 0 0 1-.762.67h-1.303V11.19h2.18c-.039.533-.07 1.067-.123 1.615h.008zm.19-3.14h-2.247V7.381h2.263c.015.746.015 1.508-.016 2.285z"></path></g><defs><clipPath id="rdpc"><path d="M0 0H16V16H0z"></path></clipPath></defs></svg>
+      <span id="rpDpLabel">Son 7 gün</span>
+      <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" style="flex-shrink:0;opacity:.7"><path d="M12 6a.667.667 0 0 1 .49 1.12l-4 4.332a.667.667 0 0 1-.98 0l-4-4.333A.667.667 0 0 1 4 6h8z"></path></svg>
+    </button>
+    <input type="hidden" id="rpPreset" value="last_7d">
+    <input type="hidden" id="rpFrom">
+    <input type="hidden" id="rpTo">
     <button class="btn sm" onclick="rpExport('pdf')" style="background:var(--r)">📄 PDF</button>
     <button class="btn sm" onclick="rpExport('excel')" style="background:var(--g);color:#000">🟢 Excel</button>
     <span id="rpStatus" style="font-size:11px;color:var(--m)"></span>
@@ -133,7 +134,7 @@ window.rpSetPlatform = function(p, el){
 
 window.rpLoad = async function(){
   if(rpPlatform!=='meta') return;
-  var preset = document.getElementById('rpPreset').value;
+  var preset = document.getElementById('rpPreset').value || 'last_7d';
   var st = document.getElementById('rpStatus');
   if(st) st.textContent = '⏳ Yükleniyor...';
   var AID = window.AID || 'act_1346348685568168';
@@ -238,4 +239,107 @@ else window.addEventListener('mx:connected', function _rp(){
   rpLoad();
 });
 })();
+
+// ── Raporlar Date Picker ──────────────────────────────────
+var _rpDpOpen = false;
+var RP_PRESETS = [
+  {v:'today',l:'Bugün'},{v:'yesterday',l:'Dün'},
+  {v:'last_7d',l:'Son 7 gün'},{v:'last_14d',l:'Son 14 gün'},
+  {v:'last_30d',l:'Son 30 gün'},{v:'this_month',l:'Bu ay'},
+  {v:'last_month',l:'Geçen ay'},{v:'maximum',l:'Maksimum'}
+];
+function _rpDpToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _rpDpOffset(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function _rpDpFmt(iso){if(!iso)return'';var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
+
+window.rpDpToggle = function(){
+  var pop=document.getElementById('rpDpPopup');
+  if(!pop)return;
+  if(_rpDpOpen){rpDpClose();return;}
+  var presetsEl=document.getElementById('rpDpPresets');
+  if(presetsEl&&!presetsEl.children.length){
+    RP_PRESETS.forEach(function(p){
+      var row=document.createElement('div');row.className='dp-preset-item';
+      var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='rpDpDot_'+p.v;
+      var txt=document.createElement('span');txt.textContent=p.l;
+      row.appendChild(dot);row.appendChild(txt);
+      row.onclick=function(){_rpDpPick(p.v,p.l);};
+      presetsEl.appendChild(row);
+    });
+  }
+  var fi=document.getElementById('rpDpFrom'),ti=document.getElementById('rpDpTo');
+  if(fi)fi.value=_rpDpOffset(6);if(ti)ti.value=_rpDpToday();
+  _rpDpDots('last_7d');
+  var btn=document.getElementById('rpDpTrigger'),rect=btn.getBoundingClientRect();
+  var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;
+  if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}
+  else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}
+  _rpDpOpen=true;
+  setTimeout(function(){document.addEventListener('mousedown',_rpDpOut);},10);
+};
+function _rpDpDots(active){
+  RP_PRESETS.forEach(function(p){
+    var d=document.getElementById('rpDpDot_'+p.v);
+    if(d){d.style.background=p.v===active?'#1877f2':'transparent';d.style.borderColor=p.v===active?'#1877f2':'transparent';}
+  });
+}
+function _rpDpPick(val,label){
+  var from='',to=_rpDpToday();
+  if(val==='today'){from=to;}
+  else if(val==='yesterday'){from=_rpDpOffset(1);to=_rpDpOffset(1);}
+  else if(val==='last_7d'){from=_rpDpOffset(6);}
+  else if(val==='last_14d'){from=_rpDpOffset(13);}
+  else if(val==='last_30d'){from=_rpDpOffset(29);}
+  else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
+  else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
+  else if(val==='maximum'){from='2020-01-01';}
+  var pre=document.getElementById('rpPreset'),mFr=document.getElementById('rpFrom'),mTo=document.getElementById('rpTo');
+  if(pre)pre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';
+  var lbl=document.getElementById('rpDpLabel');if(lbl)lbl.textContent=label;
+  rpDpClose();
+  setTimeout(rpLoad,50);
+}
+window.rpDpClose = function(){
+  var pop=document.getElementById('rpDpPopup');if(pop)pop.style.display='none';
+  _rpDpOpen=false;document.removeEventListener('mousedown',_rpDpOut);
+};
+function _rpDpOut(e){
+  var pop=document.getElementById('rpDpPopup'),btn=document.getElementById('rpDpTrigger');
+  if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))rpDpClose();
+}
+window.rpDpApply = function(){
+  var fi=document.getElementById('rpDpFrom'),ti=document.getElementById('rpDpTo');
+  if(!fi||!ti||!fi.value||!ti.value){toast('Tarih seçin');return;}
+  if(fi.value>ti.value){toast('Bitiş tarihi başlangıçtan önce olamaz');return;}
+  var pre=document.getElementById('rpPreset'),mFr=document.getElementById('rpFrom'),mTo=document.getElementById('rpTo');
+  if(pre)pre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;
+  var lbl=document.getElementById('rpDpLabel');if(lbl)lbl.textContent=_rpDpFmt(fi.value)+' - '+_rpDpFmt(ti.value);
+  rpDpClose();
+  setTimeout(rpLoad,50);
+};
 </script>
+
+<!-- Raporlar Date Picker Popup -->
+<div id="rpDpPopup" style="display:none;position:fixed;z-index:99999">
+  <div class="dp-popup-wrap">
+    <div class="dp-preset-section">
+      <div class="dp-preset-lbl">Hızlı Seçim</div>
+      <div id="rpDpPresets"></div>
+    </div>
+    <div class="dp-custom-section">
+      <div class="dp-custom-lbl">Özel Aralık</div>
+      <div class="dp-inputs-row">
+        <div class="dp-input-group"><label>Başlangıç</label><input type="date" id="rpDpFrom"></div>
+        <div class="dp-arrow">→</div>
+        <div class="dp-input-group"><label>Bitiş</label><input type="date" id="rpDpTo"></div>
+      </div>
+    </div>
+    <div class="dp-footer-row">
+      <div class="dp-range-info" id="rpDpRangeInfo"></div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="dp-btn-cancel" onclick="rpDpClose()">İptal</button>
+        <button class="dp-btn-apply" onclick="rpDpApply()">Güncelle</button>
+      </div>
+    </div>
+  </div>
+</div>
