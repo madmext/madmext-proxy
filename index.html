@@ -158,23 +158,46 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="sidebar-logo"><div class="logo" onclick="nav('dashboard',null)" style="cursor:pointer">Madmext <span>Ads</span></div></div>
   <div class="sidebar-section">Ana Menü</div>
   <div class="nav-item active" onclick="closeSidebar();nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
+
   <div class="sidebar-section">Reklam</div>
   <div class="nav-group open" id="navGrupReklam">
     <div class="nav-group-header" onclick="toggleGroup('navGrupReklam')"><span class="nav-icon">📢</span><span style="flex:1">Reklam</span><span style="font-size:10px">▾</span></div>
     <div class="nav-group-items">
       <div class="nav-item nav-sub" onclick="closeSidebar();nav('meta-ads',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Meta Ads</span></div>
-      <div class="nav-item nav-sub" style="opacity:.45;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>Google Ads</span><span class="nav-soon">Yakında</span></div>
-      <div class="nav-item nav-sub" style="opacity:.45;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>TikTok</span><span class="nav-soon">Yakında</span></div>
+      <div class="nav-item nav-sub" onclick="closeSidebar();nav('google-ads',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Google Ads</span><span class="nav-soon" style="background:rgba(66,183,42,.12);color:var(--g);border-color:rgba(66,183,42,.3)">Beta</span></div>
+      <div class="nav-item nav-sub" style="opacity:.4;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>TikTok</span><span class="nav-soon">Yakında</span></div>
     </div>
   </div>
+
   <div class="sidebar-section">AI Araçlar</div>
-  <div class="nav-item" onclick="closeSidebar();nav('strateji',this)"><span class="nav-icon">🧠</span><span>Strateji</span><span class="nav-ai">AI</span></div>
-  <div class="nav-item" onclick="closeSidebar();nav('optimizasyon',this)"><span class="nav-icon">⚙️</span><span>Optimizasyon</span><span class="nav-ai">AI</span></div>
-  <div class="nav-item" onclick="closeSidebar();nav('hedef-kitle',this)"><span class="nav-icon">🎯</span><span>Hedef Kitle</span><span class="nav-ai">AI</span></div>
+  <div class="nav-group" id="navGrupStrateji">
+    <div class="nav-group-header" onclick="toggleGroup('navGrupStrateji')"><span class="nav-icon">🧠</span><span style="flex:1">Strateji</span><span class="nav-ai">AI</span><span style="font-size:10px;margin-left:4px">▾</span></div>
+    <div class="nav-group-items">
+      <div class="nav-item nav-sub" onclick="closeSidebar();navWithPlatform('strateji','meta',this)"><span class="nav-icon" style="font-size:10px">📘</span><span>Meta Strateji</span></div>
+      <div class="nav-item nav-sub" onclick="closeSidebar();navWithPlatform('strateji','google',this)"><span class="nav-icon" style="font-size:10px">🟢</span><span>Google Strateji</span></div>
+    </div>
+  </div>
+  <div class="nav-group" id="navGrupOptimizasyon">
+    <div class="nav-group-header" onclick="toggleGroup('navGrupOptimizasyon')"><span class="nav-icon">⚙️</span><span style="flex:1">Optimizasyon</span><span class="nav-ai">AI</span><span style="font-size:10px;margin-left:4px">▾</span></div>
+    <div class="nav-group-items">
+      <div class="nav-item nav-sub" onclick="closeSidebar();navWithPlatform('optimizasyon','meta',this)"><span class="nav-icon" style="font-size:10px">📘</span><span>Meta Optimizasyon</span></div>
+      <div class="nav-item nav-sub" onclick="closeSidebar();navWithPlatform('optimizasyon','google',this)"><span class="nav-icon" style="font-size:10px">🟢</span><span>Google Optimizasyon</span></div>
+    </div>
+  </div>
+  <div class="nav-group" id="navGrupHedef">
+    <div class="nav-group-header" onclick="toggleGroup('navGrupHedef')"><span class="nav-icon">🎯</span><span style="flex:1">Hedef Kitle</span><span class="nav-ai">AI</span><span style="font-size:10px;margin-left:4px">▾</span></div>
+    <div class="nav-group-items">
+      <div class="nav-item nav-sub" onclick="closeSidebar();navWithPlatform('hedef-kitle','meta',this)"><span class="nav-icon" style="font-size:10px">📘</span><span>Meta Kitleler</span></div>
+      <div class="nav-item nav-sub" onclick="closeSidebar();navWithPlatform('hedef-kitle','google',this)"><span class="nav-icon" style="font-size:10px">🟢</span><span>Google Kitleler</span></div>
+    </div>
+  </div>
   <div class="nav-item" onclick="closeSidebar();nav('tasarim',this)"><span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span></div>
-  <div class="sidebar-section">Raporlama</div>
+
+  <div class="sidebar-section">Raporlama & Analiz</div>
   <div class="nav-item" onclick="closeSidebar();nav('raporlar',this)"><span class="nav-icon">📊</span><span>Raporlar</span></div>
+  <div class="nav-item" onclick="closeSidebar();nav('seo',this)"><span class="nav-icon">🔍</span><span>SEO</span><span class="nav-soon">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
+
   <div class="sidebar-section">Diğer</div>
   <div class="nav-item" onclick="closeSidebar();nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('kullanicilar',this)"><span class="nav-icon">👥</span><span>Kullanıcılar</span></div>
@@ -232,6 +255,14 @@ const PAGES = {
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
   kullanicilar: {title:'Kullanicilar', sub:'Kullanici ve rol yonetimi', module:'kullanicilar'},
   'claude-chat': {title:'Claude AI', sub:'AI asistan — Meta verilerinizi analiz edin', module:'claude-chat'},
+  'google-ads':  {title:'Google Ads', sub:'Kampanya ve reklam yönetimi', module:'google-ads'},
+  'strateji-meta': {title:'Strateji — Meta', sub:'Meta kampanya stratejisi', module:'strateji'},
+  'strateji-google': {title:'Strateji — Google', sub:'Google kampanya stratejisi', module:'strateji'},
+  'optimizasyon-meta': {title:'Optimizasyon — Meta', sub:'Meta bütçe optimizasyonu', module:'optimizasyon'},
+  'optimizasyon-google': {title:'Optimizasyon — Google', sub:'Google bütçe optimizasyonu', module:'optimizasyon'},
+  'hedef-meta': {title:'Hedef Kitle — Meta', sub:'Meta audience analizi', module:'hedef-kitle'},
+  'hedef-google': {title:'Hedef Kitle — Google', sub:'Google audience analizi', module:'hedef-kitle'},
+  seo:           {title:'SEO', sub:'Site SEO analizi', module:'seo'},
 };
 
 window.currentPage = '';
@@ -263,7 +294,9 @@ async function nav(page, el) {
     'optimizasyon': '/optimizasyon', 'hedef-kitle': '/hedef-kitle',
     'tasarim': '/tasarim', 'raporlar': '/raporlar', 'gorevler': '/gorevler',
     'create': '/olustur', 'ayarlar': '/ayarlar', 'kullanicilar': '/kullanicilar',
-    'claude-chat': '/ai'
+    'claude-chat': '/ai',
+    'google-ads': '/google-ads',
+    seo: '/seo'
   };
   var newUrl = urlMap[page] || ('/' + page);
   history.pushState({page: page}, '', newUrl);
@@ -301,7 +334,9 @@ function urlToPage(path){
     '/optimizasyon': 'optimizasyon', '/hedef-kitle': 'hedef-kitle',
     '/tasarim': 'tasarim', '/raporlar': 'raporlar', '/gorevler': 'gorevler',
     '/olustur': 'create', '/ayarlar': 'ayarlar', '/kullanicilar': 'kullanicilar',
-    '/ai': 'claude-chat'
+    '/ai': 'claude-chat',
+    '/google-ads': 'google-ads',
+    '/seo': 'seo'
   };
   return map[path] || null;
 }
@@ -409,6 +444,13 @@ nav(_startPage, null);
 //    Modüller kendi listener'larıyla handle ediyor (dashboard, gorevler vs.)
 updateConnBadge('', 'Bağlanıyor...');
 connect();
+
+// navWithPlatform: platform seçerek modül aç
+window._activePlatform = 'meta';
+window.navWithPlatform = function(page, platform, el){
+  window._activePlatform = platform;
+  nav(page, el);
+};
 
 // Task badge her dakika güncelle
 setInterval(updateTaskBadge, 60000);
