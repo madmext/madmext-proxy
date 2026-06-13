@@ -1,111 +1,199 @@
-<div class="ai-panel">
-  <div class="ai-panel-title" id="aiModuleTitle">🧠 Strateji <span class="nav-ai">AI</span></div>
-  <div class="ai-panel-sub" id="aiModuleSub">Meta ve GA4 verilerine dayalı strateji önerileri</div>
-</div>
-<div class="chat-layout">
-  <div class="chat-msgs" id="aiMsgs">
-    <div class="msg sys" id="aiWelcome">Bağlan ve veri yükle, ardından soru sor.</div>
+<style>
+.hk-wrap{display:flex;flex-direction:column;gap:16px}
+.platform-tabs{display:flex;gap:1px;background:var(--b);border-radius:8px;overflow:hidden;margin-bottom:4px}
+.platform-tab{flex:1;padding:10px 16px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.platform-tab.active{background:var(--a);color:#fff}
+.platform-tab:hover:not(.active){background:var(--b);color:var(--t)}
+.audience-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.audience-tab{padding:6px 14px;border-radius:20px;cursor:pointer;font-size:11px;font-weight:600;color:var(--m);border:1px solid var(--b);background:var(--s2);transition:all .15s}
+.audience-tab.active{background:var(--a);color:#fff;border-color:var(--a)}
+.audience-tab:hover:not(.active){border-color:var(--a);color:var(--a)}
+.audience-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:8px;transition:background .12s;cursor:default}
+.audience-card:hover{background:var(--s2)}
+.audience-card-name{flex:1;font-size:13px;font-weight:500}
+.audience-card-sub{font-size:10px;color:var(--m);margin-top:2px}
+.audience-card-meta{display:flex;gap:12px;font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
+.audience-card-meta span{display:flex;align-items:center;gap:4px}
+.audience-actions{display:flex;gap:6px}
+.hk-search{background:var(--s2);border:1px solid var(--b);color:var(--t);padding:8px 14px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;width:100%;margin-bottom:12px;outline:none}
+.hk-search:focus{border-color:var(--a)}
+.hk-empty{text-align:center;padding:40px 20px;color:var(--m);font-size:13px}
+.seg-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-family:'DM Mono',monospace}
+.seg-badge.kural{background:rgba(24,119,242,.12);color:var(--a);border:1px solid rgba(24,119,242,.3)}
+.seg-badge.mantik{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
+.seg-badge.benzer{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3)}
+.seg-badge.retarget{background:rgba(250,62,62,.1);color:var(--r);border:1px solid rgba(250,62,62,.2)}
+.seg-badge.detayli{background:rgba(100,180,255,.12);color:var(--bl);border:1px solid rgba(100,180,255,.3)}
+.size-badge{font-family:'DM Mono',monospace;font-size:11px;color:var(--t)}
+</style>
+
+<div class="hk-wrap">
+  <!-- Platform Seçici -->
+  <div class="platform-tabs" id="hkPlatformTabs">
+    <button class="platform-tab active" onclick="hkSetPlatform('meta',this)">📘 Meta Ads</button>
+    <button class="platform-tab" onclick="hkSetPlatform('google',this)">🟢 Google Ads</button>
   </div>
-  <div class="chat-side">
-    <div class="stitle">Hızlı Sorular</div>
-    <div id="aiQuickBtns"></div>
-    <div class="cinput">
-      <textarea id="aiInput" placeholder="Sorunuzu yazın..."></textarea>
-      <button class="btn" onclick="aiModuleSend()">Gönder →</button>
+
+  <!-- Meta Panel -->
+  <div id="hkMetaPanel">
+    <div class="audience-tabs">
+      <button class="audience-tab active" onclick="hkSetTab('meta','benzer',this)">👥 Benzer Kitle</button>
+      <button class="audience-tab" onclick="hkSetTab('meta','detayli',this)">🎯 Detaylı Kitle</button>
+      <button class="audience-tab" onclick="hkSetTab('meta','retarget',this)">🔄 Retargeting</button>
     </div>
+    <input class="hk-search" id="hkMetaSearch" placeholder="Hedef kitle arayın..." oninput="hkFilterMeta()">
+    <div id="hkMetaList"></div>
+  </div>
+
+  <!-- Google Panel -->
+  <div id="hkGooglePanel" style="display:none">
+    <div class="audience-tabs">
+      <button class="audience-tab active" onclick="hkSetTab('google','segment',this)">🔄 Segmentler</button>
+      <button class="audience-tab" onclick="hkSetTab('google','mix',this)">👥 Audience Mix</button>
+      <button class="audience-tab" onclick="hkSetTab('google','ozel',this)">⚙️ Özel Segmentler</button>
+      <button class="audience-tab" onclick="hkSetTab('google','keywords',this)">🔑 Anahtar Kelimeler</button>
+    </div>
+    <input class="hk-search" id="hkGoogleSearch" placeholder="Hedef kitle arayın..." oninput="hkFilterGoogle()">
+    <div id="hkGoogleList"></div>
   </div>
 </div>
 
 <script>
 (function(){
-  // Hangi modüldeyiz?
-  const path = window.location.pathname;
-  const moduleName = document.getElementById('aiModuleTitle')?.closest('.ai-panel')?.dataset?.module
-    || (currentPage || 'strateji');
+var hkPlatform = window._activePlatform || 'meta';
+var hkActiveTabMeta = 'benzer';
+var hkActiveTabGoogle = 'segment';
 
-  const MODULE_CONFIG = {
-    strateji: {
-      title: '🧠 Strateji',
-      sub: 'Meta ve GA4 verilerine dayalı büyüme fırsatları ve kampanya stratejisi',
-      welcome: 'Meta + GA4 verilerinizi analiz ederek strateji önerileri üretebilirim.',
-      sys: () => `Meta+GA4 uzmanı Türkçe yanıt ver. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))}`,
-      questions: [
-        ['🚀 Büyüme fırsatları','Mevcut kampanya verilerine göre büyüme fırsatlarını analiz et. Hangi kampanyalara yatırım artırmalıyım?'],
-        ['📊 Attribution analizi','Meta harcama ve GA4 gelir verilerini karşılaştır. Hangi kanal gerçekten dönüşüm sağlıyor?'],
-        ['💰 30 günlük strateji','Önümüzdeki 30 gün için bütçe dağılımı stratejisi öner.'],
-        ['⏸ Zarar edenler','Düşük ROAS\'lı kampanyaları durdurma veya optimize etme stratejisi öner.'],
-      ]
-    },
-    'hedef-kitle': {
-      title: '🎯 Hedef Kitle',
-      sub: 'GA4 kullanıcı verileri ve Meta audience analizine dayalı öneriler',
-      welcome: 'GA4 ve Meta verilerini kullanarak hedef kitle analizi yapabilirim.',
-      sys: () => `Hedef kitle uzmanı Türkçe. Meta:${JSON.stringify(MX.campStore.slice(0,6).map(r=>({k:r.name?.slice(0,25),roas:r.roas,spend:r.spend})))}`,
-      questions: [
-        ['📊 Kanal dönüşüm analizi','GA4 trafik kaynaklarını analiz et. Hangi kanaldan gelen kullanıcılar daha çok dönüşüm sağlıyor?'],
-        ['👥 Kitle performansı','Meta kampanyalarındaki hedef kitle performansını analiz et. Hangi kitleler daha iyi ROAS veriyor?'],
-        ['✨ Yeni kitle önerileri','Mevcut verilere göre yeni hedef kitle ve lookalike önerileri sun.'],
-        ['📍 Demografik analiz','En iyi dönüşüm sağlayan demografi ve ilgi alanlarını belirle.'],
-      ]
-    },
-    tasarim: {
-      title: '🎨 Tasarım',
-      sub: 'Reklam metni, kreatif öneri ve A/B test fikirleri',
-      welcome: 'Reklam metni, başlık ve kreatif önerileri için yardımcı olabilirim.',
-      sys: () => `Madmext için reklam kreatif uzmanı. Türkçe. Marka: erkek/kadın tekstil e-ticaret. En iyi reklamlar:${JSON.stringify(MX.adStore.slice(0,8).map(r=>({r:r.name?.slice(0,25),ctr:r.ctr,roas:r.roas})))}`,
-      questions: [
-        ['✍️ Reklam metni','En iyi performanslı reklamların ortak özelliklerini analiz et ve yeni reklam metni önerileri sun.'],
-        ['🔬 A/B test fikirleri','Mevcut reklamlar için A/B test fikirleri üret. Başlık, görsel ve CTA varyasyonları öner.'],
-        ['🎯 Hook cümleleri','Madmext marka kimliğine uygun 5 farklı reklam hook cümlesi yaz.'],
-        ['📈 Yüksek CTR başlıklar','Yüksek CTR için dikkat çekici reklam başlıkları öner.'],
-      ]
-    },
-    raporlar: {
-      title: '📊 Raporlar',
-      sub: 'Kapsamlı performans raporları',
-      welcome: 'Kapsamlı performans raporu oluşturmak için hazırım.',
-      sys: () => `Meta+GA4 raporlama uzmanı Türkçe. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))} Adsetler:${JSON.stringify(MX.adsetStore.slice(0,10).map(r=>({rs:r.name?.slice(0,22),h:r.spend,roas:r.roas})))}`,
-      questions: [
-        ['📊 Haftalık rapor','Son 7 günün kapsamlı performans raporu: kampanya ve reklam seti bazında tablo halinde sun.'],
-        ['📈 ROAS analizi','ROAS bazında tüm kampanya ve reklam setlerini analiz et. En iyi ve en kötüleri belirle.'],
-        ['💸 Harcama verimliliği','Harcama başına kazanç analizini yap. En verimli kampanyaları belirle.'],
-        ['📉 Düşüş analizi','Bu hafta performansı düşen kampanya ve reklam setlerini tespit et.'],
-      ]
-    }
-  };
+// Örnek meta kitleler (gerçek API'den gelecek)
+var hkMetaData = {
+  benzer: [
+    {name:'Benzer Hedef Kitle (1%) - Sepete Ekleyenler 30 gün', sub:'Benzer Hedef Kitle', size:'1.000', date:'21 Ocak'},
+    {name:'Benzer Hedef Kitle (1%) - Tüm Ziyaretçiler 30 Gün', sub:'Benzer Hedef Kitle', size:'1.000', date:'21 Ocak'},
+    {name:'Benzer Hedef Kitle (2%) - Satın Alanlar', sub:'Benzer Hedef Kitle', size:'2.000', date:'15 Şubat'},
+  ],
+  detayli: [
+    {name:'GENÇLER PAZAR YERİ', sub:'Eşleşen Kişiler', loc:'TR', age:'18-65', size:'11.550.000', preview:true},
+    {name:'ERKEĞİ GİYİM TUTKUNLARI', sub:'Detaylı Kitle', loc:'TR', age:'18-54', size:'8.200.000', preview:true},
+    {name:'E-TİCARET ALIŞVERIŞ YAPANlar', sub:'Detaylı Kitle', loc:'TR', age:'18-65', size:'14.000.000', preview:true},
+  ],
+  retarget: [
+    {name:'Sepete Ekleyenler 30 gün', sub:'Web Sitesi', size:'20', days:'30'},
+    {name:'Tüm Ziyaretçiler 30 Gün', sub:'Web Sitesi', size:'20', days:'30'},
+    {name:'Ödeme Adımına Gelen (7)', sub:'Web Sitesi', size:'8', days:'7'},
+    {name:'Satın Alanlar (10)', sub:'Web Sitesi', size:'5', days:'10'},
+  ]
+};
 
-  const cfg = MODULE_CONFIG[currentPage] || MODULE_CONFIG.strateji;
+var hkGoogleData = {
+  segment: [
+    {name:'All visitors (AdWords)', sub:'Kural Tabanlı', searchSize:'330', displaySize:'160'},
+    {name:'AdWords optimized list', sub:'Mantıksal', searchSize:'420', displaySize:'160'},
+    {name:'All Converters', sub:'Kural Tabanlı', searchSize:'8', displaySize:'8'},
+  ],
+  mix: [],
+  ozel: [],
+  keywords: [
+    {name:'Kadın Giyim', count:12},
+    {name:'Erkek Spor Giyim', count:8},
+    {name:'Online Alışveriş', count:24},
+  ]
+};
 
-  // Başlık güncelle
-  const titleEl = document.getElementById('aiModuleTitle');
-  const subEl = document.getElementById('aiModuleSub');
-  const welcomeEl = document.getElementById('aiWelcome');
-  if(titleEl) titleEl.innerHTML = `${cfg.title} <span class="nav-ai">AI</span>`;
-  if(subEl) subEl.textContent = cfg.sub;
-  if(welcomeEl) welcomeEl.textContent = cfg.welcome;
+window.hkSetPlatform = function(platform, el){
+  hkPlatform = platform;
+  document.querySelectorAll('.platform-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('hkMetaPanel').style.display = platform==='meta'?'':'none';
+  document.getElementById('hkGooglePanel').style.display = platform==='google'?'':'none';
+  if(platform==='meta') hkRenderMeta();
+  else hkRenderGoogle();
+};
 
-  // Hızlı sorular
-  const btnsEl = document.getElementById('aiQuickBtns');
-  if(btnsEl) {
-    btnsEl.innerHTML = cfg.questions.map(([label, q]) =>
-      `<button class="qbtn" onclick="aiModuleSend('${q.replace(/'/g,"\\'")}')">${label}</button>`
-    ).join('');
+window.hkSetTab = function(platform, tab, el){
+  if(platform==='meta') hkActiveTabMeta = tab;
+  else hkActiveTabGoogle = tab;
+  var parent = el.closest('.hk-wrap') || document;
+  var panel = document.getElementById(platform==='meta'?'hkMetaPanel':'hkGooglePanel');
+  panel.querySelectorAll('.audience-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  if(platform==='meta') hkRenderMeta();
+  else hkRenderGoogle();
+};
+
+function hkRenderMeta(){
+  var tab = hkActiveTabMeta;
+  var data = hkMetaData[tab] || [];
+  var search = (document.getElementById('hkMetaSearch').value||'').toLowerCase();
+  if(search) data = data.filter(function(d){return d.name.toLowerCase().includes(search);});
+  var el = document.getElementById('hkMetaList');
+  if(!data.length){el.innerHTML='<div class="hk-empty">🔍 Kitle bulunamadı</div>';return;}
+  el.innerHTML = data.map(function(d){
+    if(tab==='benzer') return `
+      <div class="audience-card">
+        <div style="flex:1"><div class="audience-card-name">${d.name}</div><div class="audience-card-sub"><span class="seg-badge benzer">Benzer Kitle</span></div></div>
+        <div class="audience-card-meta"><span>👥 ${d.size}</span><span>📅 ${d.date}</span></div>
+        <div class="audience-actions"><button class="btn sm sec" onclick="toast('Reklam oluştur seçildi')">Reklam Oluştur</button></div>
+      </div>`;
+    if(tab==='detayli') return `
+      <div class="audience-card">
+        <div style="flex:1"><div class="audience-card-name">${d.name}</div><div class="audience-card-sub"><span class="seg-badge detayli">Detaylı Kitle</span></div></div>
+        <div class="audience-card-meta"><span>📍 ${d.loc||'TR'}</span><span>🎂 ${d.age}</span><span>👥 ${d.size}</span></div>
+        <div class="audience-actions">${d.preview?'<button class="btn sm sec" onclick="toast(\'Önizleme açıldı\')">👁 Önizle</button>':''}<button class="btn sm" onclick="toast(\'Reklam oluştur seçildi\')">Reklam Oluştur</button></div>
+      </div>`;
+    if(tab==='retarget') return `
+      <div class="audience-card">
+        <div style="flex:1"><div class="audience-card-name">${d.name}</div><div class="audience-card-sub"><span class="seg-badge retarget">Retargeting</span> · ${d.sub}</div></div>
+        <div class="audience-card-meta"><span>👥 ${d.size}</span><span>⏱ ${d.days} gün</span></div>
+        <div class="audience-actions"><button class="btn sm sec" onclick="toast(\'Sil\')">🗑</button><button class="btn sm" onclick="toast(\'Reklam oluştur\')">Reklam Oluştur</button></div>
+      </div>`;
+    return '';
+  }).join('');
+}
+
+function hkRenderGoogle(){
+  var tab = hkActiveTabGoogle;
+  var data = hkGoogleData[tab] || [];
+  var search = (document.getElementById('hkGoogleSearch').value||'').toLowerCase();
+  if(search) data = data.filter(function(d){return d.name.toLowerCase().includes(search);});
+  var el = document.getElementById('hkGoogleList');
+  if(!data.length && tab!=='segment'){
+    el.innerHTML='<div class="hk-empty">'+
+      (tab==='mix'?'👥 Henüz Audience Mix oluşturulmamış. <button class="btn sm" style="margin-top:12px" onclick="toast(\'Kitle Oluştur tıklandı\')">+ Kitle Oluştur</button>':
+       tab==='ozel'?'⚙️ Özel segment bulunamadı. <button class="btn sm" style="margin-top:12px" onclick="toast(\'Segment Oluştur tıklandı\')">+ Segment Oluştur</button>':
+       '🔑 Anahtar kelime listesi boş.')+
+      '</div>';
+    return;
   }
+  if(tab==='segment') el.innerHTML = data.map(function(d){return `
+    <div class="audience-card">
+      <div style="flex:1"><div class="audience-card-name">${d.name}</div><div class="audience-card-sub"><span class="seg-badge ${d.sub==='Mantıksal'?'mantik':'kural'}">${d.sub}</span></div></div>
+      <div class="audience-card-meta"><span>🔍 Arama: <b style="color:var(--a)">${d.searchSize}</b></span><span>🖥 Görüntülü: <b style="color:var(--bl)">${d.displaySize}</b></span></div>
+      <div class="audience-actions"><button class="btn sm" onclick="toast('Reklam Oluştur')">⚡ Reklam Oluştur</button></div>
+    </div>`;}).join('');
+  else if(tab==='keywords') el.innerHTML = data.map(function(d){return `
+    <div class="audience-card">
+      <div style="flex:1"><div class="audience-card-name">${d.name}</div><div class="audience-card-sub">Anahtar Kelime Grubu · ${d.count} kelime</div></div>
+      <div class="audience-actions"><button class="btn sm sec" onclick="toast('Düzenle')">✏️</button><button class="btn sm" onclick="toast('Reklam oluştur')">Reklam Oluştur</button></div>
+    </div>`;}).join('');
+  else el.innerHTML = '<div class="hk-empty">Veri yok</div>';
+}
 
-  window.aiModuleSend = async function(msg) {
-    if(!msg) msg = document.getElementById('aiInput')?.value;
-    if(!msg||!msg.trim()) return;
-    const inp = document.getElementById('aiInput');
-    if(inp) inp.value = '';
-    addMsg(msg, 'user', 'aiMsgs');
-    const th = addThinking('aiMsgs');
-    const key = currentPage || 'strateji';
-    if(!MX.chatH[key]) MX.chatH[key] = [];
-    MX.chatH[key].push({role:'user',content:msg});
-    const reply = await claude(MX.chatH[key].slice(-6), cfg.sys());
-    th.remove();
-    MX.chatH[key].push({role:'assistant',content:reply});
-    addClaudeMsg(reply, 'aiMsgs');
-  };
+window.hkFilterMeta = function(){ hkRenderMeta(); };
+window.hkFilterGoogle = function(){ hkRenderGoogle(); };
+
+// Platform'a göre başlat
+if(window._activePlatform === 'google'){
+  hkPlatform = 'google';
+  setTimeout(function(){
+    var tabs = document.querySelectorAll('.platform-tab');
+    if(tabs[0]) tabs[0].classList.remove('active');
+    if(tabs[1]) tabs[1].classList.add('active');
+    document.getElementById('hkMetaPanel').style.display = 'none';
+    document.getElementById('hkGooglePanel').style.display = '';
+    hkRenderGoogle();
+  }, 50);
+} else {
+  hkRenderMeta();
+}
 })();
 </script>
