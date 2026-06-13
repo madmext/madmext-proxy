@@ -1,0 +1,155 @@
+<style>
+.seo-wrap{max-width:900px}
+.seo-input-row{display:flex;gap:8px;margin-bottom:20px;align-items:flex-start}
+.seo-input-row input{flex:1;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:10px 14px;font-family:'Inter',sans-serif;font-size:13px;border-radius:6px;outline:none}
+.seo-input-row input:focus{border-color:var(--a)}
+.seo-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;margin-bottom:12px}
+.seo-card-title{font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--m);text-transform:uppercase;letter-spacing:1px}
+.seo-score-ring{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;font-family:'DM Mono',monospace;border:5px solid var(--b)}
+.seo-score-ring.good{border-color:var(--g);color:var(--g)}
+.seo-score-ring.medium{border-color:var(--y);color:var(--y)}
+.seo-score-ring.bad{border-color:var(--r);color:var(--r)}
+.seo-check{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
+.seo-check:last-child{border-bottom:none}
+.seo-check-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.seo-check-label{font-weight:600;margin-bottom:2px}
+.seo-check-desc{color:var(--m);font-size:11px;line-height:1.5}
+.seo-saved-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:6px;margin-bottom:8px}
+.seo-saved-item .seo-url{flex:1;font-size:12px;color:var(--bl)}
+.seo-empty{text-align:center;padding:40px;color:var(--m);font-size:13px}
+.seo-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;margin:2px;background:var(--s2);border:1px solid var(--b);color:var(--m)}
+</style>
+
+<div class="seo-wrap">
+  <div class="seo-input-row">
+    <input type="text" id="seoUrl" placeholder="https://madmext.com analiz etmek için URL girin..." onkeydown="if(event.key==='Enter')seoAnalyze()">
+    <button class="btn" onclick="seoAnalyze()">🔍 Analiz Et</button>
+  </div>
+
+  <div id="seoResults" style="display:none">
+    <!-- Skor Özeti -->
+    <div class="seo-card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+      <div id="seoScoreRing" class="seo-score-ring medium">—</div>
+      <div style="flex:1">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">SEO Analiz Skoru</div>
+        <div id="seoUrlShow" style="font-size:11px;color:var(--bl);margin-bottom:8px"></div>
+        <div id="seoScoreTags"></div>
+      </div>
+      <button class="btn sm" onclick="seoAIAnalysis()">🤖 AI Önerileri</button>
+    </div>
+
+    <!-- Kontrol Listesi -->
+    <div class="seo-card">
+      <div class="seo-card-title">✅ SEO Kontrol Listesi</div>
+      <div id="seoCheckList"></div>
+    </div>
+
+    <!-- AI Öneriler -->
+    <div class="seo-card" id="seoAICard" style="display:none">
+      <div class="seo-card-title">🤖 AI SEO Önerileri</div>
+      <div id="seoAIMsgs"></div>
+    </div>
+  </div>
+
+  <!-- Kaydedilen Siteler -->
+  <div class="seo-card">
+    <div class="seo-card-title">📋 Analiz Geçmişi</div>
+    <div id="seoSavedList">
+      <div class="seo-empty">Henüz analiz yapılmamış. Yukarıdan bir URL girerek başlayın.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var seoHistory = JSON.parse(localStorage.getItem('seoHistory')||'[]');
+
+function seoRenderSaved(){
+  var el = document.getElementById('seoSavedList');
+  if(!seoHistory.length){
+    el.innerHTML='<div class="seo-empty">Henüz analiz yapılmamış.</div>';
+    return;
+  }
+  el.innerHTML = seoHistory.slice(0,5).map(function(h){return `
+    <div class="seo-saved-item">
+      <span class="seo-score-ring ${h.score>=70?'good':h.score>=40?'medium':'bad'}" style="width:36px;height:36px;font-size:13px;border-width:3px">${h.score}</span>
+      <span class="seo-url">${h.url}</span>
+      <span style="font-size:10px;color:var(--m)">${new Date(h.date).toLocaleDateString('tr')}</span>
+      <button class="btn sm sec" onclick="document.getElementById('seoUrl').value='${h.url}';seoAnalyze()">Yenile</button>
+    </div>`;}).join('');
+}
+
+window.seoAnalyze = async function(){
+  var url = document.getElementById('seoUrl').value.trim();
+  if(!url){toast('URL girin');return;}
+  if(!url.startsWith('http')) url = 'https://'+url;
+
+  var resEl = document.getElementById('seoResults');
+  resEl.style.display = '';
+  document.getElementById('seoCheckList').innerHTML = '<div style="color:var(--m);padding:20px;text-align:center"><div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px">SEO analiz yapılıyor...</span></div></div>';
+  document.getElementById('seoAICard').style.display = 'none';
+  document.getElementById('seoUrlShow').textContent = url;
+
+  // Claude ile SEO analizi yap
+  var sys = `SEO analiz uzmanı. Kullanıcı bir web sitesi URL'si verecek. Bu URL için kapsamlı SEO analizi yap ve sonucu JSON formatında ver:
+{
+  "score": 0-100 arası puan,
+  "checks": [
+    {"icon": "✅/⚠️/❌", "label": "Başlık", "desc": "Açıklama", "status": "good/warning/bad"},
+    ...en az 8 kontrol...
+  ],
+  "keywords": ["anahtar", "kelime", "listesi"],
+  "summary": "Kısa özet"
+}
+Kontrol edilecekler: başlık uzunluğu, meta açıklama, H1 yapısı, mobil uyumluluk, sayfa hızı, SSL, canonical tag, schema markup, iç linkler, görsel alt tag, sayfa içeriği kalitesi.
+SADECE JSON döndür, başka metin yazma.`;
+
+  try {
+    var rawReply = await claude([{role:'user',content:'Bu siteyi analiz et: '+url}], sys);
+    var clean = rawReply.replace(/```json|```/g,'').trim();
+    var data = JSON.parse(clean);
+
+    var score = data.score||50;
+    var ring = document.getElementById('seoScoreRing');
+    ring.textContent = score;
+    ring.className = 'seo-score-ring '+(score>=70?'good':score>=40?'medium':'bad');
+
+    document.getElementById('seoScoreTags').innerHTML = (data.keywords||[]).map(function(k){
+      return '<span class="seo-tag">'+k+'</span>';
+    }).join('');
+
+    document.getElementById('seoCheckList').innerHTML = (data.checks||[]).map(function(c){return `
+      <div class="seo-check">
+        <div class="seo-check-icon">${c.icon||'ℹ️'}</div>
+        <div>
+          <div class="seo-check-label" style="color:${c.status==='good'?'var(--g)':c.status==='bad'?'var(--r)':'var(--y)'}">${c.label}</div>
+          <div class="seo-check-desc">${c.desc}</div>
+        </div>
+      </div>`;}).join('');
+
+    // Geçmişe ekle
+    seoHistory = seoHistory.filter(function(h){return h.url!==url;});
+    seoHistory.unshift({url:url, score:score, date:new Date().toISOString()});
+    localStorage.setItem('seoHistory', JSON.stringify(seoHistory.slice(0,10)));
+    seoRenderSaved();
+    toast('✓ SEO analiz tamamlandı — Skor: '+score);
+  } catch(e) {
+    document.getElementById('seoCheckList').innerHTML = '<div style="color:var(--r);padding:16px">Analiz hatası: '+e.message+'</div>';
+  }
+};
+
+window.seoAIAnalysis = async function(){
+  var url = document.getElementById('seoUrlShow').textContent;
+  if(!url) return;
+  var card = document.getElementById('seoAICard');
+  var msgs = document.getElementById('seoAIMsgs');
+  card.style.display = '';
+  msgs.innerHTML = '<div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px;font-size:12px;color:var(--m)">AI öneriler hazırlanıyor...</span></div>';
+  var sys = 'SEO danışmanı. Türkçe. Madmext giyim e-ticaret sitesi için somut ve uygulanabilir SEO önerileri ver.';
+  var reply = await claude([{role:'user',content:url+' sitesi için e-ticaret SEO stratejisi ve iyileştirme önerileri ver. Madmext giyim markası için özelleştir.'}], sys);
+  addClaudeMsg(reply, 'seoAIMsgs');
+};
+
+seoRenderSaved();
+})();
+</script>
