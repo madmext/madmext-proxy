@@ -1,13 +1,28 @@
+<style>
+.strateji-platform-tabs{display:flex;gap:1px;background:var(--b);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.strateji-platform-tab{flex:1;padding:9px 16px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.strateji-platform-tab.active{background:var(--a);color:#fff}
+.strateji-platform-tab:hover:not(.active){background:var(--b);color:var(--t)}
+</style>
+
 <div class="ai-panel">
   <div class="ai-panel-title" id="aiModuleTitle">🧠 Strateji <span class="nav-ai">AI</span></div>
   <div class="ai-panel-sub" id="aiModuleSub">Meta ve GA4 verilerine dayalı strateji önerileri</div>
 </div>
+
+<!-- Platform Sekmeleri -->
+<div class="strateji-platform-tabs" id="stratejiPlatformTabs">
+  <button class="strateji-platform-tab active" onclick="stratejiSetPlatform('meta',this)">📘 Meta Strateji</button>
+  <button class="strateji-platform-tab" onclick="stratejiSetPlatform('google',this)">🟢 Google Strateji</button>
+  <button class="strateji-platform-tab" onclick="stratejiSetPlatform('genel',this)">📊 Genel Strateji</button>
+</div>
+
 <div class="chat-layout">
   <div class="chat-msgs" id="aiMsgs">
-    <div class="msg sys" id="aiWelcome">Bağlan ve veri yükle, ardından soru sor.</div>
+    <div class="msg sys" id="aiWelcome">Platform seçin ve strateji sorusu sorun.</div>
   </div>
   <div class="chat-side">
-    <div class="stitle">Hızlı Sorular</div>
+    <div class="stitle" id="stratejiQuickTitle">Hızlı Sorular</div>
     <div id="aiQuickBtns"></div>
     <div class="cinput">
       <textarea id="aiInput" placeholder="Sorunuzu yazın..."></textarea>
@@ -18,94 +33,114 @@
 
 <script>
 (function(){
-  // Hangi modüldeyiz?
-  const path = window.location.pathname;
-  const moduleName = document.getElementById('aiModuleTitle')?.closest('.ai-panel')?.dataset?.module
-    || (currentPage || 'strateji');
+var stratejiPlatform = window._activePlatform || 'meta';
 
-  const MODULE_CONFIG = {
-    strateji: {
-      title: '🧠 Strateji',
-      sub: 'Meta ve GA4 verilerine dayalı büyüme fırsatları ve kampanya stratejisi',
-      welcome: 'Meta + GA4 verilerinizi analiz ederek strateji önerileri üretebilirim.',
-      sys: () => `Meta+GA4 uzmanı Türkçe yanıt ver. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))}`,
-      questions: [
-        ['🚀 Büyüme fırsatları','Mevcut kampanya verilerine göre büyüme fırsatlarını analiz et. Hangi kampanyalara yatırım artırmalıyım?'],
-        ['📊 Attribution analizi','Meta harcama ve GA4 gelir verilerini karşılaştır. Hangi kanal gerçekten dönüşüm sağlıyor?'],
-        ['💰 30 günlük strateji','Önümüzdeki 30 gün için bütçe dağılımı stratejisi öner.'],
-        ['⏸ Zarar edenler','Düşük ROAS\'lı kampanyaları durdurma veya optimize etme stratejisi öner.'],
-      ]
-    },
-    'hedef-kitle': {
-      title: '🎯 Hedef Kitle',
-      sub: 'GA4 kullanıcı verileri ve Meta audience analizine dayalı öneriler',
-      welcome: 'GA4 ve Meta verilerini kullanarak hedef kitle analizi yapabilirim.',
-      sys: () => `Hedef kitle uzmanı Türkçe. Meta:${JSON.stringify(MX.campStore.slice(0,6).map(r=>({k:r.name?.slice(0,25),roas:r.roas,spend:r.spend})))}`,
-      questions: [
-        ['📊 Kanal dönüşüm analizi','GA4 trafik kaynaklarını analiz et. Hangi kanaldan gelen kullanıcılar daha çok dönüşüm sağlıyor?'],
-        ['👥 Kitle performansı','Meta kampanyalarındaki hedef kitle performansını analiz et. Hangi kitleler daha iyi ROAS veriyor?'],
-        ['✨ Yeni kitle önerileri','Mevcut verilere göre yeni hedef kitle ve lookalike önerileri sun.'],
-        ['📍 Demografik analiz','En iyi dönüşüm sağlayan demografi ve ilgi alanlarını belirle.'],
-      ]
-    },
-    tasarim: {
-      title: '🎨 Tasarım',
-      sub: 'Reklam metni, kreatif öneri ve A/B test fikirleri',
-      welcome: 'Reklam metni, başlık ve kreatif önerileri için yardımcı olabilirim.',
-      sys: () => `Madmext için reklam kreatif uzmanı. Türkçe. Marka: erkek/kadın tekstil e-ticaret. En iyi reklamlar:${JSON.stringify(MX.adStore.slice(0,8).map(r=>({r:r.name?.slice(0,25),ctr:r.ctr,roas:r.roas})))}`,
-      questions: [
-        ['✍️ Reklam metni','En iyi performanslı reklamların ortak özelliklerini analiz et ve yeni reklam metni önerileri sun.'],
-        ['🔬 A/B test fikirleri','Mevcut reklamlar için A/B test fikirleri üret. Başlık, görsel ve CTA varyasyonları öner.'],
-        ['🎯 Hook cümleleri','Madmext marka kimliğine uygun 5 farklı reklam hook cümlesi yaz.'],
-        ['📈 Yüksek CTR başlıklar','Yüksek CTR için dikkat çekici reklam başlıkları öner.'],
-      ]
-    },
-    raporlar: {
-      title: '📊 Raporlar',
-      sub: 'Kapsamlı performans raporları',
-      welcome: 'Kapsamlı performans raporu oluşturmak için hazırım.',
-      sys: () => `Meta+GA4 raporlama uzmanı Türkçe. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))} Adsetler:${JSON.stringify(MX.adsetStore.slice(0,10).map(r=>({rs:r.name?.slice(0,22),h:r.spend,roas:r.roas})))}`,
-      questions: [
-        ['📊 Haftalık rapor','Son 7 günün kapsamlı performans raporu: kampanya ve reklam seti bazında tablo halinde sun.'],
-        ['📈 ROAS analizi','ROAS bazında tüm kampanya ve reklam setlerini analiz et. En iyi ve en kötüleri belirle.'],
-        ['💸 Harcama verimliliği','Harcama başına kazanç analizini yap. En verimli kampanyaları belirle.'],
-        ['📉 Düşüş analizi','Bu hafta performansı düşen kampanya ve reklam setlerini tespit et.'],
-      ]
-    }
-  };
-
-  const cfg = MODULE_CONFIG[currentPage] || MODULE_CONFIG.strateji;
-
-  // Başlık güncelle
-  const titleEl = document.getElementById('aiModuleTitle');
-  const subEl = document.getElementById('aiModuleSub');
-  const welcomeEl = document.getElementById('aiWelcome');
-  if(titleEl) titleEl.innerHTML = `${cfg.title} <span class="nav-ai">AI</span>`;
-  if(subEl) subEl.textContent = cfg.sub;
-  if(welcomeEl) welcomeEl.textContent = cfg.welcome;
-
-  // Hızlı sorular
-  const btnsEl = document.getElementById('aiQuickBtns');
-  if(btnsEl) {
-    btnsEl.innerHTML = cfg.questions.map(([label, q]) =>
-      `<button class="qbtn" onclick="aiModuleSend('${q.replace(/'/g,"\\'")}')">${label}</button>`
-    ).join('');
+var PLATFORM_CONFIG = {
+  meta: {
+    title: '🧠 Meta Strateji',
+    sub: 'Meta Ads verilerine dayalı büyüme fırsatları ve kampanya stratejisi',
+    welcome: 'Meta kampanya verilerinizi analiz ederek strateji önerileri üretebilirim.',
+    sys: function(){ return `Meta Ads strateji uzmanı. Türkçe. Kampanyalar:${JSON.stringify((MX.campStore||[]).slice(0,8).map(function(r){return{k:(r.name||'').slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase};}))}. Reklam setleri:${JSON.stringify((MX.adsetStore||[]).slice(0,6).map(function(r){return{r:(r.name||'').slice(0,20),h:r.spend,roas:r.roas};}))}. Somut ve uygulanabilir öneriler ver.`; },
+    questions: [
+      ['🚀 Büyüme fırsatları','Mevcut Meta kampanya verilerime göre büyüme fırsatlarını analiz et. Hangi kampanyalara bütçe artırmalıyım?'],
+      ['📊 ROAS optimizasyonu','Düşük ROAS\'lı kampanyaları belirle ve optimizasyon stratejisi öner.'],
+      ['💰 30 günlük bütçe planı','Önümüzdeki 30 gün için Meta bütçe dağılımı stratejisi oluştur.'],
+      ['⚡ Hızlı kazanımlar','Bu hafta uygulayabileceğim 3 somut Meta optimizasyonu öner.'],
+      ['🎯 Kitle stratejisi','Mevcut performansa göre yeni hedef kitle stratejisi öner.'],
+    ]
+  },
+  google: {
+    title: '🟢 Google Strateji',
+    sub: 'Google Ads için büyüme stratejisi ve kampanya önerileri',
+    welcome: 'Google Ads stratejisi için sorularınızı yanıtlayabilirim.',
+    sys: function(){ return `Google Ads strateji uzmanı. Türkçe. Madmext giyim e-ticaret için Google Ads büyüme stratejisi konusunda uzman. Somut ve uygulanabilir öneriler ver.`; },
+    questions: [
+      ['🔍 Arama Ağı stratejisi','E-ticaret giyim için Google Arama Ağı kampanya stratejisi öner. Anahtar kelime seçimi ve teklif stratejisi dahil.'],
+      ['🛒 Shopping kampanyası','Google Shopping kampanyasını nasıl optimize etmeliyim? Ürün feed optimizasyonu dahil.'],
+      ['🎯 Performance Max','Performance Max kampanyasını maksimize etmek için strateji öner.'],
+      ['💸 Bütçe dağılımı','Google Ads bütçemi kampanya türlerine nasıl dağıtmalıyım?'],
+      ['📈 ROAS hedefleme','Google Ads\'de hedef ROAS stratejisi nasıl kurgulamalıyım?'],
+    ]
+  },
+  genel: {
+    title: '📊 Genel Dijital Strateji',
+    sub: 'Meta ve Google\'ı kapsayan bütünleşik dijital reklam stratejisi',
+    welcome: 'Meta ve Google kanallarını kapsayan bütünleşik strateji oluşturabilirim.',
+    sys: function(){ return `Çok kanallı dijital pazarlama stratejisti. Türkçe. Madmext giyim markası için Meta ve Google kanallarını kapsayan bütünleşik strateji önerileri. Meta veriler:${JSON.stringify((MX.campStore||[]).slice(0,6).map(function(r){return{k:(r.name||'').slice(0,20),spend:r.spend,roas:r.roas};}))}`; },
+    questions: [
+      ['🔄 Attribution stratejisi','Meta ve Google kanalları arasında dönüşüm attribution\'ı nasıl kurgulamalıyım?'],
+      ['💰 Bütçe paylaşımı','Meta ve Google arasındaki bütçe dağılımını nasıl optimize etmeliyim?'],
+      ['📈 Büyüme yol haritası','E-ticaret giyim için 3 aylık dijital büyüme yol haritası çiz.'],
+      ['🎯 Müşteri yolculuğu','Müşteri yolculuğunu Meta ve Google ile nasıl optimize etmeliyim?'],
+      ['⚡ Sezon stratejisi','Yaklaşan sezon için kampanya stratejisi öner.'],
+    ]
   }
+};
 
-  window.aiModuleSend = async function(msg) {
-    if(!msg) msg = document.getElementById('aiInput')?.value;
-    if(!msg||!msg.trim()) return;
-    const inp = document.getElementById('aiInput');
-    if(inp) inp.value = '';
-    addMsg(msg, 'user', 'aiMsgs');
-    const th = addThinking('aiMsgs');
-    const key = currentPage || 'strateji';
-    if(!MX.chatH[key]) MX.chatH[key] = [];
-    MX.chatH[key].push({role:'user',content:msg});
-    const reply = await claude(MX.chatH[key].slice(-6), cfg.sys());
-    th.remove();
-    MX.chatH[key].push({role:'assistant',content:reply});
-    addClaudeMsg(reply, 'aiMsgs');
-  };
+window.stratejiSetPlatform = function(platform, el){
+  stratejiPlatform = platform;
+  document.querySelectorAll('.strateji-platform-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  var cfg = PLATFORM_CONFIG[platform];
+  var titleEl=document.getElementById('aiModuleTitle');
+  var subEl=document.getElementById('aiModuleSub');
+  var welcomeEl=document.getElementById('aiWelcome');
+  if(titleEl) titleEl.innerHTML=cfg.title+' <span class="nav-ai">AI</span>';
+  if(subEl) subEl.textContent=cfg.sub;
+  // Yeni hoşgeldin mesajı ekle
+  var msgsEl=document.getElementById('aiMsgs');
+  var sysMsg=document.createElement('div');
+  sysMsg.className='msg sys';
+  sysMsg.textContent=cfg.welcome;
+  msgsEl.appendChild(sysMsg);
+  msgsEl.scrollTop=msgsEl.scrollHeight;
+  // Hızlı soruları güncelle
+  var btnsEl=document.getElementById('aiQuickBtns');
+  if(btnsEl) btnsEl.innerHTML=cfg.questions.map(function(q){
+    return '<button class="qbtn" onclick="aiModuleSend(\''+q[1].replace(/'/g,"\\'")+'\')">'+q[0]+'</button>';
+  }).join('');
+};
+
+// İlk kurulum
+var initPlatform = window._activePlatform || 'meta';
+var initCfg = PLATFORM_CONFIG[initPlatform];
+var titleEl=document.getElementById('aiModuleTitle');
+var subEl=document.getElementById('aiModuleSub');
+var welcomeEl=document.getElementById('aiWelcome');
+if(titleEl) titleEl.innerHTML=initCfg.title+' <span class="nav-ai">AI</span>';
+if(subEl) subEl.textContent=initCfg.sub;
+if(welcomeEl) welcomeEl.textContent=initCfg.welcome;
+
+// Platform tab'ını işaretle
+if(initPlatform!=='meta'){
+  setTimeout(function(){
+    var tabs=document.querySelectorAll('.strateji-platform-tab');
+    tabs.forEach(function(t){t.classList.remove('active');});
+    if(initPlatform==='google'&&tabs[1]) tabs[1].classList.add('active');
+    if(initPlatform==='genel'&&tabs[2]) tabs[2].classList.add('active');
+  },50);
+}
+
+var btnsEl=document.getElementById('aiQuickBtns');
+if(btnsEl) btnsEl.innerHTML=initCfg.questions.map(function(q){
+  return '<button class="qbtn" onclick="aiModuleSend(\''+q[1].replace(/'/g,"\\'")+'\')">'+q[0]+'</button>';
+}).join('');
+
+window.aiModuleSend = async function(msg){
+  if(!msg) msg=document.getElementById('aiInput')?.value;
+  if(!msg||!msg.trim()) return;
+  var inp=document.getElementById('aiInput');
+  if(inp) inp.value='';
+  addMsg(msg,'user','aiMsgs');
+  var th=addThinking('aiMsgs');
+  var cfg=PLATFORM_CONFIG[stratejiPlatform]||PLATFORM_CONFIG.meta;
+  var key='strateji-'+stratejiPlatform;
+  if(!MX.chatH[key]) MX.chatH[key]=[];
+  MX.chatH[key].push({role:'user',content:msg});
+  var reply=await claude(MX.chatH[key].slice(-6),cfg.sys());
+  th.remove();
+  MX.chatH[key].push({role:'assistant',content:reply});
+  addClaudeMsg(reply,'aiMsgs');
+};
 })();
 </script>
