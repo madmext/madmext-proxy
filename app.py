@@ -265,6 +265,8 @@ def save_users(users):
 @app.route('/ayarlar')
 @app.route('/kullanicilar')
 @app.route('/ai')
+@app.route('/google-ads')
+@app.route('/seo')
 def home():
     if os.environ.get('SECRET_KEY') and not session.get('user_email'):
         return send_from_directory('.', 'login.html') if os.path.exists('login.html') else send_from_directory('.', 'index.html')
