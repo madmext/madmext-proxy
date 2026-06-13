@@ -1,111 +1,241 @@
-<div class="ai-panel">
-  <div class="ai-panel-title" id="aiModuleTitle">🧠 Strateji <span class="nav-ai">AI</span></div>
-  <div class="ai-panel-sub" id="aiModuleSub">Meta ve GA4 verilerine dayalı strateji önerileri</div>
-</div>
-<div class="chat-layout">
-  <div class="chat-msgs" id="aiMsgs">
-    <div class="msg sys" id="aiWelcome">Bağlan ve veri yükle, ardından soru sor.</div>
+<style>
+.raporlar-wrap{display:flex;flex-direction:column;gap:16px}
+.platform-tabs{display:flex;gap:1px;background:var(--b);border-radius:8px;overflow:hidden;margin-bottom:4px}
+.platform-tab{flex:1;padding:10px 16px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.platform-tab.active{background:var(--a);color:#fff}
+.platform-tab:hover:not(.active){background:var(--b);color:var(--t)}
+.rapor-kart{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;margin-bottom:12px}
+.rapor-kart-title{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.rapor-metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.rapor-metric{background:var(--s2);border-radius:6px;padding:12px;text-align:center}
+.rapor-metric-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:700;margin-bottom:4px}
+.rapor-metric-lbl{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}
+.rapor-tablo{width:100%;border-collapse:collapse;font-size:12px}
+.rapor-tablo th{background:var(--bg);padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b)}
+.rapor-tablo td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);font-family:'DM Mono',monospace}
+.rapor-tablo tr:hover td{background:var(--s2)}
+.rapor-tab-wrap{overflow:auto;border:1px solid var(--b);border-radius:6px;max-height:360px}
+.date-picker-row{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.rapor-ai-section{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px}
+.rp-channel-row{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.rp-channel-row:last-child{border-bottom:none}
+.rp-channel-row span:first-child{color:var(--m)}
+.rp-channel-row span:last-child{font-family:'DM Mono',monospace;color:var(--t)}
+</style>
+
+<div class="raporlar-wrap">
+  <!-- Platform Seçici -->
+  <div class="platform-tabs" id="rpPlatformTabs">
+    <button class="platform-tab active" onclick="rpSetPlatform('meta',this)">📘 Meta Raporlar</button>
+    <button class="platform-tab" onclick="rpSetPlatform('google',this)">🟢 Google Raporlar</button>
+    <button class="platform-tab" onclick="rpSetPlatform('genel',this)">📊 Genel Özet</button>
   </div>
-  <div class="chat-side">
-    <div class="stitle">Hızlı Sorular</div>
-    <div id="aiQuickBtns"></div>
-    <div class="cinput">
-      <textarea id="aiInput" placeholder="Sorunuzu yazın..."></textarea>
-      <button class="btn" onclick="aiModuleSend()">Gönder →</button>
+
+  <!-- Tarih Seçici -->
+  <div class="date-picker-row">
+    <button class="btn sm sec" onclick="rpLoad()">🔄 Yenile</button>
+    <select class="flt" id="rpPreset" onchange="rpLoad()" style="font-size:11px">
+      <option value="last_7d">Son 7 gün</option>
+      <option value="last_14d">Son 14 gün</option>
+      <option value="last_30d">Son 30 gün</option>
+      <option value="this_month">Bu ay</option>
+      <option value="last_month">Geçen ay</option>
+    </select>
+    <button class="btn sm" onclick="rpExport('pdf')" style="background:var(--r)">📄 PDF</button>
+    <button class="btn sm" onclick="rpExport('excel')" style="background:var(--g);color:#000">🟢 Excel</button>
+    <span id="rpStatus" style="font-size:11px;color:var(--m)"></span>
+  </div>
+
+  <!-- Meta Paneli -->
+  <div id="rpMetaPanel">
+    <div class="rapor-metric-grid" id="rpMetaMetrics">
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-spend">—</div><div class="rapor-metric-lbl">Harcama</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-revenue" style="color:var(--g)">—</div><div class="rapor-metric-lbl">Gelir</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-roas">—</div><div class="rapor-metric-lbl">ROAS</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-purchase">—</div><div class="rapor-metric-lbl">Satın Alma</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-ctr">—</div><div class="rapor-metric-lbl">CTR</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-cpm">—</div><div class="rapor-metric-lbl">CPM</div></div>
+    </div>
+    <div class="rapor-kart">
+      <div class="rapor-kart-title">📊 Kampanya Performansı</div>
+      <div class="rapor-tab-wrap">
+        <table class="rapor-tablo"><thead><tr>
+          <th>Kampanya</th><th>Harcama</th><th>Gelir</th><th>ROAS</th><th>Satın Alma</th><th>CTR</th><th>CPM</th>
+        </tr></thead><tbody id="rpMetaTable"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody></table>
+      </div>
+    </div>
+    <!-- AI Rapor Bölümü -->
+    <div class="rapor-ai-section">
+      <div class="rapor-kart-title">🤖 AI Rapor Özeti</div>
+      <div id="rpMetaAI" style="color:var(--m);font-size:12px">Yenile butonuna bas veya veri yüklenince otomatik oluşturulur.</div>
+      <button class="btn sm" style="margin-top:10px" onclick="rpGenerateAI('meta')">✨ AI Rapor Oluştur</button>
+    </div>
+  </div>
+
+  <!-- Google Paneli -->
+  <div id="rpGooglePanel" style="display:none">
+    <div class="rapor-metric-grid">
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpg-spend">—</div><div class="rapor-metric-lbl">Harcama</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpg-conv" style="color:var(--g)">—</div><div class="rapor-metric-lbl">Dönüşüm</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpg-cpa">—</div><div class="rapor-metric-lbl">EBM</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpg-clicks">—</div><div class="rapor-metric-lbl">Tıklama</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpg-ctr">—</div><div class="rapor-metric-lbl">CTR</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="rpg-impr">—</div><div class="rapor-metric-lbl">Gösterim</div></div>
+    </div>
+    <div class="rapor-kart">
+      <div class="rapor-kart-title">🟢 Google Kampanya Performansı</div>
+      <div class="rapor-tab-wrap">
+        <table class="rapor-tablo"><thead><tr>
+          <th>Kampanya</th><th>Harcama</th><th>Dönüşüm</th><th>EBM</th><th>Tıklama</th><th>CTR</th><th>Gösterim</th>
+        </tr></thead><tbody id="rpGoogleTable"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--m)">Google Ads verisi bulunamadı. Entegrasyon ekle.</td></tr></tbody></table>
+      </div>
+    </div>
+    <div class="rapor-ai-section">
+      <div class="rapor-kart-title">🤖 Google AI Rapor</div>
+      <div id="rpGoogleAI" style="color:var(--m);font-size:12px">Google verileri yüklenince AI rapor oluşturabilirsiniz.</div>
+      <button class="btn sm" style="margin-top:10px" onclick="rpGenerateAI('google')">✨ AI Rapor Oluştur</button>
+    </div>
+  </div>
+
+  <!-- Genel Özet Paneli -->
+  <div id="rpGenelPanel" style="display:none">
+    <div class="rapor-kart">
+      <div class="rapor-kart-title">📊 Kanal Karşılaştırması</div>
+      <div class="rp-channel-row"><span>Meta Ads — Toplam Harcama</span><span id="rpg-meta-spend">—</span></div>
+      <div class="rp-channel-row"><span>Meta Ads — Toplam Gelir</span><span id="rpg-meta-rev" style="color:var(--g)">—</span></div>
+      <div class="rp-channel-row"><span>Meta Ads — Ort. ROAS</span><span id="rpg-meta-roas">—</span></div>
+      <div class="rp-channel-row"><span>Google Ads — Toplam Harcama</span><span style="color:var(--m)">Veri yok</span></div>
+      <div class="rp-channel-row"><span>GA4 — Toplam Gelir</span><span id="rpg-ga4-rev" style="color:var(--g)">—</span></div>
+      <div class="rp-channel-row"><span>GA4 — Toplam Oturum</span><span id="rpg-ga4-sess">—</span></div>
+    </div>
+    <div class="rapor-ai-section">
+      <div class="rapor-kart-title">🤖 Genel Kanal Analizi</div>
+      <div id="rpGenelAI" style="color:var(--m);font-size:12px">Tüm kanal verilerinizi karşılaştıran kapsamlı bir analiz oluşturabilirsiniz.</div>
+      <button class="btn sm" style="margin-top:10px" onclick="rpGenerateAI('genel')">✨ Karşılaştırmalı Analiz</button>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  // Hangi modüldeyiz?
-  const path = window.location.pathname;
-  const moduleName = document.getElementById('aiModuleTitle')?.closest('.ai-panel')?.dataset?.module
-    || (currentPage || 'strateji');
+var rpPlatform = 'meta';
 
-  const MODULE_CONFIG = {
-    strateji: {
-      title: '🧠 Strateji',
-      sub: 'Meta ve GA4 verilerine dayalı büyüme fırsatları ve kampanya stratejisi',
-      welcome: 'Meta + GA4 verilerinizi analiz ederek strateji önerileri üretebilirim.',
-      sys: () => `Meta+GA4 uzmanı Türkçe yanıt ver. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))}`,
-      questions: [
-        ['🚀 Büyüme fırsatları','Mevcut kampanya verilerine göre büyüme fırsatlarını analiz et. Hangi kampanyalara yatırım artırmalıyım?'],
-        ['📊 Attribution analizi','Meta harcama ve GA4 gelir verilerini karşılaştır. Hangi kanal gerçekten dönüşüm sağlıyor?'],
-        ['💰 30 günlük strateji','Önümüzdeki 30 gün için bütçe dağılımı stratejisi öner.'],
-        ['⏸ Zarar edenler','Düşük ROAS\'lı kampanyaları durdurma veya optimize etme stratejisi öner.'],
-      ]
-    },
-    'hedef-kitle': {
-      title: '🎯 Hedef Kitle',
-      sub: 'GA4 kullanıcı verileri ve Meta audience analizine dayalı öneriler',
-      welcome: 'GA4 ve Meta verilerini kullanarak hedef kitle analizi yapabilirim.',
-      sys: () => `Hedef kitle uzmanı Türkçe. Meta:${JSON.stringify(MX.campStore.slice(0,6).map(r=>({k:r.name?.slice(0,25),roas:r.roas,spend:r.spend})))}`,
-      questions: [
-        ['📊 Kanal dönüşüm analizi','GA4 trafik kaynaklarını analiz et. Hangi kanaldan gelen kullanıcılar daha çok dönüşüm sağlıyor?'],
-        ['👥 Kitle performansı','Meta kampanyalarındaki hedef kitle performansını analiz et. Hangi kitleler daha iyi ROAS veriyor?'],
-        ['✨ Yeni kitle önerileri','Mevcut verilere göre yeni hedef kitle ve lookalike önerileri sun.'],
-        ['📍 Demografik analiz','En iyi dönüşüm sağlayan demografi ve ilgi alanlarını belirle.'],
-      ]
-    },
-    tasarim: {
-      title: '🎨 Tasarım',
-      sub: 'Reklam metni, kreatif öneri ve A/B test fikirleri',
-      welcome: 'Reklam metni, başlık ve kreatif önerileri için yardımcı olabilirim.',
-      sys: () => `Madmext için reklam kreatif uzmanı. Türkçe. Marka: erkek/kadın tekstil e-ticaret. En iyi reklamlar:${JSON.stringify(MX.adStore.slice(0,8).map(r=>({r:r.name?.slice(0,25),ctr:r.ctr,roas:r.roas})))}`,
-      questions: [
-        ['✍️ Reklam metni','En iyi performanslı reklamların ortak özelliklerini analiz et ve yeni reklam metni önerileri sun.'],
-        ['🔬 A/B test fikirleri','Mevcut reklamlar için A/B test fikirleri üret. Başlık, görsel ve CTA varyasyonları öner.'],
-        ['🎯 Hook cümleleri','Madmext marka kimliğine uygun 5 farklı reklam hook cümlesi yaz.'],
-        ['📈 Yüksek CTR başlıklar','Yüksek CTR için dikkat çekici reklam başlıkları öner.'],
-      ]
-    },
-    raporlar: {
-      title: '📊 Raporlar',
-      sub: 'Kapsamlı performans raporları',
-      welcome: 'Kapsamlı performans raporu oluşturmak için hazırım.',
-      sys: () => `Meta+GA4 raporlama uzmanı Türkçe. Kampanyalar:${JSON.stringify(MX.campStore.slice(0,8).map(r=>({k:r.name?.slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase})))} Adsetler:${JSON.stringify(MX.adsetStore.slice(0,10).map(r=>({rs:r.name?.slice(0,22),h:r.spend,roas:r.roas})))}`,
-      questions: [
-        ['📊 Haftalık rapor','Son 7 günün kapsamlı performans raporu: kampanya ve reklam seti bazında tablo halinde sun.'],
-        ['📈 ROAS analizi','ROAS bazında tüm kampanya ve reklam setlerini analiz et. En iyi ve en kötüleri belirle.'],
-        ['💸 Harcama verimliliği','Harcama başına kazanç analizini yap. En verimli kampanyaları belirle.'],
-        ['📉 Düşüş analizi','Bu hafta performansı düşen kampanya ve reklam setlerini tespit et.'],
-      ]
-    }
+window.rpSetPlatform = function(p, el){
+  rpPlatform = p;
+  document.querySelectorAll('.platform-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('rpMetaPanel').style.display = p==='meta'?'':'none';
+  document.getElementById('rpGooglePanel').style.display = p==='google'?'':'none';
+  document.getElementById('rpGenelPanel').style.display = p==='genel'?'':'none';
+  if(p==='meta') rpLoad();
+  else if(p==='genel') rpLoadGenel();
+};
+
+window.rpLoad = async function(){
+  if(rpPlatform!=='meta') return;
+  var preset = document.getElementById('rpPreset').value;
+  var st = document.getElementById('rpStatus');
+  if(st) st.textContent = '⏳ Yükleniyor...';
+  var AID = window.AID || 'act_1346348685568168';
+  var api = window.api;
+  if(!api){if(st)st.textContent='⚠️ Bağlantı yok';return;}
+  try{
+    var INSF='spend,purchase_roas,actions,action_values,impressions,reach,clicks,ctr,cpm';
+    var ins = await api(AID+'/insights',{fields:INSF+',campaign_id,campaign_name',level:'campaign',limit:500,date_preset:preset,action_attribution_windows:'["7d_click","1d_view"]'});
+    var rows = (ins&&ins.data)||[];
+    var groas=window.groas||function(r){if(!r)return 0;var x=(r.purchase_roas||[]);return Array.isArray(x)&&x[0]?parseFloat(x[0].value||0):0;};
+    var gav=window.gav||function(a,t){if(!a)return 0;var x=a.find(function(v){return v.action_type===t;});return x?parseInt(x.value||0):0;};
+
+    var totSpend=0,totRev=0,totPurchase=0,totClicks=0,totImpr=0;
+    rows.forEach(function(r){
+      totSpend+=parseFloat(r.spend||0);
+      var rv=(r.action_values||[]).find(function(a){return a.action_type==='purchase';});
+      totRev+=rv?parseFloat(rv.value||0):0;
+      totPurchase+=gav(r.actions,'purchase');
+      totClicks+=parseInt(r.clicks||0);
+      totImpr+=parseInt(r.impressions||0);
+    });
+    var totROAS=totSpend>0?(totRev/totSpend):0;
+    var avgCTR=totImpr>0?(totClicks/totImpr*100):0;
+    var avgCPM=totImpr>0?(totSpend/(totImpr/1000)):0;
+
+    document.getElementById('rpm-spend').textContent=totSpend.toFixed(0)+'₺';
+    document.getElementById('rpm-revenue').textContent=totRev.toFixed(0)+'₺';
+    document.getElementById('rpm-roas').textContent=totROAS.toFixed(2)+'x';
+    document.getElementById('rpm-purchase').textContent=totPurchase;
+    document.getElementById('rpm-ctr').textContent=avgCTR.toFixed(2)+'%';
+    document.getElementById('rpm-cpm').textContent=avgCPM.toFixed(2)+'₺';
+
+    // Meta genel panel için de güncelle
+    var el1=document.getElementById('rpg-meta-spend');if(el1)el1.textContent=totSpend.toFixed(0)+'₺';
+    var el2=document.getElementById('rpg-meta-rev');if(el2)el2.textContent=totRev.toFixed(0)+'₺';
+    var el3=document.getElementById('rpg-meta-roas');if(el3)el3.textContent=totROAS.toFixed(2)+'x';
+
+    var roasColor=window.roasColor||function(v){return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)';};
+    var sorted=rows.slice().sort(function(a,b){return parseFloat(b.spend||0)-parseFloat(a.spend||0);});
+    document.getElementById('rpMetaTable').innerHTML = sorted.slice(0,30).map(function(r){
+      var roas=groas(r);
+      var rv=(r.action_values||[]).find(function(a){return a.action_type==='purchase';});
+      var rev=rv?parseFloat(rv.value||0):0;
+      var pur=gav(r.actions,'purchase');
+      return `<tr>
+        <td style="font-family:'Inter',sans-serif;min-width:200px;max-width:280px;overflow:hidden;text-overflow:ellipsis">${(r.campaign_name||'—').slice(0,40)}</td>
+        <td>${parseFloat(r.spend||0).toFixed(0)}₺</td>
+        <td style="color:var(--g)">${rev.toFixed(0)}₺</td>
+        <td style="color:${roasColor(roas)}">${roas.toFixed(2)}x</td>
+        <td>${pur||'—'}</td>
+        <td>${parseFloat(r.ctr||0).toFixed(2)}%</td>
+        <td>${parseFloat(r.cpm||0).toFixed(2)}₺</td>
+      </tr>`;
+    }).join('');
+    if(st)st.textContent='✓ '+(rows.length)+' kampanya · '+new Date().toLocaleTimeString('tr');
+  }catch(e){if(st)st.textContent='Hata: '+e.message;}
+};
+
+function rpLoadGenel(){
+  // GA4 verilerini güncelle
+  var ga4=window.ga4;
+  if(!ga4) return;
+  ga4('/reports/runReport',{
+    property:'properties/'+((window.GA4_PROPERTY_ID)||''),
+    dateRanges:[{startDate:'7daysAgo',endDate:'today'}],
+    metrics:[{name:'sessions'},{name:'purchaseRevenue'}]
+  }).then(function(r){
+    if(!r||!r.rows||!r.rows[0]) return;
+    var ga4val=window.ga4val||function(res,i){return res&&res.rows&&res.rows[0]?res.rows[0].metricValues[i||0].value:'0';};
+    var sessEl=document.getElementById('rpg-ga4-sess');if(sessEl)sessEl.textContent=parseInt(ga4val(r,0)).toLocaleString('tr');
+    var revEl=document.getElementById('rpg-ga4-rev');if(revEl)revEl.textContent=parseFloat(ga4val(r,1)).toFixed(0)+'₺';
+  }).catch(function(){});
+}
+
+window.rpExport = function(type){
+  toast('📤 '+type.toUpperCase()+' dışa aktarılıyor...');
+  // Gerçek export mantığı burada
+};
+
+window.rpGenerateAI = async function(platform){
+  var elId = platform==='meta'?'rpMetaAI':platform==='google'?'rpGoogleAI':'rpGenelAI';
+  var el = document.getElementById(elId);
+  if(!el) return;
+  el.innerHTML='<div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px;color:var(--m);font-size:12px">AI rapor oluşturuluyor...</span></div>';
+  var cfg = {
+    meta:{sys:`Meta Ads rapor uzmanı. Türkçe. Kampanyalar: ${JSON.stringify((MX.campStore||[]).slice(0,8).map(function(r){return{k:(r.name||'').slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase};}))}`},
+    google:{sys:'Google Ads rapor uzmanı. Türkçe. Google kampanya verilerini analiz et.'},
+    genel:{sys:`Çok kanallı dijital pazarlama rapor uzmanı. Türkçe. Meta+GA4 verileri: ${JSON.stringify((MX.campStore||[]).slice(0,6).map(function(r){return{k:(r.name||'').slice(0,20),spend:r.spend,roas:r.roas};}))}`}
   };
+  var sysPrompt = (cfg[platform]||cfg.genel).sys;
+  var userMsg = platform==='meta'?'Son dönem Meta Ads performansını analiz et. En iyi ve en kötü kampanyaları belirle, önerilerde bulun.':
+    platform==='google'?'Google Ads kampanya performansını analiz et ve optimizasyon önerileri sun.':
+    'Tüm reklam kanallarımızı karşılaştır. Meta ve Google kanallarının performansını değerlendir.';
+  var reply = await claude([{role:'user',content:userMsg}], sysPrompt);
+  addClaudeMsg(reply, elId);
+};
 
-  const cfg = MODULE_CONFIG[currentPage] || MODULE_CONFIG.strateji;
-
-  // Başlık güncelle
-  const titleEl = document.getElementById('aiModuleTitle');
-  const subEl = document.getElementById('aiModuleSub');
-  const welcomeEl = document.getElementById('aiWelcome');
-  if(titleEl) titleEl.innerHTML = `${cfg.title} <span class="nav-ai">AI</span>`;
-  if(subEl) subEl.textContent = cfg.sub;
-  if(welcomeEl) welcomeEl.textContent = cfg.welcome;
-
-  // Hızlı sorular
-  const btnsEl = document.getElementById('aiQuickBtns');
-  if(btnsEl) {
-    btnsEl.innerHTML = cfg.questions.map(([label, q]) =>
-      `<button class="qbtn" onclick="aiModuleSend('${q.replace(/'/g,"\\'")}')">${label}</button>`
-    ).join('');
-  }
-
-  window.aiModuleSend = async function(msg) {
-    if(!msg) msg = document.getElementById('aiInput')?.value;
-    if(!msg||!msg.trim()) return;
-    const inp = document.getElementById('aiInput');
-    if(inp) inp.value = '';
-    addMsg(msg, 'user', 'aiMsgs');
-    const th = addThinking('aiMsgs');
-    const key = currentPage || 'strateji';
-    if(!MX.chatH[key]) MX.chatH[key] = [];
-    MX.chatH[key].push({role:'user',content:msg});
-    const reply = await claude(MX.chatH[key].slice(-6), cfg.sys());
-    th.remove();
-    MX.chatH[key].push({role:'assistant',content:reply});
-    addClaudeMsg(reply, 'aiMsgs');
-  };
+// İlk yükleme
+if(window._isConnected) rpLoad();
+else window.addEventListener('mx:connected', function _rp(){
+  window.removeEventListener('mx:connected', _rp);
+  rpLoad();
+});
 })();
 </script>
