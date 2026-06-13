@@ -1,0 +1,142 @@
+<style>
+.gads-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
+.gads-row1{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;flex-shrink:0;gap:8px}
+.gads-tabs{display:flex;gap:1px}
+.gads-tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s}
+.gads-tab.active{background:var(--g);color:#000}
+.gads-tab:hover:not(.active){background:var(--b);color:var(--t)}
+.gads-summary{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;flex-shrink:0}
+@media(max-width:900px){.gads-summary{grid-template-columns:repeat(3,1fr)}}
+.gads-card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden}
+.gads-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--g)}
+.gads-label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.gads-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:600}
+.gads-tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;flex:1;min-height:0}
+.gads-tbl-wrap table{width:100%;border-collapse:collapse;font-size:11px}
+.gads-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;white-space:nowrap}
+.gads-tbl-wrap td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
+.gads-tbl-wrap tr:hover td{background:rgba(255,255,255,.02)}
+.gads-status-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace}
+.gads-status-badge.aktif{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3)}
+.gads-status-badge.pasif{background:rgba(138,141,145,.1);color:var(--m);border:1px solid rgba(138,141,145,.2)}
+.gads-status-badge.sinirli{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
+.gads-empty{text-align:center;padding:60px 20px;color:var(--m)}
+.gads-empty h3{font-size:16px;margin-bottom:8px;color:var(--t)}
+.gads-connect-box{background:var(--s);border:2px dashed var(--b);border-radius:12px;padding:40px;text-align:center;margin:20px 0}
+</style>
+
+<div class="gads-wrap">
+  <!-- Sekme Satırı -->
+  <div class="gads-row1">
+    <div class="gads-tabs">
+      <button class="gads-tab active" id="gadsTabCamp" onclick="gadsTabSwitch('camp',this)">📊 Kampanyalar</button>
+      <button class="gads-tab" id="gadsTabAdGroup" onclick="gadsTabSwitch('adgroup',this)">📁 Reklam Grupları</button>
+      <button class="gads-tab" id="gadsTabAd" onclick="gadsTabSwitch('ad',this)">🖼 Reklamlar</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select class="flt" id="gadsPreset" onchange="gadsLoad()" style="font-size:11px">
+        <option value="last_7d">Son 7 gün</option>
+        <option value="last_14d">Son 14 gün</option>
+        <option value="last_30d">Son 30 gün</option>
+      </select>
+      <button class="btn sm sec" onclick="gadsLoad()">🔄 Yenile</button>
+    </div>
+  </div>
+
+  <!-- Özet Kartlar -->
+  <div class="gads-summary">
+    <div class="gads-card"><div class="gads-label">Harcama</div><div class="gads-val" id="gads-spend">—</div></div>
+    <div class="gads-card"><div class="gads-label">Dönüşüm</div><div class="gads-val" id="gads-conv" style="color:var(--g)">—</div></div>
+    <div class="gads-card"><div class="gads-label">EBM</div><div class="gads-val" id="gads-cpa">—</div></div>
+    <div class="gads-card"><div class="gads-label">Tıklama</div><div class="gads-val" id="gads-clicks">—</div></div>
+    <div class="gads-card"><div class="gads-label">CTR</div><div class="gads-val" id="gads-ctr">—</div></div>
+    <div class="gads-card"><div class="gads-label">Gösterim</div><div class="gads-val" id="gads-impr">—</div></div>
+  </div>
+
+  <!-- Tablo -->
+  <div class="gads-tbl-wrap" id="gadsTblWrap">
+    <div class="gads-connect-box">
+      <div style="font-size:32px;margin-bottom:12px">🟢</div>
+      <h3>Google Ads Entegrasyonu</h3>
+      <p style="font-size:12px;color:var(--m);margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto">Google Ads kampanyalarınızı buradan yönetmek için entegrasyon yapılandırmanız gerekiyor. Şu an demo verisi gösterilmektedir.</p>
+      <button class="btn" onclick="gadsLoadDemo()">📊 Demo Veriyi Göster</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var gadsTab = 'camp';
+var gadsData = {camp:[], adgroup:[], ad:[]};
+
+window.gadsTabSwitch = function(tab, el){
+  gadsTab = tab;
+  document.querySelectorAll('.gads-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  gadsRender();
+};
+
+window.gadsLoad = function(){
+  // Gerçek Google Ads API entegrasyonu için placeholder
+  // Şimdilik demo göster
+};
+
+window.gadsLoadDemo = function(){
+  // Demo veri
+  gadsData.camp = [
+    {name:'Erkek Giyim - Search', status:'ENABLED', budget:'500₺/gün', spend:'3.240', conv:'89', cpa:'36.4', clicks:'1.240', ctr:'4.8%', impr:'25.800'},
+    {name:'Kadın Giyim - Shopping', status:'ENABLED', budget:'750₺/gün', spend:'4.890', conv:'134', cpa:'36.5', clicks:'2.100', ctr:'3.2%', impr:'65.600'},
+    {name:'Brand Kampanyası', status:'ENABLED', budget:'200₺/gün', spend:'890', conv:'42', cpa:'21.2', clicks:'580', ctr:'12.4%', impr:'4.700'},
+    {name:'Remarketing - Sepet', status:'ENABLED', budget:'300₺/gün', spend:'1.240', conv:'56', cpa:'22.1', clicks:'340', ctr:'8.9%', impr:'3.820'},
+    {name:'Sezon Sonu İndirim', status:'PAUSED', budget:'400₺/gün', spend:'0', conv:'0', cpa:'—', clicks:'0', ctr:'0%', impr:'0'},
+  ];
+  // Toplam hesapla
+  var totSpend=0,totConv=0,totClicks=0,totImpr=0;
+  gadsData.camp.forEach(function(r){
+    totSpend+=parseFloat(r.spend.replace(',','.')||0);
+    totConv+=parseInt(r.conv||0);
+    totClicks+=parseInt(r.clicks.replace(',','.')||0);
+    totImpr+=parseInt(r.impr.replace(',','.')||0);
+  });
+  var avgCTR=totImpr>0?(totClicks/totImpr*100):0;
+  var avgCPA=totConv>0?(totSpend/totConv):0;
+
+  document.getElementById('gads-spend').textContent=totSpend.toFixed(0)+'₺';
+  document.getElementById('gads-conv').textContent=totConv;
+  document.getElementById('gads-cpa').textContent=avgCPA.toFixed(1)+'₺';
+  document.getElementById('gads-clicks').textContent=totClicks.toLocaleString('tr');
+  document.getElementById('gads-ctr').textContent=avgCTR.toFixed(1)+'%';
+  document.getElementById('gads-impr').textContent=totImpr.toLocaleString('tr');
+
+  gadsRender();
+};
+
+function gadsRender(){
+  var wrap = document.getElementById('gadsTblWrap');
+  var data = gadsData[gadsTab]||[];
+  if(!data.length){
+    wrap.innerHTML = '<div class="gads-connect-box"><div style="font-size:32px;margin-bottom:12px">🟢</div><h3>Google Ads Entegrasyonu</h3><p style="font-size:12px;color:var(--m);margin-bottom:20px">Google Ads kampanyalarınızı yönetmek için entegrasyon yapılandırın.</p><button class="btn" onclick="gadsLoadDemo()">📊 Demo Veriyi Göster</button></div>';
+    return;
+  }
+  if(gadsTab==='camp'){
+    wrap.innerHTML = `<table><thead><tr>
+      <th style="min-width:240px">Kampanya</th>
+      <th>Durum</th><th>Bütçe</th><th>Harcama</th>
+      <th>Dönüşüm</th><th>EBM</th><th>Tıklama</th><th>CTR</th><th>Gösterim</th>
+    </tr></thead><tbody>${data.map(function(r){
+      var active = r.status==='ENABLED';
+      return `<tr>
+        <td style="font-family:'Inter',sans-serif;font-size:12px;font-weight:500">${r.name}</td>
+        <td><span class="gads-status-badge ${active?'aktif':'pasif'}">${active?'Aktif':'Pasif'}</span></td>
+        <td>${r.budget}</td>
+        <td>${r.spend}₺</td>
+        <td style="color:var(--g)">${r.conv}</td>
+        <td>${r.cpa}₺</td>
+        <td>${r.clicks}</td>
+        <td>${r.ctr}</td>
+        <td>${r.impr}</td>
+      </tr>`;}).join('')}</tbody></table>`;
+  }
+}
+})();
+</script>
