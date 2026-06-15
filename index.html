@@ -11,7 +11,6 @@
 :root{--bg:#0f1011;--s:#1a1b1d;--s2:#242526;--b:#2d2e30;--b2:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#8a8d91;--g:#42b72a;--r:#fa3e3e;--y:#f0b429;--bl:#64b4ff}
 body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;font-size:13px;overflow:hidden}
 .app{display:flex;height:100vh}
-/* Hamburger - sadece mobil */
 #hamburgerBtn{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;flex-direction:column;gap:5px;align-items:center;justify-content:center}
 #hamburgerBtn span{display:block;width:22px;height:2px;background:var(--t);border-radius:2px;transition:all .25s}
 #hamburgerBtn.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
@@ -141,7 +140,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
-/* Mobil topbar */
 @media(max-width:600px){
   .conn-label-text{ display:none !important; }
   #connEdit input{ width:120px !important; }
@@ -158,7 +156,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="sidebar-logo"><div class="logo" onclick="nav('dashboard',null)" style="cursor:pointer">Madmext <span>Ads</span></div></div>
   <div class="sidebar-section">Ana Menü</div>
   <div class="nav-item active" onclick="closeSidebar();nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
-
   <div class="sidebar-section">Reklam</div>
   <div class="nav-group open" id="navGrupReklam">
     <div class="nav-group-header" onclick="toggleGroup('navGrupReklam')"><span class="nav-icon">📢</span><span style="flex:1">Reklam</span><span style="font-size:10px">▾</span></div>
@@ -168,7 +165,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
       <div class="nav-item nav-sub" style="opacity:.4;cursor:default"><span class="nav-icon" style="font-size:10px">●</span><span>TikTok</span><span class="nav-soon">Yakında</span></div>
     </div>
   </div>
-
   <div class="sidebar-section">AI Araçlar</div>
   <div class="nav-group" id="navGrupStrateji">
     <div class="nav-group-header" onclick="toggleGroup('navGrupStrateji')"><span class="nav-icon">🧠</span><span style="flex:1">Strateji</span><span class="nav-ai">AI</span><span style="font-size:10px;margin-left:4px">▾</span></div>
@@ -192,12 +188,14 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
     </div>
   </div>
   <div class="nav-item" onclick="closeSidebar();nav('tasarim',this)"><span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span></div>
-
   <div class="sidebar-section">Raporlama & Analiz</div>
   <div class="nav-item" onclick="closeSidebar();nav('raporlar',this)"><span class="nav-icon">📊</span><span>Raporlar</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('seo',this)"><span class="nav-icon">🔍</span><span>SEO</span><span class="nav-soon">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
-
+  <div class="sidebar-section">Pazaryeri</div>
+  <div class="nav-item" onclick="closeSidebar();nav('trendyol',this)"><span class="nav-icon">🟠</span><span>Trendyol</span></div>
+  <div class="sidebar-section">Pazaryeri</div>
+  <div class="nav-item" onclick="closeSidebar();nav('trendyol',this)"><span class="nav-icon">🟠</span><span>Trendyol</span></div>
   <div class="sidebar-section">Diğer</div>
   <div class="nav-item" onclick="closeSidebar();nav('create',this)"><span class="nav-icon">➕</span><span>Oluştur</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('kullanicilar',this)"><span class="nav-icon">👥</span><span>Kullanıcılar</span></div>
@@ -216,12 +214,10 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:6px">
-      <!-- Mobil: sadece dot göster, tıklayınca URL alanı açılır -->
       <div id="connBadge" onclick="toggleConnEdit()" style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--s2);border:1px solid var(--b2);border-radius:20px;cursor:pointer" title="Bağlantı ayarları">
         <span class="dot" id="dot"></span>
         <span id="connLabel" class="conn-label-text" style="font-size:11px;color:var(--m);font-family:'DM Mono',monospace">Bağlanıyor...</span>
       </div>
-      <!-- Gizli URL düzenleme — mobilde tam genişlik -->
       <div id="connEdit" style="display:none;align-items:center;gap:6px">
         <input type="text" class="conn-input" id="proxyUrl" placeholder="Railway URL..." style="width:160px;font-size:11px">
         <button class="btn sm" onclick="connect()">↻</button>
@@ -239,7 +235,6 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 </div>
 </div>
 <div id="toast"></div>
-
 <script src="/modules/shared.js"></script>
 <script>
 const PAGES = {
@@ -263,32 +258,23 @@ const PAGES = {
   'hedef-meta': {title:'Hedef Kitle — Meta', sub:'Meta audience analizi', module:'hedef-kitle'},
   'hedef-google': {title:'Hedef Kitle — Google', sub:'Google audience analizi', module:'hedef-kitle'},
   seo:           {title:'SEO', sub:'Site SEO analizi', module:'seo'},
+  trendyol:      {title:'Trendyol Reklamları', sub:'Ürün reklam performansı', module:'trendyol'},
+  trendyol:      {title:'Trendyol Reklamları', sub:'Ürün reklam performansı', module:'trendyol'},
 };
-
 window.currentPage = '';
 window.__moduleListeners = [];
-
-// Modül listener kayıt - her nav'da temizlenir
 window.onConnected = function(fn) {
   window.__moduleListeners.push(fn);
   window.addEventListener('mx:connected', fn);
 };
-
 var _navBusy = false;
-
 async function nav(page, el) {
   if(page === window.currentPage) return;
   if(_navBusy) return;
   _navBusy = true;
-
-  window.__moduleListeners.forEach(function(fn){
-    window.removeEventListener('mx:connected', fn);
-  });
+  window.__moduleListeners.forEach(function(fn){ window.removeEventListener('mx:connected', fn); });
   window.__moduleListeners = [];
-
   window.currentPage = page;
-
-  // URL güncelle
   var urlMap = {
     'dashboard': '/', 'meta-ads': '/ads', 'strateji': '/strateji',
     'optimizasyon': '/optimizasyon', 'hedef-kitle': '/hedef-kitle',
@@ -296,38 +282,28 @@ async function nav(page, el) {
     'create': '/olustur', 'ayarlar': '/ayarlar', 'kullanicilar': '/kullanicilar',
     'claude-chat': '/ai',
     'google-ads': '/google-ads',
+    'trendyol': '/trendyol',
+    'trendyol': '/trendyol',
     seo: '/seo'
   };
   var newUrl = urlMap[page] || ('/' + page);
   history.pushState({page: page}, '', newUrl);
-
   document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-  if(el){
-    el.classList.add('active');
-  } else {
-    // URL'den gelen navigasyonda aktif item'i bul
+  if(el){ el.classList.add('active'); } else {
     document.querySelectorAll('.nav-item').forEach(function(n){
-      if(n.getAttribute('onclick') && n.getAttribute('onclick').indexOf("'"+page+"'") !== -1){
-        n.classList.add('active');
-      }
+      if(n.getAttribute('onclick') && n.getAttribute('onclick').indexOf("'"+page+"'") !== -1) n.classList.add('active');
     });
   }
-
   var meta = PAGES[page] || {title:page, sub:''};
   document.getElementById('pageTitle').textContent = meta.title;
   document.getElementById('pageSub').textContent = meta.sub;
-
   await loadModule(page);
   _navBusy = false;
 }
-
-// Geri/ileri butonları
 window.addEventListener('popstate', function(e){
   var page = (e.state && e.state.page) || urlToPage(location.pathname);
   if(page) nav(page, null);
 });
-
-// URL'den sayfa adını bul
 function urlToPage(path){
   var map = {
     '/': 'dashboard', '/ads': 'meta-ads', '/strateji': 'strateji',
@@ -336,68 +312,48 @@ function urlToPage(path){
     '/olustur': 'create', '/ayarlar': 'ayarlar', '/kullanicilar': 'kullanicilar',
     '/ai': 'claude-chat',
     '/google-ads': 'google-ads',
+    '/trendyol': 'trendyol',
+    '/trendyol': 'trendyol',
     '/seo': 'seo'
   };
   return map[path] || null;
 }
-
 async function loadModule(page) {
   var el = document.getElementById('mainContent');
-
   if(page === 'create') {
     el.innerHTML = '<div class="stl">Yeni Kampanya Oluştur</div><div class="cform"><div class="fg full"><label>Kampanya Adı</label><input type="text" id="cName" placeholder="örn: Erkek Tişört Yaz 2026"></div><div class="fg"><label>Hedef</label><select id="cObj"><option value="OUTCOME_SALES">Satış</option><option value="OUTCOME_TRAFFIC">Trafik</option><option value="OUTCOME_AWARENESS">Farkındalık</option><option value="OUTCOME_ENGAGEMENT">Etkileşim</option><option value="OUTCOME_LEADS">Lead</option></select></div><div class="fg"><label>Günlük Bütçe (₺)</label><input type="number" id="cBudget" placeholder="500" min="1"></div><div class="fg"><label>Durum</label><select id="cStatus"><option value="PAUSED">Duraklat</option><option value="ACTIVE">Aktif</option></select></div><div class="fg full"><button class="btn" onclick="createCamp()">Kampanya Oluştur</button></div></div>';
     return;
   }
-
   var meta = PAGES[page];
   if(!meta){ el.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Sayfa bulunamadı</div>'; return; }
-
   el.innerHTML = '<div class="module-loading">⏳ Yükleniyor...</div>';
-
   try {
-    var r = await fetch('/modules/' + meta.module + '.html?v=2026.3');
+    var r = await fetch('/modules/' + meta.module + '.html?v=2026.4');
     if(!r.ok) throw new Error('HTTP ' + r.status);
     var html = await r.text();
-
-    // Script'leri DOM'dan ayır
     var tmp = document.createElement('div');
     tmp.innerHTML = html;
     var scripts = [];
-    tmp.querySelectorAll('script').forEach(function(s){
-      scripts.push(s.textContent);
-      s.remove();
-    });
-
+    tmp.querySelectorAll('script').forEach(function(s){ scripts.push(s.textContent); s.remove(); });
     el.innerHTML = tmp.innerHTML;
-
-    // new Function ile çalıştır — IIFE scope korunur, window erişimi tam
     scripts.forEach(function(code){
       try {
-        var tmp2 = document.createElement('textarea');
-        tmp2.innerHTML = code;
+        var tmp2 = document.createElement('textarea'); tmp2.innerHTML = code;
         (new Function(tmp2.value))();
       } catch(e){
         try {
           var s = document.createElement('script');
-          var tmp3 = document.createElement('textarea');
-          tmp3.innerHTML = code;
-          s.textContent = tmp3.value;
-          document.body.appendChild(s);
+          var tmp3 = document.createElement('textarea'); tmp3.innerHTML = code;
+          s.textContent = tmp3.value; document.body.appendChild(s);
         } catch(e2){ console.error('[loadModule] script hatası:', e2); }
       }
     });
-    // Script'ler sync çalıştı — şimdi dispatch et
-    if(window._isConnected){
-      window.dispatchEvent(new CustomEvent('mx:connected'));
-    }
-
+    if(window._isConnected) window.dispatchEvent(new CustomEvent('mx:connected'));
   } catch(e) {
     el.innerHTML = '<div class="module-loading" style="color:var(--r)">❌ ' + (meta.module) + '.html yüklenemedi: ' + e.message + '</div>';
   }
 }
-
 function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
-
 async function createCamp() {
   var name=document.getElementById('cName')?.value;
   var obj=document.getElementById('cObj')?.value;
@@ -408,54 +364,31 @@ async function createCamp() {
   if(d&&d.id){toast('Oluşturuldu: '+d.id);}
   else toast('Hata: '+((d&&d.error&&d.error.message)||'?'));
 }
-
-// Init
 var _defaultUrl = 'https://web-production-e5865.up.railway.app';
 document.getElementById('proxyUrl').value = localStorage.getItem('proxyUrl') || _defaultUrl;
 if(!localStorage.getItem('proxyUrl')) localStorage.setItem('proxyUrl', _defaultUrl);
-
-// Badge fonksiyonları
 function updateConnBadge(state, text){
-  var dot = document.getElementById('dot');
-  var lbl = document.getElementById('connLabel');
+  var dot = document.getElementById('dot'); var lbl = document.getElementById('connLabel');
   if(dot){ dot.className = 'dot' + (state==='on'?' on':state==='err'?' err':''); }
   if(lbl){ lbl.textContent = text; lbl.style.color = state==='on'?'var(--g)':state==='err'?'var(--r)':'var(--m)'; }
 }
 window.updateConnBadge = updateConnBadge;
-
 window.toggleConnEdit = function(){
   var ed = document.getElementById('connEdit');
   if(ed) ed.style.display = ed.style.display === 'none' ? 'flex' : 'none';
 };
-
-// Badge'i mx:connected'da güncelle
 window.addEventListener('mx:connected', function(){
   updateConnBadge('on', 'Bağlı ✓');
-  var ed = document.getElementById('connEdit');
-  if(ed) ed.style.display = 'none';
+  var ed = document.getElementById('connEdit'); if(ed) ed.style.display = 'none';
 });
-
-// 2. İlk sayfayı HEMEN yükle — bağlantı bekleme
 var _startPage = urlToPage(location.pathname) || 'dashboard';
 nav(_startPage, null);
-
-// 3. connect — bağımsız, bittikten sonra mx:connected event'i shared.js fırlatır
-//    loadModule içinde if(_isConnected) dispatch var, ama nav zaten çağrıldı
-//    Modüller kendi listener'larıyla handle ediyor (dashboard, gorevler vs.)
 updateConnBadge('', 'Bağlanıyor...');
 connect();
-
-// navWithPlatform: platform seçerek modül aç
 window._activePlatform = 'meta';
-window.navWithPlatform = function(page, platform, el){
-  window._activePlatform = platform;
-  nav(page, el);
-};
-
-// Task badge her dakika güncelle
+window.navWithPlatform = function(page, platform, el){ window._activePlatform = platform; nav(page, el); };
 setInterval(updateTaskBadge, 60000);
 </script>
-
 <style id="dp-global-styles">
 .dp-popup-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.16);min-width:300px;overflow:hidden;font-family:'Inter',sans-serif}
 .dp-preset-section{padding:8px 0;border-bottom:1px solid #f0f0f0;background:#fafafa}
@@ -477,29 +410,16 @@ setInterval(updateTaskBadge, 60000);
 .dp-btn-cancel{background:#fff;border:1px solid #e0e0e0;color:#555;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:500}
 .dp-btn-apply{background:#1877f2;border:none;color:#fff;padding:6px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;transition:background .15s}
 .dp-btn-apply:hover{background:#1565d8}
-@media(max-width:700px){
-  #dpPopup,#ddpPopup{display:none;position:fixed!important;bottom:0!important;top:auto!important;left:0!important;right:0!important;width:100%!important;z-index:99999}
-  .dp-popup-wrap{border-radius:16px 16px 0 0}
-}
 </style>
 <div id="dpPopup" style="display:none;position:fixed;z-index:99999">
   <div class="dp-popup-wrap">
-    <div class="dp-preset-section">
-      <div class="dp-preset-lbl">Hizli Secim</div>
-      <div id="dpPresets"></div>
-    </div>
+    <div class="dp-preset-section"><div class="dp-preset-lbl">Hizli Secim</div><div id="dpPresets"></div></div>
     <div class="dp-custom-section">
       <div class="dp-custom-lbl">Ozel Aralik</div>
       <div class="dp-inputs-row">
-        <div class="dp-input-group">
-          <label>Baslangic</label>
-          <input type="date" id="dpFromInput">
-        </div>
+        <div class="dp-input-group"><label>Baslangic</label><input type="date" id="dpFromInput"></div>
         <div class="dp-arrow">&#x2192;</div>
-        <div class="dp-input-group">
-          <label>Bitis</label>
-          <input type="date" id="dpToInput">
-        </div>
+        <div class="dp-input-group"><label>Bitis</label><input type="date" id="dpToInput"></div>
       </div>
       <div class="dp-err" id="dpValidErr">Bitis tarihi baslangictan once olamaz</div>
     </div>
@@ -512,123 +432,30 @@ setInterval(updateTaskBadge, 60000);
     </div>
   </div>
 </div>
-
 <script>
-// META ADS DATE PICKER
 var _dpOpen=false;
-var DP_PRESETS=[
-  {v:'today',l:'Bugun'},
-  {v:'yesterday',l:'Dun'},
-  {v:'last_7d',l:'Son 7 gun'},
-  {v:'last_14d',l:'Son 14 gun'},
-  {v:'last_30d',l:'Son 30 gun'},
-  {v:'this_month',l:'Bu ay'},
-  {v:'last_month',l:'Gecen ay'},
-  {v:'maximum',l:'Maksimum'}
-];
+var DP_PRESETS=[{v:'today',l:'Bugun'},{v:'yesterday',l:'Dun'},{v:'last_7d',l:'Son 7 gun'},{v:'last_14d',l:'Son 14 gun'},{v:'last_30d',l:'Son 30 gun'},{v:'this_month',l:'Bu ay'},{v:'last_month',l:'Gecen ay'},{v:'maximum',l:'Maksimum'}];
 function _dpToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _dpOffset(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _dpFmt(iso){if(!iso)return'';var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
 function _dpSetDots(active){DP_PRESETS.forEach(function(p){var d=document.getElementById('dpPrDot_'+p.v);if(d){d.style.background=p.v===active?'#1877f2':'transparent';d.style.borderColor=p.v===active?'#1877f2':'transparent';}});}
-function _dpBuild(){
-  var el=document.getElementById('dpPresets');
-  if(!el||el.children.length)return;
-  DP_PRESETS.forEach(function(p){
-    var row=document.createElement('div');row.className='dp-preset-item';
-    var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='dpPrDot_'+p.v;
-    var txt=document.createElement('span');txt.textContent=p.l;
-    row.appendChild(dot);row.appendChild(txt);
-    row.onclick=function(){_dpPickPreset(p.v,p.l);};
-    el.appendChild(row);
-  });
-}
-function _dpPickPreset(val,label){
-  var from='',to=_dpToday();
-  if(val==='today'){from=to;}
-  else if(val==='yesterday'){from=_dpOffset(1);to=_dpOffset(1);}
-  else if(val==='last_7d'){from=_dpOffset(6);}
-  else if(val==='last_14d'){from=_dpOffset(13);}
-  else if(val==='last_30d'){from=_dpOffset(29);}
-  else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
-  else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
-  else if(val==='maximum'){from='2020-01-01';}
-  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
-  if(fi)fi.value=from;if(ti)ti.value=to;
-  _dpSetDots(val);_dpInfo();
-  var mPre=document.getElementById('mPreset'),mFr=document.getElementById('mFrom'),mTo=document.getElementById('mTo');
-  if(mPre)mPre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';
-  var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=label;
-  closeDP();
-  var fn=typeof window.mLoad==='function'?window.mLoad:null;
-  if(fn)setTimeout(fn,50);
-}
-function _dpInfo(){
-  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
-  var info=document.getElementById('dpRangeInfo'),err=document.getElementById('dpValidErr');
-  if(!fi||!ti||!info)return;
-  var from=fi.value,to=ti.value;
-  if(from&&to&&from<=to){
-    if(err)err.style.display='none';
-    info.textContent=_dpFmt(from)+' - '+_dpFmt(to);
-  }else if(from&&to&&from>to){
-    if(err)err.style.display='';info.textContent='';
-  }else{info.textContent='';}
-}
-function toggleDP(){
-  var pop=document.getElementById('dpPopup');if(!pop)return;
-  if(_dpOpen){closeDP();return;}
-  _dpBuild();
-  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
-  if(fi)fi.value=_dpOffset(6);if(ti)ti.value=_dpToday();
-  _dpSetDots('last_7d');_dpInfo();
-  if(fi&&!fi._b){fi._b=true;fi.addEventListener('change',function(){_dpSetDots('');_dpInfo();});}
-  if(ti&&!ti._b){ti._b=true;ti.addEventListener('change',function(){_dpSetDots('');_dpInfo();});}
-  var btn=document.getElementById('dpTrigger'),rect=btn.getBoundingClientRect();
-  var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;
-  if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}
-  else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}
-  _dpOpen=true;
-  setTimeout(function(){document.addEventListener('mousedown',_dpOut);},10);
-}
-function closeDP(){
-  var pop=document.getElementById('dpPopup');if(pop)pop.style.display='none';
-  _dpOpen=false;document.removeEventListener('mousedown',_dpOut);
-}
-function _dpOut(e){
-  var pop=document.getElementById('dpPopup'),btn=document.getElementById('dpTrigger');
-  if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDP();
-}
-function dpApply(){
-  var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');
-  if(!fi||!ti||!fi.value||!ti.value){toast('Tarih secin');return;}
-  if(fi.value>ti.value){toast('Bitis tarihi baslangictan once olamaz');return;}
-  var mPre=document.getElementById('mPreset'),mFr=document.getElementById('mFrom'),mTo=document.getElementById('mTo');
-  if(mPre)mPre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;
-  var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=_dpFmt(fi.value)+' - '+_dpFmt(ti.value);
-  closeDP();
-  var fn=typeof window.mLoad==='function'?window.mLoad:null;
-  if(fn)setTimeout(fn,50);
-}
+function _dpBuild(){var el=document.getElementById('dpPresets');if(!el||el.children.length)return;DP_PRESETS.forEach(function(p){var row=document.createElement('div');row.className='dp-preset-item';var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='dpPrDot_'+p.v;var txt=document.createElement('span');txt.textContent=p.l;row.appendChild(dot);row.appendChild(txt);row.onclick=function(){_dpPickPreset(p.v,p.l);};el.appendChild(row);});}
+function _dpPickPreset(val,label){var from='',to=_dpToday();if(val==='today'){from=to;}else if(val==='yesterday'){from=_dpOffset(1);to=_dpOffset(1);}else if(val==='last_7d'){from=_dpOffset(6);}else if(val==='last_14d'){from=_dpOffset(13);}else if(val==='last_30d'){from=_dpOffset(29);}else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}else if(val==='maximum'){from='2020-01-01';}var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');if(fi)fi.value=from;if(ti)ti.value=to;_dpSetDots(val);_dpInfo();var mPre=document.getElementById('mPreset'),mFr=document.getElementById('mFrom'),mTo=document.getElementById('mTo');if(mPre)mPre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=label;closeDP();var fn=typeof window.mLoad==='function'?window.mLoad:null;if(fn)setTimeout(fn,50);}
+function _dpInfo(){var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');var info=document.getElementById('dpRangeInfo'),err=document.getElementById('dpValidErr');if(!fi||!ti||!info)return;var from=fi.value,to=ti.value;if(from&&to&&from<=to){if(err)err.style.display='none';info.textContent=_dpFmt(from)+' - '+_dpFmt(to);}else if(from&&to&&from>to){if(err)err.style.display='';info.textContent='';}else{info.textContent='';}}
+function toggleDP(){var pop=document.getElementById('dpPopup');if(!pop)return;if(_dpOpen){closeDP();return;}_dpBuild();var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');if(fi)fi.value=_dpOffset(6);if(ti)ti.value=_dpToday();_dpSetDots('last_7d');_dpInfo();if(fi&&!fi._b){fi._b=true;fi.addEventListener('change',function(){_dpSetDots('');_dpInfo();});}if(ti&&!ti._b){ti._b=true;ti.addEventListener('change',function(){_dpSetDots('');_dpInfo();});}var btn=document.getElementById('dpTrigger'),rect=btn.getBoundingClientRect();var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}_dpOpen=true;setTimeout(function(){document.addEventListener('mousedown',_dpOut);},10);}
+function closeDP(){var pop=document.getElementById('dpPopup');if(pop)pop.style.display='none';_dpOpen=false;document.removeEventListener('mousedown',_dpOut);}
+function _dpOut(e){var pop=document.getElementById('dpPopup'),btn=document.getElementById('dpTrigger');if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDP();}
+function dpApply(){var fi=document.getElementById('dpFromInput'),ti=document.getElementById('dpToInput');if(!fi||!ti||!fi.value||!ti.value){toast('Tarih secin');return;}if(fi.value>ti.value){toast('Bitis tarihi baslangictan once olamaz');return;}var mPre=document.getElementById('mPreset'),mFr=document.getElementById('mFrom'),mTo=document.getElementById('mTo');if(mPre)mPre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;var lbl=document.getElementById('dpLabel');if(lbl)lbl.textContent=_dpFmt(fi.value)+' - '+_dpFmt(ti.value);closeDP();var fn=typeof window.mLoad==='function'?window.mLoad:null;if(fn)setTimeout(fn,50);}
 </script>
-
 <div id="ddpPopup" style="display:none;position:fixed;z-index:99999">
   <div class="dp-popup-wrap">
-    <div class="dp-preset-section">
-      <div class="dp-preset-lbl">Hizli Secim</div>
-      <div id="ddpPresets"></div>
-    </div>
+    <div class="dp-preset-section"><div class="dp-preset-lbl">Hizli Secim</div><div id="ddpPresets"></div></div>
     <div class="dp-custom-section">
       <div class="dp-custom-lbl">Ozel Aralik</div>
       <div class="dp-inputs-row">
-        <div class="dp-input-group">
-          <label>Baslangic</label>
-          <input type="date" id="ddpFromInput">
-        </div>
+        <div class="dp-input-group"><label>Baslangic</label><input type="date" id="ddpFromInput"></div>
         <div class="dp-arrow">&#x2192;</div>
-        <div class="dp-input-group">
-          <label>Bitis</label>
-          <input type="date" id="ddpToInput">
-        </div>
+        <div class="dp-input-group"><label>Bitis</label><input type="date" id="ddpToInput"></div>
       </div>
       <div class="dp-err" id="ddpValidErr">Bitis tarihi baslangictan once olamaz</div>
     </div>
@@ -641,104 +468,22 @@ function dpApply(){
     </div>
   </div>
 </div>
-
 <script>
-// DASHBOARD DATE PICKER
 var _ddpOpen=false;
-var DDP_PRESETS=[
-  {v:'today',l:'Bugun'},
-  {v:'yesterday',l:'Dun'},
-  {v:'last_7d',l:'Son 7 gun'},
-  {v:'last_14d',l:'Son 14 gun'},
-  {v:'last_30d',l:'Son 30 gun'},
-  {v:'this_month',l:'Bu ay'},
-  {v:'last_month',l:'Gecen ay'},
-  {v:'maximum',l:'Maksimum'}
-];
+var DDP_PRESETS=[{v:'today',l:'Bugun'},{v:'yesterday',l:'Dun'},{v:'last_7d',l:'Son 7 gun'},{v:'last_14d',l:'Son 14 gun'},{v:'last_30d',l:'Son 30 gun'},{v:'this_month',l:'Bu ay'},{v:'last_month',l:'Gecen ay'},{v:'maximum',l:'Maksimum'}];
 function _ddpToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _ddpOffset(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _ddpFmt(iso){if(!iso)return'';var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
 function _ddpSetDots(active){DDP_PRESETS.forEach(function(p){var d=document.getElementById('ddpPrDot_'+p.v);if(d){d.style.background=p.v===active?'#1877f2':'transparent';d.style.borderColor=p.v===active?'#1877f2':'transparent';}});}
-function _ddpBuild(){
-  var el=document.getElementById('ddpPresets');
-  if(!el||el.children.length)return;
-  DDP_PRESETS.forEach(function(p){
-    var row=document.createElement('div');row.className='dp-preset-item';
-    var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='ddpPrDot_'+p.v;
-    var txt=document.createElement('span');txt.textContent=p.l;
-    row.appendChild(dot);row.appendChild(txt);
-    row.onclick=function(){_ddpPickPreset(p.v,p.l);};
-    el.appendChild(row);
-  });
-}
-function _ddpPickPreset(val,label){
-  var from='',to=_ddpToday();
-  if(val==='today'){from=to;}
-  else if(val==='yesterday'){from=_ddpOffset(1);to=_ddpOffset(1);}
-  else if(val==='last_7d'){from=_ddpOffset(6);}
-  else if(val==='last_14d'){from=_ddpOffset(13);}
-  else if(val==='last_30d'){from=_ddpOffset(29);}
-  else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
-  else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
-  else if(val==='maximum'){from='2020-01-01';}
-  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
-  if(fi)fi.value=from;if(ti)ti.value=to;
-  _ddpSetDots(val);_ddpInfo();
-  var pre=document.getElementById('dashPreset'),mFr=document.getElementById('dashFrom'),mTo=document.getElementById('dashTo');
-  if(pre)pre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';
-  var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=label;
-  closeDDP();
-  var fn=typeof window.loadDashboard==='function'?window.loadDashboard:null;
-  if(fn)setTimeout(fn,50);
-}
-function _ddpInfo(){
-  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
-  var info=document.getElementById('ddpRangeInfo'),err=document.getElementById('ddpValidErr');
-  if(!fi||!ti||!info)return;
-  var from=fi.value,to=ti.value;
-  if(from&&to&&from<=to){if(err)err.style.display='none';info.textContent=_ddpFmt(from)+' - '+_ddpFmt(to);}
-  else if(from&&to&&from>to){if(err)err.style.display='';info.textContent='';}
-  else{info.textContent='';}
-}
-function toggleDDP(){
-  var pop=document.getElementById('ddpPopup');if(!pop)return;
-  if(_ddpOpen){closeDDP();return;}
-  _ddpBuild();
-  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
-  if(fi)fi.value=_ddpOffset(6);if(ti)ti.value=_ddpToday();
-  _ddpSetDots('last_7d');_ddpInfo();
-  if(fi&&!fi._b){fi._b=true;fi.addEventListener('change',function(){_ddpSetDots('');_ddpInfo();});}
-  if(ti&&!ti._b){ti._b=true;ti.addEventListener('change',function(){_ddpSetDots('');_ddpInfo();});}
-  var btn=document.getElementById('ddpTrigger'),rect=btn.getBoundingClientRect();
-  var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;
-  if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}
-  else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}
-  _ddpOpen=true;
-  setTimeout(function(){document.addEventListener('mousedown',_ddpOut);},10);
-}
-function closeDDP(){
-  var pop=document.getElementById('ddpPopup');if(pop)pop.style.display='none';
-  _ddpOpen=false;document.removeEventListener('mousedown',_ddpOut);
-}
-function _ddpOut(e){
-  var pop=document.getElementById('ddpPopup'),btn=document.getElementById('ddpTrigger');
-  if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDDP();
-}
-function ddpApply(){
-  var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');
-  if(!fi||!ti||!fi.value||!ti.value){toast('Tarih secin');return;}
-  if(fi.value>ti.value){toast('Bitis tarihi baslangictan once olamaz');return;}
-  var pre=document.getElementById('dashPreset'),mFr=document.getElementById('dashFrom'),mTo=document.getElementById('dashTo');
-  if(pre)pre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;
-  var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=_ddpFmt(fi.value)+' - '+_ddpFmt(ti.value);
-  closeDDP();
-  var fn=typeof window.loadDashboard==='function'?window.loadDashboard:null;
-  if(fn)setTimeout(fn,50);
-}
+function _ddpBuild(){var el=document.getElementById('ddpPresets');if(!el||el.children.length)return;DDP_PRESETS.forEach(function(p){var row=document.createElement('div');row.className='dp-preset-item';var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='ddpPrDot_'+p.v;var txt=document.createElement('span');txt.textContent=p.l;row.appendChild(dot);row.appendChild(txt);row.onclick=function(){_ddpPickPreset(p.v,p.l);};el.appendChild(row);});}
+function _ddpPickPreset(val,label){var from='',to=_ddpToday();if(val==='today'){from=to;}else if(val==='yesterday'){from=_ddpOffset(1);to=_ddpOffset(1);}else if(val==='last_7d'){from=_ddpOffset(6);}else if(val==='last_14d'){from=_ddpOffset(13);}else if(val==='last_30d'){from=_ddpOffset(29);}else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}else if(val==='maximum'){from='2020-01-01';}var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');if(fi)fi.value=from;if(ti)ti.value=to;_ddpSetDots(val);_ddpInfo();var pre=document.getElementById('dashPreset'),mFr=document.getElementById('dashFrom'),mTo=document.getElementById('dashTo');if(pre)pre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=label;closeDDP();var fn=typeof window.loadDashboard==='function'?window.loadDashboard:null;if(fn)setTimeout(fn,50);}
+function _ddpInfo(){var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');var info=document.getElementById('ddpRangeInfo'),err=document.getElementById('ddpValidErr');if(!fi||!ti||!info)return;var from=fi.value,to=ti.value;if(from&&to&&from<=to){if(err)err.style.display='none';info.textContent=_ddpFmt(from)+' - '+_ddpFmt(to);}else if(from&&to&&from>to){if(err)err.style.display='';info.textContent='';}else{info.textContent='';}}
+function toggleDDP(){var pop=document.getElementById('ddpPopup');if(!pop)return;if(_ddpOpen){closeDDP();return;}_ddpBuild();var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');if(fi)fi.value=_ddpOffset(6);if(ti)ti.value=_ddpToday();_ddpSetDots('last_7d');_ddpInfo();if(fi&&!fi._b){fi._b=true;fi.addEventListener('change',function(){_ddpSetDots('');_ddpInfo();});}if(ti&&!ti._b){ti._b=true;ti.addEventListener('change',function(){_ddpSetDots('');_ddpInfo();});}var btn=document.getElementById('ddpTrigger'),rect=btn.getBoundingClientRect();var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}_ddpOpen=true;setTimeout(function(){document.addEventListener('mousedown',_ddpOut);},10);}
+function closeDDP(){var pop=document.getElementById('ddpPopup');if(pop)pop.style.display='none';_ddpOpen=false;document.removeEventListener('mousedown',_ddpOut);}
+function _ddpOut(e){var pop=document.getElementById('ddpPopup'),btn=document.getElementById('ddpTrigger');if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))closeDDP();}
+function ddpApply(){var fi=document.getElementById('ddpFromInput'),ti=document.getElementById('ddpToInput');if(!fi||!ti||!fi.value||!ti.value){toast('Tarih secin');return;}if(fi.value>ti.value){toast('Bitis tarihi baslangictan once olamaz');return;}var pre=document.getElementById('dashPreset'),mFr=document.getElementById('dashFrom'),mTo=document.getElementById('dashTo');if(pre)pre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;var lbl=document.getElementById('ddpLabel');if(lbl)lbl.textContent=_ddpFmt(fi.value)+' - '+_ddpFmt(ti.value);closeDDP();var fn=typeof window.loadDashboard==='function'?window.loadDashboard:null;if(fn)setTimeout(fn,50);}
 </script>
-
 <script>
-// ── Auth / User ──────────────────────────────────────────
 window._currentUser = null;
 window.initUser = async function initUser(){
   try{
@@ -748,51 +493,30 @@ window.initUser = async function initUser(){
     if(r.status===401) return;
     var u = await r.json();
     window._currentUser = u;
-    var info = document.getElementById('userInfo');
-    if(info) info.style.display = 'flex';
-    var nm = document.getElementById('topUserName');
-    if(nm) nm.textContent = u.name || u.email;
+    var info = document.getElementById('userInfo'); if(info) info.style.display = 'flex';
+    var nm = document.getElementById('topUserName'); if(nm) nm.textContent = u.name || u.email;
     var rl = document.getElementById('topUserRole');
     var labels = {admin:'Admin',editor:'Editor',viewer:'Goruntüleyici'};
     if(rl) rl.textContent = labels[u.role] || u.role;
   } catch(e){ console.log('Auth:', e.message); }
 }
-// Auth kontrolü — tanım bittikten hemen sonra çağır
 window.initUser();
-
 window.doLogout = function doLogout(){
   fetch('/auth/logout',{method:'POST',credentials:'include'})
     .then(function(){ window.location.href = '/login'; })
     .catch(function(){ window.location.href = '/login'; });
 }
-// ── Sidebar ──────────────────────────────────────────────
 function toggleSidebar(){
-  var sb=document.querySelector('.sidebar');
-  var ov=document.getElementById('sidebarOverlay');
-  var btn=document.getElementById('hamburgerBtn');
+  var sb=document.querySelector('.sidebar');var ov=document.getElementById('sidebarOverlay');var btn=document.getElementById('hamburgerBtn');
   var isOpen=sb.classList.contains('open');
-  if(isOpen){closeSidebar();}
-  else{
-    sb.classList.add('open');
-    ov.classList.add('open');
-    btn.classList.add('open');
-    document.body.style.overflow='hidden';
-  }
+  if(isOpen){closeSidebar();}else{sb.classList.add('open');ov.classList.add('open');btn.classList.add('open');document.body.style.overflow='hidden';}
 }
 function closeSidebar(){
-  var sb=document.querySelector('.sidebar');
-  var ov=document.getElementById('sidebarOverlay');
-  var btn=document.getElementById('hamburgerBtn');
-  sb.classList.remove('open');
-  ov.classList.remove('open');
-  btn.classList.remove('open');
-  document.body.style.overflow='';
+  var sb=document.querySelector('.sidebar');var ov=document.getElementById('sidebarOverlay');var btn=document.getElementById('hamburgerBtn');
+  sb.classList.remove('open');ov.classList.remove('open');btn.classList.remove('open');document.body.style.overflow='';
 }
-// Resize'da desktop'a geçince sidebar'ı normalize et
-window.addEventListener('resize',function(){
-  if(window.innerWidth>768)closeSidebar();
-});
+window.addEventListener('resize',function(){ if(window.innerWidth>768)closeSidebar(); });
 </script>
 </body>
 </html>
- 
+
