@@ -532,7 +532,7 @@ def gads_campaigns():
     """
 
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/v17/customers/{cid}/googleAds:search'
+    url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -610,7 +610,7 @@ def gads_adgroups():
     """
 
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/v17/customers/{cid}/googleAds:search'
+    url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -660,7 +660,7 @@ def gads_update_budget():
         return jsonify({'error': 'Geçersiz parametre', 'success': False})
     cid = gads_customer_id()
     amount_micros = int(new_amount_tl * 1_000_000)
-    patch_url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaignBudgets:mutate'
+    patch_url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaignBudgets:mutate'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -706,7 +706,7 @@ def gads_toggle_status():
     if new_status not in ('ENABLED', 'PAUSED'):
         return jsonify({'error': 'Geçersiz durum', 'success': False})
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaigns:mutate'
+    url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaigns:mutate'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
