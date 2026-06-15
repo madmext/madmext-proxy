@@ -27,12 +27,13 @@ GA4_REFRESH_TOKEN = os.environ.get('GA4_REFRESH_TOKEN', '')
 GA4_CLIENT_ID = os.environ.get('GA4_CLIENT_ID', '')
 GA4_CLIENT_SECRET = os.environ.get('GA4_CLIENT_SECRET', '')
 
-# Google Ads
+# Google Ads — Client/Secret/Refresh GA4 ile aynı (zaten Railway'de mevcut)
 GADS_DEVELOPER_TOKEN = os.environ.get('GADS_DEVELOPER_TOKEN', '')
-GADS_CLIENT_ID = os.environ.get('GADS_CLIENT_ID', '')
-GADS_CLIENT_SECRET = os.environ.get('GADS_CLIENT_SECRET', '')
-GADS_REFRESH_TOKEN = os.environ.get('GADS_REFRESH_TOKEN', '')
-GADS_CUSTOMER_ID = os.environ.get('GADS_CUSTOMER_ID', '')  # 123-456-7890 formatında
+GADS_CUSTOMER_ID = os.environ.get('GADS_CUSTOMER_ID', '')  # örn: 499-139-5973
+# GA4 ile paylaşılan OAuth credentials (aynı Google hesabı)
+GADS_CLIENT_ID = os.environ.get('GADS_CLIENT_ID', '') or GA4_CLIENT_ID
+GADS_CLIENT_SECRET = os.environ.get('GADS_CLIENT_SECRET', '') or GA4_CLIENT_SECRET
+GADS_REFRESH_TOKEN = os.environ.get('GADS_REFRESH_TOKEN', '') or GA4_REFRESH_TOKEN
 
 LOG_FILE = 'madmext_logs.json'
 log_lock = threading.Lock()
@@ -532,7 +533,8 @@ def gads_get_token():
             'client_id': GADS_CLIENT_ID,
             'client_secret': GADS_CLIENT_SECRET,
             'refresh_token': GADS_REFRESH_TOKEN,
-            'grant_type': 'refresh_token'
+            'grant_type': 'refresh_token',
+            'scope': 'https://www.googleapis.com/auth/adwords'
         }, timeout=10)
         data = r.json()
         return data.get('access_token')
@@ -684,14 +686,14 @@ def gads_adgroups():
 @app.route('/gads/status', methods=['GET'])
 def gads_status():
     """Google Ads bağlantı durumunu kontrol et"""
-    configured = bool(GADS_DEVELOPER_TOKEN and GADS_CLIENT_ID and GADS_CLIENT_SECRET and GADS_REFRESH_TOKEN and GADS_CUSTOMER_ID)
+    configured = bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID and GADS_CLIENT_ID and GADS_REFRESH_TOKEN)
     if not configured:
         missing = []
         if not GADS_DEVELOPER_TOKEN: missing.append('GADS_DEVELOPER_TOKEN')
-        if not GADS_CLIENT_ID: missing.append('GADS_CLIENT_ID')
-        if not GADS_CLIENT_SECRET: missing.append('GADS_CLIENT_SECRET')
-        if not GADS_REFRESH_TOKEN: missing.append('GADS_REFRESH_TOKEN')
         if not GADS_CUSTOMER_ID: missing.append('GADS_CUSTOMER_ID')
+        # GA4_CLIENT_ID/SECRET/REFRESH_TOKEN zaten Railway'de var, kontrol ekle
+        if not GADS_CLIENT_ID: missing.append('GA4_CLIENT_ID (veya GADS_CLIENT_ID)')
+        if not GADS_REFRESH_TOKEN: missing.append('GA4_REFRESH_TOKEN (veya GADS_REFRESH_TOKEN)')
         return jsonify({'configured': False, 'missing': missing})
     token = gads_get_token()
     return jsonify({'configured': True, 'token_ok': bool(token), 'customer_id': GADS_CUSTOMER_ID})
