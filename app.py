@@ -6,47 +6,35 @@ import json
 import threading
 import hashlib
 from datetime import datetime
-
 try:
     import psycopg2
     import psycopg2.extras
     HAS_PG = True
 except ImportError:
     HAS_PG = False
-
 app = Flask(__name__, static_folder='.')
 app.secret_key = os.environ.get('SECRET_KEY', 'madmext-default-key-2026')
 from datetime import timedelta
 app.permanent_session_lifetime = timedelta(days=30)
 CORS(app, supports_credentials=True)
-
 META_TOKEN = os.environ.get('META_TOKEN', '')
 ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
 GA4_PROPERTY_ID = os.environ.get('GA4_PROPERTY_ID', '')
 GA4_REFRESH_TOKEN = os.environ.get('GA4_REFRESH_TOKEN', '')
 GA4_CLIENT_ID = os.environ.get('GA4_CLIENT_ID', '')
 GA4_CLIENT_SECRET = os.environ.get('GA4_CLIENT_SECRET', '')
-
-# Google Ads — Client/Secret/Refresh GA4 ile aynı (zaten Railway'de mevcut)
 GADS_DEVELOPER_TOKEN = os.environ.get('GADS_DEVELOPER_TOKEN', '')
-GADS_CUSTOMER_ID = os.environ.get('GADS_CUSTOMER_ID', '')        # örn: 499-139-5973
-GADS_LOGIN_CUSTOMER_ID = os.environ.get('GADS_LOGIN_CUSTOMER_ID', '')  # Manager ID: 225-964-4023
-# GA4 ile paylaşılan OAuth credentials (aynı Google hesabı)
+GADS_CUSTOMER_ID = os.environ.get('GADS_CUSTOMER_ID', '')
+GADS_LOGIN_CUSTOMER_ID = os.environ.get('GADS_LOGIN_CUSTOMER_ID', '')
 GADS_CLIENT_ID = os.environ.get('GADS_CLIENT_ID', '') or GA4_CLIENT_ID
 GADS_CLIENT_SECRET = os.environ.get('GADS_CLIENT_SECRET', '') or GA4_CLIENT_SECRET
 GADS_REFRESH_TOKEN = os.environ.get('GADS_REFRESH_TOKEN', '') or GA4_REFRESH_TOKEN
-
 LOG_FILE = 'madmext_logs.json'
 log_lock = threading.Lock()
-
-# ── In-memory kullanıcı cache (restart'ta USERS_JSON'dan restore edilir) ──
 _users_cache = None
 _users_lock = threading.Lock()
-
-# ── GA4 token cache — 50 dakika geçerli, her istekte OAuth çağrısı yapılmaz ──
 _ga4_token_cache = {'token': None, 'expires_at': 0}
 _ga4_token_lock = threading.Lock()
-
 def read_logs():
     try:
         if os.path.exists(LOG_FILE):
@@ -55,12 +43,10 @@ def read_logs():
     except:
         pass
     return {'budgetLog': [], 'taskLog': [], 'actionLog': []}
-
 def write_logs(data):
     with log_lock:
         with open(LOG_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
-
 def get_ga4_token():
     import time
     with _ga4_token_lock:
@@ -77,16 +63,11 @@ def get_ga4_token():
             token = r.json().get('access_token')
             if token:
                 _ga4_token_cache['token'] = token
-                _ga4_token_cache['expires_at'] = now + 2900  # 50 dk cache
+                _ga4_token_cache['expires_at'] = now + 2900
             return token
         except Exception as e:
             print('GA4 token hata:', e)
             return None
-
-# ── STATIC FILES ──────────────────────────────────────────────────────────
-
-
-# ── PostgreSQL ───────────────────────────────────────────────────────
 def get_db():
     url = os.environ.get('DATABASE_URL','')
     if not url or not HAS_PG: return None
@@ -95,7 +76,6 @@ def get_db():
         return psycopg2.connect(url, sslmode='require')
     except Exception as e:
         print('DB error:', e); return None
-
 def init_db():
     conn = get_db()
     if not conn: return
@@ -112,7 +92,6 @@ def init_db():
         """)
         conn.commit(); cur.close(); conn.close()
     except Exception as e: print('init_db:', e)
-
 def db_get_users():
     conn = get_db()
     if not conn: return None
@@ -123,7 +102,6 @@ def db_get_users():
         cur.close(); conn.close()
         return rows
     except Exception as e: print('db_get_users:', e); return None
-
 def db_upsert_user(email, name, pw_hash, role):
     conn = get_db()
     if not conn: return False
@@ -135,7 +113,6 @@ def db_upsert_user(email, name, pw_hash, role):
         )
         conn.commit(); cur.close(); conn.close(); return True
     except Exception as e: print('db_upsert:', e); return False
-
 def db_delete(email):
     conn = get_db()
     if not conn: return False
@@ -144,7 +121,6 @@ def db_delete(email):
         cur.execute('DELETE FROM mx_users WHERE email=%s',(email,))
         conn.commit(); cur.close(); conn.close(); return True
     except Exception as e: print('db_delete:', e); return False
-
 def db_update_role(email, role):
     conn = get_db()
     if not conn: return False
@@ -153,7 +129,6 @@ def db_update_role(email, role):
         cur.execute('UPDATE mx_users SET role=%s WHERE email=%s',(role,email))
         conn.commit(); cur.close(); conn.close(); return True
     except Exception as e: print('db_update_role:', e); return False
-
 def db_update_pw(email, pw_hash):
     conn = get_db()
     if not conn: return False
@@ -162,8 +137,6 @@ def db_update_pw(email, pw_hash):
         cur.execute('UPDATE mx_users SET password_hash=%s WHERE email=%s',(pw_hash,email))
         conn.commit(); cur.close(); conn.close(); return True
     except Exception as e: print('db_update_pw:', e); return False
-
-# DB init + ilk admin
 try:
     init_db()
     existing = db_get_users()
@@ -175,33 +148,23 @@ try:
             'admin'
         )
 except Exception as e: print('DB init error:', e)
-
 def hash_pw(p): return hashlib.sha256(p.encode()).hexdigest()
-
 def is_admin():
-    """SECRET_KEY yoksa herkes admin, varsa session'dan kontrol et"""
     if not os.environ.get('SECRET_KEY'):
         return True
-    # Session varsa role kontrol et
     role = session.get('user_role')
     if role:
         return role == 'admin'
-    # Session yoksa - eğer login sayfası varsa 403, yoksa admin kabul et
     return not os.path.exists('login.html')
-
 def require_admin():
-    """Admin değilse 403 döndür, admin ise None"""
     if not is_admin():
         return jsonify({'error':'Admin gerekli'}), 403
     return None
-
 def _default_admin():
     return [{'email':os.environ.get('ADMIN_EMAIL','admin@madmext.com'),
              'password_hash':hash_pw(os.environ.get('ADMIN_PASSWORD','madmext2026')),
              'role':'admin','name':'Admin'}]
-
 def _load_users_from_env():
-    """USERS_JSON env var'dan kullanıcıları yükle"""
     import base64
     uj = os.environ.get('USERS_JSON','')
     if uj:
@@ -210,32 +173,25 @@ def _load_users_from_env():
             if u: return u
         except: pass
     return None
-
 def _users_to_json_b64(users):
-    """Kullanıcı listesini base64 JSON'a çevir"""
     import base64
     return base64.b64encode(json.dumps(users, ensure_ascii=False).encode()).decode()
-
 def get_users():
     global _users_cache
-    # 1. In-memory cache — en hızlı, DB bağlantısı gerektirmez
     with _users_lock:
         if _users_cache is not None:
             return list(_users_cache)
-    # 2. PostgreSQL — sadece cache boşsa sorgula
     pg = db_get_users()
     if pg is not None:
         result = pg if pg else _default_admin()
         with _users_lock:
             _users_cache = list(result)
         return result
-    # 3. USERS_JSON env var
     env_users = _load_users_from_env()
     if env_users:
         with _users_lock:
             _users_cache = list(env_users)
         return env_users
-    # 4. Dosya
     try:
         logs = read_logs()
         if logs.get('users'):
@@ -243,25 +199,20 @@ def get_users():
                 _users_cache = list(logs['users'])
             return logs['users']
     except: pass
-    # 5. Default admin
     default = _default_admin()
     with _users_lock:
         _users_cache = list(default)
     return default
-
 def save_users(users):
-    """Kullanıcıları cache'e ve dosyaya kaydet"""
     global _users_cache
     with _users_lock:
         _users_cache = list(users)
-    # Dosyaya da kaydet (restart'a kadar geçerli)
     try:
         current = read_logs()
         current['users'] = users
         write_logs(current)
     except: pass
     return _users_to_json_b64(users)
-
 @app.route('/')
 @app.route('/ads')
 @app.route('/strateji')
@@ -274,24 +225,22 @@ def save_users(users):
 @app.route('/ayarlar')
 @app.route('/kullanicilar')
 @app.route('/ai')
+@app.route('/google-ads')
+@app.route('/seo')
 def home():
     if os.environ.get('SECRET_KEY') and not session.get('user_email'):
         return send_from_directory('.', 'login.html') if os.path.exists('login.html') else send_from_directory('.', 'index.html')
     return send_from_directory('.', 'index.html')
-
 @app.route('/login')
 def login_page():
     return send_from_directory('.', 'login.html') if os.path.exists('login.html') else send_from_directory('.', 'index.html')
-
 @app.route('/auth/me')
 def auth_me():
-    # SECRET_KEY yoksa her zaman admin dön
     if not os.environ.get('SECRET_KEY'):
         return jsonify({'email':'admin@madmext.com','name':'Admin','role':'admin'})
     if not session.get('user_email'):
         return jsonify({'error':'Giris yapilmamis'}), 401
     return jsonify({'email':session['user_email'],'name':session.get('user_name'),'role':session.get('user_role','admin')})
-
 @app.route('/auth/login', methods=['POST'])
 def auth_login():
     data = request.json or {}
@@ -305,12 +254,10 @@ def auth_login():
     session['user_role'] = user.get('role') or 'admin'
     session.permanent = True
     return jsonify({'ok':True,'user':{'email':user['email'],'name':user.get('name'),'role':user.get('role')}})
-
 @app.route('/auth/logout', methods=['POST'])
 def auth_logout():
     session.clear()
     return jsonify({'ok':True})
-
 @app.route('/auth/forgot-password', methods=['POST'])
 def forgot_password():
     data = request.json or {}
@@ -321,14 +268,12 @@ def forgot_password():
     })
     write_logs(current)
     return jsonify({'ok':True})
-
 @app.route('/admin/users', methods=['GET'])
 def admin_get_users():
     r = require_admin()
     if r: return r
     users = get_users()
     return jsonify([{'email':u['email'],'name':u.get('name'),'role':u.get('role','user')} for u in users])
-
 @app.route('/admin/users', methods=['POST'])
 def admin_add_user():
     r = require_admin()
@@ -348,7 +293,6 @@ def admin_add_user():
     users.append({'email':email,'password_hash':pw,'name':name,'role':role})
     uj = save_users(users)
     return jsonify({'ok':True,'users_json':uj})
-
 @app.route('/admin/users/<email>', methods=['DELETE'])
 def admin_delete_user(email):
     r = require_admin()
@@ -359,7 +303,6 @@ def admin_delete_user(email):
     users = [u for u in get_users() if u['email'].lower()!=email.lower()]
     uj = save_users(users)
     return jsonify({'ok':True,'users_json':uj})
-
 @app.route('/admin/users/<email>/reset', methods=['POST'])
 def admin_reset_pw(email):
     r = require_admin()
@@ -374,7 +317,6 @@ def admin_reset_pw(email):
         if u['email'].lower()==email.lower(): u['password_hash']=pw
     uj = save_users(users)
     return jsonify({'ok':True,'users_json':uj})
-
 @app.route('/admin/users/<email>/role', methods=['POST'])
 def admin_change_role(email):
     r = require_admin()
@@ -389,13 +331,11 @@ def admin_change_role(email):
         if u['email'].lower()==email.lower(): u['role']=role
     uj = save_users(users)
     return jsonify({'ok':True,'users_json':uj})
-
 @app.route('/admin/reset-requests')
 def admin_reset_requests():
     r = require_admin()
     if r: return r
     return jsonify(read_logs().get('resetRequests',[]))
-
 @app.route('/admin/reset-requests/<int:idx>/resolve', methods=['POST'])
 def resolve_request(idx):
     r = require_admin()
@@ -405,14 +345,12 @@ def resolve_request(idx):
     if 0<=idx<len(reqs): reqs[idx]['status']='resolved'
     write_logs(current)
     return jsonify({'ok':True})
-
 @app.route('/theme.css')
 def serve_theme():
     try:
         return send_from_directory('.', 'theme.css')
     except:
         return ':root{}', 200, {'Content-Type': 'text/css'}
-
 @app.route('/proxy-xml', methods=['GET'])
 def proxy_xml():
     url = request.args.get('url','')
@@ -422,18 +360,12 @@ def proxy_xml():
         return r.text, 200, {'Content-Type':'application/xml; charset=utf-8'}
     except Exception as e:
         return str(e), 500
-
 @app.route('/modules/<path:filename>')
 def serve_module(filename):
     return send_from_directory('modules', filename)
-
 @app.route('/madmext-ads.html')
 def serve_old():
-    # Eski URL'ye girenler için yönlendirme
     return send_from_directory('.', 'index.html')
-
-# ── GA4 ───────────────────────────────────────────────────────────────────
-
 @app.route('/ga4', methods=['POST'])
 def ga4_proxy():
     try:
@@ -451,13 +383,9 @@ def ga4_proxy():
         return jsonify(r.json())
     except Exception as e:
         return jsonify({'error': str(e)})
-
-# ── LOGS ──────────────────────────────────────────────────────────────────
-
 @app.route('/logs', methods=['GET'])
 def get_logs():
     return jsonify(read_logs())
-
 @app.route('/logs/save', methods=['POST'])
 def save_logs():
     data = request.json
@@ -466,7 +394,6 @@ def save_logs():
     if 'taskLog' in data: current['taskLog'] = data['taskLog']
     write_logs(current)
     return jsonify({'ok': True})
-
 @app.route('/logs/action', methods=['POST'])
 def log_action():
     data = request.json
@@ -475,9 +402,6 @@ def log_action():
     current['actionLog'] = current['actionLog'][:500]
     write_logs(current)
     return jsonify({'ok': True})
-
-# ── META ──────────────────────────────────────────────────────────────────
-
 @app.route('/api', methods=['POST'])
 def meta_proxy():
     import json as _json
@@ -486,12 +410,9 @@ def meta_proxy():
     raw_params = data.get('params', {})
     method = data.get('method', 'GET')
     url = f"https://graph.facebook.com/v19.0/{endpoint}"
-
-    # Parametreleri tuple listesi olarak hazırla (array params için)
     param_list = [('access_token', META_TOKEN)]
     for k, v in raw_params.items():
         if k == 'action_attribution_windows' and isinstance(v, str):
-            # ["7d_click","1d_view"] formatını ayrı parametrelere böl
             try:
                 arr = _json.loads(v)
                 for item in arr:
@@ -499,11 +420,9 @@ def meta_proxy():
             except:
                 param_list.append((k, v))
         elif k == 'time_range' and isinstance(v, str):
-            # time_range JSON string olarak gitmeli — olduğu gibi bırak
             param_list.append((k, v))
         else:
             param_list.append((k, v))
-
     if method == 'POST':
         r = requests.post(url, params=param_list, timeout=20)
     else:
@@ -522,11 +441,8 @@ def meta_proxy():
         except: pass
     return jsonify(result)
 
-
 # ── GOOGLE ADS ───────────────────────────────────────────────────────────
-
 def gads_get_token():
-    """Google Ads için access token al"""
     if not GADS_REFRESH_TOKEN or not GADS_CLIENT_ID or not GADS_CLIENT_SECRET:
         return None
     try:
@@ -534,28 +450,63 @@ def gads_get_token():
             'client_id': GADS_CLIENT_ID,
             'client_secret': GADS_CLIENT_SECRET,
             'refresh_token': GADS_REFRESH_TOKEN,
-            'grant_type': 'refresh_token',
-            'scope': 'https://www.googleapis.com/auth/adwords'
+            'grant_type': 'refresh_token'
         }, timeout=10)
         data = r.json()
-        return data.get('access_token')
+        token = data.get('access_token')
+        if not token:
+            print(f'Google Ads token hatası: {data}')
+        return token
     except Exception as e:
         print(f'Google Ads token hatası: {e}')
         return None
 
 def gads_customer_id():
-    """Customer ID'yi temizle (tire ve boşlukları kaldır)"""
     return GADS_CUSTOMER_ID.replace('-', '').replace(' ', '')
+
+def gads_date_condition(data):
+    """
+    date_range veya date_from/date_to'dan GAQL WHERE koşulu üret.
+    Desteklenen preset'ler: TODAY, YESTERDAY, LAST_7_DAYS, LAST_14_DAYS,
+    LAST_30_DAYS, THIS_MONTH, LAST_MONTH, LAST_BUSINESS_WEEK, THIS_WEEK_SUN_TODAY
+    Custom range: date_from + date_to (YYYY-MM-DD)
+    """
+    date_from = data.get('date_from', '')
+    date_to = data.get('date_to', '')
+    if date_from and date_to:
+        # GAQL BETWEEN formatı
+        return f"segments.date BETWEEN '{date_from}' AND '{date_to}'"
+    
+    date_range = data.get('date_range', 'LAST_7_DAYS')
+    # BETWEEN_ prefix'li string gelirse parse et
+    if date_range.startswith('BETWEEN_'):
+        parts = date_range.replace('BETWEEN_', '').split('_')
+        if len(parts) == 2:
+            return f"segments.date BETWEEN '{parts[0]}' AND '{parts[1]}'"
+    
+    # Geçerli GAQL preset'leri
+    valid_presets = {
+        'TODAY', 'YESTERDAY', 'LAST_7_DAYS', 'LAST_14_DAYS', 'LAST_30_DAYS',
+        'THIS_MONTH', 'LAST_MONTH', 'LAST_BUSINESS_WEEK', 'THIS_WEEK_SUN_TODAY',
+        'LAST_WEEK_SUN_SAT', 'LAST_WEEK_MON_SUN'
+    }
+    if date_range.upper() in valid_presets:
+        return f"segments.date DURING {date_range.upper()}"
+    
+    # Bilinmeyen preset — varsayılan
+    return "segments.date DURING LAST_7_DAYS"
 
 @app.route('/gads/campaigns', methods=['POST'])
 def gads_campaigns():
-    """Google Ads kampanyaları getir"""
     token = gads_get_token()
     if not token:
-        return jsonify({'error': 'Google Ads yapılandırılmamış. GADS_REFRESH_TOKEN, GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_CUSTOMER_ID ve GADS_DEVELOPER_TOKEN Railway değişkenlerini ekleyin.', 'configured': False})
+        return jsonify({
+            'error': 'Google Ads token alınamadı. GADS_REFRESH_TOKEN, GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_DEVELOPER_TOKEN ve GADS_CUSTOMER_ID değerlerini kontrol edin.',
+            'configured': bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID)
+        })
 
     data = request.json or {}
-    date_range = data.get('date_range', 'LAST_7_DAYS')
+    date_cond = gads_date_condition(data)
 
     query = f"""
         SELECT
@@ -574,7 +525,7 @@ def gads_campaigns():
           metrics.average_cpc,
           metrics.cost_per_conversion
         FROM campaign
-        WHERE segments.date DURING {date_range}
+        WHERE {date_cond}
           AND campaign.status != 'REMOVED'
         ORDER BY metrics.cost_micros DESC
         LIMIT 100
@@ -587,17 +538,26 @@ def gads_campaigns():
         'developer-token': GADS_DEVELOPER_TOKEN,
         'Content-Type': 'application/json'
     }
-    # Login customer ID — Manager hesabı üzerinden erişim
-    login_cid = data.get('login_customer_id', '') or GADS_LOGIN_CUSTOMER_ID
-    if login_cid:
-        headers['login-customer-id'] = login_cid.replace('-', '')
+    if GADS_LOGIN_CUSTOMER_ID:
+        headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
 
     try:
         r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
+        print(f'Google Ads campaigns status: {r.status_code}')
+        
+        # Boş yanıt kontrolü
+        if not r.text or not r.text.strip():
+            return jsonify({'rows': [], 'configured': True})
+        
         result = r.json()
+        print(f'Google Ads campaigns result keys: {list(result.keys())}')
+
         if 'error' in result:
-            return jsonify({'error': result['error'].get('message', 'Google Ads API hatası'), 'configured': True})
-        # Veriyi normalize et
+            err_msg = result['error'].get('message', 'Google Ads API hatası')
+            details = result['error'].get('details', [])
+            print(f'Google Ads API hatası: {err_msg}, details: {details}')
+            return jsonify({'error': err_msg, 'configured': True})
+
         rows = []
         for row in result.get('results', []):
             camp = row.get('campaign', {})
@@ -608,43 +568,41 @@ def gads_campaigns():
                 'name': camp.get('name', ''),
                 'status': camp.get('status', ''),
                 'type': camp.get('advertisingChannelType', ''),
-                'budget_micros': budget.get('amountMicros', 0),
+                'budget_micros': int(budget.get('amountMicros', 0) or 0),
                 'budget_type': budget.get('type', ''),
-                'cost_micros': metrics.get('costMicros', 0),
-                'cost': round(int(metrics.get('costMicros', 0)) / 1_000_000, 2),
-                'conversions': round(float(metrics.get('conversions', 0)), 1),
-                'conversions_value': round(float(metrics.get('conversionsValue', 0)), 2),
-                'clicks': int(metrics.get('clicks', 0)),
-                'impressions': int(metrics.get('impressions', 0)),
-                'ctr': round(float(metrics.get('ctr', 0)) * 100, 2),
-                'avg_cpc': round(int(metrics.get('averageCpc', 0)) / 1_000_000, 2),
-                'cpa': round(int(metrics.get('costPerConversion', 0)) / 1_000_000, 2),
+                'cost': round(int(metrics.get('costMicros', 0) or 0) / 1_000_000, 2),
+                'conversions': round(float(metrics.get('conversions', 0) or 0), 1),
+                'conversions_value': round(float(metrics.get('conversionsValue', 0) or 0), 2),
+                'clicks': int(metrics.get('clicks', 0) or 0),
+                'impressions': int(metrics.get('impressions', 0) or 0),
+                'ctr': round(float(metrics.get('ctr', 0) or 0) * 100, 2),
+                'avg_cpc': round(int(metrics.get('averageCpc', 0) or 0) / 1_000_000, 2),
+                'cpa': round(int(metrics.get('costPerConversion', 0) or 0) / 1_000_000, 2),
             })
         return jsonify({'rows': rows, 'configured': True})
     except Exception as e:
+        print(f'Google Ads campaigns exception: {e}')
         return jsonify({'error': str(e), 'configured': True})
-
 
 @app.route('/gads/adgroups', methods=['POST'])
 def gads_adgroups():
-    """Google Ads reklam gruplarını getir"""
     token = gads_get_token()
     if not token:
         return jsonify({'error': 'Google Ads yapılandırılmamış.', 'configured': False})
 
     data = request.json or {}
-    date_range = data.get('date_range', 'LAST_7_DAYS')
+    date_cond = gads_date_condition(data)
     campaign_id = data.get('campaign_id', '')
-
     where_extra = f"AND campaign.id = '{campaign_id}'" if campaign_id else ''
+
     query = f"""
         SELECT
           ad_group.id, ad_group.name, ad_group.status,
           campaign.id, campaign.name,
           metrics.cost_micros, metrics.conversions,
-          metrics.clicks, metrics.impressions, metrics.ctr, metrics.cpa_micros
+          metrics.clicks, metrics.impressions, metrics.ctr, metrics.cost_per_conversion
         FROM ad_group
-        WHERE segments.date DURING {date_range}
+        WHERE {date_cond}
           AND ad_group.status != 'REMOVED'
           {where_extra}
         ORDER BY metrics.cost_micros DESC
@@ -660,9 +618,14 @@ def gads_adgroups():
     }
     if GADS_LOGIN_CUSTOMER_ID:
         headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
+
     try:
         r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
+        if not r.text or not r.text.strip():
+            return jsonify({'rows': [], 'configured': True})
         result = r.json()
+        if 'error' in result:
+            return jsonify({'error': result['error'].get('message', 'API hatası'), 'configured': True})
         rows = []
         for row in result.get('results', []):
             ag = row.get('adGroup', {})
@@ -674,47 +637,37 @@ def gads_adgroups():
                 'status': ag.get('status', ''),
                 'campaign_id': camp.get('id', ''),
                 'campaign_name': camp.get('name', ''),
-                'cost': round(int(metrics.get('costMicros', 0)) / 1_000_000, 2),
-                'conversions': round(float(metrics.get('conversions', 0)), 1),
-                'clicks': int(metrics.get('clicks', 0)),
-                'impressions': int(metrics.get('impressions', 0)),
-                'ctr': round(float(metrics.get('ctr', 0)) * 100, 2),
-                'cpa': round(int(metrics.get('cpaMicros', 0)) / 1_000_000, 2),
+                'cost': round(int(metrics.get('costMicros', 0) or 0) / 1_000_000, 2),
+                'conversions': round(float(metrics.get('conversions', 0) or 0), 1),
+                'clicks': int(metrics.get('clicks', 0) or 0),
+                'impressions': int(metrics.get('impressions', 0) or 0),
+                'ctr': round(float(metrics.get('ctr', 0) or 0) * 100, 2),
+                'cpa': round(int(metrics.get('costPerConversion', 0) or 0) / 1_000_000, 2),
             })
         return jsonify({'rows': rows, 'configured': True})
     except Exception as e:
         return jsonify({'error': str(e), 'configured': True})
 
-
 @app.route('/gads/budget', methods=['POST'])
 def gads_update_budget():
-    """Google Ads kampanya bütçesini güncelle"""
     token = gads_get_token()
     if not token:
         return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
-
     data = request.json or {}
     budget_id = data.get('budget_id', '')
     new_amount_tl = float(data.get('amount_tl', 0))
-
     if not budget_id or new_amount_tl <= 0:
         return jsonify({'error': 'Geçersiz parametre', 'success': False})
-
     cid = gads_customer_id()
-    # amount_micros = TL * 1_000_000
     amount_micros = int(new_amount_tl * 1_000_000)
-
-    url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaignBudgets/{budget_id}'
+    patch_url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaignBudgets:mutate'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
         'Content-Type': 'application/json'
     }
-    body = {
-        'amountMicros': str(amount_micros)
-    }
-    # PATCH ile sadece amount güncelle
-    patch_url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaignBudgets:mutate'
+    if GADS_LOGIN_CUSTOMER_ID:
+        headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
     mutate_body = {
         'operations': [{
             'update': {
@@ -729,14 +682,11 @@ def gads_update_budget():
         result = r.json()
         if 'error' in result:
             return jsonify({'error': result['error'].get('message', 'API hatası'), 'success': False})
-        # Log kaydet
         try:
             current = read_logs()
             current.setdefault('actionLog', []).insert(0, {
-                'type': 'gads_budget_change',
-                'budget_id': budget_id,
-                'amount_tl': new_amount_tl,
-                'serverTime': datetime.utcnow().isoformat()
+                'type': 'gads_budget_change', 'budget_id': budget_id,
+                'amount_tl': new_amount_tl, 'serverTime': datetime.utcnow().isoformat()
             })
             current['actionLog'] = current['actionLog'][:500]
             write_logs(current)
@@ -745,21 +695,16 @@ def gads_update_budget():
     except Exception as e:
         return jsonify({'error': str(e), 'success': False})
 
-
 @app.route('/gads/toggle', methods=['POST'])
 def gads_toggle_status():
-    """Google Ads kampanya durumunu aktif/pasif yap"""
     token = gads_get_token()
     if not token:
         return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
-
     data = request.json or {}
     campaign_id = data.get('campaign_id', '')
-    new_status = data.get('status', 'PAUSED')  # ENABLED veya PAUSED
-
+    new_status = data.get('status', 'PAUSED')
     if new_status not in ('ENABLED', 'PAUSED'):
         return jsonify({'error': 'Geçersiz durum', 'success': False})
-
     cid = gads_customer_id()
     url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaigns:mutate'
     headers = {
@@ -767,6 +712,8 @@ def gads_toggle_status():
         'developer-token': GADS_DEVELOPER_TOKEN,
         'Content-Type': 'application/json'
     }
+    if GADS_LOGIN_CUSTOMER_ID:
+        headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
     body = {
         'operations': [{
             'update': {
@@ -784,10 +731,8 @@ def gads_toggle_status():
         try:
             current = read_logs()
             current.setdefault('actionLog', []).insert(0, {
-                'type': 'gads_status_change',
-                'campaign_id': campaign_id,
-                'status': new_status,
-                'serverTime': datetime.utcnow().isoformat()
+                'type': 'gads_status_change', 'campaign_id': campaign_id,
+                'status': new_status, 'serverTime': datetime.utcnow().isoformat()
             })
             write_logs(current)
         except: pass
@@ -795,31 +740,24 @@ def gads_toggle_status():
     except Exception as e:
         return jsonify({'error': str(e), 'success': False})
 
-
 @app.route('/gads/status', methods=['GET'])
 def gads_status():
-    """Google Ads bağlantı durumunu kontrol et"""
     configured = bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID and GADS_CLIENT_ID and GADS_REFRESH_TOKEN)
-    login_ok = bool(GADS_LOGIN_CUSTOMER_ID)
     if not configured:
         missing = []
         if not GADS_DEVELOPER_TOKEN: missing.append('GADS_DEVELOPER_TOKEN')
         if not GADS_CUSTOMER_ID: missing.append('GADS_CUSTOMER_ID')
-        # GA4_CLIENT_ID/SECRET/REFRESH_TOKEN zaten Railway'de var, kontrol ekle
-        if not GADS_CLIENT_ID: missing.append('GA4_CLIENT_ID (veya GADS_CLIENT_ID)')
-        if not GADS_REFRESH_TOKEN: missing.append('GA4_REFRESH_TOKEN (veya GADS_REFRESH_TOKEN)')
+        if not GADS_CLIENT_ID: missing.append('GADS_CLIENT_ID')
+        if not GADS_REFRESH_TOKEN: missing.append('GADS_REFRESH_TOKEN')
         return jsonify({'configured': False, 'missing': missing})
     token = gads_get_token()
     return jsonify({
-        'configured': True, 
-        'token_ok': bool(token), 
+        'configured': True,
+        'token_ok': bool(token),
         'customer_id': GADS_CUSTOMER_ID,
         'login_customer_id': GADS_LOGIN_CUSTOMER_ID,
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
     })
-
-
-# ── CLAUDE ────────────────────────────────────────────────────────────────
 
 @app.route('/claude', methods=['POST'])
 def claude_proxy():
@@ -837,4 +775,3 @@ def claude_proxy():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
-
