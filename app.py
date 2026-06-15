@@ -777,3 +777,86 @@ def claude_proxy():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+
+# ── TRENDYOL ─────────────────────────────────────────────────────────────
+import io
+TRENDYOL_DATA = []
+TRENDYOL_META = {}
+
+@app.route('/trendyol/upload', methods=['POST'])
+def trendyol_upload():
+    try:
+        file = request.files.get('file')
+        if not file:
+            return jsonify({'error': 'Dosya bulunamadı', 'success': False})
+        
+        try:
+            import openpyxl
+        except ImportError:
+            return jsonify({'error': 'openpyxl kurulu değil', 'success': False})
+        
+        content = file.read()
+        wb = openpyxl.load_workbook(io.BytesIO(content))
+        ws = wb.active
+        
+        rows = []
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if not row[0]:
+                continue
+            def safe(v):
+                if v is None: return ''
+                return str(v).strip()
+            rows.append({
+                'ad': safe(row[0]),
+                'statu': safe(row[1]),
+                'baslangic': safe(row[2]),
+                'bitis': safe(row[3]),
+                'urun_adedi': safe(row[4]),
+                'toplam_butce': safe(row[6]),
+                'gunluk_butce': safe(row[7]),
+                'kalan_butce': safe(row[8]),
+                'harcama': safe(row[9]),
+                'tbm_teklifi': safe(row[10]),
+                'gerceklesen_tbm': safe(row[11]),
+                'tiklanma': safe(row[12]),
+                'goruntulenme': safe(row[13]),
+                'dogrudan_satis': safe(row[14]),
+                'dolayli_satis': safe(row[15]),
+                'toplam_satis': safe(row[16]),
+                'dogrudan_ciro': safe(row[17]),
+                'dolayli_ciro': safe(row[18]),
+                'toplam_ciro': safe(row[19]),
+                'roas': safe(row[20]),
+            })
+        
+        global TRENDYOL_DATA, TRENDYOL_META
+        TRENDYOL_DATA = rows
+        TRENDYOL_META = {
+            'filename': file.filename,
+            'uploaded_at': datetime.utcnow().isoformat(),
+            'count': len(rows)
+        }
+        
+        # Kalıcı kayıt — logs dosyasına
+        try:
+            current = read_logs()
+            current['trendyol_data'] = rows
+            current['trendyol_meta'] = TRENDYOL_META
+            write_logs(current)
+        except: pass
+        
+        return jsonify({'success': True, 'count': len(rows)})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False})
+
+@app.route('/trendyol/data', methods=['GET'])
+def trendyol_data():
+    global TRENDYOL_DATA, TRENDYOL_META
+    # Memory'de yoksa dosyadan yükle
+    if not TRENDYOL_DATA:
+        try:
+            current = read_logs()
+            TRENDYOL_DATA = current.get('trendyol_data', [])
+            TRENDYOL_META = current.get('trendyol_meta', {})
+        except: pass
+    return jsonify({'data': TRENDYOL_DATA, 'meta': TRENDYOL_META})
