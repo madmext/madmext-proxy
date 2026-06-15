@@ -29,7 +29,8 @@ GA4_CLIENT_SECRET = os.environ.get('GA4_CLIENT_SECRET', '')
 
 # Google Ads — Client/Secret/Refresh GA4 ile aynı (zaten Railway'de mevcut)
 GADS_DEVELOPER_TOKEN = os.environ.get('GADS_DEVELOPER_TOKEN', '')
-GADS_CUSTOMER_ID = os.environ.get('GADS_CUSTOMER_ID', '')  # örn: 499-139-5973
+GADS_CUSTOMER_ID = os.environ.get('GADS_CUSTOMER_ID', '')        # örn: 499-139-5973
+GADS_LOGIN_CUSTOMER_ID = os.environ.get('GADS_LOGIN_CUSTOMER_ID', '')  # Manager ID: 225-964-4023
 # GA4 ile paylaşılan OAuth credentials (aynı Google hesabı)
 GADS_CLIENT_ID = os.environ.get('GADS_CLIENT_ID', '') or GA4_CLIENT_ID
 GADS_CLIENT_SECRET = os.environ.get('GADS_CLIENT_SECRET', '') or GA4_CLIENT_SECRET
@@ -586,8 +587,8 @@ def gads_campaigns():
         'developer-token': GADS_DEVELOPER_TOKEN,
         'Content-Type': 'application/json'
     }
-    # Login customer ID gerekebilir (MCC hesabı için)
-    login_cid = data.get('login_customer_id', '')
+    # Login customer ID — Manager hesabı üzerinden erişim
+    login_cid = data.get('login_customer_id', '') or GADS_LOGIN_CUSTOMER_ID
     if login_cid:
         headers['login-customer-id'] = login_cid.replace('-', '')
 
@@ -657,6 +658,8 @@ def gads_adgroups():
         'developer-token': GADS_DEVELOPER_TOKEN,
         'Content-Type': 'application/json'
     }
+    if GADS_LOGIN_CUSTOMER_ID:
+        headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
     try:
         r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
         result = r.json()
@@ -797,6 +800,7 @@ def gads_toggle_status():
 def gads_status():
     """Google Ads bağlantı durumunu kontrol et"""
     configured = bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID and GADS_CLIENT_ID and GADS_REFRESH_TOKEN)
+    login_ok = bool(GADS_LOGIN_CUSTOMER_ID)
     if not configured:
         missing = []
         if not GADS_DEVELOPER_TOKEN: missing.append('GADS_DEVELOPER_TOKEN')
@@ -806,7 +810,13 @@ def gads_status():
         if not GADS_REFRESH_TOKEN: missing.append('GA4_REFRESH_TOKEN (veya GADS_REFRESH_TOKEN)')
         return jsonify({'configured': False, 'missing': missing})
     token = gads_get_token()
-    return jsonify({'configured': True, 'token_ok': bool(token), 'customer_id': GADS_CUSTOMER_ID})
+    return jsonify({
+        'configured': True, 
+        'token_ok': bool(token), 
+        'customer_id': GADS_CUSTOMER_ID,
+        'login_customer_id': GADS_LOGIN_CUSTOMER_ID,
+        'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
+    })
 
 
 # ── CLAUDE ────────────────────────────────────────────────────────────────
