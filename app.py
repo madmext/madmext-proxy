@@ -543,7 +543,9 @@ def gads_campaigns():
 
     try:
         r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
+        print(f'Google Ads campaigns URL: {url}')
         print(f'Google Ads campaigns status: {r.status_code}')
+        print(f'Google Ads campaigns body: {r.text[:500]}')
         
         # Boş yanıt kontrolü
         if not r.text or not r.text.strip():
