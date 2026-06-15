@@ -63,6 +63,25 @@
   </div>
 </div>
 
+<!-- Bütçe Düzenleme Modal -->
+<div class="moverlay" id="gadsBModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <h3>💰 Google Ads Bütçe Değişikliği</h3>
+    <div class="mdet" id="gadsBDet" style="margin:12px 0;font-size:13px;line-height:1.8"></div>
+    <div style="margin:14px 0">
+      <label style="font-size:11px;color:var(--m);display:block;margin-bottom:6px">Yeni Günlük Bütçe (₺)</label>
+      <input type="number" id="gadsBInput" min="1" step="1"
+        style="width:100%;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:10px 14px;border-radius:6px;font-size:15px;font-family:'DM Mono',monospace;outline:none"
+        oninput="gadsBPreview()">
+      <div id="gadsBPreviewTxt" style="font-size:11px;color:var(--m);margin-top:6px"></div>
+    </div>
+    <div class="mbtns">
+      <button class="btn sec" onclick="document.getElementById('gadsBModal').style.display='none'">İptal</button>
+      <button class="btn yel" onclick="gadsBApprove()">✓ Onayla</button>
+    </div>
+  </div>
+</div>
+
 <!-- Date Picker Popup -->
 <div id="gadsDpPopup" style="display:none;position:fixed;z-index:99999">
   <div class="dp-popup-wrap">
@@ -247,6 +266,85 @@ window.gadsLoad = async function(){
   }
 };
 
+// ── BÜTÇE DÜZENLEME ──────────────────────────────────────────────────
+var _gadsBPending = null;
+
+window.gadsProposeB = function(campId, name, curBudgetTL){
+  _gadsBPending = {campId: campId, name: name, curTL: parseFloat(curBudgetTL)};
+  var det = document.getElementById('gadsBDet');
+  if(det) det.innerHTML = '<strong>'+name+'</strong><br>Mevcut bütçe: <b style="color:var(--y)">'+curBudgetTL+'₺/gün</b>';
+  var inp = document.getElementById('gadsBInput');
+  if(inp){ inp.value = curBudgetTL; inp.focus(); }
+  document.getElementById('gadsBPreviewTxt').textContent = '';
+  document.getElementById('gadsBModal').style.display = 'flex';
+};
+
+window.gadsBPreview = function(){
+  if(!_gadsBPending) return;
+  var inp = document.getElementById('gadsBInput');
+  var newTL = parseFloat(inp.value);
+  if(isNaN(newTL) || newTL <= 0) return;
+  var diff = newTL - _gadsBPending.curTL;
+  var pct = (_gadsBPending.curTL > 0 ? (diff/_gadsBPending.curTL*100) : 0);
+  var col = diff > 0 ? 'var(--g)' : diff < 0 ? 'var(--r)' : 'var(--m)';
+  document.getElementById('gadsBPreviewTxt').innerHTML =
+    _gadsBPending.curTL.toFixed(0)+'₺ → <b style="color:'+col+'">'+newTL.toFixed(0)+'₺/gün</b>' +
+    ' (<span style="color:'+col+'">'+(diff>=0?'+':'')+pct.toFixed(1)+'%</span>)';
+};
+
+window.gadsBApprove = async function(){
+  if(!_gadsBPending) return;
+  var inp = document.getElementById('gadsBInput');
+  var newTL = parseFloat(inp.value);
+  if(isNaN(newTL) || newTL <= 0){ toast('Geçersiz tutar'); return; }
+  document.getElementById('gadsBModal').style.display = 'none';
+  var st = document.getElementById('gadsStatus');
+  if(st) st.textContent = '⏳ Bütçe güncelleniyor...';
+  try{
+    var r = await fetch('/gads/budget', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({budget_id: _gadsBPending.campId, amount_tl: newTL})
+    });
+    var res = await r.json();
+    if(res.success){
+      toast('✓ Bütçe güncellendi: '+newTL.toFixed(0)+'₺/gün');
+      setTimeout(gadsLoad, 800);
+    } else {
+      toast('⚠️ Hata: '+(res.error||'Bilinmeyen hata'));
+      if(st) st.textContent = 'Hata';
+    }
+  } catch(e){
+    toast('Bağlantı hatası: '+e.message);
+    if(st) st.textContent = '';
+  }
+  _gadsBPending = null;
+};
+
+// ── DURUM DEĞİŞTİR (Pause/Enable) ────────────────────────────────────
+window.gadsToggleStatus = async function(campId, currentStatus){
+  var newStatus = currentStatus === 'ENABLED' ? 'PAUSED' : 'ENABLED';
+  var label = newStatus === 'PAUSED' ? 'duraklatılacak' : 'aktif edilecek';
+  if(!confirm('Kampanya '+label+'?')) return;
+  var st = document.getElementById('gadsStatus');
+  if(st) st.textContent = '⏳ Güncelleniyor...';
+  try{
+    var r = await fetch('/gads/toggle', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({campaign_id: campId, status: newStatus})
+    });
+    var res = await r.json();
+    if(res.success){
+      toast(newStatus === 'PAUSED' ? '⏸ Kampanya duraklatıldı' : '▶ Kampanya aktif edildi');
+      setTimeout(gadsLoad, 800);
+    } else {
+      toast('⚠️ Hata: '+(res.error||'API hatası'));
+    }
+  } catch(e){ toast('Bağlantı hatası: '+e.message); }
+  if(st) st.textContent = '';
+};
+
 async function gadsLoadAdgroups(dateRange){
   try{
     var r=await fetch('/gads/adgroups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date_range:dateRange})});
@@ -284,7 +382,7 @@ function gadsCampRender(wrap){
     '<th style="min-width:220px">Kampanya</th>'+
     '<th>Durum</th><th>Tür</th><th>Bütçe/Gün</th>'+
     '<th>Harcama</th><th>Dönüşüm</th><th>ROAS</th><th>EBM</th>'+
-    '<th>Tıklama</th><th>CTR</th><th>Gösterim</th>'+
+    '<th>Tıklama</th><th>CTR</th><th>Gösterim</th><th></th>'+
     '</tr></thead><tbody>'+
     gadsCampStore.map(function(r){
       var roas=r.cost>0&&r.conversions_value>0?(r.conversions_value/r.cost):0;
@@ -301,6 +399,9 @@ function gadsCampRender(wrap){
         '<td style="font-family:\'DM Mono\',monospace">'+r.clicks.toLocaleString('tr')+'</td>'+
         '<td style="font-family:\'DM Mono\',monospace">'+r.ctr.toFixed(2)+'%</td>'+
         '<td style="font-family:\'DM Mono\',monospace">'+r.impressions.toLocaleString('tr')+'</td>'+
+        '<td><div style="display:flex;gap:4px">'+
+        (r.budget_micros>0?'<button class="btn sm yel" onclick="gadsProposeB(\''+r.id+'\',\''+r.name.slice(0,30)+'\',\''+Math.round(r.budget_micros/1000000)+'\')">✏️</button>':'')+
+        '</div></td>'+
         '</tr>';
     }).join('')+
     '</tbody></table>';
