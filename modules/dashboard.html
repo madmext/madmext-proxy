@@ -1,13 +1,10 @@
 <style>
-/* Dashboard özel stiller */
 .dash-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
 .dash-preset{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer}
 .dash-date-wrap{display:flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b2);border-radius:5px;padding:4px 10px}
 .dash-date-wrap input[type=date]{background:transparent;border:none;color:var(--t);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer}
 .dash-date-wrap span{color:var(--m);font-size:11px}
 .dash-period-label{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
-
-/* Kart grid */
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:20px}
 .dash-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px 16px 10px;position:relative;overflow:hidden;cursor:default}
 .dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
@@ -20,11 +17,8 @@
 .dash-diff.up{color:var(--g)}.dash-diff.dn{color:var(--r)}.dash-diff.neu{color:var(--m)}
 .dash-sub{font-size:9px;color:var(--m)}
 .dash-src{font-size:8px;position:absolute;top:7px;right:10px;color:var(--b2);text-transform:uppercase;letter-spacing:1px;font-family:'DM Mono',monospace}
-/* Sparkline in card */
 .dash-spark{height:36px;margin-top:4px;width:100%}
 .dash-spark svg{width:100%;height:100%}
-
-/* Channel grid */
 .channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
 .channel-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px}
 .channel-title{font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
@@ -32,8 +26,6 @@
 .channel-row:last-child{border-bottom:none}
 .channel-row span:first-child{color:var(--m)}
 .channel-row span:last-child{color:var(--t);font-family:'DM Mono',monospace}
-
-/* ── Dashboard Uyarı ve Özet ── */
 .db-alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .db-alert{display:flex;align-items:flex-start;gap:12px;padding:11px 16px;border-radius:8px;border:1px solid;cursor:default}
 .db-alert.red{background:rgba(250,62,62,.08);border-color:rgba(250,62,62,.3)}
@@ -58,11 +50,7 @@
 .db-rank-val{font-family:'DM Mono',monospace;font-size:11px;flex-shrink:0}
 @media(max-width:768px){.db-rank-grid{grid-template-columns:1fr}}
 </style>
-
-<!-- Uyarılar -->
 <div id="dbAlerts" class="db-alerts"></div>
-
-<!-- En İyi / En Kötü -->
 <div class="db-rank-grid" id="dbRankGrid" style="display:none">
   <div class="db-rank-card">
     <div class="db-rank-hdr" style="color:var(--g)">🏆 En İyi 5 Reklam Seti (ROAS)</div>
@@ -73,28 +61,21 @@
     <div id="dbWorst"></div>
   </div>
 </div>
-
-<!-- Toolbar: tarih seçici -->
 <div class="dash-toolbar">
-  <button class="btn sm" onclick="loadDashboard()">🔄 Yenile</button>
-  <!-- Meta-style tarih picker butonu - toggleDDP index.html'de tanımlı -->
+  <button class="btn sm" onclick="if(window.loadDashboard)loadDashboard()">🔄 Yenile</button>
   <button class="dp-btn" id="ddpTrigger" onclick="toggleDDP()" style="font-size:12px;padding:5px 12px">
     <svg viewBox="0 0 16 16" fill="currentColor" width="13" height="13" style="flex-shrink:0;opacity:.8"><g clip-path="url(#ddpc)"><path d="M12.517 2.047h-.564v-.762a.764.764 0 0 0-1.524 0v.762H5.858v-.762a.764.764 0 0 0-1.524 0v.762h-.549a2.263 2.263 0 0 0-2.27 2.035 43.35 43.35 0 0 0 0 8.891 2.268 2.268 0 0 0 2.27 2.034h8.709a2.277 2.277 0 0 0 2.278-2.05c.305-3.146.312-6.133.015-8.89-.122-1.151-1.097-2.012-2.27-2.012v-.008zM3.03 4.234a.758.758 0 0 1 .754-.663h8.732c.38 0 .716.29.754.655.053.534.091 1.082.13 1.63H2.908c.03-.54.068-1.081.122-1.622zm2.064 9.242h-1.31a.753.753 0 0 1-.754-.663 38.75 38.75 0 0 1-.122-1.623h2.194v2.286h-.008zm0-3.81H2.84a38.099 38.099 0 0 1 0-2.285h2.256v2.285zm4.572 3.81H6.62V11.19h3.048v2.286zm0-3.81H6.62V7.381h3.048v2.285zm3.581 3.14a.767.767 0 0 1-.762.67h-1.303V11.19h2.18c-.039.533-.07 1.067-.123 1.615h.008zm.19-3.14h-2.247V7.381h2.263c.015.746.015 1.508-.016 2.285z"></path></g><defs><clipPath id="ddpc"><path d="M0 0H16V16H0z"></path></clipPath></defs></svg>
     <span id="ddpLabel">Son 7 gün</span>
     <svg viewBox="0 0 16 16" fill="currentColor" width="11" height="11" style="flex-shrink:0;opacity:.7"><path d="M12 6a.667.667 0 0 1 .49 1.12l-4 4.332a.667.667 0 0 1-.98 0l-4-4.333A.667.667 0 0 1 4 6h8z"></path></svg>
   </button>
-  <!-- Hidden inputs - getDashDP bunları okur -->
   <input type="hidden" id="dashPreset" value="last_7d">
   <input type="hidden" id="dashFrom">
   <input type="hidden" id="dashTo">
   <span class="dash-period-label" id="dashPeriodLabel"></span>
   <span id="dashLastUpdate" style="font-size:11px;color:var(--m);margin-left:auto"></span>
 </div>
-
-<!-- Özet Kartlar: META + GA4 + Birleşik -->
 <div class="stl" id="dashGridTitle">Genel Bakış — Son 7 Gün</div>
 <div class="dash-grid" id="dashGrid">
-  <!-- META -->
   <div class="dash-card meta">
     <div class="dash-src">META</div>
     <div class="dash-label">Harcama</div>
@@ -123,7 +104,6 @@
     <div class="dash-diff" id="dd-meta-sales"></div>
     <div class="dash-spark" id="spark-meta-sales"></div>
   </div>
-  <!-- GA4 -->
   <div class="dash-card ga4">
     <div class="dash-src">GA4</div>
     <div class="dash-label">Oturum</div>
@@ -146,8 +126,6 @@
     <div class="dash-spark" id="spark-ga4-cvr"></div>
   </div>
 </div>
-
-<!-- Channel detay -->
 <div class="channel-grid">
   <div class="channel-card">
     <div class="channel-title">📘 Meta Ads</div>
@@ -158,8 +136,6 @@
     <div id="ga4ChannelDetail"><div style="color:var(--m);font-size:11px">Bağlan ve yenile</div></div>
   </div>
 </div>
-
-<!-- GA4 Trafik Kaynakları -->
 <div class="stl">GA4 — Trafik Kaynakları</div>
 <div class="twrap" style="max-height:280px">
   <table><thead><tr>
@@ -167,40 +143,39 @@
   </tr></thead>
   <tbody id="ga4SourceTable"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--m)">Bağlan ve yenile</td></tr></tbody>
 </table></div>
-
 <script>
-// ── Global değişkenleri al ──────────────────────────────────────────────
-// shared.js <script src> ile global scope'ta yükleniyor
-// (new Function) içinden global scope'a erişim var
-// Shared fonksiyonları window üzerinden direkt al
-var AID      = window.AID      || 'act_1346348685568168';
-var ATTR     = window.ATTR     || '["7d_click","1d_view"]';
-var api      = window.api      || function(){ return Promise.resolve({error:{message:'api yok'}}); };
-var ga4      = window.ga4      || function(){ return Promise.resolve(null); };
-var groas    = window.groas    || function(r){ if(!r)return 0; var x=(r.purchase_roas||[]); return Array.isArray(x)&&x[0]?parseFloat(x[0].value||0):0; };
-var gav      = window.gav      || function(a,t){ if(!a)return 0; var x=a.find(function(v){return v.action_type===t;}); return x?parseInt(x.value||0):0; };
-var ga4val   = window.ga4val   || function(r,i){ return r&&r.rows&&r.rows[0]?r.rows[0].metricValues[i||0].value:'0'; };
-var roasColor= window.roasColor|| function(v){ return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)'; };
-var toast    = window.toast    || function(m){ console.log(m); };
-var logAction= window.logAction|| function(){};
-// ── Tarih yardımcıları ─────────────────────────────────────────────────
+(function(){
+// ── Sayfa kontrolü — sadece dashboard yüklüyse çalış ──────────────────
+function isDashboardActive(){
+  return !!document.getElementById('dashLastUpdate');
+}
+var _api      = window.api      || function(){ return Promise.resolve({error:{message:'api yok'}}); };
+var _ga4      = window.ga4      || function(){ return Promise.resolve(null); };
+var _groas    = window.groas    || function(r){ if(!r)return 0; var x=(r.purchase_roas||[]); return Array.isArray(x)&&x[0]?parseFloat(x[0].value||0):0; };
+var _gav      = window.gav      || function(a,t){ if(!a)return 0; var x=a.find(function(v){return v.action_type===t;}); return x?parseInt(x.value||0):0; };
+var _ga4val   = window.ga4val   || function(r,i){ return r&&r.rows&&r.rows[0]?r.rows[0].metricValues[i||0].value:'0'; };
+var _roasColor= window.roasColor|| function(v){ return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)'; };
+var _toast    = window.toast    || function(m){ console.log(m); };
+var AID_      = window.AID      || 'act_1346348685568168';
+var ATTR_     = window.ATTR     || '["7d_click","1d_view"]';
+
 function getDashDP(){
-  var v=document.getElementById('dashPreset').value;
-  if(v!=='custom') return {preset:v};
-  var f=document.getElementById('dashFrom').value;
-  var t=document.getElementById('dashTo').value;
-  if(f&&t) return {from:f, to:t};
+  var presetEl = document.getElementById('dashPreset');
+  var fromEl   = document.getElementById('dashFrom');
+  var toEl     = document.getElementById('dashTo');
+  if(!presetEl) return {preset:'last_7d'};
+  var v = presetEl.value;
+  if(v !== 'custom') return {preset:v};
+  var f = fromEl ? fromEl.value : '';
+  var t = toEl   ? toEl.value   : '';
+  if(f && t) return {from:f, to:t};
   return {preset:'last_7d'};
 }
-
 function getDashDateRange(dp){
-  // Meta API için
   if(dp.preset) return {date_preset:dp.preset};
   return {time_range:JSON.stringify({since:dp.from,until:dp.to})};
 }
-
 function getDashGA4Range(dp){
-  // GA4 için
   var presetMap={
     today:{startDate:'today',endDate:'today'},
     yesterday:{startDate:'yesterday',endDate:'yesterday'},
@@ -215,33 +190,11 @@ function getDashGA4Range(dp){
   if(dp.from && dp.to) return {startDate:dp.from,endDate:dp.to};
   return {startDate:'7daysAgo',endDate:'today'};
 }
-
 function getDashLabel(dp){
-  var labels={
-    today:'Bugün',yesterday:'Dün',last_3d:'Son 3 gün',
-    last_7d:'Son 7 gün',last_14d:'Son 14 gün',last_30d:'Son 30 gün',
-    this_month:'Bu ay',last_month:'Geçen ay'
-  };
+  var labels={today:'Bugün',yesterday:'Dün',last_3d:'Son 3 gün',last_7d:'Son 7 gün',last_14d:'Son 14 gün',last_30d:'Son 30 gün',this_month:'Bu ay',last_month:'Geçen ay'};
   if(dp.preset) return labels[dp.preset]||dp.preset;
   return dp.from+' → '+dp.to;
 }
-
-// GA4 günlük tarih boyutu için startDate/endDate parse
-function parseGA4Days(rows, metricIdx){
-  if(!rows) return [];
-  return rows.map(function(r){
-    return parseFloat(r.metricValues[metricIdx].value||0);
-  });
-}
-
-function onDashPreset(){
-  var v=document.getElementById('dashPreset').value;
-  document.getElementById('dashCustomWrap').style.display=(v==='custom')?'':'none';
-  if(v!=='custom') loadDashboard();
-}
-window.onDashPreset=onDashPreset;
-
-// ── Sparkline çizici ───────────────────────────────────────────────────
 function drawDashSpark(containerId, values, color, fillColor){
   var el=document.getElementById(containerId);
   if(!el||!values||!values.length) return;
@@ -269,7 +222,6 @@ function drawDashSpark(containerId, values, color, fillColor){
     +(n>1?'<circle cx="'+pts[n-1][0]+'" cy="'+pts[n-1][1]+'" r="2.5" fill="'+color+'"/>':'')
     +'</svg>';
 }
-
 function setDiff(id, cur, prev){
   var el=document.getElementById(id);
   if(!el) return;
@@ -278,317 +230,213 @@ function setDiff(id, cur, prev){
   el.className='dash-diff '+(p>=0?'up':'dn');
   el.textContent=(p>=0?'▲':'▼')+Math.abs(p).toFixed(1)+'%';
 }
+function _set(id, v){
+  var e=document.getElementById(id);
+  if(e) e.textContent=v;
+}
 
-// ── Ana yükleme fonksiyonu ─────────────────────────────────────────────
-async function loadDashboard() {
+async function loadDashboard(){
+  // Sayfa aktif değilse çalışma
+  if(!isDashboardActive()) return;
+
   var upEl = document.getElementById('dashLastUpdate');
-  if(!upEl) return;
-  upEl.textContent = 'Yükleniyor...';
+  if(upEl) upEl.textContent = 'Yükleniyor...';
 
   var dp = getDashDP();
   var label = getDashLabel(dp);
   var metaDP = getDashDateRange(dp);
   var ga4Range = getDashGA4Range(dp);
 
-  // Başlık güncelle
   var titleEl=document.getElementById('dashGridTitle');
   if(titleEl) titleEl.textContent='Genel Bakış — '+label;
 
-  // ── META: Ana veri + Önceki dönem + Günlük trend ─────────────────
   var metaFields='spend,impressions,clicks,purchase_roas,actions,action_values';
   var metaSparkFields='spend,purchase_roas,actions,action_values';
-
-  // Paralel: Ana + Spark (günlük) + Önceki dönem
-  var prevPreset = dp.preset==='last_7d'?'last_14d':(dp.preset==='last_30d'?null:null);
+  var prevPreset = dp.preset==='last_7d'?'last_14d':null;
   var promises=[
-    api(AID+'/insights', Object.assign({fields:metaFields,level:'account',action_attribution_windows:ATTR}, metaDP)),
-    api(AID+'/insights', Object.assign({fields:metaSparkFields,level:'account',time_increment:1,limit:90,action_attribution_windows:ATTR}, metaDP)),
+    _api(AID_+'/insights', Object.assign({fields:metaFields,level:'account',action_attribution_windows:ATTR_}, metaDP)),
+    _api(AID_+'/insights', Object.assign({fields:metaSparkFields,level:'account',time_increment:1,limit:90,action_attribution_windows:ATTR_}, metaDP)),
   ];
   if(prevPreset){
-    promises.push(api(AID+'/insights',{fields:metaFields,level:'account',action_attribution_windows:ATTR,date_preset:prevPreset}));
+    promises.push(_api(AID_+'/insights',{fields:metaFields,level:'account',action_attribution_windows:ATTR_,date_preset:prevPreset}));
   }
-
   var results = await Promise.all(promises);
-  var metaIns=results[0], metaSpark=results[1], metaPrev=results[2];
+  if(!isDashboardActive()) return; // Sayfa değişti mi kontrol et
 
-  // Ana metrikler
+  var metaIns=results[0], metaSpark=results[1], metaPrev=results[2];
   var mr=metaIns&&metaIns.data&&metaIns.data[0];
   var prevMr=metaPrev&&metaPrev.data&&metaPrev.data[0];
   if(mr){
     var spend=parseFloat(mr.spend||0);
-    var roas=groas(mr);
-    var purchase=gav(mr.actions,'purchase');
+    var roas=_groas(mr);
+    var purchase=_gav(mr.actions,'purchase');
     var revenue=0;
     if(mr.action_values){var x=(mr.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x)revenue=parseFloat(x.value||0);}
     if(revenue===0&&roas>0) revenue=roas*spend;
-
-    var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
-    s('d-meta-spend',   spend>=1000?(spend/1000).toFixed(1)+'K₺':spend.toFixed(0)+'₺');
-    s('d-meta-revenue', revenue>=1000?(revenue/1000).toFixed(1)+'K₺':revenue.toFixed(0)+'₺');
-    s('d-meta-roas',    roas?roas.toFixed(2)+'x':'—');
-    s('d-meta-sales',   purchase.toLocaleString('tr'));
-
-    // Önceki dönem farkı
+    _set('d-meta-spend',   spend>=1000?(spend/1000).toFixed(1)+'K₺':spend.toFixed(0)+'₺');
+    _set('d-meta-revenue', revenue>=1000?(revenue/1000).toFixed(1)+'K₺':revenue.toFixed(0)+'₺');
+    _set('d-meta-roas',    roas?roas.toFixed(2)+'x':'—');
+    _set('d-meta-sales',   purchase.toLocaleString('tr'));
     if(prevMr){
       var pSpend=parseFloat(prevMr.spend||0);
-      var pRoas=groas(prevMr);
-      var pPurchase=gav(prevMr.actions,'purchase');
+      var pRoas=_groas(prevMr);
+      var pPurchase=_gav(prevMr.actions,'purchase');
       var pRevenue=0;
-      if(prevMr.action_values){var px=(prevMr.action_values||[]).find(function(v){return v.action_type==='purchase';});if(px)pRevenue=parseFloat(px.value||0);}
+      if(prevMr.action_values){var px2=(prevMr.action_values||[]).find(function(v){return v.action_type==='purchase';});if(px2)pRevenue=parseFloat(px2.value||0);}
       if(pRevenue===0&&pRoas>0) pRevenue=pRoas*pSpend;
       setDiff('dd-meta-spend',spend,pSpend);
       setDiff('dd-meta-revenue',revenue,pRevenue);
       setDiff('dd-meta-roas',roas,pRoas);
       setDiff('dd-meta-sales',purchase,pPurchase);
     }
-
-    document.getElementById('metaChannelDetail').innerHTML=
+    var mcd=document.getElementById('metaChannelDetail');
+    if(mcd) mcd.innerHTML=
       '<div class="channel-row"><span>Harcama</span><span>'+spend.toFixed(0)+'₺</span></div>'+
       '<div class="channel-row"><span>Gelir</span><span style="color:var(--g)">'+revenue.toFixed(0)+'₺</span></div>'+
-      '<div class="channel-row"><span>ROAS</span><span style="color:'+roasColor(roas)+'">'+( roas?roas.toFixed(2)+'x':'—')+'</span></div>'+
+      '<div class="channel-row"><span>ROAS</span><span style="color:'+_roasColor(roas)+'">'+( roas?roas.toFixed(2)+'x':'—')+'</span></div>'+
       '<div class="channel-row"><span>Tıklama</span><span>'+parseInt(mr.clicks||0).toLocaleString('tr')+'</span></div>'+
       '<div class="channel-row"><span>Satış</span><span>'+purchase+'</span></div>'+
-      '<div class="channel-row"><span>Sepete Ekle</span><span>'+gav(mr.actions,'add_to_cart')+'</span></div>';
+      '<div class="channel-row"><span>Sepete Ekle</span><span>'+_gav(mr.actions,'add_to_cart')+'</span></div>';
   }
-
-  // Günlük sparkline - META
   if(metaSpark&&metaSpark.data&&metaSpark.data.length){
     var days=metaSpark.data.slice().sort(function(a,b){return a.date_start>b.date_start?1:-1;});
     var spendSeries=[], roasSeries=[], revSeries=[], saleSeries=[];
     days.forEach(function(d){
       var sp=parseFloat(d.spend||0);
-      var r=groas(d);
+      var r=_groas(d);
       var rev=0;
-      if(d.action_values){var x=(d.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x)rev=parseFloat(x.value||0);}
+      if(d.action_values){var x2=(d.action_values||[]).find(function(v){return v.action_type==='purchase';});if(x2)rev=parseFloat(x2.value||0);}
       if(rev===0&&r>0)rev=r*sp;
-      spendSeries.push(sp);
-      roasSeries.push(r);
-      revSeries.push(rev);
-      saleSeries.push(gav(d.actions,'purchase'));
+      spendSeries.push(sp);roasSeries.push(r);revSeries.push(rev);saleSeries.push(_gav(d.actions,'purchase'));
     });
-    // Artış/düşüş rengi
-    function sparkColor(arr, pos, neg){
-      if(arr.length<2) return pos;
-      return arr[arr.length-1]>=arr[0]?pos:neg;
-    }
+    function sc(arr,p,n){return arr.length<2?p:(arr[arr.length-1]>=arr[0]?p:n);}
     setTimeout(function(){
-      drawDashSpark('spark-meta-spend',   spendSeries, sparkColor(spendSeries,'#1877f2','#fa3e3e'), sparkColor(spendSeries,'#1877f2','#fa3e3e'));
-      drawDashSpark('spark-meta-revenue', revSeries,   sparkColor(revSeries,'#42b72a','#fa3e3e'),   sparkColor(revSeries,'#42b72a','#fa3e3e'));
-      drawDashSpark('spark-meta-roas',    roasSeries,  sparkColor(roasSeries,'#42b72a','#fa3e3e'),  sparkColor(roasSeries,'#42b72a','#fa3e3e'));
-      drawDashSpark('spark-meta-sales',   saleSeries,  sparkColor(saleSeries,'#42b72a','#fa3e3e'),  sparkColor(saleSeries,'#42b72a','#fa3e3e'));
+      if(!isDashboardActive()) return;
+      drawDashSpark('spark-meta-spend',   spendSeries, sc(spendSeries,'#1877f2','#fa3e3e'), sc(spendSeries,'#1877f2','#fa3e3e'));
+      drawDashSpark('spark-meta-revenue', revSeries,   sc(revSeries,'#42b72a','#fa3e3e'),   sc(revSeries,'#42b72a','#fa3e3e'));
+      drawDashSpark('spark-meta-roas',    roasSeries,  sc(roasSeries,'#42b72a','#fa3e3e'),  sc(roasSeries,'#42b72a','#fa3e3e'));
+      drawDashSpark('spark-meta-sales',   saleSeries,  sc(saleSeries,'#42b72a','#fa3e3e'),  sc(saleSeries,'#42b72a','#fa3e3e'));
     },50);
   }
 
-  // ── GA4: Ana veri + Günlük trend ───────────────────────────────────
-  var [ga4Sum, ga4Daily, ga4Src] = await Promise.all([
-    ga4({
-      dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],
-      metrics:[{name:'sessions'},{name:'totalRevenue'},{name:'conversions'},{name:'activeUsers'}]
-    }),
-    ga4({
-      dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],
-      dimensions:[{name:'date'}],
-      metrics:[{name:'sessions'},{name:'totalRevenue'},{name:'conversions'}],
-      orderBys:[{dimension:{dimensionName:'date'}}],
-      limit:90
-    }),
-    ga4({
-      dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],
-      dimensions:[{name:'sessionSource'},{name:'sessionMedium'}],
-      metrics:[{name:'sessions'},{name:'activeUsers'},{name:'totalRevenue'},{name:'conversions'}],
-      orderBys:[{metric:{metricName:'sessions'},desc:true}],
-      limit:10
-    })
+  var ga4Results = await Promise.all([
+    _ga4({dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],metrics:[{name:'sessions'},{name:'totalRevenue'},{name:'conversions'},{name:'activeUsers'}]}),
+    _ga4({dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],dimensions:[{name:'date'}],metrics:[{name:'sessions'},{name:'totalRevenue'},{name:'conversions'}],orderBys:[{dimension:{dimensionName:'date'}}],limit:90}),
+    _ga4({dateRanges:[{startDate:ga4Range.startDate,endDate:ga4Range.endDate}],dimensions:[{name:'sessionSource'},{name:'sessionMedium'}],metrics:[{name:'sessions'},{name:'activeUsers'},{name:'totalRevenue'},{name:'conversions'}],orderBys:[{metric:{metricName:'sessions'},desc:true}],limit:10})
   ]);
+  if(!isDashboardActive()) return;
 
+  var ga4Sum=ga4Results[0], ga4Daily=ga4Results[1], ga4Src=ga4Results[2];
   if(ga4Sum&&ga4Sum.rows){
-    var sessions=parseInt(ga4val(ga4Sum,0));
-    var revenue=parseFloat(ga4val(ga4Sum,1));
-    var conversions=parseInt(ga4val(ga4Sum,2));
-    var users=parseInt(ga4val(ga4Sum,3));
+    var sessions=parseInt(_ga4val(ga4Sum,0));
+    var ga4Rev=parseFloat(_ga4val(ga4Sum,1));
+    var conversions=parseInt(_ga4val(ga4Sum,2));
+    var users=parseInt(_ga4val(ga4Sum,3));
     var cvr=sessions>0?(conversions/sessions*100):0;
-    var s2=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
-    s2('d-ga4-sessions', sessions.toLocaleString('tr'));
-    s2('d-ga4-revenue',  revenue>=1000?(revenue/1000).toFixed(1)+'K₺':revenue.toFixed(0)+'₺');
-    s2('d-ga4-cvr',      cvr.toFixed(2)+'%');
-    document.getElementById('ga4ChannelDetail').innerHTML=
+    _set('d-ga4-sessions', sessions.toLocaleString('tr'));
+    _set('d-ga4-revenue',  ga4Rev>=1000?(ga4Rev/1000).toFixed(1)+'K₺':ga4Rev.toFixed(0)+'₺');
+    _set('d-ga4-cvr',      cvr.toFixed(2)+'%');
+    var g4cd=document.getElementById('ga4ChannelDetail');
+    if(g4cd) g4cd.innerHTML=
       '<div class="channel-row"><span>Oturum</span><span>'+sessions.toLocaleString('tr')+'</span></div>'+
       '<div class="channel-row"><span>Kullanıcı</span><span>'+users.toLocaleString('tr')+'</span></div>'+
-      '<div class="channel-row"><span>Gelir</span><span style="color:var(--g)">'+revenue.toFixed(0)+'₺</span></div>'+
+      '<div class="channel-row"><span>Gelir</span><span style="color:var(--g)">'+ga4Rev.toFixed(0)+'₺</span></div>'+
       '<div class="channel-row"><span>Dönüşüm</span><span>'+conversions+'</span></div>'+
       '<div class="channel-row"><span>CVR</span><span>'+cvr.toFixed(2)+'%</span></div>';
   } else {
-    document.getElementById('ga4ChannelDetail').innerHTML='<div style="color:var(--r);font-size:11px">GA4 bağlantı hatası</div>';
+    var g4cd2=document.getElementById('ga4ChannelDetail');
+    if(g4cd2) g4cd2.innerHTML='<div style="color:var(--r);font-size:11px">GA4 bağlantı hatası</div>';
   }
-
-  // GA4 günlük sparkline
   if(ga4Daily&&ga4Daily.rows&&ga4Daily.rows.length){
     var sessSeries=[], revSeriesGA4=[], cvrSeries=[];
     ga4Daily.rows.forEach(function(r){
       var sess=parseInt(r.metricValues[0].value||0);
       var rev=parseFloat(r.metricValues[1].value||0);
       var conv=parseInt(r.metricValues[2].value||0);
-      sessSeries.push(sess);
-      revSeriesGA4.push(rev);
-      cvrSeries.push(sess>0?(conv/sess*100):0);
+      sessSeries.push(sess);revSeriesGA4.push(rev);cvrSeries.push(sess>0?(conv/sess*100):0);
     });
-    function sc(arr,p,n){return arr.length<2?p:(arr[arr.length-1]>=arr[0]?p:n);}
+    function sc2(arr,p,n){return arr.length<2?p:(arr[arr.length-1]>=arr[0]?p:n);}
     setTimeout(function(){
-      drawDashSpark('spark-ga4-sessions', sessSeries,  sc(sessSeries,'#e8710a','#fa3e3e'),  sc(sessSeries,'#e8710a','#fa3e3e'));
-      drawDashSpark('spark-ga4-revenue',  revSeriesGA4,sc(revSeriesGA4,'#42b72a','#fa3e3e'),sc(revSeriesGA4,'#42b72a','#fa3e3e'));
-      drawDashSpark('spark-ga4-cvr',      cvrSeries,   sc(cvrSeries,'#64b4ff','#fa3e3e'),   sc(cvrSeries,'#64b4ff','#fa3e3e'));
+      if(!isDashboardActive()) return;
+      drawDashSpark('spark-ga4-sessions', sessSeries,   sc2(sessSeries,'#e8710a','#fa3e3e'),   sc2(sessSeries,'#e8710a','#fa3e3e'));
+      drawDashSpark('spark-ga4-revenue',  revSeriesGA4, sc2(revSeriesGA4,'#42b72a','#fa3e3e'), sc2(revSeriesGA4,'#42b72a','#fa3e3e'));
+      drawDashSpark('spark-ga4-cvr',      cvrSeries,    sc2(cvrSeries,'#64b4ff','#fa3e3e'),    sc2(cvrSeries,'#64b4ff','#fa3e3e'));
     },50);
   }
-
-  // GA4 Trafik kaynakları tablosu
   if(ga4Src&&ga4Src.rows){
-    document.getElementById('ga4SourceTable').innerHTML=ga4Src.rows.map(function(r){
+    var tbl=document.getElementById('ga4SourceTable');
+    if(tbl) tbl.innerHTML=ga4Src.rows.map(function(r){
       var src=r.dimensionValues[0].value, med=r.dimensionValues[1].value;
       var sess=parseInt(r.metricValues[0].value||0);
-      var users=parseInt(r.metricValues[1].value||0);
+      var usr=parseInt(r.metricValues[1].value||0);
       var rev=parseFloat(r.metricValues[2].value||0);
       var conv=parseInt(r.metricValues[3].value||0);
-      return '<tr><td>'+src+' / '+med+'</td><td>'+sess.toLocaleString('tr')+'</td><td>'+users.toLocaleString('tr')+'</td><td>'+rev.toFixed(0)+'₺</td><td>'+conv+'</td></tr>';
+      return '<tr><td>'+src+' / '+med+'</td><td>'+sess.toLocaleString('tr')+'</td><td>'+usr.toLocaleString('tr')+'</td><td>'+rev.toFixed(0)+'₺</td><td>'+conv+'</td></tr>';
     }).join('');
   }
-
-  var lu=document.getElementById('dashLastUpdate');
-  if(lu) lu.textContent='Son güncelleme: '+new Date().toLocaleTimeString('tr');
+  if(upEl) upEl.textContent='Son güncelleme: '+new Date().toLocaleTimeString('tr');
 }
 
-window.loadDashboard = loadDashboard;
-
-// ── Uyarı + Sıralama Paneli ─────────────────────────────────────────
 function renderAlerts(){
-  var adsets = MX.adsetStore || [];
+  var alertsEl=document.getElementById('dbAlerts');
+  if(!alertsEl) return;
+  var adsets = (window.MX&&window.MX.adsetStore)||[];
   if(!adsets.length){
-    document.getElementById('dbAlerts').innerHTML =
-      '<div class="db-alert blue"><div class="db-alert-icon">⏳</div>'+
-      '<div><div class="db-alert-title">Reklam verileri yükleniyor...</div>'+
-      '<div class="db-alert-desc">Meta Ads verileri hazırlanıyor, lütfen bekleyin.</div></div></div>';
+    alertsEl.innerHTML='<div class="db-alert blue"><div class="db-alert-icon">⏳</div><div><div class="db-alert-title">Reklam verileri yükleniyor...</div><div class="db-alert-desc">Meta Ads verileri hazırlanıyor.</div></div></div>';
     return;
   }
-
-  var alerts = [];
-  var avgRoas = adsets.reduce(function(s,r){return s+(r.roas||0);},0) / adsets.length;
-
-  // Sorunlu reklamlar
-  var errors = adsets.filter(function(r){
-    var s=(r.effectiveStatus||'').toUpperCase();
-    return s==='WITH_ISSUES'||s==='DISAPPROVED';
-  });
-  if(errors.length){
-    alerts.push({type:'red',icon:'🚨',
-      title:errors.length+' reklamda sorun var — yayınlanmıyor!',
-      desc:errors.slice(0,2).map(function(r){return r.name.slice(0,40);}).join(', '),
-      action:'Meta Ads\u2019e Git',fn:"nav('meta-ads',null)"});
-  }
-
-  // ROAS < 1 ve harcama yapan
-  var lowRoas = adsets.filter(function(r){
-    return (r.roas||0)<1 && (r.spend||0)>200 && (r.effectiveStatus||'').toUpperCase()==='ACTIVE';
-  }).sort(function(a,b){return (a.roas||0)-(b.roas||0);});
-  if(lowRoas.length){
-    alerts.push({type:'red',icon:'📉',
-      title:lowRoas.length+' reklam seti zarar ediyor (ROAS < 1)',
-      desc:'En kötü: '+lowRoas[0].name.slice(0,40)+' — ROAS: '+(lowRoas[0].roas||0).toFixed(2)+'x, Harcama: '+(lowRoas[0].spend||0).toFixed(0)+'₺',
-      action:'Optimizasyon',fn:"nav('optimizasyon',null)"});
-  }
-
-  // Yüksek frekans
-  var highFreq = adsets.filter(function(r){return (r.freq||0)>4 && (r.effectiveStatus||'').toUpperCase()==='ACTIVE';});
-  if(highFreq.length){
-    alerts.push({type:'yellow',icon:'😴',
-      title:highFreq.length+' reklamda yüksek sıklık — kitle yorulmuş olabilir',
-      desc:'Sıklık 4+ olan reklamlar: '+highFreq.slice(0,2).map(function(r){return r.name.slice(0,30)+'('+( r.freq||0).toFixed(1)+'x)';}).join(', '),
-      action:null,fn:null});
-  }
-
-  // Öğrenme modu
-  var learning = adsets.filter(function(r){
-    var s=(r.effectiveStatus||'').toUpperCase();
-    return s==='LEARNING'||s==='LEARNING_LIMITED';
-  });
-  if(learning.length){
-    alerts.push({type:'blue',icon:'📚',
-      title:learning.length+' reklam seti öğrenme modunda',
-      desc:'Optimize olana kadar bütçe değişikliği yapmayın.',
-      action:null,fn:null});
-  }
-
-  // Yüksek performans - bütçe artır önerisi
-  var stars = adsets.filter(function(r){
-    return (r.roas||0)>avgRoas*1.5 && (r.effectiveStatus||'').toUpperCase()==='ACTIVE' && (r.spend||0)>100;
-  }).sort(function(a,b){return (b.roas||0)-(a.roas||0);});
-  if(stars.length){
-    alerts.push({type:'green',icon:'🚀',
-      title:stars.length+' reklam seti çok iyi performans gösteriyor',
-      desc:'Bütçe artışı önerilenler: '+stars.slice(0,2).map(function(r){return r.name.slice(0,30)+'(ROAS: '+(r.roas||0).toFixed(2)+'x)';}).join(', '),
-      action:'Bütçe Artır',fn:"nav('optimizasyon',null)"});
-  }
-
-  if(!alerts.length){
-    alerts.push({type:'green',icon:'✅',
-      title:'Her şey yolunda — '+adsets.filter(function(r){return (r.effectiveStatus||'').toUpperCase()==='ACTIVE';}).length+' aktif reklam seti çalışıyor',
-      desc:'Ortalama ROAS: '+avgRoas.toFixed(2)+'x',action:null,fn:null});
-  }
-
-  document.getElementById('dbAlerts').innerHTML = alerts.map(function(a){
-    return '<div class="db-alert '+a.type+'" style="align-items:flex-start">'+
-      '<div class="db-alert-icon">'+a.icon+'</div>'+
-      '<div style="flex:1"><div class="db-alert-title">'+a.title+'</div><div class="db-alert-desc">'+a.desc+'</div></div>'+
-      (a.action?'<div class="db-alert-action" onclick="'+a.fn+'">'+a.action+' →</div>':'')+
-    '</div>';
+  var alerts=[];
+  var avgRoas=adsets.reduce(function(s,r){return s+(r.roas||0);},0)/adsets.length;
+  var errors=adsets.filter(function(r){var s=(r.effectiveStatus||'').toUpperCase();return s==='WITH_ISSUES'||s==='DISAPPROVED';});
+  if(errors.length){alerts.push({type:'red',icon:'🚨',title:errors.length+' reklamda sorun var!',desc:errors.slice(0,2).map(function(r){return r.name.slice(0,40);}).join(', '),action:'Meta Ads\'e Git',fn:"nav('meta-ads',null)"});}
+  var lowRoas=adsets.filter(function(r){return (r.roas||0)<1&&(r.spend||0)>200&&(r.effectiveStatus||'').toUpperCase()==='ACTIVE';}).sort(function(a,b){return (a.roas||0)-(b.roas||0);});
+  if(lowRoas.length){alerts.push({type:'red',icon:'📉',title:lowRoas.length+' reklam seti zarar ediyor (ROAS < 1)',desc:'En kötü: '+lowRoas[0].name.slice(0,40)+' — ROAS: '+(lowRoas[0].roas||0).toFixed(2)+'x',action:'Optimizasyon',fn:"nav('optimizasyon',null)"});}
+  var highFreq=adsets.filter(function(r){return (r.freq||0)>4&&(r.effectiveStatus||'').toUpperCase()==='ACTIVE';});
+  if(highFreq.length){alerts.push({type:'yellow',icon:'😴',title:highFreq.length+' reklamda yüksek sıklık',desc:'Kitle yorulmuş olabilir.',action:null,fn:null});}
+  var stars=adsets.filter(function(r){return (r.roas||0)>avgRoas*1.5&&(r.effectiveStatus||'').toUpperCase()==='ACTIVE'&&(r.spend||0)>100;}).sort(function(a,b){return (b.roas||0)-(a.roas||0);});
+  if(stars.length){alerts.push({type:'green',icon:'🚀',title:stars.length+' reklam seti çok iyi performans',desc:stars.slice(0,2).map(function(r){return r.name.slice(0,30)+'(ROAS: '+(r.roas||0).toFixed(2)+'x)';}).join(', '),action:'Bütçe Artır',fn:"nav('optimizasyon',null)"});}
+  if(!alerts.length){alerts.push({type:'green',icon:'✅',title:'Her şey yolunda',desc:'Ortalama ROAS: '+avgRoas.toFixed(2)+'x',action:null,fn:null});}
+  alertsEl.innerHTML=alerts.map(function(a){
+    return '<div class="db-alert '+a.type+'"><div class="db-alert-icon">'+a.icon+'</div><div style="flex:1"><div class="db-alert-title">'+a.title+'</div><div class="db-alert-desc">'+a.desc+'</div></div>'+(a.action?'<div class="db-alert-action" onclick="'+a.fn+'">'+a.action+' →</div>':'')+' </div>';
   }).join('');
-
-  // En iyi / en kötü
-  var withSpend = adsets.filter(function(r){return (r.spend||0)>50;});
+  var withSpend=adsets.filter(function(r){return (r.spend||0)>50;});
   if(withSpend.length){
-    document.getElementById('dbRankGrid').style.display='';
-    var best = withSpend.slice().sort(function(a,b){return (b.roas||0)-(a.roas||0);}).slice(0,5);
-    var worst = withSpend.slice().sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,5);
+    var rg=document.getElementById('dbRankGrid');if(rg)rg.style.display='';
+    var best=withSpend.slice().sort(function(a,b){return (b.roas||0)-(a.roas||0);}).slice(0,5);
+    var worst=withSpend.slice().sort(function(a,b){return (a.roas||0)-(b.roas||0);}).slice(0,5);
     var cols=['#f0b429','#8a8d91','#cd7f32','#666','#444'];
-    document.getElementById('dbBest').innerHTML = best.map(function(r,i){
-      return '<div class="db-rank-item" onclick="nav(\'meta-ads\',null)">'+
-        '<div class="db-rank-num" style="background:'+cols[i]+'">'+( i+1)+'</div>'+
-        '<div class="db-rank-name" title="'+r.name+'">'+r.name.slice(0,38)+'</div>'+
-        '<div class="db-rank-val" style="color:var(--g)">'+( r.roas||0).toFixed(2)+'x</div>'+
-      '</div>';
-    }).join('');
-    document.getElementById('dbWorst').innerHTML = worst.map(function(r,i){
-      var bad=(r.roas||0)<1;
-      return '<div class="db-rank-item" onclick="nav(\'meta-ads\',null)">'+
-        '<div class="db-rank-num" style="background:'+(bad?'var(--r)':'var(--y)')+'">'+( i+1)+'</div>'+
-        '<div class="db-rank-name" title="'+r.name+'">'+r.name.slice(0,38)+'</div>'+
-        '<div class="db-rank-val" style="color:'+(bad?'var(--r)':'var(--y)')+'">'+( r.roas||0).toFixed(2)+'x</div>'+
-      '</div>';
-    }).join('');
+    var dbBest=document.getElementById('dbBest');
+    if(dbBest)dbBest.innerHTML=best.map(function(r,i){return '<div class="db-rank-item" onclick="nav(\'meta-ads\',null)"><div class="db-rank-num" style="background:'+cols[i]+'">'+(i+1)+'</div><div class="db-rank-name" title="'+r.name+'">'+r.name.slice(0,38)+'</div><div class="db-rank-val" style="color:var(--g)">'+(r.roas||0).toFixed(2)+'x</div></div>';}).join('');
+    var dbWorst=document.getElementById('dbWorst');
+    if(dbWorst)dbWorst.innerHTML=worst.map(function(r,i){var bad=(r.roas||0)<1;return '<div class="db-rank-item" onclick="nav(\'meta-ads\',null)"><div class="db-rank-num" style="background:'+(bad?'var(--r)':'var(--y)')+'">'+(i+1)+'</div><div class="db-rank-name" title="'+r.name+'">'+r.name.slice(0,38)+'</div><div class="db-rank-val" style="color:'+(bad?'var(--r)':'var(--y)')+'">'+(r.roas||0).toFixed(2)+'x</div></div>';}).join('');
   }
 }
 
-// loadDashboard'u wrap et
-var _origLoad = loadDashboard;
+// window'a expose et — index.html'deki date picker çağırabilsin
 window.loadDashboard = async function(){
-  renderAlerts(); // önce loading göster
-  await _origLoad(); // dashboard verilerini çek (Meta + GA4)
-
-  // Adset verisi yoksa yükle ve bekle
-  if(!(MX.adsetStore||[]).length && typeof loadMetaAdsets==='function'){
+  if(!isDashboardActive()) return; // başka sayfadaysa çalışma
+  renderAlerts();
+  await loadDashboard();
+  if(!isDashboardActive()) return;
+  var adsets=(window.MX&&window.MX.adsetStore)||[];
+  if(!adsets.length && typeof window.loadMetaAdsets==='function'){
     await new Promise(function(resolve){
-      loadMetaAdsets().then(resolve).catch(resolve);
-      setTimeout(resolve, 8000); // max 8 sn bekle
+      window.loadMetaAdsets().then(resolve).catch(resolve);
+      setTimeout(resolve,8000);
     });
   }
-  renderAlerts(); // veri geldi, uyarıları göster
+  if(!isDashboardActive()) return;
+  renderAlerts();
 };
 
+// Başlat
 if(window._isConnected){
   window.loadDashboard();
-}else{
-  window.addEventListener('mx:connected',function _di(){
+} else {
+  window.addEventListener('mx:connected', function _di(){
     window.removeEventListener('mx:connected',_di);
     window.loadDashboard();
   });
 }
+})();
 </script>
-
