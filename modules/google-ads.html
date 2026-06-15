@@ -27,9 +27,7 @@
 .gads-err-box{background:rgba(250,62,62,.08);border:1px solid rgba(250,62,62,.2);border-radius:8px;padding:14px 16px;margin:16px;font-size:12px;color:var(--r)}
 .gads-row-actions{display:flex;gap:6px}
 </style>
-
 <div class="gads-wrap">
-  <!-- Sekme + Tarih Satırı -->
   <div class="gads-row1">
     <div class="gads-tabs">
       <button class="gads-tab active" onclick="gadsTabSwitch('camp',this)">📊 Kampanyalar</button>
@@ -46,8 +44,6 @@
       <span id="gadsStatus" style="font-size:11px;color:var(--m)"></span>
     </div>
   </div>
-
-  <!-- Özet Kartlar -->
   <div class="gads-summary">
     <div class="gads-card"><div class="gads-label">Harcama</div><div class="gads-val" id="gads-spend">—</div></div>
     <div class="gads-card"><div class="gads-label">Dönüşüm</div><div class="gads-val" id="gads-conv" style="color:var(--g)">—</div></div>
@@ -56,14 +52,10 @@
     <div class="gads-card"><div class="gads-label">CTR</div><div class="gads-val" id="gads-ctr">—</div></div>
     <div class="gads-card"><div class="gads-label">Gösterim</div><div class="gads-val" id="gads-impr">—</div></div>
   </div>
-
-  <!-- Tablo -->
   <div class="gads-tbl-wrap" id="gadsTblWrap">
     <div style="text-align:center;padding:60px;color:var(--m)">⏳ Yükleniyor...</div>
   </div>
 </div>
-
-<!-- Bütçe Düzenleme Modal -->
 <div class="moverlay" id="gadsBModal" style="display:none" onclick="if(event.target===this)this.style.display='none'">
   <div class="modal">
     <h3>💰 Google Ads Bütçe Değişikliği</h3>
@@ -81,8 +73,6 @@
     </div>
   </div>
 </div>
-
-<!-- Date Picker Popup -->
 <div id="gadsDpPopup" style="display:none;position:fixed;z-index:99999">
   <div class="dp-popup-wrap">
     <div class="dp-preset-section">
@@ -106,15 +96,11 @@
     </div>
   </div>
 </div>
-
 <script>
 (function(){
 var gadsTab = 'camp';
 var gadsCampStore = [];
 var gadsAgStore = [];
-var _gadsConfigured = null; // null=bilinmiyor, true=OK, false=eksik
-
-// ── DATE PICKER ──────────────────────────────────────────
 var _gadsDpOpen = false;
 var GADS_PRESETS = [
   {v:'TODAY',l:'Bugün',api:'TODAY'},
@@ -125,11 +111,9 @@ var GADS_PRESETS = [
   {v:'THIS_MONTH',l:'Bu ay',api:'THIS_MONTH'},
   {v:'LAST_MONTH',l:'Geçen ay',api:'LAST_MONTH'},
 ];
-
 function _gdpToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _gdpOffset(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function _gdpFmt(iso){if(!iso)return'';var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
-
 window.gadsDpToggle = function(){
   var pop=document.getElementById('gadsDpPopup');
   if(!pop)return;
@@ -148,7 +132,9 @@ window.gadsDpToggle = function(){
   var fi=document.getElementById('gadsDpFrom'),ti=document.getElementById('gadsDpTo');
   if(fi)fi.value=_gdpOffset(6);if(ti)ti.value=_gdpToday();
   _gdpDots('LAST_7_DAYS');
-  var btn=document.getElementById('gadsDpTrigger'),rect=btn.getBoundingClientRect();
+  var btn=document.getElementById('gadsDpTrigger');
+  if(!btn)return;
+  var rect=btn.getBoundingClientRect();
   var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;
   if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}
   else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}
@@ -162,8 +148,10 @@ function _gdpDots(active){
   });
 }
 function _gdpPick(p){
-  document.getElementById('gadsPreset').value=p.api;
-  document.getElementById('gadsDpLabel').textContent=p.l;
+  var presetEl=document.getElementById('gadsPreset');
+  var labelEl=document.getElementById('gadsDpLabel');
+  if(presetEl)presetEl.value=p.api;
+  if(labelEl)labelEl.textContent=p.l;
   gadsDpClose();
   setTimeout(gadsLoad,50);
 }
@@ -177,41 +165,36 @@ function _gdpOut(e){
 }
 window.gadsDpApply=function(){
   var fi=document.getElementById('gadsDpFrom'),ti=document.getElementById('gadsDpTo');
-  if(!fi||!ti||!fi.value||!ti.value){toast('Tarih seçin');return;}
-  if(fi.value>ti.value){toast('Bitiş tarihi başlangıçtan önce olamaz');return;}
-  // Custom range için BETWEEN formatı
-  document.getElementById('gadsPreset').value='BETWEEN_'+fi.value+'_'+ti.value;
-  document.getElementById('gadsDpLabel').textContent=_gdpFmt(fi.value)+' - '+_gdpFmt(ti.value);
+  if(!fi||!ti||!fi.value||!ti.value){if(window.toast)toast('Tarih seçin');return;}
+  if(fi.value>ti.value){if(window.toast)toast('Bitiş tarihi başlangıçtan önce olamaz');return;}
+  var presetEl=document.getElementById('gadsPreset');
+  var labelEl=document.getElementById('gadsDpLabel');
+  if(presetEl)presetEl.value='BETWEEN_'+fi.value+'_'+ti.value;
+  if(labelEl)labelEl.textContent=_gdpFmt(fi.value)+' - '+_gdpFmt(ti.value);
   gadsDpClose();
   setTimeout(gadsLoad,50);
 };
-
-// ── TABS ─────────────────────────────────────────────────
 window.gadsTabSwitch=function(tab,el){
   gadsTab=tab;
   document.querySelectorAll('.gads-tab').forEach(function(t){t.classList.remove('active');});
   el.classList.add('active');
   gadsRender();
 };
-
-// ── LOAD ─────────────────────────────────────────────────
 window.gadsLoad = async function(){
   var st=document.getElementById('gadsStatus');
-  if(st)st.textContent='⏳ Yükleniyor...';
   var wrap=document.getElementById('gadsTblWrap');
+  if(!wrap)return;
+  if(st)st.textContent='⏳ Yükleniyor...';
   wrap.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)"><div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px">Google Ads verisi çekiliyor...</span></div></div>';
-
-  var presetRaw=document.getElementById('gadsPreset').value||'LAST_7_DAYS';
+  var presetEl=document.getElementById('gadsPreset');
+  var presetRaw=presetEl?presetEl.value:'LAST_7_DAYS';
   var payload={date_range: presetRaw};
-
-  // Custom range ise BETWEEN_2024-01-01_2024-01-31 formatını parse et
   if(presetRaw.startsWith('BETWEEN_')){
     var parts=presetRaw.replace('BETWEEN_','').split('_');
-    payload={date_range:'LAST_7_DAYS'}; // fallback, API'ye from/to göndereceğiz
+    payload={date_range:'LAST_7_DAYS'};
     payload.date_from=parts[0];
     payload.date_to=parts[1];
   }
-
   try{
     var r=await fetch('/gads/campaigns',{
       method:'POST',
@@ -219,7 +202,6 @@ window.gadsLoad = async function(){
       body:JSON.stringify(payload)
     });
     var data=await r.json();
-
     if(data.error){
       if(!data.configured){
         gadsShowSetup(data.error);
@@ -229,75 +211,69 @@ window.gadsLoad = async function(){
       if(st)st.textContent='';
       return;
     }
-
-    _gadsConfigured=true;
     var rows=data.rows||[];
     gadsCampStore=rows;
-
-    // Özet kartları güncelle
-    var totCost=0,totConv=0,totClicks=0,totImpr=0,totConvVal=0;
-    rows.forEach(function(r){
-      totCost+=r.cost||0;
-      totConv+=r.conversions||0;
-      totClicks+=r.clicks||0;
-      totImpr+=r.impressions||0;
-      totConvVal+=r.conversions_value||0;
+    var totCost=0,totConv=0,totClicks=0,totImpr=0;
+    rows.forEach(function(row){
+      totCost+=row.cost||0;
+      totConv+=row.conversions||0;
+      totClicks+=row.clicks||0;
+      totImpr+=row.impressions||0;
     });
     var avgCTR=totImpr>0?(totClicks/totImpr*100):0;
     var avgCPA=totConv>0?(totCost/totConv):0;
-
-    document.getElementById('gads-spend').textContent=totCost.toFixed(0)+'₺';
-    document.getElementById('gads-conv').textContent=totConv.toFixed(0);
-    document.getElementById('gads-cpa').textContent=avgCPA>0?avgCPA.toFixed(1)+'₺':'—';
-    document.getElementById('gads-clicks').textContent=totClicks.toLocaleString('tr');
-    document.getElementById('gads-ctr').textContent=avgCTR.toFixed(2)+'%';
-    document.getElementById('gads-impr').textContent=totImpr.toLocaleString('tr');
-
+    var spendEl=document.getElementById('gads-spend');
+    var convEl=document.getElementById('gads-conv');
+    var cpaEl=document.getElementById('gads-cpa');
+    var clicksEl=document.getElementById('gads-clicks');
+    var ctrEl=document.getElementById('gads-ctr');
+    var imprEl=document.getElementById('gads-impr');
+    if(spendEl)spendEl.textContent=totCost.toFixed(0)+'₺';
+    if(convEl)convEl.textContent=totConv.toFixed(0);
+    if(cpaEl)cpaEl.textContent=avgCPA>0?avgCPA.toFixed(1)+'₺':'—';
+    if(clicksEl)clicksEl.textContent=totClicks.toLocaleString('tr');
+    if(ctrEl)ctrEl.textContent=avgCTR.toFixed(2)+'%';
+    if(imprEl)imprEl.textContent=totImpr.toLocaleString('tr');
     if(st)st.textContent='✓ '+rows.length+' kampanya · '+new Date().toLocaleTimeString('tr');
     gadsRender();
-
-    // Reklam gruplarını arka planda çek
-    if(gadsTab==='adgroup') gadsLoadAdgroups(presetRaw);
-    else gadsLoadAdgroups(presetRaw); // önceden yükle
-
+    gadsLoadAdgroups(presetRaw);
   }catch(e){
-    wrap.innerHTML='<div class="gads-err-box">🔴 Bağlantı hatası: '+e.message+'</div>';
+    if(wrap)wrap.innerHTML='<div class="gads-err-box">🔴 Bağlantı hatası: '+e.message+'</div>';
     if(st)st.textContent='Hata';
   }
 };
-
-// ── BÜTÇE DÜZENLEME ──────────────────────────────────────────────────
 var _gadsBPending = null;
-
 window.gadsProposeB = function(campId, name, curBudgetTL){
   _gadsBPending = {campId: campId, name: name, curTL: parseFloat(curBudgetTL)};
   var det = document.getElementById('gadsBDet');
   if(det) det.innerHTML = '<strong>'+name+'</strong><br>Mevcut bütçe: <b style="color:var(--y)">'+curBudgetTL+'₺/gün</b>';
   var inp = document.getElementById('gadsBInput');
   if(inp){ inp.value = curBudgetTL; inp.focus(); }
-  document.getElementById('gadsBPreviewTxt').textContent = '';
-  document.getElementById('gadsBModal').style.display = 'flex';
+  var prev = document.getElementById('gadsBPreviewTxt');
+  if(prev) prev.textContent = '';
+  var modal = document.getElementById('gadsBModal');
+  if(modal) modal.style.display = 'flex';
 };
-
 window.gadsBPreview = function(){
   if(!_gadsBPending) return;
   var inp = document.getElementById('gadsBInput');
+  if(!inp) return;
   var newTL = parseFloat(inp.value);
   if(isNaN(newTL) || newTL <= 0) return;
   var diff = newTL - _gadsBPending.curTL;
   var pct = (_gadsBPending.curTL > 0 ? (diff/_gadsBPending.curTL*100) : 0);
   var col = diff > 0 ? 'var(--g)' : diff < 0 ? 'var(--r)' : 'var(--m)';
-  document.getElementById('gadsBPreviewTxt').innerHTML =
-    _gadsBPending.curTL.toFixed(0)+'₺ → <b style="color:'+col+'">'+newTL.toFixed(0)+'₺/gün</b>' +
-    ' (<span style="color:'+col+'">'+(diff>=0?'+':'')+pct.toFixed(1)+'%</span>)';
+  var prev = document.getElementById('gadsBPreviewTxt');
+  if(prev) prev.innerHTML = _gadsBPending.curTL.toFixed(0)+'₺ → <b style="color:'+col+'">'+newTL.toFixed(0)+'₺/gün</b>'+' (<span style="color:'+col+'">'+(diff>=0?'+':'')+pct.toFixed(1)+'%</span>)';
 };
-
 window.gadsBApprove = async function(){
   if(!_gadsBPending) return;
   var inp = document.getElementById('gadsBInput');
+  if(!inp) return;
   var newTL = parseFloat(inp.value);
-  if(isNaN(newTL) || newTL <= 0){ toast('Geçersiz tutar'); return; }
-  document.getElementById('gadsBModal').style.display = 'none';
+  if(isNaN(newTL) || newTL <= 0){ if(window.toast)toast('Geçersiz tutar'); return; }
+  var modal = document.getElementById('gadsBModal');
+  if(modal) modal.style.display = 'none';
   var st = document.getElementById('gadsStatus');
   if(st) st.textContent = '⏳ Bütçe güncelleniyor...';
   try{
@@ -308,20 +284,18 @@ window.gadsBApprove = async function(){
     });
     var res = await r.json();
     if(res.success){
-      toast('✓ Bütçe güncellendi: '+newTL.toFixed(0)+'₺/gün');
+      if(window.toast)toast('✓ Bütçe güncellendi: '+newTL.toFixed(0)+'₺/gün');
       setTimeout(gadsLoad, 800);
     } else {
-      toast('⚠️ Hata: '+(res.error||'Bilinmeyen hata'));
+      if(window.toast)toast('⚠️ Hata: '+(res.error||'Bilinmeyen hata'));
       if(st) st.textContent = 'Hata';
     }
   } catch(e){
-    toast('Bağlantı hatası: '+e.message);
+    if(window.toast)toast('Bağlantı hatası: '+e.message);
     if(st) st.textContent = '';
   }
   _gadsBPending = null;
 };
-
-// ── DURUM DEĞİŞTİR (Pause/Enable) ────────────────────────────────────
 window.gadsToggleStatus = async function(campId, currentStatus){
   var newStatus = currentStatus === 'ENABLED' ? 'PAUSED' : 'ENABLED';
   var label = newStatus === 'PAUSED' ? 'duraklatılacak' : 'aktif edilecek';
@@ -336,15 +310,14 @@ window.gadsToggleStatus = async function(campId, currentStatus){
     });
     var res = await r.json();
     if(res.success){
-      toast(newStatus === 'PAUSED' ? '⏸ Kampanya duraklatıldı' : '▶ Kampanya aktif edildi');
+      if(window.toast)toast(newStatus === 'PAUSED' ? '⏸ Kampanya duraklatıldı' : '▶ Kampanya aktif edildi');
       setTimeout(gadsLoad, 800);
     } else {
-      toast('⚠️ Hata: '+(res.error||'API hatası'));
+      if(window.toast)toast('⚠️ Hata: '+(res.error||'API hatası'));
     }
-  } catch(e){ toast('Bağlantı hatası: '+e.message); }
+  } catch(e){ if(window.toast)toast('Bağlantı hatası: '+e.message); }
   if(st) st.textContent = '';
 };
-
 async function gadsLoadAdgroups(dateRange){
   try{
     var r=await fetch('/gads/adgroups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({date_range:dateRange})});
@@ -353,14 +326,12 @@ async function gadsLoadAdgroups(dateRange){
     if(gadsTab==='adgroup') gadsRender();
   }catch(e){}
 }
-
-// ── RENDER ───────────────────────────────────────────────
 function gadsRender(){
   var wrap=document.getElementById('gadsTblWrap');
+  if(!wrap)return;
   if(gadsTab==='camp') gadsCampRender(wrap);
   else gadsAgRender(wrap);
 }
-
 function statusBadge(s){
   var map={'ENABLED':'aktif','PAUSED':'pasif','REMOVED':'pasif','LIMITED':'sinirli'};
   var lbl={'ENABLED':'Aktif','PAUSED':'Pasif','REMOVED':'Silindi','LIMITED':'Sınırlı'};
@@ -372,7 +343,6 @@ function typeBadge(t){
   return '<span class="gads-type-badge">'+(map[t]||t||'—')+'</span>';
 }
 function roasColor(roas){return roas>=3?'var(--g)':roas>=1.5?'var(--y)':'var(--r)';}
-
 function gadsCampRender(wrap){
   if(!gadsCampStore.length){
     wrap.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 Kampanya verisi bulunamadı. Farklı tarih aralığı deneyin.</div>';
@@ -400,13 +370,12 @@ function gadsCampRender(wrap){
         '<td style="font-family:\'DM Mono\',monospace">'+r.ctr.toFixed(2)+'%</td>'+
         '<td style="font-family:\'DM Mono\',monospace">'+r.impressions.toLocaleString('tr')+'</td>'+
         '<td><div style="display:flex;gap:4px">'+
-        (r.budget_micros>0?'<button class="btn sm yel" onclick="gadsProposeB(\''+r.id+'\',\''+r.name.slice(0,30)+'\',\''+Math.round(r.budget_micros/1000000)+'\')">✏️</button>':'')+
+        (r.budget_micros>0?'<button class="btn sm yel" onclick="gadsProposeB(\''+r.id+'\',\''+r.name.replace(/'/g,"\\'").slice(0,30)+'\',\''+Math.round(r.budget_micros/1000000)+'\')">✏️</button>':'')+
         '</div></td>'+
         '</tr>';
     }).join('')+
     '</tbody></table>';
 }
-
 function gadsAgRender(wrap){
   if(!gadsAgStore.length){
     wrap.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">⏳ Reklam grupları yükleniyor...</div>';
@@ -432,9 +401,9 @@ function gadsAgRender(wrap){
     }).join('')+
     '</tbody></table>';
 }
-
 function gadsShowSetup(err){
   var wrap=document.getElementById('gadsTblWrap');
+  if(!wrap)return;
   wrap.innerHTML='<div class="gads-connect-box">'+
     '<div style="font-size:36px;margin-bottom:12px">🟢</div>'+
     '<h3 style="font-size:16px;margin-bottom:8px">Google Ads Entegrasyonu</h3>'+
@@ -447,13 +416,11 @@ function gadsShowSetup(err){
     '<div>5️⃣ <b>GADS_CUSTOMER_ID</b> — 123-456-7890 formatında müşteri ID</div>'+
     '</div>'+
     '<div style="margin-top:20px;display:flex;gap:10px;justify-content:center">'+
-    '<button class="btn sm sec" onclick="toast(\'Ayarlar sayfasına git\')">⚙️ Nasıl Yapılır?</button>'+
     '<button class="btn sm" onclick="gadsLoad()">🔄 Tekrar Dene</button>'+
     '</div>'+
     '</div>';
 }
-
 // ── BAŞLAT ───────────────────────────────────────────────
-gadsLoad();
+setTimeout(gadsLoad, 100);
 })();
 </script>
