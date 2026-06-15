@@ -683,6 +683,116 @@ def gads_adgroups():
         return jsonify({'error': str(e), 'configured': True})
 
 
+@app.route('/gads/budget', methods=['POST'])
+def gads_update_budget():
+    """Google Ads kampanya bütçesini güncelle"""
+    token = gads_get_token()
+    if not token:
+        return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
+
+    data = request.json or {}
+    budget_id = data.get('budget_id', '')
+    new_amount_tl = float(data.get('amount_tl', 0))
+
+    if not budget_id or new_amount_tl <= 0:
+        return jsonify({'error': 'Geçersiz parametre', 'success': False})
+
+    cid = gads_customer_id()
+    # amount_micros = TL * 1_000_000
+    amount_micros = int(new_amount_tl * 1_000_000)
+
+    url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaignBudgets/{budget_id}'
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'developer-token': GADS_DEVELOPER_TOKEN,
+        'Content-Type': 'application/json'
+    }
+    body = {
+        'amountMicros': str(amount_micros)
+    }
+    # PATCH ile sadece amount güncelle
+    patch_url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaignBudgets:mutate'
+    mutate_body = {
+        'operations': [{
+            'update': {
+                'resourceName': f'customers/{cid}/campaignBudgets/{budget_id}',
+                'amountMicros': str(amount_micros)
+            },
+            'updateMask': 'amountMicros'
+        }]
+    }
+    try:
+        r = requests.post(patch_url, headers=headers, json=mutate_body, timeout=15)
+        result = r.json()
+        if 'error' in result:
+            return jsonify({'error': result['error'].get('message', 'API hatası'), 'success': False})
+        # Log kaydet
+        try:
+            current = read_logs()
+            current.setdefault('actionLog', []).insert(0, {
+                'type': 'gads_budget_change',
+                'budget_id': budget_id,
+                'amount_tl': new_amount_tl,
+                'serverTime': datetime.utcnow().isoformat()
+            })
+            current['actionLog'] = current['actionLog'][:500]
+            write_logs(current)
+        except: pass
+        return jsonify({'success': True, 'amount_tl': new_amount_tl})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False})
+
+
+@app.route('/gads/toggle', methods=['POST'])
+def gads_toggle_status():
+    """Google Ads kampanya durumunu aktif/pasif yap"""
+    token = gads_get_token()
+    if not token:
+        return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
+
+    data = request.json or {}
+    campaign_id = data.get('campaign_id', '')
+    new_status = data.get('status', 'PAUSED')  # ENABLED veya PAUSED
+
+    if new_status not in ('ENABLED', 'PAUSED'):
+        return jsonify({'error': 'Geçersiz durum', 'success': False})
+
+    cid = gads_customer_id()
+    url = f'https://googleads.googleapis.com/v17/customers/{cid}/campaigns:mutate'
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'developer-token': GADS_DEVELOPER_TOKEN,
+        'Content-Type': 'application/json'
+    }
+    body = {
+        'operations': [{
+            'update': {
+                'resourceName': f'customers/{cid}/campaigns/{campaign_id}',
+                'status': new_status
+            },
+            'updateMask': 'status'
+        }]
+    }
+    try:
+        r = requests.post(url, headers=headers, json=body, timeout=15)
+        result = r.json()
+        if 'error' in result:
+            return jsonify({'error': result['error'].get('message', 'API hatası'), 'success': False})
+        try:
+            current = read_logs()
+            current.setdefault('actionLog', []).insert(0, {
+                'type': 'gads_status_change',
+                'campaign_id': campaign_id,
+                'status': new_status,
+                'serverTime': datetime.utcnow().isoformat()
+            })
+            write_logs(current)
+        except: pass
+        return jsonify({'success': True, 'status': new_status})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False})
+
+
 @app.route('/gads/status', methods=['GET'])
 def gads_status():
     """Google Ads bağlantı durumunu kontrol et"""
