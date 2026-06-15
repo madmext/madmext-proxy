@@ -1,0 +1,269 @@
+<style>
+.ty-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
+.ty-row1{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;flex-shrink:0;gap:8px;flex-wrap:wrap}
+.ty-tabs{display:flex;gap:1px}
+.ty-tab{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s}
+.ty-tab.active{background:#f27a1a;color:#fff}
+.ty-tab:hover:not(.active){background:var(--b);color:var(--t)}
+.ty-summary{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;flex-shrink:0}
+@media(max-width:900px){.ty-summary{grid-template-columns:repeat(3,1fr)}}
+.ty-card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden}
+.ty-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:#f27a1a}
+.ty-label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.ty-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:600}
+.ty-tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;flex:1;min-height:0}
+.ty-tbl-wrap table{width:100%;border-collapse:collapse;font-size:11px}
+.ty-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;white-space:nowrap}
+.ty-tbl-wrap td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
+.ty-tbl-wrap tr:hover td{background:rgba(255,255,255,.02)}
+.ty-status{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace}
+.ty-status.yayinda{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3)}
+.ty-status.sonlandi{background:rgba(138,141,145,.1);color:var(--m);border:1px solid rgba(138,141,145,.2)}
+.ty-status.tamamlandi{background:rgba(24,119,242,.1);color:var(--a);border:1px solid rgba(24,119,242,.2)}
+.ty-upload-box{background:var(--s);border:2px dashed var(--b);border-radius:12px;padding:40px;text-align:center;margin:20px;cursor:pointer;transition:border-color .2s}
+.ty-upload-box:hover{border-color:#f27a1a}
+.ty-upload-box.dragover{border-color:#f27a1a;background:rgba(242,122,26,.05)}
+.ty-upload-info{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:12px 16px;margin:0 0 10px;font-size:12px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ty-upload-info .ty-upload-date{color:var(--m);font-size:11px;font-family:'DM Mono',monospace}
+</style>
+
+<div class="ty-wrap">
+  <!-- Üst satır -->
+  <div class="ty-row1">
+    <div class="ty-tabs">
+      <button class="ty-tab active" onclick="tyTabSwitch('aktif',this)">🟢 Aktif Reklamlar</button>
+      <button class="ty-tab" onclick="tyTabSwitch('gecmis',this)">📁 Geçmiş Reklamlar</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <button class="btn sm sec" onclick="tyRefresh()">🔄 Yenile</button>
+      <label class="btn sm" style="cursor:pointer;background:#f27a1a;color:#fff">
+        📤 Excel Yükle
+        <input type="file" id="tyFileInput" accept=".xlsx,.xls" style="display:none" onchange="tyUpload(this)">
+      </label>
+      <span id="tyStatus" style="font-size:11px;color:var(--m)"></span>
+    </div>
+  </div>
+
+  <!-- Yükleme bilgisi -->
+  <div class="ty-upload-info" id="tyUploadInfo" style="display:none">
+    <span style="font-size:16px">🟠</span>
+    <div>
+      <div style="font-weight:600;font-size:12px" id="tyUploadFileName">—</div>
+      <div class="ty-upload-date" id="tyUploadDate">—</div>
+    </div>
+    <div style="margin-left:auto;font-size:11px;color:var(--m)" id="tyUploadCount">—</div>
+  </div>
+
+  <!-- Özet Kartlar -->
+  <div class="ty-summary">
+    <div class="ty-card"><div class="ty-label">Harcama</div><div class="ty-val" id="ty-spend">—</div></div>
+    <div class="ty-card"><div class="ty-label">Toplam Ciro</div><div class="ty-val" id="ty-revenue" style="color:var(--g)">—</div></div>
+    <div class="ty-card"><div class="ty-label">Ort. ROAS</div><div class="ty-val" id="ty-roas">—</div></div>
+    <div class="ty-card"><div class="ty-label">Toplam Satış</div><div class="ty-val" id="ty-sales">—</div></div>
+    <div class="ty-card"><div class="ty-label">Tıklanma</div><div class="ty-val" id="ty-clicks">—</div></div>
+    <div class="ty-card"><div class="ty-label">Görüntülenme</div><div class="ty-val" id="ty-impr">—</div></div>
+  </div>
+
+  <!-- Tablo -->
+  <div class="ty-tbl-wrap" id="tyTblWrap">
+    <div class="ty-upload-box" id="tyUploadBox" onclick="document.getElementById('tyFileInput').click()">
+      <div style="font-size:40px;margin-bottom:12px">🟠</div>
+      <h3 style="font-size:16px;margin-bottom:8px;color:var(--t)">Trendyol Reklam Raporu Yükle</h3>
+      <p style="font-size:12px;color:var(--m);max-width:400px;margin:0 auto 16px">
+        Trendyol Partner panelinden indirdiğin Excel raporunu buraya yükle.<br>
+        Ürün Reklamları → Raporlar → Excel İndir
+      </p>
+      <button class="btn" style="background:#f27a1a">📤 Excel Dosyası Seç</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var tyTab = 'aktif';
+var tyData = {aktif: [], gecmis: []};
+var tyMeta = null;
+
+window.tyTabSwitch = function(tab, el){
+  tyTab = tab;
+  document.querySelectorAll('.ty-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  tyRender();
+};
+
+// ── UPLOAD ────────────────────────────────────────────────
+window.tyUpload = async function(input){
+  var file = input.files[0];
+  if(!file) return;
+  var st = document.getElementById('tyStatus');
+  if(st) st.textContent = '⏳ Yükleniyor...';
+  
+  var formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    var r = await fetch('/trendyol/upload', {method:'POST', body: formData});
+    var res = await r.json();
+    if(res.success){
+      if(st) st.textContent = '✓ ' + res.count + ' kayıt yüklendi';
+      tyLoad();
+    } else {
+      if(st) st.textContent = '⚠️ ' + (res.error || 'Hata');
+      if(window.toast) toast('⚠️ ' + (res.error || 'Yükleme hatası'));
+    }
+  } catch(e){
+    if(st) st.textContent = 'Hata';
+    if(window.toast) toast('Bağlantı hatası: ' + e.message);
+  }
+  input.value = '';
+};
+
+// ── LOAD ──────────────────────────────────────────────────
+window.tyRefresh = function(){ tyLoad(); };
+
+async function tyLoad(){
+  var st = document.getElementById('tyStatus');
+  var wrap = document.getElementById('tyTblWrap');
+  if(!wrap) return;
+  
+  try {
+    var r = await fetch('/trendyol/data');
+    var res = await r.json();
+    
+    if(!res.data || !res.data.length){
+      // Veri yok — yükleme kutusu göster
+      showUploadBox();
+      if(st) st.textContent = '';
+      return;
+    }
+    
+    // Veriyi aktiflere ve geçmişe ayır
+    tyData.aktif = res.data.filter(function(d){ return d.statu === 'Yayında'; });
+    tyData.gecmis = res.data.filter(function(d){ return d.statu !== 'Yayında'; });
+    tyMeta = res.meta;
+    
+    // Upload info göster
+    var uInfo = document.getElementById('tyUploadInfo');
+    var uFile = document.getElementById('tyUploadFileName');
+    var uDate = document.getElementById('tyUploadDate');
+    var uCount = document.getElementById('tyUploadCount');
+    if(uInfo) uInfo.style.display = 'flex';
+    if(uFile) uFile.textContent = res.meta.filename || 'Trendyol Raporu';
+    if(uDate) uDate.textContent = 'Yüklendi: ' + (res.meta.uploaded_at ? new Date(res.meta.uploaded_at).toLocaleString('tr') : '—');
+    if(uCount) uCount.textContent = res.data.length + ' kayıt';
+    
+    // Yükleme kutusunu gizle
+    document.getElementById('tyUploadBox').style.display = 'none';
+    
+    tyRender();
+    if(st) st.textContent = '✓ ' + res.data.length + ' kayıt · ' + new Date().toLocaleTimeString('tr');
+    
+  } catch(e){
+    if(st) st.textContent = 'Hata';
+  }
+}
+
+function showUploadBox(){
+  var wrap = document.getElementById('tyTblWrap');
+  if(wrap) wrap.innerHTML = '<div class="ty-upload-box" onclick="document.getElementById(\'tyFileInput\').click()">'
+    + '<div style="font-size:40px;margin-bottom:12px">🟠</div>'
+    + '<h3 style="font-size:16px;margin-bottom:8px;color:var(--t)">Trendyol Reklam Raporu Yükle</h3>'
+    + '<p style="font-size:12px;color:var(--m);max-width:400px;margin:0 auto 16px">Trendyol Partner → Ürün Reklamları → Raporlar → Excel İndir</p>'
+    + '<button class="btn" style="background:#f27a1a">📤 Excel Dosyası Seç</button>'
+    + '</div>';
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function tyRender(){
+  var rows = tyTab === 'aktif' ? tyData.aktif : tyData.gecmis;
+  var wrap = document.getElementById('tyTblWrap');
+  if(!wrap) return;
+  
+  if(!rows.length){
+    wrap.innerHTML = '<div style="text-align:center;padding:60px;color:var(--m)">'
+      + (tyTab === 'aktif' ? '📭 Aktif reklam bulunamadı.' : '📭 Geçmiş reklam bulunamadı.')
+      + '</div>';
+    updateCards([]);
+    return;
+  }
+  
+  updateCards(rows);
+  
+  wrap.innerHTML = '<table><thead><tr>'
+    + '<th style="min-width:200px">Reklam Adı</th>'
+    + '<th>Statü</th>'
+    + '<th>Başlangıç</th>'
+    + '<th>Günlük Bütçe</th>'
+    + '<th>Harcama</th>'
+    + '<th>Tıklanma</th>'
+    + '<th>Görüntülenme</th>'
+    + '<th>Toplam Satış</th>'
+    + '<th>Toplam Ciro</th>'
+    + '<th>ROAS</th>'
+    + '<th>TBM</th>'
+    + '</tr></thead><tbody>'
+    + rows.map(function(r){
+        var roasNum = parseFloat((r.roas || '0').toString().replace(',', '.')) || 0;
+        var roasColor = roasNum >= 10 ? 'var(--g)' : roasNum >= 5 ? 'var(--y)' : 'var(--r)';
+        var statuClass = r.statu === 'Yayında' ? 'yayinda' : r.statu === 'Tamamlandı' ? 'tamamlandi' : 'sonlandi';
+        return '<tr>'
+          + '<td style="font-size:12px;font-weight:500;max-width:240px;overflow:hidden;text-overflow:ellipsis" title="' + r.ad + '">' + r.ad + '</td>'
+          + '<td><span class="ty-status ' + statuClass + '">' + (r.statu || '—') + '</span></td>'
+          + '<td style="font-family:\'DM Mono\',monospace;font-size:10px">' + (r.baslangic || '—') + '</td>'
+          + '<td style="font-family:\'DM Mono\',monospace">' + (r.gunluk_butce || '—') + '₺</td>'
+          + '<td style="font-family:\'DM Mono\',monospace">' + (r.harcama || '0') + '₺</td>'
+          + '<td style="font-family:\'DM Mono\',monospace">' + (parseInt(r.tiklanma || 0)).toLocaleString('tr') + '</td>'
+          + '<td style="font-family:\'DM Mono\',monospace">' + (parseInt(r.goruntulenme || 0)).toLocaleString('tr') + '</td>'
+          + '<td style="font-family:\'DM Mono\',monospace;color:var(--g)">' + (r.toplam_satis || '0') + '</td>'
+          + '<td style="font-family:\'DM Mono\',monospace;color:var(--g)">' + (r.toplam_ciro || '0') + '₺</td>'
+          + '<td style="font-family:\'DM Mono\',monospace;color:' + roasColor + '">' + (r.roas || '—') + 'x</td>'
+          + '<td style="font-family:\'DM Mono\',monospace">' + (r.gerceklesen_tbm || '—') + '₺</td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table>';
+}
+
+function parseNum(str){
+  if(!str) return 0;
+  return parseFloat(str.toString().replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+function updateCards(rows){
+  var totSpend = 0, totRev = 0, totSales = 0, totClicks = 0, totImpr = 0, roasSum = 0, roasCount = 0;
+  rows.forEach(function(r){
+    totSpend += parseNum(r.harcama);
+    totRev += parseNum(r.toplam_ciro);
+    totSales += parseInt(r.toplam_satis || 0);
+    totClicks += parseInt(r.tiklanma || 0);
+    totImpr += parseInt(r.goruntulenme || 0);
+    var roas = parseNum(r.roas);
+    if(roas > 0){ roasSum += roas; roasCount++; }
+  });
+  var avgRoas = roasCount > 0 ? (roasSum / roasCount) : 0;
+  
+  function fmt(n){ return n >= 1000000 ? (n/1000000).toFixed(1)+'M₺' : n >= 1000 ? (n/1000).toFixed(0)+'K₺' : n.toFixed(0)+'₺'; }
+  
+  var s = document.getElementById('ty-spend'); if(s) s.textContent = fmt(totSpend);
+  var rv = document.getElementById('ty-revenue'); if(rv) rv.textContent = fmt(totRev);
+  var ro = document.getElementById('ty-roas'); if(ro) ro.textContent = avgRoas.toFixed(2) + 'x';
+  var sl = document.getElementById('ty-sales'); if(sl) sl.textContent = totSales.toLocaleString('tr');
+  var cl = document.getElementById('ty-clicks'); if(cl) cl.textContent = totClicks.toLocaleString('tr');
+  var im = document.getElementById('ty-impr'); if(im) im.textContent = totImpr.toLocaleString('tr');
+}
+
+// Drag & drop
+var box = document.getElementById('tyUploadBox');
+if(box){
+  box.addEventListener('dragover', function(e){ e.preventDefault(); box.classList.add('dragover'); });
+  box.addEventListener('dragleave', function(){ box.classList.remove('dragover'); });
+  box.addEventListener('drop', function(e){
+    e.preventDefault(); box.classList.remove('dragover');
+    var file = e.dataTransfer.files[0];
+    if(file){ var input = document.getElementById('tyFileInput'); input.files = e.dataTransfer.files; tyUpload(input); }
+  });
+}
+
+// Başlat
+tyLoad();
+})();
+</script>
