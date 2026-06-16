@@ -947,7 +947,7 @@ def _ty_upload_urun(ws):
     update_cols = ['statu','harcama','tiklanma','goruntulenme','toplam_satis','toplam_ciro','roas','kalan_butce','content_ids']
     conn = get_db()
     if not conn:
-        return jsonify({'error': 'Veritabanı bağlantısı yok. Railway'de DATABASE_URL ortam değişkeni kontrol edin.', 'success': False})
+        return jsonify({'error': 'Veritabanı bağlantısı yok. DATABASE_URL kontrol edin.', 'success': False})
     try:
         count = _ty_upsert(conn, 'ty_urun', rows, cols, ['ad','baslangic'], update_cols)
         conn.close()
