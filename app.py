@@ -946,24 +946,14 @@ def _ty_upload_urun(ws):
             'dogrudan_ciro','dolayli_ciro','toplam_ciro','roas']
     update_cols = ['statu','harcama','tiklanma','goruntulenme','toplam_satis','toplam_ciro','roas','kalan_butce','content_ids']
     conn = get_db()
-    if conn:
-        try:
-            count = _ty_upsert(conn, 'ty_urun', rows, cols, ['ad','baslangic'], update_cols)
-            conn.close()
-            return jsonify({'success':True,'count':count,'type':'Ürün Reklamları','tab':'urun'})
-        except Exception as e:
-            return jsonify({'error':str(e),'success':False})
-    else:
-        current = read_logs()
-        current.setdefault('ty_urun', [])
-        existing = {r['ad']+'|'+r['baslangic']:i for i,r in enumerate(current['ty_urun'])}
-        for row in rows:
-            entry = dict(zip(cols, row))
-            key = entry['ad']+'|'+entry['baslangic']
-            if key in existing: current['ty_urun'][existing[key]] = entry
-            else: current['ty_urun'].append(entry)
-        write_logs(current)
-        return jsonify({'success':True,'count':len(rows),'type':'Ürün Reklamları','tab':'urun'})
+    if not conn:
+        return jsonify({'error': 'Veritabanı bağlantısı yok. Railway'de DATABASE_URL ortam değişkeni kontrol edin.', 'success': False})
+    try:
+        count = _ty_upsert(conn, 'ty_urun', rows, cols, ['ad','baslangic'], update_cols)
+        conn.close()
+        return jsonify({'success':True,'count':count,'type':'Ürün Reklamları','tab':'urun'})
+    except Exception as e:
+        return jsonify({'error':str(e),'success':False})
 
 def _ty_upload_urun_detay(ws, kampanya):
     rows = []
@@ -1007,20 +997,15 @@ def _ty_upload_magaza(ws):
     cols = ['ad','statu','baslangic','bitis','harcama','goruntulenme','tiklanma',
             'toplam_satis','toplam_ciro','roas']
     conn = get_db()
-    if conn:
-        try:
-            count = _ty_upsert(conn, 'ty_magaza', rows, cols, ['ad','baslangic'],
-                               ['statu','harcama','tiklanma','toplam_satis','toplam_ciro','roas'])
-            conn.close()
-            return jsonify({'success':True,'count':count,'type':'Mağaza Reklamları','tab':'magaza'})
-        except Exception as e:
-            return jsonify({'error':str(e),'success':False})
-    else:
-        current = read_logs()
-        current.setdefault('ty_magaza', [])
-        for row in rows: current['ty_magaza'].append(dict(zip(cols, row)))
-        write_logs(current)
-        return jsonify({'success':True,'count':len(rows),'type':'Mağaza Reklamları','tab':'magaza'})
+    if not conn:
+        return jsonify({'error': 'Veritabanı bağlantısı yok.', 'success': False})
+    try:
+        count = _ty_upsert(conn, 'ty_magaza', rows, cols, ['ad','baslangic'],
+                           ['statu','harcama','tiklanma','toplam_satis','toplam_ciro','roas'])
+        conn.close()
+        return jsonify({'success':True,'count':count,'type':'Mağaza Reklamları','tab':'magaza'})
+    except Exception as e:
+        return jsonify({'error':str(e),'success':False})
 
 def _ty_upload_influencer(ws):
     rows = []
@@ -1032,20 +1017,15 @@ def _ty_upload_influencer(ws):
     cols = ['ad','statu','baslangic','bitis','butce_tipi','odeme','ziyaret',
             'satis','ciro','paylasim']
     conn = get_db()
-    if conn:
-        try:
-            count = _ty_upsert(conn, 'ty_influencer', rows, cols, ['ad','baslangic'],
-                               ['statu','odeme','ziyaret','satis','ciro'])
-            conn.close()
-            return jsonify({'success':True,'count':count,'type':'Influencer Reklamları','tab':'influencer'})
-        except Exception as e:
-            return jsonify({'error':str(e),'success':False})
-    else:
-        current = read_logs()
-        current.setdefault('ty_influencer', [])
-        for row in rows: current['ty_influencer'].append(dict(zip(cols, row)))
-        write_logs(current)
-        return jsonify({'success':True,'count':len(rows),'type':'Influencer','tab':'influencer'})
+    if not conn:
+        return jsonify({'error': 'Veritabanı bağlantısı yok.', 'success': False})
+    try:
+        count = _ty_upsert(conn, 'ty_influencer', rows, cols, ['ad','baslangic'],
+                           ['statu','odeme','ziyaret','satis','ciro'])
+        conn.close()
+        return jsonify({'success':True,'count':count,'type':'Influencer Reklamları','tab':'influencer'})
+    except Exception as e:
+        return jsonify({'error':str(e),'success':False})
 
 def _ty_upload_meta(ws):
     rows = []
@@ -1057,20 +1037,15 @@ def _ty_upload_meta(ws):
     cols = ['ad','statu','baslangic','bitis','toplam_butce','harcama',
             'goruntulenme','tiklanma','satis','ciro','roas']
     conn = get_db()
-    if conn:
-        try:
-            count = _ty_upsert(conn, 'ty_meta', rows, cols, ['ad','baslangic'],
-                               ['statu','harcama','tiklanma','satis','ciro','roas'])
-            conn.close()
-            return jsonify({'success':True,'count':count,'type':'Meta Reklamları','tab':'meta'})
-        except Exception as e:
-            return jsonify({'error':str(e),'success':False})
-    else:
-        current = read_logs()
-        current.setdefault('ty_meta', [])
-        for row in rows: current['ty_meta'].append(dict(zip(cols, row)))
-        write_logs(current)
-        return jsonify({'success':True,'count':len(rows),'type':'Meta','tab':'meta'})
+    if not conn:
+        return jsonify({'error': 'Veritabanı bağlantısı yok.', 'success': False})
+    try:
+        count = _ty_upsert(conn, 'ty_meta', rows, cols, ['ad','baslangic'],
+                           ['statu','harcama','tiklanma','satis','ciro','roas'])
+        conn.close()
+        return jsonify({'success':True,'count':count,'type':'Meta Reklamları','tab':'meta'})
+    except Exception as e:
+        return jsonify({'error':str(e),'success':False})
 
 @app.route('/trendyol/data', methods=['GET'])
 def trendyol_data():
@@ -1103,12 +1078,6 @@ def trendyol_data():
             cur.close(); conn.close()
         except Exception as e:
             print('trendyol_data:', e)
-    else:
-        try:
-            current = read_logs()
-            for key in result:
-                result[key] = current.get('ty_'+key, [])
-        except: pass
     return jsonify(result)
 
 @app.route('/trendyol/stats', methods=['GET'])
@@ -1127,4 +1096,3 @@ def trendyol_stats():
             cur.close(); conn.close()
         except: pass
     return jsonify(stats)
-    
