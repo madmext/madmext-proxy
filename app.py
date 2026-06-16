@@ -779,9 +779,95 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
 
 # ── TRENDYOL ─────────────────────────────────────────────────────────────
-import io
-TRENDYOL_DATA = []
-TRENDYOL_META = {}
+import io as _io
+
+def ty_init_db():
+    conn = get_db()
+    if not conn: return False
+    try:
+        cur = conn.cursor()
+        # Ürün reklamları kampanya bazlı
+        cur.execute("""CREATE TABLE IF NOT EXISTS ty_urun (
+            id SERIAL PRIMARY KEY,
+            ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
+            urun_adedi TEXT, toplam_butce TEXT, gunluk_butce TEXT, kalan_butce TEXT,
+            harcama TEXT, tbm_teklifi TEXT, gerceklesen_tbm TEXT,
+            tiklanma TEXT, goruntulenme TEXT,
+            dogrudan_satis TEXT, dolayli_satis TEXT, toplam_satis TEXT,
+            dogrudan_ciro TEXT, dolayli_ciro TEXT, toplam_ciro TEXT, roas TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(ad, baslangic)
+        )""")
+        # Ürün bazlı detay raporu
+        cur.execute("""CREATE TABLE IF NOT EXISTS ty_urun_detay (
+            id SERIAL PRIMARY KEY,
+            kampanya TEXT, urun_adi TEXT, content_id TEXT, model TEXT,
+            harcama TEXT, goruntulenme TEXT, tiklanma TEXT, ctr TEXT,
+            dogrudan_satis TEXT, dolayli_satis TEXT, toplam_satis TEXT,
+            dogrudan_ciro TEXT, dolayli_ciro TEXT, toplam_ciro TEXT, roas TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(kampanya, content_id)
+        )""")
+        # Mağaza reklamları
+        cur.execute("""CREATE TABLE IF NOT EXISTS ty_magaza (
+            id SERIAL PRIMARY KEY,
+            ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
+            harcama TEXT, goruntulenme TEXT, tiklanma TEXT,
+            toplam_satis TEXT, toplam_ciro TEXT, roas TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(ad, baslangic)
+        )""")
+        # Influencer reklamları
+        cur.execute("""CREATE TABLE IF NOT EXISTS ty_influencer (
+            id SERIAL PRIMARY KEY,
+            ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
+            butce_tipi TEXT, odeme TEXT, ziyaret TEXT,
+            satis TEXT, ciro TEXT, paylasim TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(ad, baslangic)
+        )""")
+        # Meta reklamları (Trendyol üzerinden)
+        cur.execute("""CREATE TABLE IF NOT EXISTS ty_meta (
+            id SERIAL PRIMARY KEY,
+            ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
+            toplam_butce TEXT, harcama TEXT, goruntulenme TEXT, tiklanma TEXT,
+            satis TEXT, ciro TEXT, roas TEXT,
+            created_at TIMESTAMP DEFAULT NOW(),
+            UNIQUE(ad, baslangic)
+        )""")
+        conn.commit(); cur.close(); conn.close()
+        return True
+    except Exception as e:
+        print('ty_init_db:', e)
+        try: conn.close()
+        except: pass
+        return False
+
+try: ty_init_db()
+except: pass
+
+def ty_detect(ws):
+    """Excel tipini tespit et"""
+    headers = [str(c.value).strip() if c.value else '' for c in ws[1]]
+    h = set(headers)
+    if 'Content Id' in h or 'Model Kodu' in h:
+        return 'urun_detay'
+    if 'Reklam Adı' in h and 'Harcama Getirisi' in h and 'TBM Teklifi' in h:
+        return 'urun'
+    if 'Reklam Adı' in h and 'Bütçe Tipi' in h:
+        return 'influencer'
+    if 'Reklam Adı' in h and 'Toplam Bütçe' in h and 'Reklam Cirosu' in h:
+        return 'meta'
+    if 'Reklam Adı' in h and 'Harcanan Bütçe' in h:
+        return 'magaza'
+    # Fallback: sütun sayısına göre
+    if ws.max_column >= 20:
+        return 'urun'
+    return 'unknown'
+
+def safe(v):
+    if v is None: return ''
+    return str(v).strip()
 
 @app.route('/trendyol/upload', methods=['POST'])
 def trendyol_upload():
@@ -789,74 +875,250 @@ def trendyol_upload():
         file = request.files.get('file')
         if not file:
             return jsonify({'error': 'Dosya bulunamadı', 'success': False})
-        
         try:
             import openpyxl
         except ImportError:
             return jsonify({'error': 'openpyxl kurulu değil', 'success': False})
-        
-        content = file.read()
-        wb = openpyxl.load_workbook(io.BytesIO(content))
+
+        data = file.read()
+        wb = openpyxl.load_workbook(_io.BytesIO(data))
         ws = wb.active
-        
-        rows = []
-        for row in ws.iter_rows(min_row=2, values_only=True):
-            if not row[0]:
-                continue
-            def safe(v):
-                if v is None: return ''
-                return str(v).strip()
-            rows.append({
-                'ad': safe(row[0]),
-                'statu': safe(row[1]),
-                'baslangic': safe(row[2]),
-                'bitis': safe(row[3]),
-                'urun_adedi': safe(row[4]),
-                'toplam_butce': safe(row[6]),
-                'gunluk_butce': safe(row[7]),
-                'kalan_butce': safe(row[8]),
-                'harcama': safe(row[9]),
-                'tbm_teklifi': safe(row[10]),
-                'gerceklesen_tbm': safe(row[11]),
-                'tiklanma': safe(row[12]),
-                'goruntulenme': safe(row[13]),
-                'dogrudan_satis': safe(row[14]),
-                'dolayli_satis': safe(row[15]),
-                'toplam_satis': safe(row[16]),
-                'dogrudan_ciro': safe(row[17]),
-                'dolayli_ciro': safe(row[18]),
-                'toplam_ciro': safe(row[19]),
-                'roas': safe(row[20]),
-            })
-        
-        global TRENDYOL_DATA, TRENDYOL_META
-        TRENDYOL_DATA = rows
-        TRENDYOL_META = {
-            'filename': file.filename,
-            'uploaded_at': datetime.utcnow().isoformat(),
-            'count': len(rows)
-        }
-        
-        # Kalıcı kayıt — logs dosyasına
-        try:
-            current = read_logs()
-            current['trendyol_data'] = rows
-            current['trendyol_meta'] = TRENDYOL_META
-            write_logs(current)
-        except: pass
-        
-        return jsonify({'success': True, 'count': len(rows)})
+        rtype = ty_detect(ws)
+        sheet_name = ws.title
+
+        if rtype == 'urun':
+            return _ty_upload_urun(ws)
+        elif rtype == 'urun_detay':
+            return _ty_upload_urun_detay(ws, sheet_name)
+        elif rtype == 'magaza':
+            return _ty_upload_magaza(ws)
+        elif rtype == 'influencer':
+            return _ty_upload_influencer(ws)
+        elif rtype == 'meta':
+            return _ty_upload_meta(ws)
+        else:
+            return jsonify({'error': 'Tanınmayan dosya. Trendyol Excel raporlarından birini yükleyin.', 'success': False})
     except Exception as e:
         return jsonify({'error': str(e), 'success': False})
 
+def _ty_upsert(conn, table, rows, cols, conflict_cols, update_cols):
+    """Genel upsert fonksiyonu"""
+    if not rows: return 0
+    cur = conn.cursor()
+    placeholders = ','.join(['%s']*len(cols))
+    col_str = ','.join(cols)
+    conflict = ','.join(conflict_cols)
+    update = ','.join([c+'=EXCLUDED.'+c for c in update_cols])
+    count = 0
+    for row in rows:
+        try:
+            cur.execute(
+                f'INSERT INTO {table} ({col_str}) VALUES ({placeholders}) '
+                f'ON CONFLICT ({conflict}) DO UPDATE SET {update}',
+                row
+            )
+            count += 1
+        except Exception as e:
+            print(f'{table} upsert hata:', e)
+    conn.commit(); cur.close()
+    return count
+
+def _ty_upload_urun(ws):
+    rows = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row[0]: continue
+        rows.append((
+            safe(row[0]), safe(row[1]), safe(row[2]), safe(row[3]),
+            safe(row[4]), safe(row[6]), safe(row[7]), safe(row[8]),
+            safe(row[9]), safe(row[10]), safe(row[11]),
+            safe(row[12]), safe(row[13]),
+            safe(row[14]), safe(row[15]), safe(row[16]),
+            safe(row[17]), safe(row[18]), safe(row[19]), safe(row[20]),
+        ))
+    cols = ['ad','statu','baslangic','bitis','urun_adedi','toplam_butce','gunluk_butce',
+            'kalan_butce','harcama','tbm_teklifi','gerceklesen_tbm','tiklanma','goruntulenme',
+            'dogrudan_satis','dolayli_satis','toplam_satis','dogrudan_ciro','dolayli_ciro',
+            'toplam_ciro','roas']
+    update_cols = ['statu','harcama','tiklanma','goruntulenme','toplam_satis','toplam_ciro','roas','kalan_butce']
+    conn = get_db()
+    if conn:
+        try:
+            count = _ty_upsert(conn, 'ty_urun', rows, cols, ['ad','baslangic'], update_cols)
+            conn.close()
+            return jsonify({'success':True,'count':count,'type':'Ürün Reklamları','tab':'urun'})
+        except Exception as e:
+            return jsonify({'error':str(e),'success':False})
+    else:
+        current = read_logs()
+        current.setdefault('ty_urun', [])
+        existing = {r['ad']+'|'+r['baslangic']:i for i,r in enumerate(current['ty_urun'])}
+        for row in rows:
+            entry = dict(zip(cols, row))
+            key = entry['ad']+'|'+entry['baslangic']
+            if key in existing: current['ty_urun'][existing[key]] = entry
+            else: current['ty_urun'].append(entry)
+        write_logs(current)
+        return jsonify({'success':True,'count':len(rows),'type':'Ürün Reklamları','tab':'urun'})
+
+def _ty_upload_urun_detay(ws, kampanya):
+    rows = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row[0]: continue
+        rows.append((
+            kampanya, safe(row[0]), safe(row[1]), safe(row[2]),
+            safe(row[3]), safe(row[4]), safe(row[5]), safe(row[6]),
+            safe(row[7]), safe(row[8]), safe(row[9]),
+            safe(row[10]), safe(row[11]), safe(row[12]), safe(row[13]),
+        ))
+    cols = ['kampanya','urun_adi','content_id','model','harcama','goruntulenme','tiklanma',
+            'ctr','dogrudan_satis','dolayli_satis','toplam_satis','dogrudan_ciro',
+            'dolayli_ciro','toplam_ciro','roas']
+    update_cols = ['harcama','tiklanma','toplam_satis','toplam_ciro','roas']
+    conn = get_db()
+    if conn:
+        try:
+            count = _ty_upsert(conn, 'ty_urun_detay', rows, cols, ['kampanya','content_id'], update_cols)
+            conn.close()
+            return jsonify({'success':True,'count':count,'type':'Ürün Detay ('+kampanya+')','tab':'urun'})
+        except Exception as e:
+            return jsonify({'error':str(e),'success':False})
+    else:
+        current = read_logs()
+        current.setdefault('ty_urun_detay', [])
+        for row in rows:
+            current['ty_urun_detay'].append(dict(zip(cols, row)))
+        write_logs(current)
+        return jsonify({'success':True,'count':len(rows),'type':'Ürün Detay','tab':'urun'})
+
+def _ty_upload_magaza(ws):
+    # Mağaza reklam sütunları: Ad, Statü, Başlangıç, Bitiş, Harcama, Gösterim, Tıklanma, Satış, Ciro, ROAS
+    rows = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row[0]: continue
+        # Sütun sayısına göre esnek parse
+        r = list(row) + [''] * 20
+        rows.append((safe(r[0]),safe(r[1]),safe(r[2]),safe(r[3]),
+                     safe(r[4]),safe(r[5]),safe(r[6]),safe(r[7]),safe(r[8]),safe(r[9])))
+    cols = ['ad','statu','baslangic','bitis','harcama','goruntulenme','tiklanma',
+            'toplam_satis','toplam_ciro','roas']
+    conn = get_db()
+    if conn:
+        try:
+            count = _ty_upsert(conn, 'ty_magaza', rows, cols, ['ad','baslangic'],
+                               ['statu','harcama','tiklanma','toplam_satis','toplam_ciro','roas'])
+            conn.close()
+            return jsonify({'success':True,'count':count,'type':'Mağaza Reklamları','tab':'magaza'})
+        except Exception as e:
+            return jsonify({'error':str(e),'success':False})
+    else:
+        current = read_logs()
+        current.setdefault('ty_magaza', [])
+        for row in rows: current['ty_magaza'].append(dict(zip(cols, row)))
+        write_logs(current)
+        return jsonify({'success':True,'count':len(rows),'type':'Mağaza Reklamları','tab':'magaza'})
+
+def _ty_upload_influencer(ws):
+    rows = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row[0]: continue
+        r = list(row) + [''] * 20
+        rows.append((safe(r[0]),safe(r[1]),safe(r[2]),safe(r[3]),
+                     safe(r[4]),safe(r[5]),safe(r[6]),safe(r[7]),safe(r[8]),safe(r[9])))
+    cols = ['ad','statu','baslangic','bitis','butce_tipi','odeme','ziyaret',
+            'satis','ciro','paylasim']
+    conn = get_db()
+    if conn:
+        try:
+            count = _ty_upsert(conn, 'ty_influencer', rows, cols, ['ad','baslangic'],
+                               ['statu','odeme','ziyaret','satis','ciro'])
+            conn.close()
+            return jsonify({'success':True,'count':count,'type':'Influencer Reklamları','tab':'influencer'})
+        except Exception as e:
+            return jsonify({'error':str(e),'success':False})
+    else:
+        current = read_logs()
+        current.setdefault('ty_influencer', [])
+        for row in rows: current['ty_influencer'].append(dict(zip(cols, row)))
+        write_logs(current)
+        return jsonify({'success':True,'count':len(rows),'type':'Influencer','tab':'influencer'})
+
+def _ty_upload_meta(ws):
+    rows = []
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row[0]: continue
+        r = list(row) + [''] * 20
+        rows.append((safe(r[0]),safe(r[1]),safe(r[2]),safe(r[3]),
+                     safe(r[4]),safe(r[5]),safe(r[6]),safe(r[7]),safe(r[8]),safe(r[9]),safe(r[10])))
+    cols = ['ad','statu','baslangic','bitis','toplam_butce','harcama',
+            'goruntulenme','tiklanma','satis','ciro','roas']
+    conn = get_db()
+    if conn:
+        try:
+            count = _ty_upsert(conn, 'ty_meta', rows, cols, ['ad','baslangic'],
+                               ['statu','harcama','tiklanma','satis','ciro','roas'])
+            conn.close()
+            return jsonify({'success':True,'count':count,'type':'Meta Reklamları','tab':'meta'})
+        except Exception as e:
+            return jsonify({'error':str(e),'success':False})
+    else:
+        current = read_logs()
+        current.setdefault('ty_meta', [])
+        for row in rows: current['ty_meta'].append(dict(zip(cols, row)))
+        write_logs(current)
+        return jsonify({'success':True,'count':len(rows),'type':'Meta','tab':'meta'})
+
 @app.route('/trendyol/data', methods=['GET'])
 def trendyol_data():
-    global TRENDYOL_DATA, TRENDYOL_META
-    # Memory'de yoksa dosyadan yükle
-    if not TRENDYOL_DATA:
+    result = {'urun':[],'magaza':[],'influencer':[],'meta':[],'urun_detay':[]}
+    conn = get_db()
+    if conn:
+        try:
+            cur = conn.cursor()
+            tables = {
+                'urun': ('ty_urun', ['ad','statu','baslangic','bitis','urun_adedi','toplam_butce',
+                    'gunluk_butce','kalan_butce','harcama','tbm_teklifi','gerceklesen_tbm',
+                    'tiklanma','goruntulenme','dogrudan_satis','dolayli_satis','toplam_satis',
+                    'dogrudan_ciro','dolayli_ciro','toplam_ciro','roas']),
+                'magaza': ('ty_magaza', ['ad','statu','baslangic','bitis','harcama',
+                    'goruntulenme','tiklanma','toplam_satis','toplam_ciro','roas']),
+                'influencer': ('ty_influencer', ['ad','statu','baslangic','bitis',
+                    'butce_tipi','odeme','ziyaret','satis','ciro','paylasim']),
+                'meta': ('ty_meta', ['ad','statu','baslangic','bitis','toplam_butce',
+                    'harcama','goruntulenme','tiklanma','satis','ciro','roas']),
+                'urun_detay': ('ty_urun_detay', ['kampanya','urun_adi','content_id','model',
+                    'harcama','goruntulenme','tiklanma','ctr','dogrudan_satis','dolayli_satis',
+                    'toplam_satis','dogrudan_ciro','dolayli_ciro','toplam_ciro','roas']),
+            }
+            for key, (table, cols) in tables.items():
+                try:
+                    cur.execute(f'SELECT {",".join(cols)} FROM {table} ORDER BY baslangic DESC LIMIT 3000' if 'baslangic' in cols else f'SELECT {",".join(cols)} FROM {table} ORDER BY created_at DESC LIMIT 5000')
+                    result[key] = [dict(zip(cols, row)) for row in cur.fetchall()]
+                except Exception as e:
+                    print(f'{table} select:', e)
+            cur.close(); conn.close()
+        except Exception as e:
+            print('trendyol_data:', e)
+    else:
         try:
             current = read_logs()
-            TRENDYOL_DATA = current.get('trendyol_data', [])
-            TRENDYOL_META = current.get('trendyol_meta', {})
+            for key in result:
+                result[key] = current.get('ty_'+key, [])
         except: pass
-    return jsonify({'data': TRENDYOL_DATA, 'meta': TRENDYOL_META})
+    return jsonify(result)
+
+@app.route('/trendyol/stats', methods=['GET'])
+def trendyol_stats():
+    """Özet istatistikler"""
+    conn = get_db()
+    stats = {}
+    if conn:
+        try:
+            cur = conn.cursor()
+            for table, label in [('ty_urun','urun'),('ty_magaza','magaza'),('ty_influencer','influencer'),('ty_meta','meta')]:
+                try:
+                    cur.execute(f'SELECT COUNT(*) FROM {table}')
+                    stats[label] = cur.fetchone()[0]
+                except: stats[label] = 0
+            cur.close(); conn.close()
+        except: pass
+    return jsonify(stats)
