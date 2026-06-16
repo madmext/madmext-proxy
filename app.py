@@ -790,7 +790,8 @@ def ty_init_db():
         cur.execute("""CREATE TABLE IF NOT EXISTS ty_urun (
             id SERIAL PRIMARY KEY,
             ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
-            urun_adedi TEXT, toplam_butce TEXT, gunluk_butce TEXT, kalan_butce TEXT,
+            urun_adedi TEXT, content_ids TEXT,
+            toplam_butce TEXT, gunluk_butce TEXT, kalan_butce TEXT,
             harcama TEXT, tbm_teklifi TEXT, gerceklesen_tbm TEXT,
             tiklanma TEXT, goruntulenme TEXT,
             dogrudan_satis TEXT, dolayli_satis TEXT, toplam_satis TEXT,
@@ -798,6 +799,9 @@ def ty_init_db():
             created_at TIMESTAMP DEFAULT NOW(),
             UNIQUE(ad, baslangic)
         )""")
+        try:
+            cur.execute("ALTER TABLE ty_urun ADD COLUMN IF NOT EXISTS content_ids TEXT")
+        except: pass
         # Ürün bazlı detay raporu
         cur.execute("""CREATE TABLE IF NOT EXISTS ty_urun_detay (
             id SERIAL PRIMARY KEY,
@@ -929,17 +933,18 @@ def _ty_upload_urun(ws):
         if not row[0]: continue
         rows.append((
             safe(row[0]), safe(row[1]), safe(row[2]), safe(row[3]),
-            safe(row[4]), safe(row[6]), safe(row[7]), safe(row[8]),
+            safe(row[4]), safe(row[5]),  # content_ids
+            safe(row[6]), safe(row[7]), safe(row[8]),
             safe(row[9]), safe(row[10]), safe(row[11]),
             safe(row[12]), safe(row[13]),
             safe(row[14]), safe(row[15]), safe(row[16]),
             safe(row[17]), safe(row[18]), safe(row[19]), safe(row[20]),
         ))
-    cols = ['ad','statu','baslangic','bitis','urun_adedi','toplam_butce','gunluk_butce',
-            'kalan_butce','harcama','tbm_teklifi','gerceklesen_tbm','tiklanma','goruntulenme',
-            'dogrudan_satis','dolayli_satis','toplam_satis','dogrudan_ciro','dolayli_ciro',
-            'toplam_ciro','roas']
-    update_cols = ['statu','harcama','tiklanma','goruntulenme','toplam_satis','toplam_ciro','roas','kalan_butce']
+    cols = ['ad','statu','baslangic','bitis','urun_adedi','content_ids',
+            'toplam_butce','gunluk_butce','kalan_butce','harcama','tbm_teklifi','gerceklesen_tbm',
+            'tiklanma','goruntulenme','dogrudan_satis','dolayli_satis','toplam_satis',
+            'dogrudan_ciro','dolayli_ciro','toplam_ciro','roas']
+    update_cols = ['statu','harcama','tiklanma','goruntulenme','toplam_satis','toplam_ciro','roas','kalan_butce','content_ids']
     conn = get_db()
     if conn:
         try:
@@ -1075,8 +1080,8 @@ def trendyol_data():
         try:
             cur = conn.cursor()
             tables = {
-                'urun': ('ty_urun', ['ad','statu','baslangic','bitis','urun_adedi','toplam_butce',
-                    'gunluk_butce','kalan_butce','harcama','tbm_teklifi','gerceklesen_tbm',
+                'urun': ('ty_urun', ['ad','statu','baslangic','bitis','urun_adedi','content_ids',
+                    'toplam_butce','gunluk_butce','kalan_butce','harcama','tbm_teklifi','gerceklesen_tbm',
                     'tiklanma','goruntulenme','dogrudan_satis','dolayli_satis','toplam_satis',
                     'dogrudan_ciro','dolayli_ciro','toplam_ciro','roas']),
                 'magaza': ('ty_magaza', ['ad','statu','baslangic','bitis','harcama',
@@ -1122,4 +1127,3 @@ def trendyol_stats():
             cur.close(); conn.close()
         except: pass
     return jsonify(stats)
- 
