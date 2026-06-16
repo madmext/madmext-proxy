@@ -3,8 +3,8 @@
 .ty-toprow{display:flex;align-items:center;justify-content:space-between;padding:10px 0 8px;flex-shrink:0;gap:8px;flex-wrap:wrap}
 .ty-tabs{display:flex;gap:2px;flex-wrap:wrap}
 .ty-tab{padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;transition:all .15s}
-.ty-tab.active{background:#f27a1a;color:#fff}
-.ty-tab:hover:not(.active){background:var(--b);color:var(--t)}
+.ty-tab.active{background:#f27a1a;color:#fff;border-radius:6px}
+.ty-tab:hover:not(.active){background:var(--b);color:var(--t);border-radius:6px}
 .ty-summary{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px;flex-shrink:0}
 @media(max-width:900px){.ty-summary{grid-template-columns:repeat(3,1fr)}}
 .ty-card{background:var(--s);border:1px solid var(--b);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden}
@@ -13,7 +13,10 @@
 .ty-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:600}
 .ty-tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;flex:1;min-height:0}
 .ty-tbl-wrap table{width:100%;border-collapse:collapse;font-size:11px}
-.ty-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;white-space:nowrap}
+.ty-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;white-space:nowrap;cursor:pointer;user-select:none}
+.ty-tbl-wrap th:hover{color:#f27a1a}
+.ty-tbl-wrap th.sort-asc::after{content:' ▲';color:#f27a1a}
+.ty-tbl-wrap th.sort-desc::after{content:' ▼';color:#f27a1a}
 .ty-tbl-wrap td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
 .ty-tbl-wrap tr:hover td{background:rgba(255,255,255,.02)}
 .ty-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace}
@@ -361,14 +364,25 @@ function renderUrun(content, q, sf, df, dt){
     return;
   }
 
+  rows = sortRows(rows, _sort.col);
+
   var html='<table><thead><tr>'
     +'<th style="width:22px"></th>'
-    +'<th style="min-width:200px">Kampanya</th>'
-    +'<th>Durum</th><th>Başlangıç</th><th>Bitiş</th>'
-    +'<th>Ürün</th><th>Günlük Bütçe</th><th>Harcama</th>'
-    +'<th>Görüntülenme</th><th>Tıklanma</th>'
-    +'<th>D.Satış</th><th>Dol.</th><th>Top.Satış</th>'
-    +'<th>Ciro</th><th>ROAS</th><th>TBM</th>'
+    +'<th style="min-width:200px" onclick="tySort('ad')"><span class="'+thClass('ad')+'">Kampanya</span></th>'
+    +'<th onclick="tySort('statu')"><span class="'+thClass('statu')+'">Durum</span></th>'
+    +'<th onclick="tySort('baslangic')"><span class="'+thClass('baslangic')+'">Başlangıç</span></th>'
+    +'<th>Bitiş</th>'
+    +'<th onclick="tySort('urun_adedi')"><span class="'+thClass('urun_adedi')+'">Ürün</span></th>'
+    +'<th onclick="tySort('gunluk_butce')"><span class="'+thClass('gunluk_butce')+'">Günlük Bütçe</span></th>'
+    +'<th onclick="tySort('harcama')" class="'+thClass('harcama')+'">Harcama</th>'
+    +'<th onclick="tySort('goruntulenme')" class="'+thClass('goruntulenme')+'">Görüntülenme</th>'
+    +'<th onclick="tySort('tiklanma')" class="'+thClass('tiklanma')+'">Tıklanma</th>'
+    +'<th onclick="tySort('dogrudan_satis')" class="'+thClass('dogrudan_satis')+'">D.Satış</th>'
+    +'<th onclick="tySort('dolayli_satis')" class="'+thClass('dolayli_satis')+'">Dol.</th>'
+    +'<th onclick="tySort('toplam_satis')" class="'+thClass('toplam_satis')+'">Top.Satış</th>'
+    +'<th onclick="tySort('toplam_ciro')" class="'+thClass('toplam_ciro')+'">Ciro</th>'
+    +'<th onclick="tySort('roas')" class="'+thClass('roas')+'">ROAS</th>'
+    +'<th onclick="tySort('gerceklesen_tbm')" class="'+thClass('gerceklesen_tbm')+'">TBM</th>'
     +'<th></th>'
     +'</tr></thead><tbody>';
 
@@ -613,10 +627,17 @@ function renderMagaza(content, q, sf, df, dt){
   }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
   cards(rows);
   if(!rows.length){content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç yok':'Mağaza reklamı yüklenmemiş')+'</div>';return;}
+  rows = sortRows(rows, _sort.col);
   content.innerHTML='<table><thead><tr>'
-    +'<th>Reklam Adı</th><th>Durum</th><th>Başlangıç</th><th>Bitiş</th>'
-    +'<th>Harcama</th><th>Görüntülenme</th><th>Tıklanma</th>'
-    +'<th>Satış</th><th>Ciro</th><th>ROAS</th>'
+    +'<th onclick="tySort(\'ad\')">Reklam Adı</th>'
+    +'<th onclick="tySort(\'statu\')">Durum</th>'
+    +'<th onclick="tySort(\'baslangic\')">Başlangıç</th><th>Bitiş</th>'
+    +'<th onclick="tySort(\'harcama\')" class="'+thClass("harcama")+'">Harcama</th>'
+    +'<th onclick="tySort(\'goruntulenme\')">Görüntülenme</th>'
+    +'<th onclick="tySort(\'tiklanma\')">Tıklanma</th>'
+    +'<th onclick="tySort(\'toplam_satis\')">Satış</th>'
+    +'<th onclick="tySort(\'toplam_ciro\')">Ciro</th>'
+    +'<th onclick="tySort(\'roas\')" class="'+thClass("roas")+'">ROAS</th>'
     +'</tr></thead><tbody>'
     +rows.map(function(r){
       var roas=N(r.roas);
@@ -832,4 +853,3 @@ if(zone){
 tyLoad();
 })();
 </script>
- 
