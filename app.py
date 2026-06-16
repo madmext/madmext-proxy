@@ -1127,3 +1127,4 @@ def trendyol_stats():
             cur.close(); conn.close()
         except: pass
     return jsonify(stats)
+    
