@@ -1,453 +1,437 @@
 <style>
 .seo-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
-.seo-hero{flex-shrink:0;padding:20px 0 14px}
-.seo-search-box{display:flex;gap:10px;align-items:center;max-width:700px;margin:0 auto}
-.seo-url-input{flex:1;background:var(--s);border:2px solid var(--b2);color:var(--t);padding:10px 16px;font-size:13px;border-radius:10px;outline:none;font-family:inherit;transition:border-color .2s}
-.seo-url-input:focus{border-color:#f27a1a}
-.seo-btn{background:#f27a1a;color:#fff;border:none;padding:10px 22px;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;white-space:nowrap;transition:opacity .15s}
-.seo-btn:hover{opacity:.85}
-.seo-btn:disabled{opacity:.5;cursor:not-allowed}
-.seo-content{flex:1;overflow-y:auto;padding-bottom:20px}
-/* Skor kartı */
-.seo-score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;width:120px;height:120px}
+.seo-topbar{flex-shrink:0;padding:16px 0;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:12px}
+.seo-search-wrap{flex:1;position:relative}
+.seo-search-wrap::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+.seo-search-input{width:100%;background:var(--s);border:1.5px solid var(--b2);color:var(--t);padding:10px 14px 10px 40px;font-size:13px;border-radius:10px;outline:none;font-family:inherit;transition:border-color .2s;box-sizing:border-box}
+.seo-search-input:focus{border-color:#f27a1a}
+.seo-add-btn{background:#40c9a2;color:#fff;border:none;padding:10px 20px;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;transition:opacity .15s}
+.seo-add-btn:hover{opacity:.85}
+.seo-content{flex:1;overflow-y:auto;padding:20px 0}
+/* Kart grid */
+.seo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.seo-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative}
+.seo-card:hover{border-color:#40c9a2;box-shadow:0 2px 12px rgba(64,201,162,.1)}
+.seo-card-favicon{width:40px;height:40px;border-radius:8px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
+.seo-card-favicon img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.seo-card-info{flex:1;min-width:0}
+.seo-card-url{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
+.seo-card-time{font-size:11px;color:var(--m)}
+.seo-card-score{flex-shrink:0}
+.seo-ring-wrap{position:relative;width:52px;height:52px;display:flex;align-items:center;justify-content:center}
+.seo-ring-wrap svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.seo-ring-num{font-size:16px;font-weight:700;font-family:'DM Mono',monospace;position:relative;z-index:1}
+.seo-card-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--m);font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s;padding:2px 5px;border-radius:4px}
+.seo-card:hover .seo-card-del{opacity:1}
+.seo-card-del:hover{background:rgba(250,62,62,.1);color:var(--r)}
+/* Analiz sayfası */
+.seo-back-btn{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b);color:var(--t);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;flex-shrink:0;transition:border-color .15s}
+.seo-back-btn:hover{border-color:#f27a1a}
+/* Analiz içerik stilleri */
+.seo-score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;width:110px;height:110px}
 .seo-score-ring svg{transform:rotate(-90deg)}
-.seo-score-num{position:absolute;font-size:36px;font-weight:800}
-/* Özet grid */
-.seo-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.seo-score-num{position:absolute;font-size:32px;font-weight:800}
+.seo-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 @media(max-width:800px){.seo-stat-grid{grid-template-columns:repeat(2,1fr)}}
-.seo-stat{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:12px 14px;text-align:center}
-.seo-stat-n{font-size:22px;font-weight:700;font-family:'DM Mono',monospace}
-.seo-stat-l{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
-/* Sekme sistemi */
-.seo-tabs{display:flex;gap:4px;border-bottom:1px solid var(--b);margin-bottom:16px;overflow-x:auto}
-.seo-tab{padding:8px 16px;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
-.seo-tab.active{color:#f27a1a;border-bottom-color:#f27a1a}
+.seo-stat{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:11px 12px;text-align:center}
+.seo-stat-n{font-size:20px;font-weight:700;font-family:'DM Mono',monospace}
+.seo-stat-l{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+.seo-tabs{display:flex;gap:4px;border-bottom:1px solid var(--b);margin-bottom:14px;overflow-x:auto}
+.seo-tab{padding:8px 14px;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.seo-tab.active{color:#40c9a2;border-bottom-color:#40c9a2}
 .seo-tab:hover:not(.active){color:var(--t)}
-/* Sorun satırları */
-.seo-issue{display:flex;gap:12px;padding:12px 14px;border-radius:8px;margin-bottom:8px;background:var(--s2);border:1px solid var(--b)}
-.seo-issue-icon{font-size:16px;flex-shrink:0;margin-top:1px}
-.seo-issue-body{flex:1;min-width:0}
-.seo-issue-title{font-size:12px;font-weight:600;margin-bottom:4px}
+.seo-issue{display:flex;gap:12px;padding:11px 13px;border-radius:8px;margin-bottom:7px;background:var(--s2);border:1px solid var(--b)}
+.seo-issue.ok{background:rgba(64,201,162,.05);border-color:rgba(64,201,162,.2)}
+.seo-issue.warn{background:rgba(240,180,41,.05);border-color:rgba(240,180,41,.2)}
+.seo-issue.err{background:rgba(250,62,62,.05);border-color:rgba(250,62,62,.2)}
+.seo-issue-title{font-size:12px;font-weight:600;margin-bottom:3px}
 .seo-issue-desc{font-size:11px;color:var(--m);line-height:1.6}
-.seo-issue-fix{font-size:11px;margin-top:6px;padding:6px 10px;border-radius:6px;background:rgba(242,122,26,.06);border-left:2px solid #f27a1a;color:var(--t)}
-.seo-issue.ok{background:rgba(66,183,42,.06);border-color:rgba(66,183,42,.2)}
-.seo-issue.warn{background:rgba(240,180,41,.06);border-color:rgba(240,180,41,.2)}
-.seo-issue.err{background:rgba(250,62,62,.06);border-color:rgba(250,62,62,.2)}
-.seo-issue.info{background:var(--s2);border-color:var(--b)}
-/* Badge */
-.seo-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase}
-.seo-badge.ok{background:rgba(66,183,42,.15);color:var(--g)}
-.seo-badge.warn{background:rgba(240,180,41,.15);color:var(--y)}
-.seo-badge.err{background:rgba(250,62,62,.15);color:var(--r)}
-.seo-badge.info{background:var(--b);color:var(--m)}
-/* Öneri kutusu */
-.seo-tip{background:rgba(242,122,26,.06);border:1px solid rgba(242,122,26,.2);border-radius:8px;padding:12px 14px;margin-bottom:8px;font-size:11px;line-height:1.7}
-.seo-tip strong{color:#f27a1a}
-/* Loading */
-.seo-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px}
-.seo-spinner{width:40px;height:40px;border:3px solid var(--b);border-top-color:#f27a1a;border-radius:50%;animation:seoSpin 1s linear infinite}
-@keyframes seoSpin{to{transform:rotate(360deg)}}
-/* Preview kutusu */
-.seo-preview{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:14px 16px;margin-bottom:12px}
-.seo-preview-url{font-size:11px;color:var(--g);margin-bottom:3px}
-.seo-preview-title{font-size:16px;color:#1a73e8;margin-bottom:3px;cursor:pointer}
-.seo-preview-desc{font-size:13px;color:var(--m);line-height:1.5}
-/* Bağlantı listesi */
-.seo-link-item{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
-.seo-link-item:last-child{border-bottom:none}
-.seo-link-url{color:var(--a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
-.seo-link-text{color:var(--m);font-size:10px}
-/* Kw tag */
+.seo-issue-fix{font-size:11px;margin-top:6px;padding:6px 10px;border-radius:5px;background:rgba(64,201,162,.08);border-left:2px solid #40c9a2}
+.seo-section{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.seo-section h3{font-size:12px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)}
+.seo-preview{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:13px 15px;margin-bottom:11px}
+.seo-preview-url{font-size:11px;color:#40c9a2;margin-bottom:3px}
+.seo-preview-title{font-size:16px;color:#1a73e8;margin-bottom:3px}
+.seo-preview-desc{font-size:12px;color:var(--m);line-height:1.5}
 .seo-kw{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:rgba(24,119,242,.1);color:var(--a);border:1px solid rgba(24,119,242,.2);margin:3px}
-/* Section header */
-.seo-section{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:16px;margin-bottom:12px}
-.seo-section h3{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-/* Progress bar */
 .seo-prog{background:var(--b);border-radius:4px;height:8px;overflow:hidden;margin-top:4px}
 .seo-prog-bar{height:100%;border-radius:4px;transition:width .4s}
-/* AI öneri */
-.seo-ai-card{background:linear-gradient(135deg,rgba(242,122,26,.08),rgba(24,119,242,.08));border:1px solid rgba(242,122,26,.25);border-radius:10px;padding:16px;margin-bottom:12px}
+.seo-tip{background:rgba(64,201,162,.06);border:1px solid rgba(64,201,162,.2);border-radius:8px;padding:10px 13px;margin-bottom:7px;font-size:11px;line-height:1.7}
+.seo-ai-card{background:linear-gradient(135deg,rgba(64,201,162,.08),rgba(24,119,242,.08));border:1px solid rgba(64,201,162,.2);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.seo-spinner{width:36px;height:36px;border:3px solid var(--b);border-top-color:#40c9a2;border-radius:50%;animation:seoSpin 1s linear infinite}
+@keyframes seoSpin{to{transform:rotate(360deg)}}
 </style>
 
 <div class="seo-wrap">
-  <!-- Arama alanı -->
-  <div class="seo-hero">
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:18px;font-weight:700;margin-bottom:4px">🔍 SEO Analiz Aracı</div>
-      <div style="font-size:12px;color:var(--m)">URL gir, anında kapsamlı SEO raporu al — sorunlar, çözümler, öneriler</div>
+  <!-- Üst çubuk: arama + yeni site ekle -->
+  <div class="seo-topbar" id="seoTopbar">
+    <div class="seo-search-wrap">
+      <input type="url" class="seo-search-input" id="seoSearchInput" placeholder="Analiz etmek istediğiniz internet sitesini arayın ve ekleyin..." onkeydown="if(event.key==='Enter')seoAddSite()">
     </div>
-    <div class="seo-search-box">
-      <input type="url" class="seo-url-input" id="seoUrl" placeholder="https://madmext.com" value="">
-      <button class="seo-btn" id="seoBtn" onclick="seoAnalyze()">Analiz Et</button>
-    </div>
-    <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--m)" id="seoStatus"></div>
-    <!-- Geçmiş aramalar -->
-    <div id="seoHistoryBar" style="display:none;max-width:700px;margin:10px auto 0;overflow-x:auto;white-space:nowrap;padding-bottom:4px"></div>
+    <button class="seo-add-btn" onclick="seoAddSite()">
+      <span style="font-size:16px;font-weight:300">⊕</span> Yeni Site Ekle
+    </button>
   </div>
 
   <!-- İçerik alanı -->
   <div class="seo-content" id="seoContent">
-    <div style="text-align:center;padding:60px 20px;color:var(--m)">
-      <div style="font-size:48px;margin-bottom:12px">🔍</div>
-      <div style="font-size:14px;font-weight:600;margin-bottom:6px;color:var(--t)">SEO Analizi Başlat</div>
-      <div style="font-size:12px;line-height:1.8">Analiz etmek istediğin URL'yi gir.<br>Başlık, meta, hız, güvenlik, linkler ve daha fazlası kontrol edilecek.</div>
+    <!-- Liste görünümü (varsayılan) -->
+    <div id="seoListView">
+      <div id="seoGrid" class="seo-grid"></div>
+      <div id="seoEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--m)">
+        <div style="font-size:48px;margin-bottom:12px">🔍</div>
+        <div style="font-size:14px;font-weight:600;color:var(--t);margin-bottom:6px">Henüz site eklenmemiş</div>
+        <div style="font-size:12px">Üstteki alandan analiz etmek istediğin URL'yi gir ve "Yeni Site Ekle" butonuna bas.</div>
+      </div>
     </div>
+    <!-- Analiz görünümü -->
+    <div id="seoAnalysisView" style="display:none"></div>
   </div>
 </div>
 
 <script>
 (function(){
 'use strict';
-var _result = null;
-var _activeTab = 'genel';
-var _history = [];
+var _sites = [];   // {url, skor, baslik, favicon, tarih, data}
+var _view = 'list'; // 'list' | 'analysis'
 
-// Geçmiş yükle
-try{ _history = JSON.parse(localStorage.getItem('seo_history') || '[]'); }catch(e){}
-
-function saveHistory(url, skor, baslik){
-  // Aynı URL varsa güncelle
-  _history = _history.filter(function(h){ return h.url !== url; });
-  _history.unshift({url: url, skor: skor, baslik: baslik, tarih: new Date().toLocaleString('tr')});
-  if(_history.length > 10) _history = _history.slice(0, 10);
-  try{ localStorage.setItem('seo_history', JSON.stringify(_history)); }catch(e){}
-  renderHistoryBar();
+// LocalStorage
+function loadSites(){
+  try{ _sites = JSON.parse(localStorage.getItem('seo_sites')||'[]'); }catch(e){ _sites=[]; }
+}
+function saveSites(){
+  try{ localStorage.setItem('seo_sites', JSON.stringify(_sites)); }catch(e){}
 }
 
-function renderHistoryBar(){
-  var bar = document.getElementById('seoHistoryBar');
-  if(!bar) return;
-  if(!_history.length){ bar.style.display = 'none'; return; }
-  bar.style.display = 'block';
-  bar.innerHTML = '<span style="font-size:10px;color:var(--m);margin-right:6px">Geçmiş:</span>'
-    + _history.map(function(h){
-        var skorRenk = h.skor >= 80 ? '#40c9a2' : h.skor >= 60 ? '#f0b429' : '#fa3e3e';
-        return '<button onclick="seoLoadHistory(''+h.url+'')" style="display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b);border-radius:16px;padding:3px 10px;font-size:10px;cursor:pointer;color:var(--t);margin-right:5px;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='#f27a1a'" onmouseout="this.style.borderColor='var(--b)'">'
-          + '<span style="width:7px;height:7px;border-radius:50%;background:'+skorRenk+';flex-shrink:0"></span>'
-          + '<span style="max-width:160px;overflow:hidden;text-overflow:ellipsis">'+h.url.replace(/^https?:\/\//,'').replace(/\/$/,'')+'</span>'
-          + '<span style="font-family:'DM Mono',monospace;color:'+skorRenk+'">'+h.skor+'</span>'
-          + '</button>';
-      }).join('')
-    + '<button onclick="seoClearHistory()" style="display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(250,62,62,.3);border-radius:16px;padding:3px 8px;font-size:10px;cursor:pointer;color:var(--r);margin-left:4px">✕ Temizle</button>';
-}
-
-window.seoLoadHistory = function(url){
-  document.getElementById('seoUrl').value = url;
-  seoAnalyze();
-};
-
-window.seoClearHistory = function(){
-  _history = [];
-  try{ localStorage.removeItem('seo_history'); }catch(e){}
-  renderHistoryBar();
-};
-
-// Sayfa açılışında geçmişi göster
-renderHistoryBar();
-
-window.seoAnalyze = async function(){
-  var urlEl = document.getElementById('seoUrl');
-  var btn = document.getElementById('seoBtn');
-  var status = document.getElementById('seoStatus');
-  var content = document.getElementById('seoContent');
-  var url = urlEl.value.trim();
-  if(!url){ urlEl.focus(); return; }
-  if(!url.startsWith('http')) url = 'https://' + url;
-  urlEl.value = url;
-
-  btn.disabled = true;
-  btn.textContent = '⏳ Analiz...';
-  status.textContent = 'URL analiz ediliyor...';
-
-  content.innerHTML = '<div class="seo-loading"><div class="seo-spinner"></div><div style="font-size:12px;color:var(--m)">SEO verileri toplanıyor...<br><span id="seoLoadMsg" style="font-size:10px;opacity:.7">Başlık, meta, linkler, hız kontrol ediliyor</span></div></div>';
-
-  var msgs = ['Başlık ve meta etiketleri kontrol ediliyor...','Bağlantılar taranıyor...','Performans metrikleri hesaplanıyor...','Güvenlik kontrolleri yapılıyor...','AI analizi hazırlanıyor...'];
-  var mi = 0;
-  var lt = setInterval(function(){
-    var el = document.getElementById('seoLoadMsg');
-    if(el && mi < msgs.length){ el.textContent = msgs[mi++]; } else { clearInterval(lt); }
-  }, 1400);
-
-  try{
-    var payload = {
-      model: 'claude-sonnet-4-6',
-      max_tokens: 3000,
-      system: 'Sen bir SEO uzmanısın. Verilen URL için kapsamlı SEO analizi yapacaksın. Türkçe konuş. SADECE JSON formatında yanıt ver, başka hiçbir şey yazma. JSON dışında hiçbir karakter olmamalı.',
-      messages:[{role:'user', content: 'Şu URL için detaylı SEO analizi yap: ' + url + '\n\nAşağıdaki JSON formatında yanıt ver (tüm değerleri MUTLAKA doldur, boş bırakma):\n{\n  "skor": 72,\n  "url": "https://ornek.com",\n  "baslik": "Sayfa Başlığı",\n  "baslik_uzunluk": 45,\n  "meta_desc": "Meta açıklama metni",\n  "meta_desc_uzunluk": 120,\n  "h1_sayisi": 1,\n  "h1_icerik": "H1 başlık metni",\n  "h2_sayisi": 5,\n  "h3_sayisi": 3,\n  "gorsel_toplam": 25,\n  "gorsel_altsiz": 3,\n  "ic_link": 45,\n  "dis_link": 8,\n  "sayfa_boyut_kb": 450,\n  "https": true,\n  "mobil_uyumlu": true,\n  "robots_txt": true,\n  "sitemap": true,\n  "favicon": true,\n  "dil": "tr",\n  "charset": "UTF-8",\n  "canonical": true,\n  "og_tags": true,\n  "yükleme_hizi": "Orta",\n  "js_erteleme": false,\n  "dom_boyutu": 1200,\n  "http_istekleri": 65,\n  "metin_html_oran": 18,\n  "noindex": false,\n  "anahtar_kelimeler": ["madmext","giyim","erkek","moda","alışveriş"],\n  "iyi_yonler": [\n    {"baslik":"HTTPS Güvenli Bağlantı","aciklama":"Site SSL sertifikasına sahip, güvenli HTTPS protokolü kullanılıyor."},\n    {"baslik":"Meta Açıklama Mevcut","aciklama":"Meta description etiketi uygun uzunlukta ve içerik açıklayıcı."},\n    {"baslik":"Mobil Uyumlu","aciklama":"Site responsive tasarıma sahip, mobil cihazlarda düzgün görüntüleniyor."}\n  ],\n  "sorunlar": [\n    {"seviye":"hata","baslik":"H1 Etiketi Eksik veya Çoklu","aciklama":"Sayfada H1 etiketi yok ya da birden fazla H1 kullanılmış. Bu SEO için kritik önem taşır.","cozum":"Her sayfada tek bir H1 etiketi kullanın. H1, sayfanın ana başlığı olmalı ve hedef anahtar kelimeyi içermeli.","etki":"Yüksek"},\n    {"seviye":"uyari","baslik":"Görsel Alt Etiketleri Eksik","aciklama":"Bazı görsellerde alt özelliği tanımlanmamış veya boş bırakılmış.","cozum":"Tüm görsellere açıklayıcı alt metni ekleyin. Örn: alt=\'Erkek kazak 2024 koleksiyonu\'","etki":"Orta"},\n    {"seviye":"uyari","baslik":"Sayfa Boyutu Büyük","aciklama":"Sayfa HTML boyutu 330KB üzerinde. Bu yükleme süresini olumsuz etkiler.","cozum":"Gereksiz HTML, CSS ve JS kodlarını temizleyin. Görsel optimizasyonu yapın.","etki":"Orta"}\n  ],\n  "oneriler": [\n    "Anahtar kelime yoğunluğunu artırmak için ürün açıklamalarına hedef kelimeler ekleyin.",\n    "Blog veya içerik sayfası açarak organik trafik artırabilirsiniz.",\n    "Schema.org yapılandırılmış veri ekleyerek arama sonuçlarında zengin snippet görünümü elde edebilirsiniz.",\n    "Sayfa yükleme hızını iyileştirmek için görselleri WebP formatına dönüştürün.",\n    "İç linkleme stratejisi geliştirerek sayfa otoritesini dağıtın."\n  ],\n  "ai_analiz": "Bu site için kapsamlı değerlendirme: Sitenin genel SEO durumu ortalama seviyede. Teknik altyapı sağlam ancak içerik optimizasyonu ve başlık hiyerarşisi iyileştirilmeli. En kritik sorunlar H1 kullanımı ve görsel alt etiketleri. Bu sorunlar çözüldüğünde sıralamanın önemli ölçüde iyileşmesi beklenir."\n}'}]
-    };
-
-    var r = await fetch('/claude', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body:JSON.stringify(payload)});
-    var res = await r.json();
-    clearInterval(lt);
-
-    var text = '';
-    if(res.content && res.content[0]) text = res.content[0].text || '';
-    var clean = text.replace(/```json|```/g,'').trim();
-    var data = JSON.parse(clean);
-    _result = data;
-    btn.disabled = false;
-    btn.textContent = 'Analiz Et';
-    status.textContent = '✓ Analiz tamamlandı — ' + new Date().toLocaleString('tr');
-    saveHistory(url, data.skor||0, data.baslik||url);
-    renderResult(data);
-  }catch(e){
-    clearInterval(lt);
-    btn.disabled = false;
-    btn.textContent = 'Analiz Et';
-    status.textContent = '⚠ Hata: ' + e.message;
-    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--r)"><div style="font-size:32px;margin-bottom:10px">⚠️</div><div style="font-size:13px">Analiz sırasında hata oluştu.<br><span style="font-size:11px;color:var(--m)">URL\'nin erişilebilir olduğundan emin olun.</span></div></div>';
-  }
-};
-
-function renderResult(d){
-  var content = document.getElementById('seoContent');
-  var skor = d.skor || 0;
-  var skorRenk = skor >= 80 ? 'var(--g)' : skor >= 60 ? 'var(--y)' : 'var(--r)';
-  var skorEtiket = skor >= 80 ? 'İyi' : skor >= 60 ? 'Ortalama' : 'Zayıf';
-  var c = 2 * Math.PI * 50;
-  var dashoffset = c - (skor / 100) * c;
-
-  var errCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='hata';}).length;
-  var warnCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='uyari';}).length;
-  var okCount = (d.iyi_yonler||[]).length;
-
-  content.innerHTML =
-    // Üst özet
-    '<div class="seo-section">'
-    +'<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
-    // Skor halkası
-    +'<div style="flex-shrink:0;text-align:center">'
-    +'<div class="seo-score-ring"><svg width="120" height="120"><circle stroke-width="10" stroke="var(--b)" fill="transparent" r="50" cx="60" cy="60"></circle><circle stroke-width="10" stroke-linecap="round" stroke="'+skorRenk+'" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+dashoffset.toFixed(2)+'"></circle></svg><span class="seo-score-num" style="color:'+skorRenk+'">'+skor+'</span></div>'
-    +'<div class="seo-badge '+(skor>=80?'ok':skor>=60?'warn':'err')+'" style="margin-top:6px;font-size:11px">'+skorEtiket+'</div>'
-    +'</div>'
-    // Bilgiler
-    +'<div style="flex:1;min-width:200px">'
-    +'<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+esc(d.url||'—')+'</div>'
-    +'<div style="font-size:12px;color:var(--m);margin-bottom:10px">Genel SEO Skoru · '+(d.dil||'—')+' · '+(d.https?'🔒 HTTPS':'⚠️ HTTP')+'</div>'
-    +'<div style="display:flex;gap:16px;flex-wrap:wrap">'
-    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="color:var(--r);font-size:16px">⚠</span><b>'+errCount+'</b> <span style="color:var(--m)">Ciddi Sorun</span></div>'
-    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="color:var(--y);font-size:16px">△</span><b>'+warnCount+'</b> <span style="color:var(--m)">Uyarı</span></div>'
-    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="color:var(--g);font-size:16px">✓</span><b>'+okCount+'</b> <span style="color:var(--m)">İyi</span></div>'
-    +'</div>'
-    +'</div>'
-    +'</div>'
-    // İstatistikler
-    +'<div class="seo-stat-grid" style="margin-top:14px">'
-    +_statBox('Başlık Uzunluğu', (d.baslik_uzunluk||0)+' karakter', d.baslik_uzunluk>=30&&d.baslik_uzunluk<=65?'var(--g)':'var(--y)')
-    +_statBox('Meta Uzunluğu', (d.meta_desc_uzunluk||0)+' karakter', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'var(--g)':'var(--y)')
-    +_statBox('İç Bağlantı', (d.ic_link||0)+' adet', 'var(--t)')
-    +_statBox('Dış Bağlantı', (d.dis_link||0)+' adet', 'var(--t)')
-    +_statBox('Görsel Toplamı', (d.gorsel_toplam||0)+' adet', 'var(--t)')
-    +_statBox('Alt Eksik', (d.gorsel_altsiz||0)+' görsel', d.gorsel_altsiz>0?'var(--r)':'var(--g)')
-    +_statBox('HTTP İstek', (d.http_istekleri||0)+' adet', d.http_istekleri>80?'var(--y)':'var(--g)')
-    +_statBox('Metin/HTML', '% '+(d.metin_html_oran||0), d.metin_html_oran>=20?'var(--g)':'var(--y)')
-    +'</div>'
-    +'</div>'
-    // Sekmeler
-    +'<div class="seo-tabs" id="seoTabRow">'
-    +'<button class="seo-tab active" onclick="seoTab(\'genel\',this)">📊 Genel Bakış</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'sorunlar\',this)">⚠️ Sorunlar ('+errCount+'+'+warnCount+')</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'basari\',this)">✅ Başarılı ('+okCount+')</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'teknik\',this)">⚙️ Teknik</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'oneriler\',this)">💡 AI Öneriler</button>'
-    +'</div>'
-    +'<div id="seoTabContent"></div>';
-
-  seoTab('genel', document.querySelector('.seo-tab.active'));
-}
-
-function _statBox(label, val, color){
-  return '<div class="seo-stat"><div class="seo-stat-n" style="color:'+color+'">'+esc(val)+'</div><div class="seo-stat-l">'+label+'</div></div>';
-}
-
-window.seoTab = function(tab, el){
-  _activeTab = tab;
-  document.querySelectorAll('.seo-tab').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');
-  var tc = document.getElementById('seoTabContent');
-  if(!tc || !_result) return;
-  var d = _result;
-
-  if(tab === 'genel'){
-    // Google önizleme
-    var skor = d.skor || 0;
-    var c = 2 * Math.PI * 50;
-    tc.innerHTML =
-      '<div class="seo-section">'
-      +'<h3>🔍 Google Arama Önizlemesi</h3>'
-      +'<div class="seo-preview">'
-      +'<div class="seo-preview-url">'+esc(d.url||'')+'</div>'
-      +'<div class="seo-preview-title">'+esc(d.baslik||'Başlık bulunamadı')+'</div>'
-      +'<div class="seo-preview-desc">'+esc(d.meta_desc||'Meta açıklama bulunamadı.')+'</div>'
-      +'</div>'
-      +'</div>'
-      +'<div class="seo-section">'
-      +'<h3>📋 Temel Kontroller</h3>'
-      +_checkRow('H1 Etiketi', d.h1_sayisi===1, 'H1 sayısı: '+d.h1_sayisi, d.h1_sayisi===1?'Tek H1 var, mükemmel!':'Her sayfada tam olarak 1 H1 olmalı.')
-      +_checkRow('Meta Açıklama', !!d.meta_desc, d.meta_desc_uzunluk+' karakter', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'İdeal uzunluk (100-160 karakter)':'Uzunluk 100-160 karakter arasında olmalı.')
-      +_checkRow('Favicon', !!d.favicon, '', d.favicon?'Favicon mevcut':'Favicon ekleyin — marka bilinirliği için önemli.')
-      +_checkRow('Robots.txt', !!d.robots_txt, '', d.robots_txt?'Robots.txt erişilebilir':'Robots.txt dosyası oluşturun.')
-      +_checkRow('Sitemap', !!d.sitemap, '', d.sitemap?'Sitemap bulundu':'XML sitemap oluşturun ve Google\'a gönderin.')
-      +_checkRow('Canonical', !!d.canonical, '', d.canonical?'Canonical tag mevcut':'Duplicate content sorununu önlemek için canonical ekleyin.')
-      +_checkRow('OG Etiketleri', !!d.og_tags, '', d.og_tags?'Open Graph etiketleri var':'Sosyal medya paylaşımları için OG etiketleri ekleyin.')
-      +_checkRow('Noindex Yok', !d.noindex, '', !d.noindex?'Sayfa dizine alınabilir':'Noindex etiketi bulundu — sayfa Google\'a görünmeyebilir!')
-      +'</div>'
-      +'<div class="seo-section">'
-      +'<h3>🏷️ Başlık Hiyerarşisi</h3>'
-      +_barRow('H1', d.h1_sayisi, 1, 'var(--r)')
-      +_barRow('H2', d.h2_sayisi, Math.max(d.h2_sayisi,10), 'var(--a)')
-      +_barRow('H3', d.h3_sayisi, Math.max(d.h3_sayisi,10), 'var(--m)')
-      +'<div style="font-size:11px;color:var(--m);margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:6px">💡 İpucu: H1 tam olarak 1 adet olmalı. H2\'ler bölüm başlıkları, H3\'ler alt başlıklar için kullanılmalı.</div>'
-      +'</div>'
-      +'<div class="seo-section">'
-      +'<h3>🔑 Tespit Edilen Anahtar Kelimeler</h3>'
-      +(d.anahtar_kelimeler||[]).map(function(k){return '<span class="seo-kw">'+esc(k)+'</span>';}).join('')
-      +'</div>';
-  }
-  else if(tab === 'sorunlar'){
-    var sorunlar = d.sorunlar || [];
-    if(!sorunlar.length){
-      tc.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g)"><div style="font-size:36px;margin-bottom:10px">🎉</div><div>Tespit edilen sorun yok!</div></div>';
-      return;
-    }
-    var hatalar = sorunlar.filter(function(s){return s.seviye==='hata';});
-    var uyarilar = sorunlar.filter(function(s){return s.seviye==='uyari';});
-    var html = '';
-    if(hatalar.length){
-      html += '<div style="font-size:11px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⚠️ Ciddi Sorunlar ('+hatalar.length+')</div>';
-      hatalar.forEach(function(s){
-        html += '<div class="seo-issue err">'
-          +'<span class="seo-issue-icon">🔴</span>'
-          +'<div class="seo-issue-body">'
-          +'<div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:8px;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(250,62,62,.2);color:var(--r)">ETKİ: '+esc(s.etki||'Yüksek')+'</span></div>'
-          +'<div class="seo-issue-desc">'+esc(s.aciklama)+'</div>'
-          +'<div class="seo-issue-fix">💡 <b>Çözüm:</b> '+esc(s.cozum)+'</div>'
-          +'</div></div>';
-      });
-    }
-    if(uyarilar.length){
-      html += '<div style="font-size:11px;font-weight:700;color:var(--y);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">△ Uyarılar ('+uyarilar.length+')</div>';
-      uyarilar.forEach(function(s){
-        html += '<div class="seo-issue warn">'
-          +'<span class="seo-issue-icon">🟡</span>'
-          +'<div class="seo-issue-body">'
-          +'<div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:8px;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(240,180,41,.2);color:var(--y)">ETKİ: '+esc(s.etki||'Orta')+'</span></div>'
-          +'<div class="seo-issue-desc">'+esc(s.aciklama)+'</div>'
-          +'<div class="seo-issue-fix">💡 <b>Çözüm:</b> '+esc(s.cozum)+'</div>'
-          +'</div></div>';
-      });
-    }
-    tc.innerHTML = '<div class="seo-section"><h3>Tespit Edilen Sorunlar</h3>'+html+'</div>';
-  }
-  else if(tab === 'basari'){
-    var iyiler = d.iyi_yonler || [];
-    if(!iyiler.length){
-      tc.innerHTML = '<div style="text-align:center;padding:40px;color:var(--m)">İyi yön bulunamadı.</div>';
-      return;
-    }
-    tc.innerHTML = '<div class="seo-section"><h3>✅ İyi Yönler</h3>'
-      +iyiler.map(function(iy){
-        return '<div class="seo-issue ok">'
-          +'<span class="seo-issue-icon">🟢</span>'
-          +'<div class="seo-issue-body">'
-          +'<div class="seo-issue-title">'+esc(iy.baslik)+'</div>'
-          +'<div class="seo-issue-desc">'+esc(iy.aciklama)+'</div>'
-          +'</div></div>';
-      }).join('')
-      +'</div>';
-  }
-  else if(tab === 'teknik'){
-    tc.innerHTML =
-      '<div class="seo-section">'
-      +'<h3>⚡ Performans</h3>'
-      +_techRow('Yükleme Hızı', d.yükleme_hizi||d['yükleme_hizi']||'Bilinmiyor', d.yükleme_hizi==='Hızlı'?'✅':'⚠️')
-      +_techRow('Sayfa Boyutu', (d.sayfa_boyut_kb||0)+' KB', d.sayfa_boyut_kb<500?'✅':'⚠️')
-      +_techRow('DOM Boyutu', (d.dom_boyutu||0)+' düğüm', d.dom_boyutu<1500?'✅':'⚠️')
-      +_techRow('HTTP İstekleri', (d.http_istekleri||0)+' istek', d.http_istekleri<80?'✅':'⚠️')
-      +_techRow('JS Erteleme', d.js_erteleme?'Evet':'Hayır', d.js_erteleme?'✅':'⚠️')
-      +'</div>'
-      +'<div class="seo-section">'
-      +'<h3>🔒 Güvenlik & Erişim</h3>'
-      +_techRow('HTTPS', d.https?'Evet':'Hayır', d.https?'✅':'🔴')
-      +_techRow('Mobil Uyumlu', d.mobil_uyumlu?'Evet':'Hayır', d.mobil_uyumlu?'✅':'🔴')
-      +_techRow('Robots.txt', d.robots_txt?'Erişilebilir':'Bulunamadı', d.robots_txt?'✅':'⚠️')
-      +_techRow('Sitemap', d.sitemap?'Mevcut':'Bulunamadı', d.sitemap?'✅':'⚠️')
-      +_techRow('Noindex', d.noindex?'Var (Dikkat!)':'Yok', !d.noindex?'✅':'🔴')
-      +'</div>'
-      +'<div class="seo-section">'
-      +'<h3>📝 İçerik & Meta</h3>'
-      +_techRow('Dil Kodu', d.dil||'—', '🌐')
-      +_techRow('Karakter Seti', d.charset||'—', d.charset?'✅':'⚠️')
-      +_techRow('Canonical Tag', d.canonical?'Var':'Yok', d.canonical?'✅':'⚠️')
-      +_techRow('OG Etiketleri', d.og_tags?'Var':'Yok', d.og_tags?'✅':'⚠️')
-      +_techRow('Metin/HTML Oranı', '% '+(d.metin_html_oran||0), d.metin_html_oran>=20?'✅':'⚠️')
-      +_techRow('Favicon', d.favicon?'Var':'Yok', d.favicon?'✅':'⚠️')
-      +'</div>';
-  }
-  else if(tab === 'oneriler'){
-    var skor = d.skor || 0;
-    var onList = d.oneriler || [];
-    tc.innerHTML =
-      '<div class="seo-ai-card">'
-      +'<div style="font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px">🤖 AI SEO Değerlendirmesi</div>'
-      +'<div style="font-size:12px;line-height:1.8;color:var(--t)">'+esc(d.ai_analiz||'Analiz bulunamadı.')+'</div>'
-      +'</div>'
-      +'<div class="seo-section">'
-      +'<h3>💡 Aksiyon Listesi — Öncelik Sırasıyla</h3>'
-      +(onList.length ? onList.map(function(o,i){
-        return '<div class="seo-tip" style="border-left:3px solid #f27a1a;padding-left:12px">'
-          +'<strong>'+(i+1)+'. </strong>'+esc(o)
-          +'</div>';
-      }).join('') : '<div style="color:var(--m);font-size:12px">Öneri bulunamadı.</div>')
-      +'</div>'
-      +'<div class="seo-section">'
-      +'<h3>📈 Skor İyileştirme Yol Haritası</h3>'
-      +'<div style="font-size:12px;line-height:2;color:var(--m)">'
-      +(skor<60?'<div style="color:var(--r);font-weight:600">🔴 Acil müdahale gerekiyor (Skor: '+skor+')</div><div>Önce ciddi hataları çözün. H1, meta açıklama, HTTPS gibi temel eksiklikler öncelikli.</div>':'')
-      +(skor>=60&&skor<80?'<div style="color:var(--y);font-weight:600">🟡 İyileştirme aşamasında (Skor: '+skor+')</div><div>Temel SEO kurulu, ancak uyarıları gidererek skoru 80+ seviyeye çıkarabilirsiniz.</div>':'')
-      +(skor>=80?'<div style="color:var(--g);font-weight:600">🟢 İyi seviyede (Skor: '+skor+')</div><div>Temel SEO sağlam. İçerik kalitesi ve backlink stratejisine odaklanın.</div>':'')
-      +'</div>'
-      +'<div style="margin-top:12px">'
-      +'<div style="font-size:11px;color:var(--m);margin-bottom:6px">Mevcut Skor</div>'
-      +'<div class="seo-prog"><div class="seo-prog-bar" style="width:'+skor+'%;background:'+(skor>=80?'var(--g)':skor>=60?'var(--y)':'var(--r)')+'"></div></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--m);margin-top:4px"><span>0</span><span>50</span><span>100</span></div>'
-      +'</div>'
-      +'</div>';
-  }
-}
-
-function _checkRow(label, ok, detail, tip){
-  var icon = ok ? '✅' : '⚠️';
-  var color = ok ? 'var(--g)' : 'var(--y)';
-  return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
-    +'<span style="font-size:14px;flex-shrink:0;margin-top:1px">'+icon+'</span>'
-    +'<div style="flex:1;min-width:0">'
-    +'<div style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px">'+esc(label)+(detail?'<span style="font-size:10px;color:var(--m);font-weight:400">'+esc(detail)+'</span>':'')+'</div>'
-    +'<div style="font-size:11px;color:'+(ok?'var(--m)':'var(--y)')+'">'+esc(tip)+'</div>'
-    +'</div></div>';
-}
-
-function _barRow(label, val, max, color){
-  var pct = max>0 ? Math.min(Math.round((val||0)/max*100),100) : 0;
-  return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
-    +'<span style="font-size:11px;font-weight:600;min-width:25px">'+label+'</span>'
-    +'<div class="seo-prog" style="flex:1;height:10px"><div class="seo-prog-bar" style="width:'+pct+'%;background:'+color+'"></div></div>'
-    +'<span style="font-size:11px;font-family:\'DM Mono\',monospace;min-width:20px;text-align:right">'+val+'</span>'
-    +'</div>';
-}
-
-function _techRow(label, val, icon){
-  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">'
-    +'<span style="color:var(--m)">'+esc(label)+'</span>'
-    +'<span style="display:flex;align-items:center;gap:6px;font-family:\'DM Mono\',monospace;font-size:11px">'+esc(val)+'<span>'+icon+'</span></span>'
-    +'</div>';
+function timeAgo(iso){
+  var d = new Date(iso);
+  var diff = Math.floor((Date.now()-d)/1000);
+  if(diff<60) return 'Az önce';
+  if(diff<3600) return Math.floor(diff/60)+' dakika önce';
+  if(diff<86400) return Math.floor(diff/3600)+' saat önce';
+  return Math.floor(diff/86400)+' gün önce';
 }
 
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// Url parametresinden başlat
-var params = new URLSearchParams(window.location.search);
-var initUrl = params.get('url');
-if(initUrl){ document.getElementById('seoUrl').value = initUrl; seoAnalyze(); }
+// ── LİSTE GÖRÜNÜMÜ ──────────────────────────────────────
+function renderList(){
+  var grid = document.getElementById('seoGrid');
+  var empty = document.getElementById('seoEmpty');
+  if(!_sites.length){ grid.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  // Arama filtresi
+  var q = (document.getElementById('seoSearchInput').value||'').toLowerCase();
+  var filtered = q ? _sites.filter(function(s){ return s.url.toLowerCase().includes(q); }) : _sites;
+
+  if(!filtered.length){ grid.innerHTML='<div style="color:var(--m);font-size:12px;padding:20px">Sonuç bulunamadı.</div>'; return; }
+
+  grid.innerHTML = filtered.map(function(site, idx){
+    var skor = site.skor||0;
+    var skorRenk = skor>=80?'#40c9a2':skor>=60?'#f0b429':'#fa3e3e';
+    var c = 2*Math.PI*22;
+    var offset = c-(skor/100)*c;
+    var host = site.url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+    var faviconUrl = 'https://www.google.com/s2/favicons?domain='+encodeURIComponent(site.url)+'&sz=64';
+    return '<div class="seo-card" onclick="seoOpenSite('+idx+')">'
+      +'<button class="seo-card-del" onclick="event.stopPropagation();seoDeleteSite('+idx+')" title="Sil">✕</button>'
+      +'<div class="seo-card-favicon"><img src="'+faviconUrl+'" onerror="this.parentNode.innerHTML=\'🌐\'"></div>'
+      +'<div class="seo-card-info">'
+      +'<div class="seo-card-url">'+esc(host)+'</div>'
+      +'<div class="seo-card-time">'+timeAgo(site.tarih||new Date().toISOString())+'</div>'
+      +'</div>'
+      +'<div class="seo-card-score">'
+      +'<div class="seo-ring-wrap">'
+      +'<svg width="52" height="52"><circle stroke-width="4" stroke="var(--b)" fill="transparent" r="22" cx="26" cy="26"></circle>'
+      +'<circle stroke-width="4" stroke-linecap="round" stroke="'+skorRenk+'" fill="transparent" r="22" cx="26" cy="26" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+offset.toFixed(2)+'"></circle></svg>'
+      +'<span class="seo-ring-num" style="color:'+skorRenk+'">'+skor+'</span>'
+      +'</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── SİTE EKLE ───────────────────────────────────────────
+window.seoAddSite = async function(){
+  var input = document.getElementById('seoSearchInput');
+  var url = input.value.trim();
+  if(!url) return;
+  if(!url.startsWith('http')) url = 'https://'+url;
+  input.value = '';
+
+  // Yükleme kartı ekle
+  var tmpId = 'tmp_'+Date.now();
+  var host = url.replace(/^https?:\/\//,'').replace(/\/$/,'');
+  var tmpHtml = '<div id="'+tmpId+'" class="seo-card" style="opacity:.6">'
+    +'<div class="seo-card-favicon" style="animation:seoSpin 1s linear infinite;border:2px solid var(--b);border-top-color:#40c9a2;border-radius:50%"></div>'
+    +'<div class="seo-card-info"><div class="seo-card-url">'+esc(host)+'</div><div class="seo-card-time">Analiz ediliyor...</div></div>'
+    +'<div class="seo-card-score"><div style="width:52px;height:52px;border-radius:50%;border:3px solid var(--b);border-top-color:#40c9a2;animation:seoSpin 1s linear infinite"></div></div>'
+    +'</div>';
+
+  var grid = document.getElementById('seoGrid');
+  document.getElementById('seoEmpty').style.display='none';
+  grid.insertAdjacentHTML('afterbegin', tmpHtml);
+
+  try{
+    var data = await fetchSeoData(url);
+    var tmpEl = document.getElementById(tmpId);
+    if(tmpEl) tmpEl.remove();
+
+    // Mevcut site varsa güncelle
+    var existing = _sites.findIndex(function(s){ return s.url===url; });
+    var siteObj = {url:url, skor:data.skor||0, baslik:data.baslik||host, tarih:new Date().toISOString(), data:data};
+    if(existing>=0) _sites[existing]=siteObj; else _sites.unshift(siteObj);
+    saveSites();
+    renderList();
+    // Analizi hemen aç
+    seoOpenSite(0);
+  }catch(e){
+    var tmpEl = document.getElementById(tmpId);
+    if(tmpEl) tmpEl.remove();
+    alert('Analiz sırasında hata: '+e.message);
+    renderList();
+  }
+};
+
+// ── ANALİZ VERİSİ ÇEK ───────────────────────────────────
+async function fetchSeoData(url){
+  var payload = {
+    model:'claude-sonnet-4-6', max_tokens:3000,
+    system:'Sen bir SEO uzmanısın. SADECE geçerli JSON döndür, başka hiçbir şey yazma.',
+    messages:[{role:'user', content:'Şu URL için SEO analizi yap: '+url+'\n\nJSON formatında yanıt ver:\n{"skor":72,"url":"'+url+'","baslik":"Sayfa Başlığı","baslik_uzunluk":45,"meta_desc":"Meta açıklama","meta_desc_uzunluk":120,"h1_sayisi":1,"h1_icerik":"H1 başlık","h2_sayisi":5,"h3_sayisi":3,"gorsel_toplam":25,"gorsel_altsiz":3,"ic_link":45,"dis_link":8,"sayfa_boyut_kb":450,"https":true,"mobil_uyumlu":true,"robots_txt":true,"sitemap":true,"favicon":true,"dil":"tr","charset":"UTF-8","canonical":true,"og_tags":true,"yukleme_hizi":"Orta","js_erteleme":false,"dom_boyutu":1200,"http_istekleri":65,"metin_html_oran":18,"noindex":false,"anahtar_kelimeler":["madmext","giyim","erkek"],"iyi_yonler":[{"baslik":"HTTPS","aciklama":"SSL sertifikası var."},{"baslik":"Meta Açıklama","aciklama":"Uygun uzunlukta."}],"sorunlar":[{"seviye":"hata","baslik":"H1 Eksik","aciklama":"H1 etiketi yok.","cozum":"Her sayfaya tek H1 ekleyin.","etki":"Yüksek"},{"seviye":"uyari","baslik":"Görsel Alt Etiketleri","aciklama":"Bazı görsellerde alt yok.","cozum":"Tüm görsellere alt ekleyin.","etki":"Orta"}],"oneriler":["Anahtar kelime optimizasyonu yapın.","Schema.org ekleyin.","İç linklemeyi güçlendirin."],"ai_analiz":"Sitenin genel SEO durumu ortalama. Teknik altyapı sağlam ancak içerik ve başlık hiyerarşisi iyileştirilmeli."}'}]
+  };
+  var r = await fetch('/claude',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)});
+  var res = await r.json();
+  var text = (res.content&&res.content[0]&&res.content[0].text)||'';
+  var clean = text.replace(/```json|```/g,'').trim();
+  return JSON.parse(clean);
+}
+
+// ── SİTE AÇ ─────────────────────────────────────────────
+window.seoOpenSite = function(idx){
+  var site = _sites[idx];
+  if(!site) return;
+  _view = 'analysis';
+  document.getElementById('seoListView').style.display='none';
+  var av = document.getElementById('seoAnalysisView');
+  av.style.display='block';
+  renderAnalysis(site, idx);
+};
+
+window.seoDeleteSite = function(idx){
+  _sites.splice(idx,1);
+  saveSites();
+  renderList();
+};
+
+// ── GERİ ────────────────────────────────────────────────
+function goBack(){
+  _view='list';
+  document.getElementById('seoListView').style.display='block';
+  document.getElementById('seoAnalysisView').style.display='none';
+  document.getElementById('seoTopbar').querySelector('.seo-back-btn') && document.getElementById('seoTopbar').querySelector('.seo-back-btn').remove();
+  renderList();
+}
+
+// ── ANALİZ RENDER ────────────────────────────────────────
+function renderAnalysis(site, idx){
+  var d = site.data || {};
+  var skor = d.skor||site.skor||0;
+  var skorRenk = skor>=80?'#40c9a2':skor>=60?'#f0b429':'#fa3e3e';
+  var skorEtiket = skor>=80?'İyi':skor>=60?'Ortalama':'Zayıf';
+  var c = 2*Math.PI*50;
+  var dashoffset = c-(skor/100)*c;
+  var errCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='hata';}).length;
+  var warnCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='uyari';}).length;
+  var okCount = (d.iyi_yonler||[]).length;
+
+  var av = document.getElementById('seoAnalysisView');
+  av.innerHTML =
+    // Geri + başlık
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
+    +'<button class="seo-back-btn" onclick="goBack()">← Geri</button>'
+    +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(site.url)+'</div>'
+    +'<div style="font-size:10px;color:var(--m)">'+timeAgo(site.tarih)+'eklendi · Sonuçlar AI tarafından oluşturuldu</div></div>'
+    +'<button onclick="seoReAnalyze('+idx+')" style="background:var(--s2);border:1px solid var(--b);color:var(--t);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600">🔄 Yenile</button>'
+    +'</div>'
+    // Skor + özet
+    +'<div class="seo-section">'
+    +'<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
+    +'<div style="text-align:center;flex-shrink:0">'
+    +'<div class="seo-score-ring"><svg width="110" height="110"><circle stroke-width="9" stroke="var(--b)" fill="transparent" r="50" cx="55" cy="55"></circle><circle stroke-width="9" stroke-linecap="round" stroke="'+skorRenk+'" fill="transparent" r="50" cx="55" cy="55" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+dashoffset.toFixed(2)+'"></circle></svg><span class="seo-score-num" style="color:'+skorRenk+'">'+skor+'</span></div>'
+    +'<div style="display:inline-block;padding:3px 12px;border-radius:10px;font-size:11px;font-weight:700;margin-top:6px;background:'+(skor>=80?'rgba(64,201,162,.15)':skor>=60?'rgba(240,180,41,.15)':'rgba(250,62,62,.15)')+';color:'+skorRenk+'">'+skorEtiket+'</div>'
+    +'</div>'
+    +'<div style="flex:1;min-width:180px">'
+    +'<div style="font-size:14px;font-weight:700;margin-bottom:6px">'+esc(d.baslik||site.url)+'</div>'
+    +'<div style="font-size:11px;color:var(--m);margin-bottom:10px">'+(d.dil||'tr')+' · '+(d.https?'🔒 HTTPS':'⚠️ HTTP')+' · '+(d.mobil_uyumlu?'📱 Mobil Uyumlu':'⚠️ Mobil Sorun')+'</div>'
+    +'<div style="display:flex;gap:14px;flex-wrap:wrap">'
+    +'<span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="color:#fa3e3e">⚠</span><b>'+errCount+'</b><span style="color:var(--m)">Hata</span></span>'
+    +'<span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="color:#f0b429">△</span><b>'+warnCount+'</b><span style="color:var(--m)">Uyarı</span></span>'
+    +'<span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="color:#40c9a2">✓</span><b>'+okCount+'</b><span style="color:var(--m)">İyi</span></span>'
+    +'</div></div></div>'
+    // İstatistikler
+    +'<div class="seo-stat-grid" style="margin-top:14px">'
+    +_statBox('Başlık',(d.baslik_uzunluk||0)+' kr',d.baslik_uzunluk>=30&&d.baslik_uzunluk<=65?'#40c9a2':'#f0b429')
+    +_statBox('Meta',(d.meta_desc_uzunluk||0)+' kr',d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'#40c9a2':'#f0b429')
+    +_statBox('İç Link',(d.ic_link||0)+'','var(--t)')
+    +_statBox('Dış Link',(d.dis_link||0)+'','var(--t)')
+    +_statBox('Görsel',(d.gorsel_toplam||0)+'','var(--t)')
+    +_statBox('Alt Eksik',(d.gorsel_altsiz||0)+'',d.gorsel_altsiz>0?'#fa3e3e':'#40c9a2')
+    +_statBox('HTTP İstek',(d.http_istekleri||0)+'',d.http_istekleri>80?'#f0b429':'#40c9a2')
+    +_statBox('Metin/HTML','%'+(d.metin_html_oran||0),d.metin_html_oran>=20?'#40c9a2':'#f0b429')
+    +'</div>'
+    +'</div>'
+    // Sekmeler
+    +'<div class="seo-tabs">'
+    +'<button class="seo-tab active" onclick="seoTab(\'genel\',this,'+idx+')">📊 Genel</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'sorunlar\',this,'+idx+')">⚠️ Sorunlar ('+errCount+'+'+warnCount+')</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'basari\',this,'+idx+')">✅ Başarılı ('+okCount+')</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'teknik\',this,'+idx+')">⚙️ Teknik</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'oneriler\',this,'+idx+')">💡 AI Öneriler</button>'
+    +'</div>'
+    +'<div id="seoTabContent"></div>';
+
+  seoTab('genel', av.querySelector('.seo-tab'), idx);
+}
+
+window.seoReAnalyze = async function(idx){
+  var site = _sites[idx];
+  if(!site) return;
+  var av = document.getElementById('seoAnalysisView');
+  av.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:14px"><div class="seo-spinner"></div><div style="font-size:12px;color:var(--m)">Yeniden analiz ediliyor...</div></div>';
+  try{
+    var data = await fetchSeoData(site.url);
+    _sites[idx].data = data;
+    _sites[idx].skor = data.skor||0;
+    _sites[idx].tarih = new Date().toISOString();
+    saveSites();
+    renderAnalysis(_sites[idx], idx);
+  }catch(e){
+    renderAnalysis(site, idx);
+  }
+};
+
+window.seoTab = function(tab, el, idx){
+  document.querySelectorAll('.seo-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  var tc = document.getElementById('seoTabContent');
+  if(!tc) return;
+  var d = (_sites[idx]&&_sites[idx].data)||{};
+
+  if(tab==='genel'){
+    tc.innerHTML =
+      '<div class="seo-section"><h3>🔍 Google Önizlemesi</h3>'
+      +'<div class="seo-preview">'
+      +'<div class="seo-preview-url">'+esc(d.url||'')+'</div>'
+      +'<div class="seo-preview-title">'+esc(d.baslik||'Başlık bulunamadı')+'</div>'
+      +'<div class="seo-preview-desc">'+esc(d.meta_desc||'Meta açıklama bulunamadı.')+'</div>'
+      +'</div></div>'
+      +'<div class="seo-section"><h3>📋 Temel Kontroller</h3>'
+      +_checkRow('H1 Etiketi', d.h1_sayisi===1,'H1: '+d.h1_sayisi, d.h1_sayisi===1?'Tek H1 mevcut.':'Her sayfada tam 1 H1 kullanın.')
+      +_checkRow('Meta Açıklama', !!d.meta_desc,(d.meta_desc_uzunluk||0)+' karakter', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'İdeal uzunluk.':'100-160 karakter arası olmalı.')
+      +_checkRow('Favicon', !!d.favicon,'', d.favicon?'Favicon mevcut.':'Favicon ekleyin.')
+      +_checkRow('Robots.txt', !!d.robots_txt,'', d.robots_txt?'Erişilebilir.':'Robots.txt oluşturun.')
+      +_checkRow('Sitemap', !!d.sitemap,'', d.sitemap?'Sitemap bulundu.':'XML sitemap ekleyin.')
+      +_checkRow('Canonical', !!d.canonical,'', d.canonical?'Canonical mevcut.':'Duplicate content için canonical ekleyin.')
+      +_checkRow('OG Etiketleri', !!d.og_tags,'', d.og_tags?'Open Graph var.':'Sosyal paylaşım için OG etiketleri ekleyin.')
+      +_checkRow('Noindex Yok', !d.noindex,'', !d.noindex?'Sayfa dizine alınabilir.':'Noindex var — sayfa Google\'a görünmeyebilir!')
+      +'</div>'
+      +'<div class="seo-section"><h3>🏷️ Başlık Hiyerarşisi</h3>'
+      +_barRow('H1',d.h1_sayisi,Math.max(d.h1_sayisi||1,1),'#fa3e3e')
+      +_barRow('H2',d.h2_sayisi,Math.max(d.h2_sayisi||1,10),'var(--a)')
+      +_barRow('H3',d.h3_sayisi,Math.max(d.h3_sayisi||1,10),'var(--m)')
+      +'</div>'
+      +'<div class="seo-section"><h3>🔑 Anahtar Kelimeler</h3>'
+      +(d.anahtar_kelimeler||[]).map(function(k){return '<span class="seo-kw">'+esc(k)+'</span>';}).join('')
+      +'</div>';
+  }
+  else if(tab==='sorunlar'){
+    var sorunlar = d.sorunlar||[];
+    var hatalar = sorunlar.filter(function(s){return s.seviye==='hata';});
+    var uyarilar = sorunlar.filter(function(s){return s.seviye==='uyari';});
+    var html='';
+    if(!sorunlar.length){ tc.innerHTML='<div style="text-align:center;padding:40px;color:#40c9a2;font-size:13px">🎉 Tespit edilen sorun yok!</div>'; return; }
+    if(hatalar.length){
+      html+='<div style="font-size:10px;font-weight:700;color:#fa3e3e;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Ciddi Sorunlar ('+hatalar.length+')</div>';
+      hatalar.forEach(function(s){
+        html+='<div class="seo-issue err"><span style="font-size:14px;flex-shrink:0">🔴</span><div style="flex:1"><div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:7px;font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(250,62,62,.2);color:#fa3e3e">'+esc(s.etki||'Yüksek')+'</span></div><div class="seo-issue-desc">'+esc(s.aciklama)+'</div><div class="seo-issue-fix">💡 '+esc(s.cozum)+'</div></div></div>';
+      });
+    }
+    if(uyarilar.length){
+      html+='<div style="font-size:10px;font-weight:700;color:#f0b429;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Uyarılar ('+uyarilar.length+')</div>';
+      uyarilar.forEach(function(s){
+        html+='<div class="seo-issue warn"><span style="font-size:14px;flex-shrink:0">🟡</span><div style="flex:1"><div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:7px;font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(240,180,41,.2);color:#f0b429">'+esc(s.etki||'Orta')+'</span></div><div class="seo-issue-desc">'+esc(s.aciklama)+'</div><div class="seo-issue-fix">💡 '+esc(s.cozum)+'</div></div></div>';
+      });
+    }
+    tc.innerHTML='<div class="seo-section"><h3>Tespit Edilen Sorunlar</h3>'+html+'</div>';
+  }
+  else if(tab==='basari'){
+    var iyiler = d.iyi_yonler||[];
+    if(!iyiler.length){ tc.innerHTML='<div style="color:var(--m);font-size:12px;padding:20px">İyi yön bulunamadı.</div>'; return; }
+    tc.innerHTML='<div class="seo-section"><h3>Başarılı Kontroller</h3>'
+      +iyiler.map(function(iy){
+        return '<div class="seo-issue ok"><span style="font-size:14px;flex-shrink:0">🟢</span><div style="flex:1"><div class="seo-issue-title">'+esc(iy.baslik)+'</div><div class="seo-issue-desc">'+esc(iy.aciklama)+'</div></div></div>';
+      }).join('')+'</div>';
+  }
+  else if(tab==='teknik'){
+    tc.innerHTML=
+      '<div class="seo-section"><h3>⚡ Performans</h3>'
+      +_techRow('Yükleme Hızı',d.yukleme_hizi||'—',d.yukleme_hizi==='Hızlı'?'✅':'⚠️')
+      +_techRow('Sayfa Boyutu',(d.sayfa_boyut_kb||0)+' KB',d.sayfa_boyut_kb<500?'✅':'⚠️')
+      +_techRow('DOM Boyutu',(d.dom_boyutu||0)+' düğüm',d.dom_boyutu<1500?'✅':'⚠️')
+      +_techRow('HTTP İstekleri',(d.http_istekleri||0)+' istek',d.http_istekleri<80?'✅':'⚠️')
+      +_techRow('JS Erteleme',d.js_erteleme?'Evet':'Hayır',d.js_erteleme?'✅':'⚠️')
+      +'</div>'
+      +'<div class="seo-section"><h3>🔒 Güvenlik</h3>'
+      +_techRow('HTTPS',d.https?'Evet':'Hayır',d.https?'✅':'🔴')
+      +_techRow('Mobil Uyumlu',d.mobil_uyumlu?'Evet':'Hayır',d.mobil_uyumlu?'✅':'🔴')
+      +_techRow('Robots.txt',d.robots_txt?'Erişilebilir':'Bulunamadı',d.robots_txt?'✅':'⚠️')
+      +_techRow('Sitemap',d.sitemap?'Mevcut':'Bulunamadı',d.sitemap?'✅':'⚠️')
+      +_techRow('Noindex',d.noindex?'Var (Dikkat!)':'Yok',!d.noindex?'✅':'🔴')
+      +'</div>'
+      +'<div class="seo-section"><h3>📝 Meta & İçerik</h3>'
+      +_techRow('Dil',d.dil||'—','🌐')
+      +_techRow('Karakter Seti',d.charset||'—',d.charset?'✅':'⚠️')
+      +_techRow('Canonical',d.canonical?'Var':'Yok',d.canonical?'✅':'⚠️')
+      +_techRow('OG Etiketleri',d.og_tags?'Var':'Yok',d.og_tags?'✅':'⚠️')
+      +_techRow('Metin/HTML Oranı','%'+(d.metin_html_oran||0),d.metin_html_oran>=20?'✅':'⚠️')
+      +'</div>';
+  }
+  else if(tab==='oneriler'){
+    var skor=d.skor||0;
+    var onList=d.oneriler||[];
+    var skorRenk2=skor>=80?'#40c9a2':skor>=60?'#f0b429':'#fa3e3e';
+    tc.innerHTML=
+      '<div class="seo-ai-card"><div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px">🤖 AI SEO Değerlendirmesi</div>'
+      +'<div style="font-size:12px;line-height:1.8">'+esc(d.ai_analiz||'—')+'</div></div>'
+      +'<div class="seo-section"><h3>💡 Aksiyon Listesi</h3>'
+      +(onList.length?onList.map(function(o,i){
+        return '<div class="seo-tip"><b>'+(i+1)+'.</b> '+esc(o)+'</div>';
+      }).join(''):'<div style="color:var(--m);font-size:12px">Öneri bulunamadı.</div>')
+      +'</div>'
+      +'<div class="seo-section"><h3>📈 Skor Durumu</h3>'
+      +'<div style="font-size:12px;color:var(--m);margin-bottom:10px">'
+      +(skor<60?'<b style="color:#fa3e3e">Acil müdahale gerekiyor.</b> Önce ciddi hataları çözün.':skor<80?'<b style="color:#f0b429">İyileştirme aşamasında.</b> Uyarıları gidererek 80+ hedefleyin.':'<b style="color:#40c9a2">İyi seviyede.</b> İçerik kalitesi ve backlink stratejisine odaklanın.')
+      +'</div>'
+      +'<div class="seo-prog"><div class="seo-prog-bar" style="width:'+skor+'%;background:'+skorRenk2+'"></div></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--m);margin-top:4px"><span>0</span><span>50</span><span>100</span></div>'
+      +'</div>';
+  }
+};
+
+function _statBox(l,v,c){ return '<div class="seo-stat"><div class="seo-stat-n" style="color:'+c+'">'+v+'</div><div class="seo-stat-l">'+l+'</div></div>'; }
+function _checkRow(l,ok,d,t){ var i=ok?'✅':'⚠️'; return '<div style="display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:13px;flex-shrink:0;margin-top:1px">'+i+'</span><div><div style="font-size:12px;font-weight:600">'+esc(l)+(d?'<span style="margin-left:7px;font-size:10px;color:var(--m);font-weight:400">'+esc(d)+'</span>':'')+'</div><div style="font-size:11px;color:'+(ok?'var(--m)':'#f0b429')+'">'+esc(t)+'</div></div></div>'; }
+function _barRow(l,v,max,c){ var p=max>0?Math.min(Math.round((v||0)/max*100),100):0; return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-size:11px;font-weight:600;min-width:22px">'+l+'</span><div class="seo-prog" style="flex:1;height:9px"><div class="seo-prog-bar" style="width:'+p+'%;background:'+c+'"></div></div><span style="font-size:11px;font-family:\'DM Mono\',monospace;min-width:18px;text-align:right">'+v+'</span></div>'; }
+function _techRow(l,v,i){ return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px"><span style="color:var(--m)">'+esc(l)+'</span><span style="display:flex;align-items:center;gap:5px;font-family:\'DM Mono\',monospace;font-size:11px">'+esc(v)+'<span>'+i+'</span></span></div>'; }
+
+// Arama filtresi
+document.getElementById('seoSearchInput').addEventListener('input', function(){
+  if(_view==='list') renderList();
+});
+
+// Init
+loadSites();
+renderList();
 })();
 </script>
