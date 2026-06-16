@@ -13,23 +13,44 @@
 .ty-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:600}
 .ty-tbl-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;flex:1;min-height:0}
 .ty-tbl-wrap table{width:100%;border-collapse:collapse;font-size:11px}
-.ty-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;white-space:nowrap;cursor:pointer}
-.ty-tbl-wrap th:hover{color:#f27a1a}
-.ty-tbl-wrap td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
+.ty-tbl-wrap th{background:#111;padding:8px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b);position:sticky;top:0;white-space:nowrap}
+.ty-tbl-wrap td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;vertical-align:middle}
 .ty-tbl-wrap tr:hover td{background:rgba(255,255,255,.02)}
 .ty-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-family:'DM Mono',monospace}
 .ty-badge.yayinda{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3)}
 .ty-badge.bitti{background:rgba(138,141,145,.1);color:var(--m);border:1px solid rgba(138,141,145,.2)}
 .ty-badge.tamamlandi{background:rgba(24,119,242,.1);color:var(--a);border:1px solid rgba(24,119,242,.2)}
-.ty-badge.hesaplaniyor{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
-.ty-upload-zone{background:var(--s);border:2px dashed var(--b);border-radius:12px;padding:48px 40px;text-align:center;cursor:pointer;transition:all .2s;margin:0}
+.ty-upload-zone{border:2px dashed var(--b);border-radius:12px;padding:48px 40px;text-align:center;cursor:pointer;transition:all .2s}
 .ty-upload-zone:hover,.ty-upload-zone.drag{border-color:#f27a1a;background:rgba(242,122,26,.04)}
-.ty-info-bar{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:8px 14px;margin-bottom:8px;font-size:11px;display:flex;align-items:center;gap:10px;flex-shrink:0}
-.ty-search{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;width:180px}
-.ty-type-filter{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px}
-.ty-ai-section{padding:0;overflow-y:auto;flex:1}
+.ty-search{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;width:160px}
+.ty-sel{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 8px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px}
+/* Kampanya satır expand */
+.ty-camp-row{cursor:pointer}
+.ty-camp-row:hover td{background:rgba(242,122,26,.06)!important}
+.ty-camp-row td:first-child{padding-left:6px}
+.ty-expand-btn{width:18px;height:18px;border-radius:4px;border:1px solid var(--b2);background:var(--s2);color:var(--m);font-size:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-right:6px;flex-shrink:0;transition:all .15s}
+.ty-expand-btn.open{background:#f27a1a;color:#fff;border-color:#f27a1a}
+.ty-detail-row{background:rgba(242,122,26,.03)}
+.ty-detail-panel{padding:0}
+/* Modal */
+.ty-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:10001;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.ty-modal{background:var(--s);border:1px solid var(--b);border-radius:12px;width:100%;max-width:900px;overflow:hidden}
+.ty-modal-header{background:var(--s2);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b)}
+.ty-modal-body{padding:20px;overflow-y:auto;max-height:80vh}
+.ty-modal-tabs{display:flex;gap:2px;margin-bottom:16px}
+.ty-modal-tab{padding:5px 14px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:600;color:var(--m);border:none;background:var(--s2);transition:all .15s}
+.ty-modal-tab.active{background:#f27a1a;color:#fff}
+.ty-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.ty-stat-box{background:var(--s2);border:1px solid var(--b);border-radius:6px;padding:10px 12px}
+.ty-stat-lbl{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.ty-stat-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:600}
+.ty-chart-wrap{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:16px}
+.ty-prod-table table{width:100%;border-collapse:collapse;font-size:11px}
+.ty-prod-table th{background:#111;padding:6px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;border-bottom:1px solid var(--b)}
+.ty-prod-table td{padding:6px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+/* AI */
 .ty-ai-card{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:10px}
-.ty-ai-card h4{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px;color:var(--t)}
+.ty-ai-card h4{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .ty-ai-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
 .ty-ai-row:last-child{border-bottom:none}
 .ty-bar{background:var(--b);border-radius:3px;height:5px;flex:1;overflow:hidden}
@@ -37,7 +58,6 @@
 </style>
 
 <div class="ty-wrap">
-  <!-- Üst -->
   <div class="ty-toprow">
     <div class="ty-tabs" id="tyTabs">
       <button class="ty-tab active" data-tab="urun" onclick="tyTab('urun',this)">📦 Ürün Reklamları</button>
@@ -47,8 +67,8 @@
       <button class="ty-tab" data-tab="ai" onclick="tyTab('ai',this)">🤖 AI Öneri</button>
     </div>
     <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <input type="text" class="ty-search" id="tySearch" placeholder="Reklam ara..." oninput="tyRender()">
-      <select class="ty-type-filter" id="tyStatusFilter" onchange="tyRender()">
+      <input type="text" class="ty-search" id="tySearch" placeholder="Ara..." oninput="tyRender()">
+      <select class="ty-sel" id="tyStatusF" onchange="tyRender()">
         <option value="">Tüm Durumlar</option>
         <option value="Yayında">Yayında</option>
         <option value="Tamamlandı">Tamamlandı</option>
@@ -57,13 +77,12 @@
       <button class="btn sm sec" onclick="tyLoad()">🔄</button>
       <label class="btn sm" style="cursor:pointer;background:#f27a1a;color:#fff;display:flex;align-items:center;gap:4px">
         📤 Excel Yükle
-        <input type="file" id="tyFile" accept=".xlsx,.xls" style="display:none" onchange="tyUpload(this)">
+        <input type="file" id="tyFile" accept=".xlsx,.xls" style="display:none" onchange="tyUpload(this)" multiple>
       </label>
       <span id="tySt" style="font-size:10px;color:var(--m)"></span>
     </div>
   </div>
 
-  <!-- Özet kartlar -->
   <div class="ty-summary" id="tySummary" style="display:none">
     <div class="ty-card"><div class="ty-lbl">Harcama</div><div class="ty-val" id="ty-spend">—</div></div>
     <div class="ty-card"><div class="ty-lbl">Toplam Ciro</div><div class="ty-val" id="ty-rev" style="color:var(--g)">—</div></div>
@@ -73,31 +92,38 @@
     <div class="ty-card"><div class="ty-lbl">Görüntülenme</div><div class="ty-val" id="ty-impr">—</div></div>
   </div>
 
-  <!-- İçerik -->
   <div class="ty-tbl-wrap" id="tyContent">
     <div class="ty-upload-zone" id="tyZone" onclick="document.getElementById('tyFile').click()">
       <div style="font-size:48px;margin-bottom:14px">🟠</div>
       <h3 style="font-size:16px;margin-bottom:10px;color:var(--t)">Trendyol Reklam Raporu Yükle</h3>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:500px;margin:0 auto 20px;text-align:left">
-        <div style="background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:10px 12px;font-size:11px">
-          <div style="font-weight:600;color:var(--t);margin-bottom:4px">📦 Ürün Reklamları</div>
-          <div style="color:var(--m)">Ürün Reklamları → Excel İndir</div>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:10px 12px;font-size:11px">
-          <div style="font-weight:600;color:var(--t);margin-bottom:4px">📦 Ürün Detay</div>
-          <div style="color:var(--m)">Reklam Detayı → Ürün Tablosu → Excel İndir</div>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:10px 12px;font-size:11px">
-          <div style="font-weight:600;color:var(--t);margin-bottom:4px">🏪 Mağaza Reklamları</div>
-          <div style="color:var(--m)">Mağaza Reklamları → Excel İndir</div>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:10px 12px;font-size:11px">
-          <div style="font-weight:600;color:var(--t);margin-bottom:4px">👤 Influencer / 📘 Meta</div>
-          <div style="color:var(--m)">İlgili sekme → Excel İndir</div>
-        </div>
+      <p style="font-size:12px;color:var(--m);margin-bottom:20px;line-height:1.8">
+        Ürün Reklamları → Excel İndir (kampanya listesi)<br>
+        Reklam Detayı → Ürün Tablosu → Excel İndir (ürün bazlı)<br>
+        Mağaza / Influencer / Meta Reklamları → Excel İndir<br>
+        <b style="color:var(--t)">Birden fazla dosya aynı anda seçilebilir</b>
+      </p>
+      <button class="btn" style="background:#f27a1a;pointer-events:none">📤 Excel Seç</button>
+    </div>
+  </div>
+</div>
+
+<!-- Detay Modal -->
+<div id="tyModal" style="display:none" class="ty-modal-overlay" onclick="if(event.target===this)tyModalClose()">
+  <div class="ty-modal">
+    <div class="ty-modal-header">
+      <div>
+        <div style="font-size:14px;font-weight:700" id="tyModalTitle">—</div>
+        <div style="font-size:11px;color:var(--m);margin-top:2px" id="tyModalSub">—</div>
       </div>
-      <button class="btn" style="background:#f27a1a;pointer-events:none">📤 Excel Dosyası Seç</button>
-      <p style="font-size:10px;color:var(--m);margin-top:10px">Birden fazla dosya yüklenebilir — arşiv otomatik birleşir, tekrar yok</p>
+      <button onclick="tyModalClose()" style="background:none;border:none;color:var(--m);font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div class="ty-modal-body">
+      <div class="ty-modal-tabs">
+        <button class="ty-modal-tab active" onclick="tyModalTab('genel',this)">📊 Genel</button>
+        <button class="ty-modal-tab" onclick="tyModalTab('urunler',this)">📦 Ürünler</button>
+        <button class="ty-modal-tab" onclick="tyModalTab('grafik',this)">📈 Grafik</button>
+      </div>
+      <div id="tyModalContent"></div>
     </div>
   </div>
 </div>
@@ -106,8 +132,11 @@
 (function(){
 var _tab = 'urun';
 var _db = {urun:[], magaza:[], influencer:[], meta:[], urun_detay:[]};
+var _expanded = {};
+var _modalData = null;
+var _modalTab = 'genel';
 
-function parseN(s){
+function N(s){
   if(!s && s!==0) return 0;
   return parseFloat(String(s).replace(/\./g,'').replace(',','.')) || 0;
 }
@@ -116,52 +145,49 @@ function fmt(n){
   if(n>=1000) return (n/1000).toFixed(0)+'K₺';
   return n.toFixed(0)+'₺';
 }
-function roasColor(v){ return v>=10?'var(--g)':v>=5?'var(--y)':'var(--r)'; }
-function badgeClass(s){
+function fmtN(n){ return parseInt(n||0).toLocaleString('tr'); }
+function rc(v){ return v>=10?'var(--g)':v>=5?'var(--y)':'var(--r)'; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function bc(s){
   if(!s) return 'bitti';
   if(s.includes('Yayında')) return 'yayinda';
   if(s.includes('Tamamlandı')) return 'tamamlandi';
-  if(s.includes('Hesaplanıyor')) return 'hesaplaniyor';
   return 'bitti';
 }
 
 // ── TAB ──────────────────────────────────────────────────
 window.tyTab = function(tab, el){
-  _tab = tab;
+  _tab = tab; _expanded = {};
   document.querySelectorAll('.ty-tab').forEach(function(t){t.classList.remove('active');});
   el.classList.add('active');
   document.getElementById('tySearch').value = '';
-  document.getElementById('tyStatusFilter').value = '';
+  document.getElementById('tyStatusF').value = '';
   tyRender();
 };
 
-// ── UPLOAD ────────────────────────────────────────────────
+// ── UPLOAD — multiple files ───────────────────────────────
 window.tyUpload = async function(input){
-  var file = input.files[0];
-  if(!file) return;
+  var files = Array.from(input.files);
+  if(!files.length) return;
   var st = document.getElementById('tySt');
-  if(st) st.textContent = '⏳ Yükleniyor...';
-  var fd = new FormData();
-  fd.append('file', file);
-  try{
-    var r = await fetch('/trendyol/upload', {method:'POST', body:fd});
-    var res = await r.json();
-    if(res.success){
-      if(st) st.textContent = '✓ ' + res.count + ' kayıt · ' + res.type;
-      // Sekmeyi otomatik ayarla
-      if(res.tab) {
+  var results = [];
+  for(var i=0;i<files.length;i++){
+    if(st) st.textContent = '⏳ '+(i+1)+'/'+files.length+' yükleniyor...';
+    var fd = new FormData();
+    fd.append('file', files[i]);
+    try{
+      var r = await fetch('/trendyol/upload', {method:'POST', body:fd});
+      var res = await r.json();
+      results.push(res.success ? '✓ '+res.type+' ('+res.count+')' : '⚠️ '+files[i].name);
+      if(res.tab){
         var tabEl = document.querySelector('[data-tab="'+res.tab+'"]');
-        if(tabEl) tyTab(res.tab, tabEl);
+        if(tabEl && files.length===1) { _tab=res.tab; document.querySelectorAll('.ty-tab').forEach(function(t){t.classList.remove('active');}); tabEl.classList.add('active'); }
       }
-      tyLoad();
-    } else {
-      if(st) st.textContent = '⚠️ ' + (res.error||'Hata');
-      if(window.toast) toast('⚠️ ' + (res.error||'Yükleme hatası'));
-    }
-  } catch(e){
-    if(st) st.textContent = 'Hata: ' + e.message;
+    } catch(e){ results.push('⚠️ '+files[i].name+': '+e.message); }
   }
+  if(st) st.textContent = results.join(' · ');
   input.value = '';
+  tyLoad();
 };
 
 // ── LOAD ──────────────────────────────────────────────────
@@ -179,353 +205,500 @@ window.tyLoad = async function(){
 };
 
 // ── CARDS ────────────────────────────────────────────────
-function updateCards(rows, keys){
-  var k = keys || {spend:'harcama', rev:'toplam_ciro', roas:'roas', sales:'toplam_satis', clicks:'tiklanma', impr:'goruntulenme'};
-  var totSpend=0,totRev=0,totSales=0,totClicks=0,totImpr=0,roasSum=0,roasN=0;
+function cards(rows, keys){
+  var k = keys||{spend:'harcama',rev:'toplam_ciro',roas:'roas',sales:'toplam_satis',clicks:'tiklanma',impr:'goruntulenme'};
+  var ts=0,tr=0,tsl=0,tc=0,ti=0,rs=0,rn=0;
   rows.forEach(function(r){
-    totSpend+=parseN(r[k.spend]);
-    totRev+=parseN(r[k.rev]);
-    totSales+=parseInt(r[k.sales]||0);
-    totClicks+=parseInt(r[k.clicks]||0);
-    totImpr+=parseInt(r[k.impr]||0);
-    var roas=parseN(r[k.roas]);
-    if(roas>0){roasSum+=roas;roasN++;}
+    ts+=N(r[k.spend]); tr+=N(r[k.rev]||r['ciro']||0);
+    tsl+=parseInt(r[k.sales]||r['satis']||0);
+    tc+=parseInt(r[k.clicks]||r['ziyaret']||0);
+    ti+=parseInt(r[k.impr]||0);
+    var roas=N(r[k.roas]); if(roas>0){rs+=roas;rn++;}
   });
-  var avgRoas=roasN>0?(roasSum/roasN):0;
-  var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
-  s('ty-spend',fmt(totSpend));
-  s('ty-rev',fmt(totRev));
-  s('ty-roas',avgRoas.toFixed(2)+'x');
-  s('ty-sales',totSales.toLocaleString('tr'));
-  s('ty-clicks',totClicks.toLocaleString('tr'));
-  s('ty-impr',totImpr.toLocaleString('tr'));
+  var avg=rn>0?(rs/rn):0;
+  function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  set('ty-spend',fmt(ts)); set('ty-rev',fmt(tr));
+  set('ty-roas',avg.toFixed(2)+'x'); set('ty-sales',tsl.toLocaleString('tr'));
+  set('ty-clicks',tc.toLocaleString('tr')); set('ty-impr',ti.toLocaleString('tr'));
 }
 
 // ── RENDER ────────────────────────────────────────────────
 function tyRender(){
-  var hasData = Object.values(_db).some(function(a){return a.length>0;});
-  var zone = document.getElementById('tyZone');
-  var summary = document.getElementById('tySummary');
-  var content = document.getElementById('tyContent');
-
-  if(!hasData){
-    if(zone) zone.style.display='';
-    if(summary) summary.style.display='none';
-    return;
-  }
-  if(zone) zone.style.display='none';
-
-  if(_tab==='ai'){
-    if(summary) summary.style.display='none';
-    renderAI(content);
-    return;
-  }
-
-  if(summary) summary.style.display='grid';
-
-  var q = (document.getElementById('tySearch').value||'').toLowerCase();
-  var sf = document.getElementById('tyStatusFilter').value;
-
-  if(_tab==='urun') renderUrun(content, q, sf);
-  else if(_tab==='magaza') renderMagaza(content, q, sf);
-  else if(_tab==='influencer') renderInfluencer(content, q, sf);
-  else if(_tab==='meta') renderMeta(content, q, sf);
+  var hasData=Object.values(_db).some(function(a){return a.length>0;});
+  var zone=document.getElementById('tyZone');
+  var summary=document.getElementById('tySummary');
+  var content=document.getElementById('tyContent');
+  if(!hasData){zone.style.display='';summary.style.display='none';return;}
+  zone.style.display='none';
+  if(_tab==='ai'){summary.style.display='none';renderAI(content);return;}
+  summary.style.display='grid';
+  var q=(document.getElementById('tySearch').value||'').toLowerCase();
+  var sf=document.getElementById('tyStatusF').value;
+  if(_tab==='urun') renderUrun(content,q,sf);
+  else if(_tab==='magaza') renderMagaza(content,q,sf);
+  else if(_tab==='influencer') renderInfluencer(content,q,sf);
+  else if(_tab==='meta') renderMeta(content,q,sf);
 }
 
-// ── ÜRÜN REKLAMLARI ──────────────────────────────────────
+// ── ÜRÜN REKLAMLARI (üst kampanya + alt ürün detayı) ─────
 function renderUrun(content, q, sf){
-  var rows = _db.urun.filter(function(r){
-    if(q && !(r.ad||'').toLowerCase().includes(q)) return false;
-    if(sf && !(r.statu||'').includes(sf)) return false;
+  var rows=_db.urun.filter(function(r){
+    if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
+    if(sf&&!(r.statu||'').includes(sf))return false;
     return true;
-  }).sort(function(a,b){return parseN(b.harcama)-parseN(a.harcama);});
+  }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
 
-  updateCards(rows);
+  cards(rows);
 
   if(!rows.length){
-    content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç bulunamadı':'Ürün reklamı yüklenmemiş')+'</div>';
+    content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç yok':'Ürün reklamı yüklenmemiş')+'</div>';
     return;
   }
 
-  content.innerHTML='<table><thead><tr>'
-    +'<th>Reklam Adı</th><th>Durum</th><th>Başlangıç</th><th>Bitiş</th>'
+  var html='<table><thead><tr>'
+    +'<th style="width:22px"></th>'
+    +'<th style="min-width:200px">Kampanya</th>'
+    +'<th>Durum</th><th>Başlangıç</th><th>Bitiş</th>'
     +'<th>Ürün</th><th>Günlük Bütçe</th><th>Harcama</th>'
-    +'<th>Görüntülenme</th><th>Tıklanma</th><th>CTR</th>'
-    +'<th>D.Satış</th><th>Dol.Satış</th><th>Top.Satış</th>'
-    +'<th>D.Ciro</th><th>Top.Ciro</th><th>ROAS</th><th>TBM</th>'
-    +'</tr></thead><tbody>'
-    +rows.map(function(r){
-      var roas=parseN(r.roas);
-      var tiklanma=parseInt(r.tiklanma||0);
-      var goruntulenme=parseInt(r.goruntulenme||0);
-      var ctr=goruntulenme>0?(tiklanma/goruntulenme*100).toFixed(2):0;
-      return '<tr>'
-        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500" title="'+escH(r.ad||'')+'">'+escH(r.ad||'—')+'</td>'
-        +'<td><span class="ty-badge '+badgeClass(r.statu)+'">'+escH(r.statu||'—')+'</span></td>'
-        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10)||'—')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.bitis||'').slice(0,10)||'Süresiz')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.urun_adedi||'—')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.gunluk_butce||'—')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.harcama||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+goruntulenme.toLocaleString('tr')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+tiklanma.toLocaleString('tr')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">%'+ctr+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.dogrudan_satis||'0')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.dolayli_satis||'0')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.toplam_satis||'0')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.dogrudan_ciro||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.toplam_ciro||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:'+roasColor(roas)+'">'+( roas>0?roas.toFixed(2)+'x':'—')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.gerceklesen_tbm||'—')+'₺</td>'
-        +'</tr>';
-    }).join('')+'</tbody></table>';
+    +'<th>Görüntülenme</th><th>Tıklanma</th>'
+    +'<th>D.Satış</th><th>Dol.</th><th>Top.Satış</th>'
+    +'<th>Ciro</th><th>ROAS</th><th>TBM</th>'
+    +'<th></th>'
+    +'</tr></thead><tbody>';
+
+  rows.forEach(function(r, idx){
+    var roas=N(r.roas);
+    var key=r.ad+'|'+r.baslangic;
+    var isOpen=!!_expanded[key];
+    var products=_db.urun_detay.filter(function(p){return p.kampanya===r.ad;});
+
+    html+='<tr class="ty-camp-row" onclick="tyExpand(\''+esc(key)+'\','+idx+')">'
+      +'<td><button class="ty-expand-btn'+(isOpen?' open':'')+'" id="btn_'+idx+'">'+(isOpen?'▼':'▶')+'</button></td>'
+      +'<td style="font-weight:500;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="'+esc(r.ad)+'">'+esc(r.ad||'—')+'</td>'
+      +'<td><span class="ty-badge '+bc(r.statu)+'">'+esc(r.statu||'—')+'</span></td>'
+      +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10)||'—')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.bitis&&r.bitis!=='-'?r.bitis:'Süresiz').slice(0,10))+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.urun_adedi||'—')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.gunluk_butce||'—')+'₺</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.harcama||'0')+'₺</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(r.goruntulenme)+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(r.tiklanma)+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.dogrudan_satis||'0')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.dolayli_satis||'0')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.toplam_satis||'0')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.toplam_ciro||'0')+'₺</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;color:'+rc(roas)+'">'+( roas>0?roas.toFixed(2)+'x':'—')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.gerceklesen_tbm||'—')+'₺</td>'
+      +'<td><button class="btn sm" style="background:#f27a1a;color:#fff;font-size:9px" onclick="event.stopPropagation();tyDetail('+idx+')">Detay</button></td>'
+      +'</tr>';
+
+    // Alt satır — ürün detayı
+    if(isOpen){
+      html+='<tr class="ty-detail-row"><td colspan="17"><div class="ty-detail-panel">';
+      if(!products.length){
+        html+='<div style="padding:12px 20px;font-size:11px;color:var(--m)">📦 Bu kampanya için ürün detay raporu yüklenmemiş. Trendyol → Reklam Detayı → Ürün Tablosu → Excel İndir</div>';
+      } else {
+        html+='<div style="padding:10px 20px"><div style="font-size:10px;color:var(--m);margin-bottom:8px">'+products.length+' ürün · '+esc(r.ad)+'</div>'
+          +'<table style="width:100%;font-size:10px"><thead><tr>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">Ürün</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">Model</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">Harcama</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">Görüntülenme</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">Tıklanma</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">CTR%</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">Satış</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">Ciro</th>'
+          +'<th style="background:var(--bg);padding:5px 8px;color:var(--m);font-size:8px;text-transform:uppercase;border-bottom:1px solid var(--b)">ROAS</th>'
+          +'</tr></thead><tbody>';
+        products.sort(function(a,b){return N(b.harcama)-N(a.harcama);}).forEach(function(p){
+          var pr=N(p.roas);
+          html+='<tr>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(p.urun_adi||'')+'">'+esc((p.urun_adi||'—').slice(0,40))+'</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace">'+esc(p.model||'—')+'</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace">'+esc(p.harcama||'0')+'₺</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace">'+fmtN(p.goruntulenme)+'</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace">'+fmtN(p.tiklanma)+'</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace">%'+esc(p.ctr||'0')+'</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(p.toplam_satis||'0')+'</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(p.toplam_ciro||'0')+'₺</td>'
+            +'<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.03);font-family:\'DM Mono\',monospace;color:'+rc(pr)+'">'+( pr>0?pr.toFixed(2)+'x':'—')+'</td>'
+            +'</tr>';
+        });
+        html+='</tbody></table></div>';
+      }
+      html+='</div></td></tr>';
+    }
+  });
+
+  html+='</tbody></table>';
+  content.innerHTML=html;
 }
 
-// ── MAĞAZA REKLAMLARI ────────────────────────────────────
-function renderMagaza(content, q, sf){
-  var rows = _db.magaza.filter(function(r){
-    if(q && !(r.ad||'').toLowerCase().includes(q)) return false;
-    if(sf && !(r.statu||'').includes(sf)) return false;
+// ── EXPAND ────────────────────────────────────────────────
+window.tyExpand = function(key, idx){
+  _expanded[key] = !_expanded[key];
+  tyRender();
+};
+
+// ── DETAY MODAL ──────────────────────────────────────────
+window.tyDetail = function(idx){
+  var rows=_db.urun;
+  var q=(document.getElementById('tySearch').value||'').toLowerCase();
+  var sf=document.getElementById('tyStatusF').value;
+  var filtered=rows.filter(function(r){
+    if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
+    if(sf&&!(r.statu||'').includes(sf))return false;
     return true;
-  }).sort(function(a,b){return parseN(b.harcama)-parseN(a.harcama);});
+  }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
 
-  updateCards(rows, {spend:'harcama',rev:'toplam_ciro',roas:'roas',sales:'toplam_satis',clicks:'tiklanma',impr:'goruntulenme'});
+  _modalData = filtered[idx];
+  if(!_modalData) return;
+  _modalTab = 'genel';
+  document.getElementById('tyModal').style.display='flex';
+  document.getElementById('tyModalTitle').textContent = _modalData.ad || '—';
+  var roas = N(_modalData.roas);
+  document.getElementById('tyModalSub').textContent =
+    (_modalData.baslangic||'').slice(0,10) + ' · ' +
+    (_modalData.statu||'') + ' · ROAS: ' + (roas>0?roas.toFixed(2)+'x':'—');
 
-  if(!rows.length){
-    content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç bulunamadı':'Mağaza reklamı yüklenmemiş — Mağaza Reklamları → Excel İndir')+'</div>';
-    return;
+  document.querySelectorAll('.ty-modal-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelector('.ty-modal-tab').classList.add('active');
+  tyModalRender();
+};
+
+window.tyModalClose = function(){
+  document.getElementById('tyModal').style.display='none';
+  _modalData=null;
+};
+
+window.tyModalTab = function(tab, el){
+  _modalTab=tab;
+  document.querySelectorAll('.ty-modal-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  tyModalRender();
+};
+
+function tyModalRender(){
+  if(!_modalData) return;
+  var r=_modalData;
+  var products=_db.urun_detay.filter(function(p){return p.kampanya===r.ad;});
+  var mc=document.getElementById('tyModalContent');
+
+  if(_modalTab==='genel'){
+    var roas=N(r.roas);
+    var tiklanma=parseInt(r.tiklanma||0);
+    var goruntulenme=parseInt(r.goruntulenme||0);
+    var ctr=goruntulenme>0?(tiklanma/goruntulenme*100).toFixed(2):0;
+    mc.innerHTML='<div class="ty-stat-grid">'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Harcama</div><div class="ty-stat-val">'+esc(r.harcama||'0')+'₺</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Toplam Ciro</div><div class="ty-stat-val" style="color:var(--g)">'+esc(r.toplam_ciro||'0')+'₺</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">ROAS</div><div class="ty-stat-val" style="color:'+rc(roas)+'">'+( roas>0?roas.toFixed(2)+'x':'—')+'</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Toplam Satış</div><div class="ty-stat-val" style="color:var(--g)">'+esc(r.toplam_satis||'0')+'</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Görüntülenme</div><div class="ty-stat-val">'+fmtN(r.goruntulenme)+'</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Tıklanma</div><div class="ty-stat-val">'+fmtN(r.tiklanma)+'</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">CTR</div><div class="ty-stat-val">%'+ctr+'</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Gerçekleşen TBM</div><div class="ty-stat-val">'+esc(r.gerceklesen_tbm||'—')+'₺</div></div>'
+      +'</div>'
+      +'<div style="font-size:11px;color:var(--m);line-height:2;background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:12px 16px">'
+      +'<div>📅 Başlangıç: <b style="color:var(--t)">'+esc((r.baslangic||'').slice(0,16))+'</b></div>'
+      +'<div>🏁 Bitiş: <b style="color:var(--t)">'+esc((r.bitis&&r.bitis!=='-'?r.bitis:'Süresiz').slice(0,10))+'</b></div>'
+      +'<div>💰 Günlük Bütçe: <b style="color:var(--t)">'+esc(r.gunluk_butce||'—')+'₺</b></div>'
+      +'<div>📦 Ürün Adedi: <b style="color:var(--t)">'+esc(r.urun_adedi||'—')+'</b></div>'
+      +'<div>🎯 D.Satış: <b style="color:var(--t)">'+esc(r.dogrudan_satis||'0')+'</b>  Dolaylı: <b style="color:var(--t)">'+esc(r.dolayli_satis||'0')+'</b></div>'
+      +'<div>💵 D.Ciro: <b style="color:var(--t)">'+esc(r.dogrudan_ciro||'0')+'₺</b>  Dolaylı: <b style="color:var(--t)">'+esc(r.dolayli_ciro||'0')+'₺</b></div>'
+      +'</div>';
+  } else if(_modalTab==='urunler'){
+    if(!products.length){
+      mc.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">📦 Ürün detay raporu yüklenmemiş.<br><br>Trendyol → Reklam Detayı → Ürün Tablosu → Excel İndir → Buraya yükle</div>';
+      return;
+    }
+    var sorted=products.slice().sort(function(a,b){return N(b.harcama)-N(a.harcama);});
+    var totH=0,totS=0,totC=0,totT=0,totG=0,rsSum=0,rsN=0;
+    sorted.forEach(function(p){
+      totH+=N(p.harcama);totS+=parseInt(p.toplam_satis||0);totC+=N(p.toplam_ciro);
+      totT+=parseInt(p.tiklanma||0);totG+=parseInt(p.goruntulenme||0);
+      var pr=N(p.roas);if(pr>0){rsSum+=pr;rsN++;}
+    });
+    mc.innerHTML='<div class="ty-stat-grid" style="grid-template-columns:repeat(3,1fr)">'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Toplam Harcama</div><div class="ty-stat-val">'+fmt(totH)+'</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Toplam Ciro</div><div class="ty-stat-val" style="color:var(--g)">'+fmt(totC)+'</div></div>'
+      +'<div class="ty-stat-box"><div class="ty-stat-lbl">Ort. ROAS</div><div class="ty-stat-val" style="color:'+rc(rsN>0?rsSum/rsN:0)+'">'+(rsN>0?(rsSum/rsN).toFixed(2)+'x':'—')+'</div></div>'
+      +'</div>'
+      +'<div class="ty-prod-table"><table><thead><tr>'
+      +'<th>Ürün</th><th>Model</th><th>Harcama</th><th>Görüntülenme</th><th>Tıklanma</th><th>CTR%</th><th>D.Satış</th><th>Dol.Satış</th><th>Top.Satış</th><th>Ciro</th><th>ROAS</th>'
+      +'</tr></thead><tbody>'
+      +sorted.map(function(p){
+        var pr=N(p.roas);
+        return '<tr>'
+          +'<td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(p.urun_adi||'')+'">'+esc((p.urun_adi||'—').slice(0,35))+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace">'+esc(p.model||'—')+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace">'+esc(p.harcama||'0')+'₺</td>'
+          +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(p.goruntulenme)+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(p.tiklanma)+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace">%'+esc(p.ctr||'0')+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace">'+esc(p.dogrudan_satis||'0')+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace">'+esc(p.dolayli_satis||'0')+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(p.toplam_satis||'0')+'</td>'
+          +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(p.toplam_ciro||'0')+'₺</td>'
+          +'<td style="font-family:\'DM Mono\',monospace;color:'+rc(pr)+'">'+( pr>0?pr.toFixed(2)+'x':'—')+'</td>'
+          +'</tr>';
+      }).join('')+'</tbody></table></div>';
+  } else if(_modalTab==='grafik'){
+    // Ürün bazlı bar grafik
+    if(!products.length){
+      mc.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">📈 Grafik için ürün detay raporu yükle.</div>';
+      return;
+    }
+    var sorted2=products.slice().sort(function(a,b){return N(b.toplam_ciro)-N(a.toplam_ciro);}).slice(0,10);
+    var maxC=Math.max.apply(null,sorted2.map(function(p){return N(p.toplam_ciro);}));
+    var maxH=Math.max.apply(null,sorted2.map(function(p){return N(p.harcama);}));
+    mc.innerHTML='<div class="ty-chart-wrap">'
+      +'<div style="font-size:11px;font-weight:600;margin-bottom:12px">Top 10 Ürün — Ciro & Harcama Karşılaştırması</div>'
+      +sorted2.map(function(p){
+        var ciro=N(p.toplam_ciro),harc=N(p.harcama);
+        var pr=N(p.roas);
+        var cpct=maxC>0?Math.round(ciro/maxC*100):0;
+        var hpct=maxH>0?Math.round(harc/maxH*100):0;
+        return '<div style="margin-bottom:12px">'
+          +'<div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px">'
+          +'<span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((p.urun_adi||'—').slice(0,30))+'</span>'
+          +'<span style="font-family:\'DM Mono\',monospace;color:'+rc(pr)+'">'+(pr>0?pr.toFixed(2)+'x':' ')+'</span>'
+          +'</div>'
+          +'<div style="display:flex;gap:4px;align-items:center;margin-bottom:2px">'
+          +'<span style="font-size:9px;color:var(--g);min-width:35px">Ciro</span>'
+          +'<div style="flex:1;background:var(--b);border-radius:3px;height:8px;overflow:hidden">'
+          +'<div style="width:'+cpct+'%;height:100%;background:var(--g);border-radius:3px"></div></div>'
+          +'<span style="font-family:\'DM Mono\',monospace;font-size:10px;min-width:60px;text-align:right">'+fmt(ciro)+'</span>'
+          +'</div>'
+          +'<div style="display:flex;gap:4px;align-items:center">'
+          +'<span style="font-size:9px;color:#f27a1a;min-width:35px">Harc.</span>'
+          +'<div style="flex:1;background:var(--b);border-radius:3px;height:6px;overflow:hidden">'
+          +'<div style="width:'+hpct+'%;height:100%;background:#f27a1a;border-radius:3px"></div></div>'
+          +'<span style="font-family:\'DM Mono\',monospace;font-size:10px;min-width:60px;text-align:right">'+fmt(harc)+'</span>'
+          +'</div></div>';
+      }).join('')
+      +'</div>'
+      +'<div class="ty-chart-wrap">'
+      +'<div style="font-size:11px;font-weight:600;margin-bottom:12px">Top 10 Ürün — ROAS Sıralaması</div>'
+      +products.slice().sort(function(a,b){return N(b.roas)-N(a.roas);}).slice(0,10).map(function(p){
+        var pr=N(p.roas);
+        var maxR=20;
+        var pct=Math.min(Math.round(pr/maxR*100),100);
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+          +'<span style="font-size:10px;min-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((p.urun_adi||'').slice(0,22))+'</span>'
+          +'<div style="flex:1;background:var(--b);border-radius:3px;height:8px;overflow:hidden">'
+          +'<div style="width:'+pct+'%;height:100%;background:'+rc(pr)+';border-radius:3px"></div></div>'
+          +'<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:'+rc(pr)+';min-width:45px;text-align:right">'+(pr>0?pr.toFixed(2)+'x':'—')+'</span>'
+          +'</div>';
+      }).join('')
+      +'</div>';
   }
+}
 
+// ── MAĞAZA ───────────────────────────────────────────────
+function renderMagaza(content, q, sf){
+  var rows=_db.magaza.filter(function(r){
+    if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
+    if(sf&&!(r.statu||'').includes(sf))return false;
+    return true;
+  }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
+  cards(rows);
+  if(!rows.length){content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç yok':'Mağaza reklamı yüklenmemiş')+'</div>';return;}
   content.innerHTML='<table><thead><tr>'
     +'<th>Reklam Adı</th><th>Durum</th><th>Başlangıç</th><th>Bitiş</th>'
     +'<th>Harcama</th><th>Görüntülenme</th><th>Tıklanma</th>'
     +'<th>Satış</th><th>Ciro</th><th>ROAS</th>'
     +'</tr></thead><tbody>'
     +rows.map(function(r){
-      var roas=parseN(r.roas);
+      var roas=N(r.roas);
       return '<tr>'
-        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500">'+escH(r.ad||'—')+'</td>'
-        +'<td><span class="ty-badge '+badgeClass(r.statu)+'">'+escH(r.statu||'—')+'</span></td>'
-        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10)||'—')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.bitis||'').slice(0,10)||'Süresiz')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.harcama||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+parseInt(r.goruntulenme||0).toLocaleString('tr')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+parseInt(r.tiklanma||0).toLocaleString('tr')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.toplam_satis||'0')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.toplam_ciro||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:'+roasColor(roas)+'">'+( roas>0?roas.toFixed(2)+'x':'—')+'</td>'
+        +'<td style="font-weight:500;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis">'+esc(r.ad||'—')+'</td>'
+        +'<td><span class="ty-badge '+bc(r.statu)+'">'+esc(r.statu||'—')+'</span></td>'
+        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10))+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.bitis&&r.bitis!=='-'?r.bitis:'Süresiz').slice(0,10))+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.harcama||'0')+'₺</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(r.goruntulenme)+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(r.tiklanma)+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.toplam_satis||'0')+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.toplam_ciro||'0')+'₺</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:'+rc(roas)+'">'+( roas>0?roas.toFixed(2)+'x':'—')+'</td>'
         +'</tr>';
     }).join('')+'</tbody></table>';
 }
 
 // ── INFLUENCER ───────────────────────────────────────────
 function renderInfluencer(content, q, sf){
-  var rows = _db.influencer.filter(function(r){
-    if(q && !(r.ad||'').toLowerCase().includes(q)) return false;
-    if(sf && !(r.statu||'').includes(sf)) return false;
+  var rows=_db.influencer.filter(function(r){
+    if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
+    if(sf&&!(r.statu||'').includes(sf))return false;
     return true;
-  }).sort(function(a,b){return parseN(b.ciro)-parseN(a.ciro);});
-
-  // Influencer için farklı kartlar
-  var totOdeme=0, totCiro=0, totSatis=0, totZiyaret=0;
-  rows.forEach(function(r){
-    totOdeme+=parseN(r.odeme);
-    totCiro+=parseN(r.ciro);
-    totSatis+=parseInt(r.satis||0);
-    totZiyaret+=parseInt(r.ziyaret||0);
-  });
-  var s=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
-  s('ty-spend',fmt(totOdeme));
-  s('ty-rev',fmt(totCiro));
-  s('ty-roas',(totOdeme>0?(totCiro/totOdeme).toFixed(2):0)+'x');
-  s('ty-sales',totSatis.toLocaleString('tr'));
-  s('ty-clicks',totZiyaret.toLocaleString('tr'));
-  s('ty-impr','—');
-
-  if(!rows.length){
-    content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç bulunamadı':'Influencer reklamı yüklenmemiş — Influencer Reklamları → Excel İndir')+'</div>';
-    return;
-  }
-
+  }).sort(function(a,b){return N(b.ciro)-N(a.ciro);});
+  var totO=0,totC=0,totS=0,totZ=0;
+  rows.forEach(function(r){totO+=N(r.odeme);totC+=N(r.ciro);totS+=parseInt(r.satis||0);totZ+=parseInt(r.ziyaret||0);});
+  function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  set('ty-spend',fmt(totO));set('ty-rev',fmt(totC));
+  set('ty-roas',(totO>0?(totC/totO).toFixed(2):0)+'x');set('ty-sales',totS.toLocaleString('tr'));
+  set('ty-clicks',totZ.toLocaleString('tr'));set('ty-impr','—');
+  if(!rows.length){content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç yok':'Influencer reklamı yüklenmemiş')+'</div>';return;}
   content.innerHTML='<table><thead><tr>'
     +'<th>Reklam Adı</th><th>Durum</th><th>Başlangıç</th><th>Bitiş</th>'
-    +'<th>Bütçe Tipi</th><th>Ödenecek Tutar</th><th>Link Ziyareti</th>'
+    +'<th>Bütçe Tipi</th><th>Ödenecek</th><th>Link Ziyareti</th>'
     +'<th>Satış</th><th>Ciro</th><th>Paylaşım</th>'
     +'</tr></thead><tbody>'
     +rows.map(function(r){
+      var ciro=N(r.ciro),odeme=N(r.odeme);
+      var roas=odeme>0?(ciro/odeme):0;
       return '<tr>'
-        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500">'+escH(r.ad||'—')+'</td>'
-        +'<td><span class="ty-badge '+badgeClass(r.statu)+'">'+escH(r.statu||'—')+'</span></td>'
-        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10)||'—')+'</td>'
+        +'<td style="font-weight:500;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis">'+esc(r.ad||'—')+'</td>'
+        +'<td><span class="ty-badge '+bc(r.statu)+'">'+esc(r.statu||'—')+'</span></td>'
+        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10))+'</td>'
         +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.bitis||'').slice(0,10)||'—')+'</td>'
-        +'<td style="font-size:10px">'+escH(r.butce_tipi||'—')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.odeme||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+parseInt(r.ziyaret||0).toLocaleString('tr')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.satis||'0')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.ciro||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.paylasim||'0')+'</td>'
+        +'<td style="font-size:10px">'+esc(r.butce_tipi||'—')+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.odeme||'0')+'₺</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(r.ziyaret)+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.satis||'0')+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.ciro||'0')+'₺</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.paylasim||'0')+'</td>'
         +'</tr>';
     }).join('')+'</tbody></table>';
 }
 
-// ── META REKLAMLARI ──────────────────────────────────────
+// ── META ─────────────────────────────────────────────────
 function renderMeta(content, q, sf){
-  var rows = _db.meta.filter(function(r){
-    if(q && !(r.ad||'').toLowerCase().includes(q)) return false;
-    if(sf && !(r.statu||'').includes(sf)) return false;
+  var rows=_db.meta.filter(function(r){
+    if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
+    if(sf&&!(r.statu||'').includes(sf))return false;
     return true;
-  }).sort(function(a,b){return parseN(b.harcama)-parseN(a.harcama);});
-
-  updateCards(rows, {spend:'harcama',rev:'ciro',roas:'roas',sales:'satis',clicks:'tiklanma',impr:'goruntulenme'});
-
-  if(!rows.length){
-    content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç bulunamadı':'Meta reklamı yüklenmemiş — Meta Reklamları → Excel İndir')+'</div>';
-    return;
-  }
-
+  }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
+  cards(rows,{spend:'harcama',rev:'ciro',roas:'roas',sales:'satis',clicks:'tiklanma',impr:'goruntulenme'});
+  if(!rows.length){content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📭 '+(q||sf?'Sonuç yok':'Meta reklamı yüklenmemiş')+'</div>';return;}
   content.innerHTML='<table><thead><tr>'
     +'<th>Reklam Adı</th><th>Durum</th><th>Başlangıç</th><th>Bitiş</th>'
-    +'<th>Toplam Bütçe</th><th>Harcama</th>'
-    +'<th>Görüntülenme</th><th>Tıklanma</th>'
+    +'<th>Toplam Bütçe</th><th>Harcama</th><th>Görüntülenme</th><th>Tıklanma</th>'
     +'<th>Satış</th><th>Ciro</th><th>ROAS</th>'
     +'</tr></thead><tbody>'
     +rows.map(function(r){
-      var roas=parseN(r.roas);
+      var roas=N(r.roas);
       return '<tr>'
-        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:500">'+escH(r.ad||'—')+'</td>'
-        +'<td><span class="ty-badge '+badgeClass(r.statu)+'">'+escH(r.statu||'—')+'</span></td>'
-        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10)||'—')+'</td>'
+        +'<td style="font-weight:500;font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis">'+esc(r.ad||'—')+'</td>'
+        +'<td><span class="ty-badge '+bc(r.statu)+'">'+esc(r.statu||'—')+'</span></td>'
+        +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.baslangic||'').slice(0,10))+'</td>'
         +'<td style="font-family:\'DM Mono\',monospace;font-size:10px">'+((r.bitis||'').slice(0,10)||'—')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.toplam_butce||'—')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+escH(r.harcama||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+parseInt(r.goruntulenme||0).toLocaleString('tr')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace">'+parseInt(r.tiklanma||0).toLocaleString('tr')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.satis||'0')+'</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+escH(r.ciro||'0')+'₺</td>'
-        +'<td style="font-family:\'DM Mono\',monospace;color:'+roasColor(roas)+'">'+( roas>0?roas.toFixed(2)+'x':'—')+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.toplam_butce||'—')+'₺</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+esc(r.harcama||'0')+'₺</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(r.goruntulenme)+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace">'+fmtN(r.tiklanma)+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.satis||'0')+'</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:var(--g)">'+esc(r.ciro||'0')+'₺</td>'
+        +'<td style="font-family:\'DM Mono\',monospace;color:'+rc(roas)+'">'+( roas>0?roas.toFixed(2)+'x':'—')+'</td>'
         +'</tr>';
     }).join('')+'</tbody></table>';
 }
 
 // ── AI ÖNERİ ─────────────────────────────────────────────
 function renderAI(content){
-  var allCamps = _db.urun.concat(_db.magaza).concat(_db.meta);
-  if(!allCamps.length){
-    content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📊 AI önerileri için reklam raporu yükle.</div>';
-    return;
-  }
+  var all=_db.urun.concat(_db.magaza).concat(_db.meta);
+  if(!all.length){content.innerHTML='<div style="text-align:center;padding:60px;color:var(--m)">📊 AI önerileri için reklam raporu yükle.</div>';return;}
 
-  // 1. Yeniden açılması önerilen (yüksek ROAS, aktif değil)
-  var candidates = allCamps.filter(function(r){
-    return !(r.statu||'').includes('Yayında') && parseN(r.roas)>=8 && parseN(r.harcama)>500;
-  }).sort(function(a,b){return parseN(b.roas)-parseN(a.roas);}).slice(0,6);
+  var candidates=all.filter(function(r){return !(r.statu||'').includes('Yayında')&&N(r.roas)>=8&&N(r.harcama)>500;})
+    .sort(function(a,b){return N(b.roas)-N(a.roas);}).slice(0,6);
 
-  // 2. Ay bazlı trend
   var byMonth={};
-  allCamps.forEach(function(r){
+  all.forEach(function(r){
     var d=(r.baslangic||'').slice(0,7);
-    if(!d||d.length<7) return;
-    if(!byMonth[d]) byMonth[d]={spend:0,rev:0,sales:0,n:0};
-    byMonth[d].spend+=parseN(r.harcama);
-    byMonth[d].rev+=parseN(r.toplam_ciro||r.ciro||'0');
+    if(!d||d.length<7)return;
+    if(!byMonth[d])byMonth[d]={spend:0,rev:0,sales:0,n:0};
+    byMonth[d].spend+=N(r.harcama);
+    byMonth[d].rev+=N(r.toplam_ciro||r.ciro||0);
     byMonth[d].sales+=parseInt(r.toplam_satis||r.satis||0);
     byMonth[d].n++;
   });
 
-  // 3. Kategori ROAS
   var byCat={};
   _db.urun.forEach(function(r){
-    var cat=(r.ad||'').split('>')[0].replace(/[^a-zA-ZçğıöşüÇĞİÖŞÜ\s]/g,'').trim().toUpperCase();
-    if(!cat||cat.length<2) return;
-    if(!byCat[cat]) byCat[cat]={spend:0,rev:0,roas_sum:0,roas_n:0,n:0};
-    byCat[cat].spend+=parseN(r.harcama);
-    byCat[cat].rev+=parseN(r.toplam_ciro||'0');
-    var roas=parseN(r.roas);
-    if(roas>0){byCat[cat].roas_sum+=roas;byCat[cat].roas_n++;}
+    var cat=(r.ad||'').split('>')[0].trim().toUpperCase().replace(/[^A-ZÇĞİÖŞÜa-zçğışöüü\s]/g,'').trim();
+    if(!cat||cat.length<2)return;
+    if(!byCat[cat])byCat[cat]={rs:0,rn:0,spend:0,n:0};
+    byCat[cat].spend+=N(r.harcama);
+    var roas=N(r.roas);if(roas>0){byCat[cat].rs+=roas;byCat[cat].rn++;}
     byCat[cat].n++;
   });
 
   var months=['','Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
-  var monthList = Object.entries(byMonth).sort(function(a,b){return a[0]>b[0]?1:-1;}).slice(-8);
-  var catList = Object.entries(byCat)
-    .map(function(e){return {cat:e[0],avg_roas:e[1].roas_n>0?e[1].roas_sum/e[1].roas_n:0,spend:e[1].spend,n:e[1].n};})
+  var mList=Object.entries(byMonth).sort(function(a,b){return a[0]>b[0]?1:-1;}).slice(-8);
+  var cList=Object.entries(byCat)
+    .map(function(e){return {cat:e[0],avg:e[1].rn>0?e[1].rs/e[1].rn:0,spend:e[1].spend,n:e[1].n};})
     .filter(function(c){return c.spend>500;})
-    .sort(function(a,b){return b.avg_roas-a.avg_roas;}).slice(0,8);
-  var maxRoas = catList.length>0?catList[0].avg_roas:1;
+    .sort(function(a,b){return b.avg-a.avg;}).slice(0,8);
+  var maxR=cList.length>0?cList[0].avg:1;
+  var maxS=mList.length>0?Math.max.apply(null,mList.map(function(e){return e[1].spend;})):1;
 
-  var html = '<div style="padding:12px;overflow-y:auto">';
+  var html='<div style="padding:12px;overflow-y:auto">';
 
   if(candidates.length){
-    html+='<div class="ty-ai-card"><h4>🚀 Yeniden Açılması Önerilen Reklamlar</h4>'
-      +'<p style="font-size:10px;color:var(--m);margin-bottom:10px">Geçmişte yüksek ROAS yapan, şu an aktif olmayan reklamlar:</p>'
+    html+='<div class="ty-ai-card"><h4>🚀 Yeniden Açılması Önerilen (ROAS ≥ 8x)</h4>'
       +candidates.map(function(r,i){
-        var roas=parseN(r.roas);
+        var roas=N(r.roas);
         return '<div class="ty-ai-row">'
           +'<span style="background:#f27a1a;color:#fff;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">'+(i+1)+'</span>'
-          +'<div style="flex:1;min-width:0"><div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escH(r.ad||'—')+'</div>'
-          +'<div style="font-size:10px;color:var(--m)">'+((r.baslangic||'').slice(0,10))+'  ·  Harcama: '+escH(r.harcama||'0')+'₺</div></div>'
-          +'<span style="font-family:\'DM Mono\',monospace;color:'+roasColor(roas)+';font-weight:700;flex-shrink:0">'+roas.toFixed(2)+'x</span>'
+          +'<div style="flex:1;min-width:0"><div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.ad||'—')+'</div>'
+          +'<div style="font-size:10px;color:var(--m)">'+((r.baslangic||'').slice(0,10))+' · '+esc(r.harcama||'0')+'₺ harcandı</div></div>'
+          +'<span style="font-family:\'DM Mono\',monospace;color:'+rc(roas)+';font-weight:700;flex-shrink:0">'+roas.toFixed(2)+'x</span>'
           +'</div>';
       }).join('')+'</div>';
   }
 
-  if(catList.length){
-    html+='<div class="ty-ai-card"><h4>📊 Kategori Performansı (Ort. ROAS)</h4>'
-      +catList.map(function(c){
-        var pct=maxRoas>0?Math.round(c.avg_roas/maxRoas*100):0;
+  if(cList.length){
+    html+='<div class="ty-ai-card"><h4>📊 Kategori ROAS Analizi</h4>'
+      +cList.map(function(c){
+        var pct=maxR>0?Math.round(c.avg/maxR*100):0;
         return '<div class="ty-ai-row">'
-          +'<div style="min-width:130px;font-size:11px;font-weight:500">'+escH(c.cat)+'</div>'
-          +'<div class="ty-bar"><div class="ty-bar-fill" style="width:'+pct+'%;background:'+roasColor(c.avg_roas)+'"></div></div>'
-          +'<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:'+roasColor(c.avg_roas)+';min-width:50px;text-align:right">'+c.avg_roas.toFixed(2)+'x</span>'
-          +'<span style="font-size:10px;color:var(--m);min-width:40px;text-align:right">'+c.n+' reklam</span>'
+          +'<div style="min-width:120px;font-size:11px;font-weight:500">'+esc(c.cat)+'</div>'
+          +'<div class="ty-bar"><div class="ty-bar-fill" style="width:'+pct+'%;background:'+rc(c.avg)+'"></div></div>'
+          +'<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:'+rc(c.avg)+';min-width:50px;text-align:right">'+c.avg.toFixed(2)+'x</span>'
+          +'<span style="font-size:10px;color:var(--m);min-width:50px;text-align:right">'+c.n+' reklam</span>'
           +'</div>';
       }).join('')+'</div>';
   }
 
-  if(monthList.length){
-    var maxSpend=Math.max.apply(null,monthList.map(function(e){return e[1].spend;}));
+  if(mList.length){
     html+='<div class="ty-ai-card"><h4>📅 Aylık Trend</h4>'
-      +monthList.map(function(e){
+      +mList.map(function(e){
         var ay=e[0].split('-');
         var label=(months[parseInt(ay[1])]||ay[1])+' '+ay[0];
-        var d=e[1];
-        var roas=d.spend>0?(d.rev/d.spend):0;
-        var pct=maxSpend>0?Math.round(d.spend/maxSpend*100):0;
+        var d=e[1];var roas=d.spend>0?(d.rev/d.spend):0;
+        var pct=maxS>0?Math.round(d.spend/maxS*100):0;
         return '<div class="ty-ai-row">'
-          +'<div style="min-width:100px;font-size:11px;font-weight:500">'+label+'</div>'
+          +'<div style="min-width:90px;font-size:11px;font-weight:500">'+label+'</div>'
           +'<div class="ty-bar"><div class="ty-bar-fill" style="width:'+pct+'%"></div></div>'
-          +'<span style="font-family:\'DM Mono\',monospace;font-size:10px;min-width:60px;text-align:right">'+fmt(d.spend)+'</span>'
-          +'<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:'+roasColor(roas)+';min-width:45px;text-align:right">'+roas.toFixed(2)+'x</span>'
-          +'<span style="font-size:10px;color:var(--m);min-width:50px;text-align:right">'+d.sales.toLocaleString('tr')+' satış</span>'
+          +'<span style="font-family:\'DM Mono\',monospace;font-size:10px;min-width:55px;text-align:right">'+fmt(d.spend)+'</span>'
+          +'<span style="font-family:\'DM Mono\',monospace;font-size:10px;color:'+rc(roas)+';min-width:40px;text-align:right">'+roas.toFixed(2)+'x</span>'
+          +'<span style="font-size:10px;color:var(--m);min-width:55px;text-align:right">'+d.sales.toLocaleString('tr')+' satış</span>'
           +'</div>';
       }).join('')+'</div>';
   }
 
   // Influencer özeti
   if(_db.influencer.length){
-    var topInf = _db.influencer.slice().sort(function(a,b){return parseN(b.ciro)-parseN(a.ciro);}).slice(0,5);
-    html+='<div class="ty-ai-card"><h4>👤 En İyi Influencer Kampanyaları (Ciroya Göre)</h4>'
+    var topInf=_db.influencer.slice().sort(function(a,b){return N(b.ciro)-N(a.ciro);}).slice(0,5);
+    html+='<div class="ty-ai-card"><h4>👤 En İyi Influencer Kampanyaları</h4>'
       +topInf.map(function(r,i){
-        var ciro=parseN(r.ciro);
-        var odeme=parseN(r.odeme);
+        var ciro=N(r.ciro),odeme=N(r.odeme);
         var roas=odeme>0?(ciro/odeme):0;
         return '<div class="ty-ai-row">'
           +'<span style="background:rgba(242,122,26,.2);color:#f27a1a;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">'+(i+1)+'</span>'
-          +'<div style="flex:1;min-width:0"><div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+escH(r.ad||'—')+'</div>'
+          +'<div style="flex:1;min-width:0"><div style="font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(r.ad||'—')+'</div>'
           +'<div style="font-size:10px;color:var(--m)">'+((r.baslangic||'').slice(0,10))+' → '+((r.bitis||'').slice(0,10))+'</div></div>'
           +'<div style="text-align:right;flex-shrink:0">'
           +'<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--g)">'+fmt(ciro)+'</div>'
-          +'<div style="font-size:10px;color:var(--m)">'+parseInt(r.satis||0)+' satış</div>'
-          +'</div>'
-          +'</div>';
+          +'<div style="font-size:10px;color:var(--m)">'+parseInt(r.satis||0)+' satış · '+roas.toFixed(1)+'x</div>'
+          +'</div></div>';
       }).join('')+'</div>';
   }
 
   html+='</div>';
   content.innerHTML=html;
 }
-
-function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // Drag & drop
 var zone=document.getElementById('tyZone');
@@ -534,8 +707,10 @@ if(zone){
   zone.addEventListener('dragleave',function(){zone.classList.remove('drag');});
   zone.addEventListener('drop',function(e){
     e.preventDefault();zone.classList.remove('drag');
-    var f=e.dataTransfer.files[0];
-    if(f){var inp=document.getElementById('tyFile');inp.files=e.dataTransfer.files;tyUpload(inp);}
+    if(e.dataTransfer.files.length){
+      document.getElementById('tyFile').files=e.dataTransfer.files;
+      tyUpload(document.getElementById('tyFile'));
+    }
   });
 }
 
