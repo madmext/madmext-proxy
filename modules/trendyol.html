@@ -78,11 +78,8 @@
       <span style="font-size:11px;color:var(--m)">→</span>
       <input type="date" id="tyDateTo" class="ty-sel" style="width:130px" onchange="tyRender()" title="Bitiş tarihi">
       <button class="btn sm sec" style="font-size:10px" onclick="document.getElementById('tyDateFrom').value='';document.getElementById('tyDateTo').value='';tyRender()">✕ Tarih</button>
-      <button class="btn sm sec" onclick="tyLoad()">🔄</button>
-      <label class="btn sm" style="cursor:pointer;background:#f27a1a;color:#fff;display:flex;align-items:center;gap:4px">
-        📤 Excel Yükle
-        <input type="file" id="tyFile" accept=".xlsx,.xls" style="display:none" onchange="tyUpload(this)" multiple>
-      </label>
+      <button class="btn sm sec" onclick="tyLoad()">🔄 Yenile</button>
+      <button class="btn sm sec" onclick="nav('dosyalar',null)" style="font-size:10px">📁 Dosya Yükle</button>
       <span id="tySt" style="font-size:10px;color:var(--m)"></span>
     </div>
   </div>
@@ -97,7 +94,7 @@
   </div>
 
   <div class="ty-tbl-wrap" id="tyContent">
-    <div class="ty-upload-zone" id="tyZone" onclick="document.getElementById('tyFile').click()">
+    <div class="ty-upload-zone" id="tyZone">
       <div style="font-size:48px;margin-bottom:14px">🟠</div>
       <h3 style="font-size:16px;margin-bottom:10px;color:var(--t)">Trendyol Reklam Raporu Yükle</h3>
       <p style="font-size:12px;color:var(--m);margin-bottom:20px;line-height:1.8">
@@ -106,7 +103,7 @@
         Mağaza / Influencer / Meta Reklamları → Excel İndir<br>
         <b style="color:var(--t)">Birden fazla dosya aynı anda seçilebilir</b>
       </p>
-      <button class="btn" style="background:#f27a1a;pointer-events:none">📤 Excel Seç</button>
+      <button class="btn" style="background:#f27a1a" onclick="nav('dosyalar',null)">📁 Dosya Yönetimine Git</button>
     </div>
   </div>
 </div>
