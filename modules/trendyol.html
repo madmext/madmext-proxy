@@ -74,6 +74,10 @@
         <option value="Tamamlandı">Tamamlandı</option>
         <option value="Sonlandırıldı">Sonlandırıldı</option>
       </select>
+      <input type="date" id="tyDateFrom" class="ty-sel" style="width:130px" onchange="tyRender()" title="Başlangıç tarihi">
+      <span style="font-size:11px;color:var(--m)">→</span>
+      <input type="date" id="tyDateTo" class="ty-sel" style="width:130px" onchange="tyRender()" title="Bitiş tarihi">
+      <button class="btn sm sec" style="font-size:10px" onclick="document.getElementById('tyDateFrom').value='';document.getElementById('tyDateTo').value='';tyRender()">✕ Tarih</button>
       <button class="btn sm sec" onclick="tyLoad()">🔄</button>
       <label class="btn sm" style="cursor:pointer;background:#f27a1a;color:#fff;display:flex;align-items:center;gap:4px">
         📤 Excel Yükle
@@ -162,6 +166,8 @@ window.tyTab = function(tab, el){
   el.classList.add('active');
   document.getElementById('tySearch').value = '';
   document.getElementById('tyStatusF').value = '';
+  var df=document.getElementById('tyDateFrom');if(df)df.value='';
+  var dt=document.getElementById('tyDateTo');if(dt)dt.value='';
   tyRender();
 };
 
@@ -234,17 +240,22 @@ function tyRender(){
   summary.style.display='grid';
   var q=(document.getElementById('tySearch').value||'').toLowerCase();
   var sf=document.getElementById('tyStatusF').value;
-  if(_tab==='urun') renderUrun(content,q,sf);
-  else if(_tab==='magaza') renderMagaza(content,q,sf);
-  else if(_tab==='influencer') renderInfluencer(content,q,sf);
-  else if(_tab==='meta') renderMeta(content,q,sf);
+  var df=document.getElementById('tyDateFrom').value||'';
+  var dt=document.getElementById('tyDateTo').value||'';
+  if(_tab==='urun') renderUrun(content,q,sf,df,dt);
+  else if(_tab==='magaza') renderMagaza(content,q,sf,df,dt);
+  else if(_tab==='influencer') renderInfluencer(content,q,sf,df,dt);
+  else if(_tab==='meta') renderMeta(content,q,sf,df,dt);
 }
 
 // ── ÜRÜN REKLAMLARI (üst kampanya + alt ürün detayı) ─────
-function renderUrun(content, q, sf){
+function renderUrun(content, q, sf, df, dt){
+  df=df||'';dt=dt||'';
   var rows=_db.urun.filter(function(r){
     if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
     if(sf&&!(r.statu||'').includes(sf))return false;
+    if(df&&(r.baslangic||'').slice(0,10)<df)return false;
+    if(dt&&(r.baslangic||'').slice(0,10)>dt)return false;
     return true;
   }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
 
@@ -496,10 +507,13 @@ function tyModalRender(){
 }
 
 // ── MAĞAZA ───────────────────────────────────────────────
-function renderMagaza(content, q, sf){
+function renderMagaza(content, q, sf, df, dt){
+  df=df||'';dt=dt||'';
   var rows=_db.magaza.filter(function(r){
     if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
     if(sf&&!(r.statu||'').includes(sf))return false;
+    if(df&&(r.baslangic||'').slice(0,10)<df)return false;
+    if(dt&&(r.baslangic||'').slice(0,10)>dt)return false;
     return true;
   }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
   cards(rows);
@@ -527,10 +541,13 @@ function renderMagaza(content, q, sf){
 }
 
 // ── INFLUENCER ───────────────────────────────────────────
-function renderInfluencer(content, q, sf){
+function renderInfluencer(content, q, sf, df, dt){
+  df=df||'';dt=dt||'';
   var rows=_db.influencer.filter(function(r){
     if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
     if(sf&&!(r.statu||'').includes(sf))return false;
+    if(df&&(r.baslangic||'').slice(0,10)<df)return false;
+    if(dt&&(r.baslangic||'').slice(0,10)>dt)return false;
     return true;
   }).sort(function(a,b){return N(b.ciro)-N(a.ciro);});
   var totO=0,totC=0,totS=0,totZ=0;
@@ -564,10 +581,13 @@ function renderInfluencer(content, q, sf){
 }
 
 // ── META ─────────────────────────────────────────────────
-function renderMeta(content, q, sf){
+function renderMeta(content, q, sf, df, dt){
+  df=df||'';dt=dt||'';
   var rows=_db.meta.filter(function(r){
     if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
     if(sf&&!(r.statu||'').includes(sf))return false;
+    if(df&&(r.baslangic||'').slice(0,10)<df)return false;
+    if(dt&&(r.baslangic||'').slice(0,10)>dt)return false;
     return true;
   }).sort(function(a,b){return N(b.harcama)-N(a.harcama);});
   cards(rows,{spend:'harcama',rev:'ciro',roas:'roas',sales:'satis',clicks:'tiklanma',impr:'goruntulenme'});
