@@ -55,6 +55,23 @@
 .ty-ai-row:last-child{border-bottom:none}
 .ty-bar{background:var(--b);border-radius:3px;height:5px;flex:1;overflow:hidden}
 .ty-bar-fill{height:100%;border-radius:3px;background:#f27a1a}
+.ty-chip{padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:500;color:var(--m);border:1px solid transparent;background:transparent;transition:all .15s;white-space:nowrap}
+.ty-chip.active{background:#fff;color:#333;border-color:#ddd;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.ty-chip:hover:not(.active){color:var(--t)}
+.ty-chip-group{display:flex;gap:2px;background:var(--s2);border:1px solid var(--b);border-radius:24px;padding:3px}
+.ty-filter-bar{display:flex;align-items:center;gap:8px;padding:10px 0 8px;flex-shrink:0;flex-wrap:wrap}
+.ty-filter-select{background:var(--s);border:1.5px solid var(--b2);color:var(--t);padding:7px 12px;font-size:12px;border-radius:8px;cursor:pointer;min-width:160px;outline:none;font-family:inherit}
+.ty-filter-select:focus{border-color:#f27a1a}
+.ty-filter-input{background:var(--s);border:1.5px solid var(--b2);color:var(--t);padding:7px 12px 7px 32px;font-size:12px;border-radius:8px;outline:none;font-family:inherit;width:160px}
+.ty-filter-input:focus{border-color:#f27a1a}
+.ty-filter-input-wrap{position:relative}
+.ty-filter-input-wrap::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:11px;pointer-events:none}
+.ty-filter-date{background:var(--s);border:1.5px solid var(--b2);color:var(--t);padding:7px 10px;font-size:12px;border-radius:8px;outline:none;cursor:pointer;font-family:inherit}
+.ty-filter-date:focus{border-color:#f27a1a}
+.ty-btn-filter{background:#f27a1a;color:#fff;border:none;padding:7px 18px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;transition:opacity .15s}
+.ty-btn-filter:hover{opacity:.85}
+.ty-btn-reset{background:var(--s);color:var(--t);border:1.5px solid var(--b2);padding:7px 18px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer;transition:all .15s}
+.ty-btn-reset:hover{border-color:#f27a1a;color:#f27a1a}
 </style>
 
 <div class="ty-wrap">
@@ -66,22 +83,46 @@
       <button class="ty-tab" data-tab="meta" onclick="tyTab('meta',this)">📘 Meta</button>
       <button class="ty-tab" data-tab="ai" onclick="tyTab('ai',this)">🤖 AI Öneri</button>
     </div>
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-      <input type="text" class="ty-search" id="tySearch" placeholder="Ara..." oninput="tyRender()">
-      <select class="ty-sel" id="tyStatusF" onchange="tyRender()">
-        <option value="">Tüm Durumlar</option>
-        <option value="Yayında">Yayında</option>
-        <option value="Tamamlandı">Tamamlandı</option>
-        <option value="Sonlandırıldı">Sonlandırıldı</option>
-      </select>
-      <input type="date" id="tyDateFrom" class="ty-sel" style="width:130px" onchange="tyRender()" title="Başlangıç tarihi">
-      <span style="font-size:11px;color:var(--m)">→</span>
-      <input type="date" id="tyDateTo" class="ty-sel" style="width:130px" onchange="tyRender()" title="Bitiş tarihi">
-      <button class="btn sm sec" style="font-size:10px" onclick="document.getElementById('tyDateFrom').value='';document.getElementById('tyDateTo').value='';tyRender()">✕ Tarih</button>
-      <button class="btn sm sec" onclick="tyLoad()">🔄 Yenile</button>
-      <button class="btn sm sec" onclick="nav('dosyalar',null)" style="font-size:10px">📁 Dosya Yükle</button>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn sm sec" onclick="tyLoad()" title="Yenile">🔄</button>
+      <button class="btn sm sec" onclick="nav('dosyalar',null)" title="Dosya yükle" style="font-size:10px">📁 Dosya</button>
       <span id="tySt" style="font-size:10px;color:var(--m)"></span>
     </div>
+  </div>
+  <!-- Chip grup — Tümü / Aktif / İşlem Bekliyor / Biten -->
+  <div class="ty-chip-group" style="margin-bottom:10px;flex-shrink:0;align-self:flex-start">
+    <button class="ty-chip active" id="chip-all" onclick="tyChip('',this)">Tümü<span style="margin-left:4px;font-weight:400">(<span id="chip-cnt-all">0</span>)</span></button>
+    <button class="ty-chip" id="chip-aktif" onclick="tyChip('Yayında',this)">Aktif<span style="margin-left:4px;font-weight:400">(<span id="chip-cnt-aktif">0</span>)</span></button>
+    <button class="ty-chip" id="chip-bekliyor" onclick="tyChip('Bekliyor',this)">İşlem Bekliyor<span style="margin-left:4px;font-weight:400">(<span id="chip-cnt-bekliyor">0</span>)</span></button>
+    <button class="ty-chip" id="chip-biten" onclick="tyChip('biten',this)">Biten<span style="margin-left:4px;font-weight:400">(<span id="chip-cnt-biten">0</span>)</span></button>
+  </div>
+  <!-- Filtre formu -->
+  <div class="ty-filter-bar">
+    <!-- Reklam Durumu çoklu seçim -->
+    <select class="ty-filter-select" id="tyStatusF" onchange="tyStatusChange()" multiple size="1" style="height:36px">
+      <option value="">Reklam Durumu</option>
+      <option value="İşleme Alındı">İşleme Alındı</option>
+      <option value="Yayında">Yayında</option>
+      <option value="Duraklatıldı">Duraklatıldı</option>
+      <option value="Tamamlandı">Tamamlandı</option>
+      <option value="Sonlandırılıyor">Sonlandırılıyor</option>
+      <option value="Sonlandırıldı">Sonlandırıldı</option>
+      <option value="İptal Edildi">İptal Edildi</option>
+    </select>
+    <!-- Tarih Aralığı -->
+    <input type="date" class="ty-filter-date" id="tyDateFrom" onchange="tyRender()" placeholder="Başlangıç" title="Başlangıç Tarihi">
+    <span style="font-size:12px;color:var(--m)">—</span>
+    <input type="date" class="ty-filter-date" id="tyDateTo" onchange="tyRender()" placeholder="Bitiş" title="Bitiş Tarihi">
+    <!-- Reklam Adı -->
+    <div class="ty-filter-input-wrap">
+      <input type="text" class="ty-filter-input" id="tySearch" placeholder="Reklam Adı" oninput="tyRender()" maxlength="60">
+    </div>
+    <!-- Barkod/Model -->
+    <div class="ty-filter-input-wrap">
+      <input type="text" class="ty-filter-input" id="tyBarkod" placeholder="Ürün Barkodu" oninput="tyRender()" maxlength="60">
+    </div>
+    <button class="ty-btn-filter" onclick="tyRender()">Filtrele</button>
+    <button class="ty-btn-reset" onclick="tyResetFilters()">Temizle</button>
   </div>
 
   <div class="ty-summary" id="tySummary" style="display:none">
@@ -136,6 +177,51 @@ var _db = {urun:[], magaza:[], influencer:[], meta:[], urun_detay:[]};
 var _expanded = {};
 var _modalData = null;
 var _modalTab = 'genel';
+var _chipFilter = ''; // '', 'Yayında', 'biten'
+
+// Chip filtreleri
+window.tyChip = function(val, el){
+  _chipFilter = val;
+  document.querySelectorAll('.ty-chip').forEach(function(c){c.classList.remove('active');});
+  el.classList.add('active');
+  // Durum filtresini de güncelle
+  var sf = document.getElementById('tyStatusF');
+  if(sf) sf.value = val === 'biten' ? '' : val;
+  tyRender();
+};
+
+window.tyStatusChange = function(){
+  // Chip'leri sıfırla
+  _chipFilter = '';
+  document.querySelectorAll('.ty-chip').forEach(function(c){c.classList.remove('active');});
+  var chipAll=document.getElementById('chip-all'); if(chipAll)chipAll.classList.add('active');
+  tyRender();
+};
+
+window.tyResetFilters = function(){
+  var sf=document.getElementById('tyStatusF'); if(sf)sf.value='';
+  var df=document.getElementById('tyDateFrom'); if(df)df.value='';
+  var dt=document.getElementById('tyDateTo'); if(dt)dt.value='';
+  var s=document.getElementById('tySearch'); if(s)s.value='';
+  var b=document.getElementById('tyBarkod'); if(b)b.value='';
+  _chipFilter='';
+  document.querySelectorAll('.ty-chip').forEach(function(c){c.classList.remove('active');});
+  var chipAll=document.getElementById('chip-all'); if(chipAll)chipAll.classList.add('active');
+  tyRender();
+};
+
+// Chip sayılarını güncelle
+function updateChipCounts(){
+  var rows = _db[_tab] || _db.urun;
+  var aktif = rows.filter(function(r){return (r.statu||'').includes('Yayında');}).length;
+  var biten = rows.filter(function(r){return !(r.statu||'').includes('Yayında');}).length;
+  function set(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+  set('chip-cnt-all', rows.length);
+  set('chip-cnt-aktif', aktif);
+  set('chip-cnt-bekliyor', 0);
+  set('chip-cnt-biten', biten);
+}
+
 
 function N(s){
   if(!s && s!==0) return 0;
@@ -163,8 +249,12 @@ window.tyTab = function(tab, el){
   el.classList.add('active');
   document.getElementById('tySearch').value = '';
   document.getElementById('tyStatusF').value = '';
+  var lbl=document.getElementById('tyStatusLabel');if(lbl)lbl.textContent='Tümü';
   var df=document.getElementById('tyDateFrom');if(df)df.value='';
   var dt=document.getElementById('tyDateTo');if(dt)dt.value='';
+  _chipFilter='';
+  document.querySelectorAll('.ty-chip').forEach(function(c){c.classList.remove('active');});
+  var chipAll=document.getElementById('chip-all');if(chipAll)chipAll.classList.add('active');
   tyRender();
 };
 
@@ -233,6 +323,7 @@ function tyRender(){
   var content=document.getElementById('tyContent');
   if(!hasData){zone.style.display='';summary.style.display='none';return;}
   zone.style.display='none';
+  updateChipCounts();
   if(_tab==='ai'){summary.style.display='none';renderAI(content);return;}
   summary.style.display='grid';
   var q=(document.getElementById('tySearch').value||'').toLowerCase();
@@ -248,9 +339,16 @@ function tyRender(){
 // ── ÜRÜN REKLAMLARI (üst kampanya + alt ürün detayı) ─────
 function renderUrun(content, q, sf, df, dt){
   df=df||'';dt=dt||'';
+  var barkod=(document.getElementById('tyBarkod')&&document.getElementById('tyBarkod').value||'').toLowerCase();
+  // Select'ten seçilen değerleri al
+  var sfEl=document.getElementById('tyStatusF');
+  var sfVal=sfEl?sfEl.value:'';
   var rows=_db.urun.filter(function(r){
     if(q&&!(r.ad||'').toLowerCase().includes(q))return false;
-    if(sf&&!(r.statu||'').includes(sf))return false;
+    if(barkod&&!(r.content_ids||'').toLowerCase().includes(barkod))return false;
+    if(_chipFilter==='biten'&&(r.statu||'').includes('Yayında'))return false;
+    else if(_chipFilter==='Yayında'&&!(r.statu||'').includes('Yayında'))return false;
+    else if(sfVal&&sfVal!==''&&!(r.statu||'').includes(sfVal))return false;
     if(df&&(r.baslangic||'').slice(0,10)<df)return false;
     if(dt&&(r.baslangic||'').slice(0,10)>dt)return false;
     return true;
