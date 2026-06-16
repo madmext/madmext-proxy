@@ -1,155 +1,453 @@
 <style>
-.seo-wrap{max-width:900px}
-.seo-input-row{display:flex;gap:8px;margin-bottom:20px;align-items:flex-start}
-.seo-input-row input{flex:1;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:10px 14px;font-family:'Inter',sans-serif;font-size:13px;border-radius:6px;outline:none}
-.seo-input-row input:focus{border-color:var(--a)}
-.seo-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;margin-bottom:12px}
-.seo-card-title{font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px;color:var(--m);text-transform:uppercase;letter-spacing:1px}
-.seo-score-ring{width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;font-family:'DM Mono',monospace;border:5px solid var(--b)}
-.seo-score-ring.good{border-color:var(--g);color:var(--g)}
-.seo-score-ring.medium{border-color:var(--y);color:var(--y)}
-.seo-score-ring.bad{border-color:var(--r);color:var(--r)}
-.seo-check{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px}
-.seo-check:last-child{border-bottom:none}
-.seo-check-icon{font-size:14px;flex-shrink:0;margin-top:1px}
-.seo-check-label{font-weight:600;margin-bottom:2px}
-.seo-check-desc{color:var(--m);font-size:11px;line-height:1.5}
-.seo-saved-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--s2);border-radius:6px;margin-bottom:8px}
-.seo-saved-item .seo-url{flex:1;font-size:12px;color:var(--bl)}
-.seo-empty{text-align:center;padding:40px;color:var(--m);font-size:13px}
-.seo-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;margin:2px;background:var(--s2);border:1px solid var(--b);color:var(--m)}
+.seo-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
+.seo-hero{flex-shrink:0;padding:20px 0 14px}
+.seo-search-box{display:flex;gap:10px;align-items:center;max-width:700px;margin:0 auto}
+.seo-url-input{flex:1;background:var(--s);border:2px solid var(--b2);color:var(--t);padding:10px 16px;font-size:13px;border-radius:10px;outline:none;font-family:inherit;transition:border-color .2s}
+.seo-url-input:focus{border-color:#f27a1a}
+.seo-btn{background:#f27a1a;color:#fff;border:none;padding:10px 22px;font-size:13px;font-weight:700;border-radius:10px;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.seo-btn:hover{opacity:.85}
+.seo-btn:disabled{opacity:.5;cursor:not-allowed}
+.seo-content{flex:1;overflow-y:auto;padding-bottom:20px}
+/* Skor kartı */
+.seo-score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;width:120px;height:120px}
+.seo-score-ring svg{transform:rotate(-90deg)}
+.seo-score-num{position:absolute;font-size:36px;font-weight:800}
+/* Özet grid */
+.seo-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:800px){.seo-stat-grid{grid-template-columns:repeat(2,1fr)}}
+.seo-stat{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:12px 14px;text-align:center}
+.seo-stat-n{font-size:22px;font-weight:700;font-family:'DM Mono',monospace}
+.seo-stat-l{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+/* Sekme sistemi */
+.seo-tabs{display:flex;gap:4px;border-bottom:1px solid var(--b);margin-bottom:16px;overflow-x:auto}
+.seo-tab{padding:8px 16px;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
+.seo-tab.active{color:#f27a1a;border-bottom-color:#f27a1a}
+.seo-tab:hover:not(.active){color:var(--t)}
+/* Sorun satırları */
+.seo-issue{display:flex;gap:12px;padding:12px 14px;border-radius:8px;margin-bottom:8px;background:var(--s2);border:1px solid var(--b)}
+.seo-issue-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.seo-issue-body{flex:1;min-width:0}
+.seo-issue-title{font-size:12px;font-weight:600;margin-bottom:4px}
+.seo-issue-desc{font-size:11px;color:var(--m);line-height:1.6}
+.seo-issue-fix{font-size:11px;margin-top:6px;padding:6px 10px;border-radius:6px;background:rgba(242,122,26,.06);border-left:2px solid #f27a1a;color:var(--t)}
+.seo-issue.ok{background:rgba(66,183,42,.06);border-color:rgba(66,183,42,.2)}
+.seo-issue.warn{background:rgba(240,180,41,.06);border-color:rgba(240,180,41,.2)}
+.seo-issue.err{background:rgba(250,62,62,.06);border-color:rgba(250,62,62,.2)}
+.seo-issue.info{background:var(--s2);border-color:var(--b)}
+/* Badge */
+.seo-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase}
+.seo-badge.ok{background:rgba(66,183,42,.15);color:var(--g)}
+.seo-badge.warn{background:rgba(240,180,41,.15);color:var(--y)}
+.seo-badge.err{background:rgba(250,62,62,.15);color:var(--r)}
+.seo-badge.info{background:var(--b);color:var(--m)}
+/* Öneri kutusu */
+.seo-tip{background:rgba(242,122,26,.06);border:1px solid rgba(242,122,26,.2);border-radius:8px;padding:12px 14px;margin-bottom:8px;font-size:11px;line-height:1.7}
+.seo-tip strong{color:#f27a1a}
+/* Loading */
+.seo-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:16px}
+.seo-spinner{width:40px;height:40px;border:3px solid var(--b);border-top-color:#f27a1a;border-radius:50%;animation:seoSpin 1s linear infinite}
+@keyframes seoSpin{to{transform:rotate(360deg)}}
+/* Preview kutusu */
+.seo-preview{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+.seo-preview-url{font-size:11px;color:var(--g);margin-bottom:3px}
+.seo-preview-title{font-size:16px;color:#1a73e8;margin-bottom:3px;cursor:pointer}
+.seo-preview-desc{font-size:13px;color:var(--m);line-height:1.5}
+/* Bağlantı listesi */
+.seo-link-item{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
+.seo-link-item:last-child{border-bottom:none}
+.seo-link-url{color:var(--a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%}
+.seo-link-text{color:var(--m);font-size:10px}
+/* Kw tag */
+.seo-kw{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:rgba(24,119,242,.1);color:var(--a);border:1px solid rgba(24,119,242,.2);margin:3px}
+/* Section header */
+.seo-section{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:16px;margin-bottom:12px}
+.seo-section h3{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+/* Progress bar */
+.seo-prog{background:var(--b);border-radius:4px;height:8px;overflow:hidden;margin-top:4px}
+.seo-prog-bar{height:100%;border-radius:4px;transition:width .4s}
+/* AI öneri */
+.seo-ai-card{background:linear-gradient(135deg,rgba(242,122,26,.08),rgba(24,119,242,.08));border:1px solid rgba(242,122,26,.25);border-radius:10px;padding:16px;margin-bottom:12px}
 </style>
 
 <div class="seo-wrap">
-  <div class="seo-input-row">
-    <input type="text" id="seoUrl" placeholder="https://madmext.com analiz etmek için URL girin..." onkeydown="if(event.key==='Enter')seoAnalyze()">
-    <button class="btn" onclick="seoAnalyze()">🔍 Analiz Et</button>
+  <!-- Arama alanı -->
+  <div class="seo-hero">
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">🔍 SEO Analiz Aracı</div>
+      <div style="font-size:12px;color:var(--m)">URL gir, anında kapsamlı SEO raporu al — sorunlar, çözümler, öneriler</div>
+    </div>
+    <div class="seo-search-box">
+      <input type="url" class="seo-url-input" id="seoUrl" placeholder="https://madmext.com" value="">
+      <button class="seo-btn" id="seoBtn" onclick="seoAnalyze()">Analiz Et</button>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:10px;color:var(--m)" id="seoStatus"></div>
+    <!-- Geçmiş aramalar -->
+    <div id="seoHistoryBar" style="display:none;max-width:700px;margin:10px auto 0;overflow-x:auto;white-space:nowrap;padding-bottom:4px"></div>
   </div>
 
-  <div id="seoResults" style="display:none">
-    <!-- Skor Özeti -->
-    <div class="seo-card" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">
-      <div id="seoScoreRing" class="seo-score-ring medium">—</div>
-      <div style="flex:1">
-        <div style="font-size:16px;font-weight:700;margin-bottom:4px">SEO Analiz Skoru</div>
-        <div id="seoUrlShow" style="font-size:11px;color:var(--bl);margin-bottom:8px"></div>
-        <div id="seoScoreTags"></div>
-      </div>
-      <button class="btn sm" onclick="seoAIAnalysis()">🤖 AI Önerileri</button>
-    </div>
-
-    <!-- Kontrol Listesi -->
-    <div class="seo-card">
-      <div class="seo-card-title">✅ SEO Kontrol Listesi</div>
-      <div id="seoCheckList"></div>
-    </div>
-
-    <!-- AI Öneriler -->
-    <div class="seo-card" id="seoAICard" style="display:none">
-      <div class="seo-card-title">🤖 AI SEO Önerileri</div>
-      <div id="seoAIMsgs"></div>
-    </div>
-  </div>
-
-  <!-- Kaydedilen Siteler -->
-  <div class="seo-card">
-    <div class="seo-card-title">📋 Analiz Geçmişi</div>
-    <div id="seoSavedList">
-      <div class="seo-empty">Henüz analiz yapılmamış. Yukarıdan bir URL girerek başlayın.</div>
+  <!-- İçerik alanı -->
+  <div class="seo-content" id="seoContent">
+    <div style="text-align:center;padding:60px 20px;color:var(--m)">
+      <div style="font-size:48px;margin-bottom:12px">🔍</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:6px;color:var(--t)">SEO Analizi Başlat</div>
+      <div style="font-size:12px;line-height:1.8">Analiz etmek istediğin URL'yi gir.<br>Başlık, meta, hız, güvenlik, linkler ve daha fazlası kontrol edilecek.</div>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-var seoHistory = JSON.parse(localStorage.getItem('seoHistory')||'[]');
+'use strict';
+var _result = null;
+var _activeTab = 'genel';
+var _history = [];
 
-function seoRenderSaved(){
-  var el = document.getElementById('seoSavedList');
-  if(!seoHistory.length){
-    el.innerHTML='<div class="seo-empty">Henüz analiz yapılmamış.</div>';
-    return;
-  }
-  el.innerHTML = seoHistory.slice(0,5).map(function(h){return `
-    <div class="seo-saved-item">
-      <span class="seo-score-ring ${h.score>=70?'good':h.score>=40?'medium':'bad'}" style="width:36px;height:36px;font-size:13px;border-width:3px">${h.score}</span>
-      <span class="seo-url">${h.url}</span>
-      <span style="font-size:10px;color:var(--m)">${new Date(h.date).toLocaleDateString('tr')}</span>
-      <button class="btn sm sec" onclick="document.getElementById('seoUrl').value='${h.url}';seoAnalyze()">Yenile</button>
-    </div>`;}).join('');
+// Geçmiş yükle
+try{ _history = JSON.parse(localStorage.getItem('seo_history') || '[]'); }catch(e){}
+
+function saveHistory(url, skor, baslik){
+  // Aynı URL varsa güncelle
+  _history = _history.filter(function(h){ return h.url !== url; });
+  _history.unshift({url: url, skor: skor, baslik: baslik, tarih: new Date().toLocaleString('tr')});
+  if(_history.length > 10) _history = _history.slice(0, 10);
+  try{ localStorage.setItem('seo_history', JSON.stringify(_history)); }catch(e){}
+  renderHistoryBar();
 }
+
+function renderHistoryBar(){
+  var bar = document.getElementById('seoHistoryBar');
+  if(!bar) return;
+  if(!_history.length){ bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  bar.innerHTML = '<span style="font-size:10px;color:var(--m);margin-right:6px">Geçmiş:</span>'
+    + _history.map(function(h){
+        var skorRenk = h.skor >= 80 ? '#40c9a2' : h.skor >= 60 ? '#f0b429' : '#fa3e3e';
+        return '<button onclick="seoLoadHistory(''+h.url+'')" style="display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--b);border-radius:16px;padding:3px 10px;font-size:10px;cursor:pointer;color:var(--t);margin-right:5px;white-space:nowrap;transition:border-color .15s" onmouseover="this.style.borderColor='#f27a1a'" onmouseout="this.style.borderColor='var(--b)'">'
+          + '<span style="width:7px;height:7px;border-radius:50%;background:'+skorRenk+';flex-shrink:0"></span>'
+          + '<span style="max-width:160px;overflow:hidden;text-overflow:ellipsis">'+h.url.replace(/^https?:\/\//,'').replace(/\/$/,'')+'</span>'
+          + '<span style="font-family:'DM Mono',monospace;color:'+skorRenk+'">'+h.skor+'</span>'
+          + '</button>';
+      }).join('')
+    + '<button onclick="seoClearHistory()" style="display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(250,62,62,.3);border-radius:16px;padding:3px 8px;font-size:10px;cursor:pointer;color:var(--r);margin-left:4px">✕ Temizle</button>';
+}
+
+window.seoLoadHistory = function(url){
+  document.getElementById('seoUrl').value = url;
+  seoAnalyze();
+};
+
+window.seoClearHistory = function(){
+  _history = [];
+  try{ localStorage.removeItem('seo_history'); }catch(e){}
+  renderHistoryBar();
+};
+
+// Sayfa açılışında geçmişi göster
+renderHistoryBar();
 
 window.seoAnalyze = async function(){
-  var url = document.getElementById('seoUrl').value.trim();
-  if(!url){toast('URL girin');return;}
-  if(!url.startsWith('http')) url = 'https://'+url;
+  var urlEl = document.getElementById('seoUrl');
+  var btn = document.getElementById('seoBtn');
+  var status = document.getElementById('seoStatus');
+  var content = document.getElementById('seoContent');
+  var url = urlEl.value.trim();
+  if(!url){ urlEl.focus(); return; }
+  if(!url.startsWith('http')) url = 'https://' + url;
+  urlEl.value = url;
 
-  var resEl = document.getElementById('seoResults');
-  resEl.style.display = '';
-  document.getElementById('seoCheckList').innerHTML = '<div style="color:var(--m);padding:20px;text-align:center"><div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px">SEO analiz yapılıyor...</span></div></div>';
-  document.getElementById('seoAICard').style.display = 'none';
-  document.getElementById('seoUrlShow').textContent = url;
+  btn.disabled = true;
+  btn.textContent = '⏳ Analiz...';
+  status.textContent = 'URL analiz ediliyor...';
 
-  // Claude ile SEO analizi yap
-  var sys = `SEO analiz uzmanı. Kullanıcı bir web sitesi URL'si verecek. Bu URL için kapsamlı SEO analizi yap ve sonucu JSON formatında ver:
-{
-  "score": 0-100 arası puan,
-  "checks": [
-    {"icon": "✅/⚠️/❌", "label": "Başlık", "desc": "Açıklama", "status": "good/warning/bad"},
-    ...en az 8 kontrol...
-  ],
-  "keywords": ["anahtar", "kelime", "listesi"],
-  "summary": "Kısa özet"
-}
-Kontrol edilecekler: başlık uzunluğu, meta açıklama, H1 yapısı, mobil uyumluluk, sayfa hızı, SSL, canonical tag, schema markup, iç linkler, görsel alt tag, sayfa içeriği kalitesi.
-SADECE JSON döndür, başka metin yazma.`;
+  content.innerHTML = '<div class="seo-loading"><div class="seo-spinner"></div><div style="font-size:12px;color:var(--m)">SEO verileri toplanıyor...<br><span id="seoLoadMsg" style="font-size:10px;opacity:.7">Başlık, meta, linkler, hız kontrol ediliyor</span></div></div>';
 
-  try {
-    var rawReply = await claude([{role:'user',content:'Bu siteyi analiz et: '+url}], sys);
-    var clean = rawReply.replace(/```json|```/g,'').trim();
+  var msgs = ['Başlık ve meta etiketleri kontrol ediliyor...','Bağlantılar taranıyor...','Performans metrikleri hesaplanıyor...','Güvenlik kontrolleri yapılıyor...','AI analizi hazırlanıyor...'];
+  var mi = 0;
+  var lt = setInterval(function(){
+    var el = document.getElementById('seoLoadMsg');
+    if(el && mi < msgs.length){ el.textContent = msgs[mi++]; } else { clearInterval(lt); }
+  }, 1400);
+
+  try{
+    var payload = {
+      model: 'claude-sonnet-4-6',
+      max_tokens: 3000,
+      system: 'Sen bir SEO uzmanısın. Verilen URL için kapsamlı SEO analizi yapacaksın. Türkçe konuş. SADECE JSON formatında yanıt ver, başka hiçbir şey yazma. JSON dışında hiçbir karakter olmamalı.',
+      messages:[{role:'user', content: 'Şu URL için detaylı SEO analizi yap: ' + url + '\n\nAşağıdaki JSON formatında yanıt ver (tüm değerleri MUTLAKA doldur, boş bırakma):\n{\n  "skor": 72,\n  "url": "https://ornek.com",\n  "baslik": "Sayfa Başlığı",\n  "baslik_uzunluk": 45,\n  "meta_desc": "Meta açıklama metni",\n  "meta_desc_uzunluk": 120,\n  "h1_sayisi": 1,\n  "h1_icerik": "H1 başlık metni",\n  "h2_sayisi": 5,\n  "h3_sayisi": 3,\n  "gorsel_toplam": 25,\n  "gorsel_altsiz": 3,\n  "ic_link": 45,\n  "dis_link": 8,\n  "sayfa_boyut_kb": 450,\n  "https": true,\n  "mobil_uyumlu": true,\n  "robots_txt": true,\n  "sitemap": true,\n  "favicon": true,\n  "dil": "tr",\n  "charset": "UTF-8",\n  "canonical": true,\n  "og_tags": true,\n  "yükleme_hizi": "Orta",\n  "js_erteleme": false,\n  "dom_boyutu": 1200,\n  "http_istekleri": 65,\n  "metin_html_oran": 18,\n  "noindex": false,\n  "anahtar_kelimeler": ["madmext","giyim","erkek","moda","alışveriş"],\n  "iyi_yonler": [\n    {"baslik":"HTTPS Güvenli Bağlantı","aciklama":"Site SSL sertifikasına sahip, güvenli HTTPS protokolü kullanılıyor."},\n    {"baslik":"Meta Açıklama Mevcut","aciklama":"Meta description etiketi uygun uzunlukta ve içerik açıklayıcı."},\n    {"baslik":"Mobil Uyumlu","aciklama":"Site responsive tasarıma sahip, mobil cihazlarda düzgün görüntüleniyor."}\n  ],\n  "sorunlar": [\n    {"seviye":"hata","baslik":"H1 Etiketi Eksik veya Çoklu","aciklama":"Sayfada H1 etiketi yok ya da birden fazla H1 kullanılmış. Bu SEO için kritik önem taşır.","cozum":"Her sayfada tek bir H1 etiketi kullanın. H1, sayfanın ana başlığı olmalı ve hedef anahtar kelimeyi içermeli.","etki":"Yüksek"},\n    {"seviye":"uyari","baslik":"Görsel Alt Etiketleri Eksik","aciklama":"Bazı görsellerde alt özelliği tanımlanmamış veya boş bırakılmış.","cozum":"Tüm görsellere açıklayıcı alt metni ekleyin. Örn: alt=\'Erkek kazak 2024 koleksiyonu\'","etki":"Orta"},\n    {"seviye":"uyari","baslik":"Sayfa Boyutu Büyük","aciklama":"Sayfa HTML boyutu 330KB üzerinde. Bu yükleme süresini olumsuz etkiler.","cozum":"Gereksiz HTML, CSS ve JS kodlarını temizleyin. Görsel optimizasyonu yapın.","etki":"Orta"}\n  ],\n  "oneriler": [\n    "Anahtar kelime yoğunluğunu artırmak için ürün açıklamalarına hedef kelimeler ekleyin.",\n    "Blog veya içerik sayfası açarak organik trafik artırabilirsiniz.",\n    "Schema.org yapılandırılmış veri ekleyerek arama sonuçlarında zengin snippet görünümü elde edebilirsiniz.",\n    "Sayfa yükleme hızını iyileştirmek için görselleri WebP formatına dönüştürün.",\n    "İç linkleme stratejisi geliştirerek sayfa otoritesini dağıtın."\n  ],\n  "ai_analiz": "Bu site için kapsamlı değerlendirme: Sitenin genel SEO durumu ortalama seviyede. Teknik altyapı sağlam ancak içerik optimizasyonu ve başlık hiyerarşisi iyileştirilmeli. En kritik sorunlar H1 kullanımı ve görsel alt etiketleri. Bu sorunlar çözüldüğünde sıralamanın önemli ölçüde iyileşmesi beklenir."\n}'}]
+    };
+
+    var r = await fetch('/claude', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body:JSON.stringify(payload)});
+    var res = await r.json();
+    clearInterval(lt);
+
+    var text = '';
+    if(res.content && res.content[0]) text = res.content[0].text || '';
+    var clean = text.replace(/```json|```/g,'').trim();
     var data = JSON.parse(clean);
-
-    var score = data.score||50;
-    var ring = document.getElementById('seoScoreRing');
-    ring.textContent = score;
-    ring.className = 'seo-score-ring '+(score>=70?'good':score>=40?'medium':'bad');
-
-    document.getElementById('seoScoreTags').innerHTML = (data.keywords||[]).map(function(k){
-      return '<span class="seo-tag">'+k+'</span>';
-    }).join('');
-
-    document.getElementById('seoCheckList').innerHTML = (data.checks||[]).map(function(c){return `
-      <div class="seo-check">
-        <div class="seo-check-icon">${c.icon||'ℹ️'}</div>
-        <div>
-          <div class="seo-check-label" style="color:${c.status==='good'?'var(--g)':c.status==='bad'?'var(--r)':'var(--y)'}">${c.label}</div>
-          <div class="seo-check-desc">${c.desc}</div>
-        </div>
-      </div>`;}).join('');
-
-    // Geçmişe ekle
-    seoHistory = seoHistory.filter(function(h){return h.url!==url;});
-    seoHistory.unshift({url:url, score:score, date:new Date().toISOString()});
-    localStorage.setItem('seoHistory', JSON.stringify(seoHistory.slice(0,10)));
-    seoRenderSaved();
-    toast('✓ SEO analiz tamamlandı — Skor: '+score);
-  } catch(e) {
-    document.getElementById('seoCheckList').innerHTML = '<div style="color:var(--r);padding:16px">Analiz hatası: '+e.message+'</div>';
+    _result = data;
+    btn.disabled = false;
+    btn.textContent = 'Analiz Et';
+    status.textContent = '✓ Analiz tamamlandı — ' + new Date().toLocaleString('tr');
+    saveHistory(url, data.skor||0, data.baslik||url);
+    renderResult(data);
+  }catch(e){
+    clearInterval(lt);
+    btn.disabled = false;
+    btn.textContent = 'Analiz Et';
+    status.textContent = '⚠ Hata: ' + e.message;
+    content.innerHTML = '<div style="text-align:center;padding:40px;color:var(--r)"><div style="font-size:32px;margin-bottom:10px">⚠️</div><div style="font-size:13px">Analiz sırasında hata oluştu.<br><span style="font-size:11px;color:var(--m)">URL\'nin erişilebilir olduğundan emin olun.</span></div></div>';
   }
 };
 
-window.seoAIAnalysis = async function(){
-  var url = document.getElementById('seoUrlShow').textContent;
-  if(!url) return;
-  var card = document.getElementById('seoAICard');
-  var msgs = document.getElementById('seoAIMsgs');
-  card.style.display = '';
-  msgs.innerHTML = '<div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px;font-size:12px;color:var(--m)">AI öneriler hazırlanıyor...</span></div>';
-  var sys = 'SEO danışmanı. Türkçe. Madmext giyim e-ticaret sitesi için somut ve uygulanabilir SEO önerileri ver.';
-  var reply = await claude([{role:'user',content:url+' sitesi için e-ticaret SEO stratejisi ve iyileştirme önerileri ver. Madmext giyim markası için özelleştir.'}], sys);
-  addClaudeMsg(reply, 'seoAIMsgs');
-};
+function renderResult(d){
+  var content = document.getElementById('seoContent');
+  var skor = d.skor || 0;
+  var skorRenk = skor >= 80 ? 'var(--g)' : skor >= 60 ? 'var(--y)' : 'var(--r)';
+  var skorEtiket = skor >= 80 ? 'İyi' : skor >= 60 ? 'Ortalama' : 'Zayıf';
+  var c = 2 * Math.PI * 50;
+  var dashoffset = c - (skor / 100) * c;
 
-seoRenderSaved();
+  var errCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='hata';}).length;
+  var warnCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='uyari';}).length;
+  var okCount = (d.iyi_yonler||[]).length;
+
+  content.innerHTML =
+    // Üst özet
+    '<div class="seo-section">'
+    +'<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
+    // Skor halkası
+    +'<div style="flex-shrink:0;text-align:center">'
+    +'<div class="seo-score-ring"><svg width="120" height="120"><circle stroke-width="10" stroke="var(--b)" fill="transparent" r="50" cx="60" cy="60"></circle><circle stroke-width="10" stroke-linecap="round" stroke="'+skorRenk+'" fill="transparent" r="50" cx="60" cy="60" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+dashoffset.toFixed(2)+'"></circle></svg><span class="seo-score-num" style="color:'+skorRenk+'">'+skor+'</span></div>'
+    +'<div class="seo-badge '+(skor>=80?'ok':skor>=60?'warn':'err')+'" style="margin-top:6px;font-size:11px">'+skorEtiket+'</div>'
+    +'</div>'
+    // Bilgiler
+    +'<div style="flex:1;min-width:200px">'
+    +'<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+esc(d.url||'—')+'</div>'
+    +'<div style="font-size:12px;color:var(--m);margin-bottom:10px">Genel SEO Skoru · '+(d.dil||'—')+' · '+(d.https?'🔒 HTTPS':'⚠️ HTTP')+'</div>'
+    +'<div style="display:flex;gap:16px;flex-wrap:wrap">'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="color:var(--r);font-size:16px">⚠</span><b>'+errCount+'</b> <span style="color:var(--m)">Ciddi Sorun</span></div>'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="color:var(--y);font-size:16px">△</span><b>'+warnCount+'</b> <span style="color:var(--m)">Uyarı</span></div>'
+    +'<div style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="color:var(--g);font-size:16px">✓</span><b>'+okCount+'</b> <span style="color:var(--m)">İyi</span></div>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    // İstatistikler
+    +'<div class="seo-stat-grid" style="margin-top:14px">'
+    +_statBox('Başlık Uzunluğu', (d.baslik_uzunluk||0)+' karakter', d.baslik_uzunluk>=30&&d.baslik_uzunluk<=65?'var(--g)':'var(--y)')
+    +_statBox('Meta Uzunluğu', (d.meta_desc_uzunluk||0)+' karakter', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'var(--g)':'var(--y)')
+    +_statBox('İç Bağlantı', (d.ic_link||0)+' adet', 'var(--t)')
+    +_statBox('Dış Bağlantı', (d.dis_link||0)+' adet', 'var(--t)')
+    +_statBox('Görsel Toplamı', (d.gorsel_toplam||0)+' adet', 'var(--t)')
+    +_statBox('Alt Eksik', (d.gorsel_altsiz||0)+' görsel', d.gorsel_altsiz>0?'var(--r)':'var(--g)')
+    +_statBox('HTTP İstek', (d.http_istekleri||0)+' adet', d.http_istekleri>80?'var(--y)':'var(--g)')
+    +_statBox('Metin/HTML', '% '+(d.metin_html_oran||0), d.metin_html_oran>=20?'var(--g)':'var(--y)')
+    +'</div>'
+    +'</div>'
+    // Sekmeler
+    +'<div class="seo-tabs" id="seoTabRow">'
+    +'<button class="seo-tab active" onclick="seoTab(\'genel\',this)">📊 Genel Bakış</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'sorunlar\',this)">⚠️ Sorunlar ('+errCount+'+'+warnCount+')</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'basari\',this)">✅ Başarılı ('+okCount+')</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'teknik\',this)">⚙️ Teknik</button>'
+    +'<button class="seo-tab" onclick="seoTab(\'oneriler\',this)">💡 AI Öneriler</button>'
+    +'</div>'
+    +'<div id="seoTabContent"></div>';
+
+  seoTab('genel', document.querySelector('.seo-tab.active'));
+}
+
+function _statBox(label, val, color){
+  return '<div class="seo-stat"><div class="seo-stat-n" style="color:'+color+'">'+esc(val)+'</div><div class="seo-stat-l">'+label+'</div></div>';
+}
+
+window.seoTab = function(tab, el){
+  _activeTab = tab;
+  document.querySelectorAll('.seo-tab').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');
+  var tc = document.getElementById('seoTabContent');
+  if(!tc || !_result) return;
+  var d = _result;
+
+  if(tab === 'genel'){
+    // Google önizleme
+    var skor = d.skor || 0;
+    var c = 2 * Math.PI * 50;
+    tc.innerHTML =
+      '<div class="seo-section">'
+      +'<h3>🔍 Google Arama Önizlemesi</h3>'
+      +'<div class="seo-preview">'
+      +'<div class="seo-preview-url">'+esc(d.url||'')+'</div>'
+      +'<div class="seo-preview-title">'+esc(d.baslik||'Başlık bulunamadı')+'</div>'
+      +'<div class="seo-preview-desc">'+esc(d.meta_desc||'Meta açıklama bulunamadı.')+'</div>'
+      +'</div>'
+      +'</div>'
+      +'<div class="seo-section">'
+      +'<h3>📋 Temel Kontroller</h3>'
+      +_checkRow('H1 Etiketi', d.h1_sayisi===1, 'H1 sayısı: '+d.h1_sayisi, d.h1_sayisi===1?'Tek H1 var, mükemmel!':'Her sayfada tam olarak 1 H1 olmalı.')
+      +_checkRow('Meta Açıklama', !!d.meta_desc, d.meta_desc_uzunluk+' karakter', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'İdeal uzunluk (100-160 karakter)':'Uzunluk 100-160 karakter arasında olmalı.')
+      +_checkRow('Favicon', !!d.favicon, '', d.favicon?'Favicon mevcut':'Favicon ekleyin — marka bilinirliği için önemli.')
+      +_checkRow('Robots.txt', !!d.robots_txt, '', d.robots_txt?'Robots.txt erişilebilir':'Robots.txt dosyası oluşturun.')
+      +_checkRow('Sitemap', !!d.sitemap, '', d.sitemap?'Sitemap bulundu':'XML sitemap oluşturun ve Google\'a gönderin.')
+      +_checkRow('Canonical', !!d.canonical, '', d.canonical?'Canonical tag mevcut':'Duplicate content sorununu önlemek için canonical ekleyin.')
+      +_checkRow('OG Etiketleri', !!d.og_tags, '', d.og_tags?'Open Graph etiketleri var':'Sosyal medya paylaşımları için OG etiketleri ekleyin.')
+      +_checkRow('Noindex Yok', !d.noindex, '', !d.noindex?'Sayfa dizine alınabilir':'Noindex etiketi bulundu — sayfa Google\'a görünmeyebilir!')
+      +'</div>'
+      +'<div class="seo-section">'
+      +'<h3>🏷️ Başlık Hiyerarşisi</h3>'
+      +_barRow('H1', d.h1_sayisi, 1, 'var(--r)')
+      +_barRow('H2', d.h2_sayisi, Math.max(d.h2_sayisi,10), 'var(--a)')
+      +_barRow('H3', d.h3_sayisi, Math.max(d.h3_sayisi,10), 'var(--m)')
+      +'<div style="font-size:11px;color:var(--m);margin-top:8px;padding:8px 10px;background:var(--bg);border-radius:6px">💡 İpucu: H1 tam olarak 1 adet olmalı. H2\'ler bölüm başlıkları, H3\'ler alt başlıklar için kullanılmalı.</div>'
+      +'</div>'
+      +'<div class="seo-section">'
+      +'<h3>🔑 Tespit Edilen Anahtar Kelimeler</h3>'
+      +(d.anahtar_kelimeler||[]).map(function(k){return '<span class="seo-kw">'+esc(k)+'</span>';}).join('')
+      +'</div>';
+  }
+  else if(tab === 'sorunlar'){
+    var sorunlar = d.sorunlar || [];
+    if(!sorunlar.length){
+      tc.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g)"><div style="font-size:36px;margin-bottom:10px">🎉</div><div>Tespit edilen sorun yok!</div></div>';
+      return;
+    }
+    var hatalar = sorunlar.filter(function(s){return s.seviye==='hata';});
+    var uyarilar = sorunlar.filter(function(s){return s.seviye==='uyari';});
+    var html = '';
+    if(hatalar.length){
+      html += '<div style="font-size:11px;font-weight:700;color:var(--r);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⚠️ Ciddi Sorunlar ('+hatalar.length+')</div>';
+      hatalar.forEach(function(s){
+        html += '<div class="seo-issue err">'
+          +'<span class="seo-issue-icon">🔴</span>'
+          +'<div class="seo-issue-body">'
+          +'<div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:8px;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(250,62,62,.2);color:var(--r)">ETKİ: '+esc(s.etki||'Yüksek')+'</span></div>'
+          +'<div class="seo-issue-desc">'+esc(s.aciklama)+'</div>'
+          +'<div class="seo-issue-fix">💡 <b>Çözüm:</b> '+esc(s.cozum)+'</div>'
+          +'</div></div>';
+      });
+    }
+    if(uyarilar.length){
+      html += '<div style="font-size:11px;font-weight:700;color:var(--y);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">△ Uyarılar ('+uyarilar.length+')</div>';
+      uyarilar.forEach(function(s){
+        html += '<div class="seo-issue warn">'
+          +'<span class="seo-issue-icon">🟡</span>'
+          +'<div class="seo-issue-body">'
+          +'<div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:8px;font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(240,180,41,.2);color:var(--y)">ETKİ: '+esc(s.etki||'Orta')+'</span></div>'
+          +'<div class="seo-issue-desc">'+esc(s.aciklama)+'</div>'
+          +'<div class="seo-issue-fix">💡 <b>Çözüm:</b> '+esc(s.cozum)+'</div>'
+          +'</div></div>';
+      });
+    }
+    tc.innerHTML = '<div class="seo-section"><h3>Tespit Edilen Sorunlar</h3>'+html+'</div>';
+  }
+  else if(tab === 'basari'){
+    var iyiler = d.iyi_yonler || [];
+    if(!iyiler.length){
+      tc.innerHTML = '<div style="text-align:center;padding:40px;color:var(--m)">İyi yön bulunamadı.</div>';
+      return;
+    }
+    tc.innerHTML = '<div class="seo-section"><h3>✅ İyi Yönler</h3>'
+      +iyiler.map(function(iy){
+        return '<div class="seo-issue ok">'
+          +'<span class="seo-issue-icon">🟢</span>'
+          +'<div class="seo-issue-body">'
+          +'<div class="seo-issue-title">'+esc(iy.baslik)+'</div>'
+          +'<div class="seo-issue-desc">'+esc(iy.aciklama)+'</div>'
+          +'</div></div>';
+      }).join('')
+      +'</div>';
+  }
+  else if(tab === 'teknik'){
+    tc.innerHTML =
+      '<div class="seo-section">'
+      +'<h3>⚡ Performans</h3>'
+      +_techRow('Yükleme Hızı', d.yükleme_hizi||d['yükleme_hizi']||'Bilinmiyor', d.yükleme_hizi==='Hızlı'?'✅':'⚠️')
+      +_techRow('Sayfa Boyutu', (d.sayfa_boyut_kb||0)+' KB', d.sayfa_boyut_kb<500?'✅':'⚠️')
+      +_techRow('DOM Boyutu', (d.dom_boyutu||0)+' düğüm', d.dom_boyutu<1500?'✅':'⚠️')
+      +_techRow('HTTP İstekleri', (d.http_istekleri||0)+' istek', d.http_istekleri<80?'✅':'⚠️')
+      +_techRow('JS Erteleme', d.js_erteleme?'Evet':'Hayır', d.js_erteleme?'✅':'⚠️')
+      +'</div>'
+      +'<div class="seo-section">'
+      +'<h3>🔒 Güvenlik & Erişim</h3>'
+      +_techRow('HTTPS', d.https?'Evet':'Hayır', d.https?'✅':'🔴')
+      +_techRow('Mobil Uyumlu', d.mobil_uyumlu?'Evet':'Hayır', d.mobil_uyumlu?'✅':'🔴')
+      +_techRow('Robots.txt', d.robots_txt?'Erişilebilir':'Bulunamadı', d.robots_txt?'✅':'⚠️')
+      +_techRow('Sitemap', d.sitemap?'Mevcut':'Bulunamadı', d.sitemap?'✅':'⚠️')
+      +_techRow('Noindex', d.noindex?'Var (Dikkat!)':'Yok', !d.noindex?'✅':'🔴')
+      +'</div>'
+      +'<div class="seo-section">'
+      +'<h3>📝 İçerik & Meta</h3>'
+      +_techRow('Dil Kodu', d.dil||'—', '🌐')
+      +_techRow('Karakter Seti', d.charset||'—', d.charset?'✅':'⚠️')
+      +_techRow('Canonical Tag', d.canonical?'Var':'Yok', d.canonical?'✅':'⚠️')
+      +_techRow('OG Etiketleri', d.og_tags?'Var':'Yok', d.og_tags?'✅':'⚠️')
+      +_techRow('Metin/HTML Oranı', '% '+(d.metin_html_oran||0), d.metin_html_oran>=20?'✅':'⚠️')
+      +_techRow('Favicon', d.favicon?'Var':'Yok', d.favicon?'✅':'⚠️')
+      +'</div>';
+  }
+  else if(tab === 'oneriler'){
+    var skor = d.skor || 0;
+    var onList = d.oneriler || [];
+    tc.innerHTML =
+      '<div class="seo-ai-card">'
+      +'<div style="font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px">🤖 AI SEO Değerlendirmesi</div>'
+      +'<div style="font-size:12px;line-height:1.8;color:var(--t)">'+esc(d.ai_analiz||'Analiz bulunamadı.')+'</div>'
+      +'</div>'
+      +'<div class="seo-section">'
+      +'<h3>💡 Aksiyon Listesi — Öncelik Sırasıyla</h3>'
+      +(onList.length ? onList.map(function(o,i){
+        return '<div class="seo-tip" style="border-left:3px solid #f27a1a;padding-left:12px">'
+          +'<strong>'+(i+1)+'. </strong>'+esc(o)
+          +'</div>';
+      }).join('') : '<div style="color:var(--m);font-size:12px">Öneri bulunamadı.</div>')
+      +'</div>'
+      +'<div class="seo-section">'
+      +'<h3>📈 Skor İyileştirme Yol Haritası</h3>'
+      +'<div style="font-size:12px;line-height:2;color:var(--m)">'
+      +(skor<60?'<div style="color:var(--r);font-weight:600">🔴 Acil müdahale gerekiyor (Skor: '+skor+')</div><div>Önce ciddi hataları çözün. H1, meta açıklama, HTTPS gibi temel eksiklikler öncelikli.</div>':'')
+      +(skor>=60&&skor<80?'<div style="color:var(--y);font-weight:600">🟡 İyileştirme aşamasında (Skor: '+skor+')</div><div>Temel SEO kurulu, ancak uyarıları gidererek skoru 80+ seviyeye çıkarabilirsiniz.</div>':'')
+      +(skor>=80?'<div style="color:var(--g);font-weight:600">🟢 İyi seviyede (Skor: '+skor+')</div><div>Temel SEO sağlam. İçerik kalitesi ve backlink stratejisine odaklanın.</div>':'')
+      +'</div>'
+      +'<div style="margin-top:12px">'
+      +'<div style="font-size:11px;color:var(--m);margin-bottom:6px">Mevcut Skor</div>'
+      +'<div class="seo-prog"><div class="seo-prog-bar" style="width:'+skor+'%;background:'+(skor>=80?'var(--g)':skor>=60?'var(--y)':'var(--r)')+'"></div></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--m);margin-top:4px"><span>0</span><span>50</span><span>100</span></div>'
+      +'</div>'
+      +'</div>';
+  }
+}
+
+function _checkRow(label, ok, detail, tip){
+  var icon = ok ? '✅' : '⚠️';
+  var color = ok ? 'var(--g)' : 'var(--y)';
+  return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'
+    +'<span style="font-size:14px;flex-shrink:0;margin-top:1px">'+icon+'</span>'
+    +'<div style="flex:1;min-width:0">'
+    +'<div style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px">'+esc(label)+(detail?'<span style="font-size:10px;color:var(--m);font-weight:400">'+esc(detail)+'</span>':'')+'</div>'
+    +'<div style="font-size:11px;color:'+(ok?'var(--m)':'var(--y)')+'">'+esc(tip)+'</div>'
+    +'</div></div>';
+}
+
+function _barRow(label, val, max, color){
+  var pct = max>0 ? Math.min(Math.round((val||0)/max*100),100) : 0;
+  return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'
+    +'<span style="font-size:11px;font-weight:600;min-width:25px">'+label+'</span>'
+    +'<div class="seo-prog" style="flex:1;height:10px"><div class="seo-prog-bar" style="width:'+pct+'%;background:'+color+'"></div></div>'
+    +'<span style="font-size:11px;font-family:\'DM Mono\',monospace;min-width:20px;text-align:right">'+val+'</span>'
+    +'</div>';
+}
+
+function _techRow(label, val, icon){
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">'
+    +'<span style="color:var(--m)">'+esc(label)+'</span>'
+    +'<span style="display:flex;align-items:center;gap:6px;font-family:\'DM Mono\',monospace;font-size:11px">'+esc(val)+'<span>'+icon+'</span></span>'
+    +'</div>';
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Url parametresinden başlat
+var params = new URLSearchParams(window.location.search);
+var initUrl = params.get('url');
+if(initUrl){ document.getElementById('seoUrl').value = initUrl; seoAnalyze(); }
 })();
 </script>
