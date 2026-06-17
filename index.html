@@ -338,14 +338,12 @@ async function loadModule(page) {
     el.innerHTML = tmp.innerHTML;
     scripts.forEach(function(code){
       try {
-        var tmp2 = document.createElement('textarea'); tmp2.innerHTML = code;
-        (new Function(tmp2.value))();
+        // textarea decode KULLANMA - direkt textContent kullan, entity sorunu olmaz
+        var s = document.createElement('script');
+        s.textContent = code;
+        document.body.appendChild(s);
       } catch(e){
-        try {
-          var s = document.createElement('script');
-          var tmp3 = document.createElement('textarea'); tmp3.innerHTML = code;
-          s.textContent = tmp3.value; document.body.appendChild(s);
-        } catch(e2){ console.error('[loadModule] script hatası:', e2); }
+        console.error('[loadModule] script hatasi:', e);
       }
     });
     if(window._isConnected) window.dispatchEvent(new CustomEvent('mx:connected'));
