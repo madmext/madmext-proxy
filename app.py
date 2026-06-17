@@ -761,21 +761,43 @@ def gads_status():
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
     })
 
+@app.route('/claude/test', methods=['GET'])
+def claude_test():
+    import json as _json
+    key_set = bool(ANTHROPIC_KEY)
+    key_len = len(ANTHROPIC_KEY) if ANTHROPIC_KEY else 0
+    return _json.dumps({
+        'key_set': key_set,
+        'key_length': key_len,
+        'key_prefix': ANTHROPIC_KEY[:10] + '...' if key_set else 'YOK'
+    }), 200, {'Content-Type': 'application/json'}
+
 @app.route('/claude', methods=['POST'])
 def claude_proxy():
-    data = request.json
-    if not ANTHROPIC_KEY:
-        return jsonify({'error': {'message': 'ANTHROPIC_KEY env degiskeni tanimli degil. Railway > Variables kontrol edin.'}}), 500
+    # Her zaman JSON don - hic bir kosulda HTML donme
     try:
-        r = requests.post('https://api.anthropic.com/v1/messages',
-            headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-            json=data, timeout=90)
-        if r.status_code != 200:
-            return jsonify({'error': {'message': 'Anthropic API hatasi: ' + str(r.status_code) + ' - ' + r.text[:300]}}), r.status_code
-        return jsonify(r.json())
+        data = request.get_json(force=True, silent=True) or {}
+        if not ANTHROPIC_KEY:
+            app.logger.error('ANTHROPIC_KEY tanimli degil')
+            return jsonify({'error': {'message': 'ANTHROPIC_KEY Railway ortam degiskeni tanimli degil.'}}), 500
+        r = requests.post(
+            'https://api.anthropic.com/v1/messages',
+            headers={
+                'x-api-key': ANTHROPIC_KEY,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            },
+            json=data,
+            timeout=90
+        )
+        try:
+            return jsonify(r.json()), r.status_code
+        except Exception:
+            return jsonify({'error': {'message': 'Anthropic API yaniti parse edilemedi: ' + r.text[:200]}}), 500
     except requests.Timeout:
-        return jsonify({'error': {'message': 'Claude zaman asimi (90s). Tekrar deneyin.'}}), 504
+        return jsonify({'error': {'message': 'Zaman asimi (90s). Tekrar deneyin.'}}), 504
     except Exception as e:
+        app.logger.error('Claude proxy hatasi: ' + str(e))
         return jsonify({'error': {'message': str(e)}}), 500
 
 if __name__ == '__main__':
