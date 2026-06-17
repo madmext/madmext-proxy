@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Ajans · MADMEXT</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;overflow:hidden;background:#04030e;font-family:'Segoe UI',sans-serif}
+canvas{display:block;width:100%;height:100%}
+
+#topbar{position:fixed;top:0;left:0;right:0;height:48px;background:rgba(6,4,18,0.92);backdrop-filter:blur(14px);border-bottom:1px solid rgba(83,74,183,0.2);display:flex;align-items:center;justify-content:space-between;padding:0 18px;z-index:100}
+#topbar .logo{font-size:14px;font-weight:700;color:#fff;letter-spacing:0.05em}.logo span{color:#7f77dd}
+#topbar .center{font-size:12px;color:rgba(160,150,200,0.7);display:flex;align-items:center;gap:10px}
+#topbar .dot{width:6px;height:6px;border-radius:50%;background:#1d9e75;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+#topbar .right{display:flex;gap:8px}
+.tbtn{background:rgba(83,74,183,0.15);border:0.5px solid rgba(83,74,183,0.35);color:#a09adf;padding:5px 12px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .2s}
+.tbtn:hover{background:rgba(83,74,183,0.3);color:#c8c0ff}
+.tbtn.active{background:rgba(83,74,183,0.4);color:#e0d8ff}
+
+#wrap{position:fixed;top:48px;left:0;right:0;bottom:0}
+
+/* AGENT PANEL */
+#agent-panel{position:fixed;top:60px;right:14px;width:248px;background:rgba(6,4,20,0.95);border:0.5px solid rgba(83,74,183,0.3);border-radius:12px;z-index:90;display:none;overflow:hidden}
+#ap-head{padding:13px 15px;border-bottom:0.5px solid rgba(83,74,183,0.2);display:flex;gap:11px;align-items:center}
+#ap-orb{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+#ap-name{font-size:13px;font-weight:600;color:#e0d8ff}
+#ap-role{font-size:11px;color:#7070a0;margin-top:1px}
+#ap-body{padding:13px 15px}
+.ap-label{font-size:10px;font-weight:600;color:#5a5490;letter-spacing:.07em;text-transform:uppercase;margin-bottom:7px}
+#ap-tasks{list-style:none;margin-bottom:13px}
+#ap-tasks li{font-size:11.5px;color:#a0a0c8;padding:4px 0;border-bottom:0.5px solid rgba(255,255,255,0.05)}
+#ap-tasks li::before{content:"▸ ";color:#7f77dd}
+.ap-btn{width:100%;padding:8px;border-radius:7px;font-size:11.5px;cursor:pointer;margin-bottom:6px;font-family:inherit;transition:all .2s}
+.ap-btn-primary{background:rgba(83,74,183,0.2);border:0.5px solid rgba(83,74,183,0.5);color:#c0b8ff}
+.ap-btn-primary:hover{background:rgba(83,74,183,0.38)}
+.ap-btn-secondary{background:rgba(29,158,117,0.12);border:0.5px solid rgba(29,158,117,0.35);color:#5dcaa5}
+.ap-btn-secondary:hover{background:rgba(29,158,117,0.22)}
+#ap-close{position:absolute;top:10px;right:12px;background:none;border:none;color:#5a5490;font-size:14px;cursor:pointer}
+
+/* REPORT MODAL */
+#modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#modal{background:#080618;border:0.5px solid rgba(83,74,183,0.35);border-radius:14px;width:min(580px,92vw);max-height:78vh;overflow:hidden;display:flex;flex-direction:column}
+#modal-head{padding:15px 18px;border-bottom:0.5px solid rgba(83,74,183,0.2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#modal-head h2{font-size:14px;font-weight:600;color:#e0d8ff}
+#modal-close{background:none;border:none;color:#5a5490;font-size:16px;cursor:pointer}
+#modal-body{padding:18px;overflow-y:auto;flex:1}
+#modal-body.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;color:#7070a0;font-size:13px;gap:10px}
+.spinner{width:28px;height:28px;border:2px solid rgba(83,74,183,0.2);border-top-color:#7f77dd;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.r-section{margin-bottom:16px}
+.r-section h3{font-size:11px;font-weight:600;color:#7f77dd;letter-spacing:.06em;text-transform:uppercase;margin-bottom:7px;padding-bottom:5px;border-bottom:0.5px solid rgba(83,74,183,0.2)}
+.r-section p,.r-section li{font-size:12.5px;color:#a0a0c0;line-height:1.75}
+.r-section ul{padding-left:15px}
+.r-section li{margin-bottom:3px}
+.r-meta{font-size:10.5px;color:#4a4470;margin-top:14px;padding-top:10px;border-top:0.5px solid rgba(83,74,183,0.15)}
+
+/* HUD */
+#hud-tl{position:fixed;top:58px;left:14px;z-index:90;display:flex;flex-direction:column;gap:5px}
+.hpill{background:rgba(6,4,20,0.88);border:0.5px solid rgba(83,74,183,0.25);border-radius:7px;padding:5px 11px;font-size:11px;color:#7070a0;display:flex;align-items:center;gap:7px}
+.hpill strong{color:#c8c0ff;font-weight:500}
+#controls{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:90}
+.cbtn{background:rgba(6,4,20,0.88);border:0.5px solid rgba(83,74,183,0.25);color:#7070a0;padding:6px 13px;border-radius:7px;font-size:11px;cursor:pointer;font-family:inherit}
+.cbtn:hover{color:#c8c0ff;border-color:rgba(83,74,183,.5)}
+#hint{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);font-size:10.5px;color:rgba(100,90,150,.55);pointer-events:none;white-space:nowrap}
+#xhair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:14px;color:rgba(127,119,221,.3);pointer-events:none;z-index:90;transition:color .2s}
+#minimap{position:fixed;bottom:48px;right:14px;border-radius:8px;border:0.5px solid rgba(83,74,183,.25);background:rgba(6,4,20,.88);z-index:90}
+#room-label{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) translateY(-60px);background:rgba(6,4,20,.85);border:0.5px solid rgba(83,74,183,.35);border-radius:6px;padding:5px 13px;font-size:11.5px;color:#c0b8ff;pointer-events:none;z-index:90;display:none;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">MADMEXT <span>ADS</span></div>
+  <div class="center"><div class="dot"></div><span>AI Ajans Merkezi · 9 ajan aktif</span></div>
+  <div class="right">
+    <button class="tbtn active" id="btn-walk" onclick="setMode('walk')">Dolaş</button>
+    <button class="tbtn" id="btn-orbit" onclick="setMode('orbit')">Döndür</button>
+  </div>
+</div>
+
+<div id="wrap"><canvas id="c"></canvas></div>
+
+<div id="agent-panel">
+  <button id="ap-close" onclick="closePanel()">✕</button>
+  <div id="ap-head"><div id="ap-orb"></div><div><div id="ap-name"></div><div id="ap-role"></div></div></div>
+  <div id="ap-body">
+    <div class="ap-label">Görevler</div>
+    <ul id="ap-tasks"></ul>
+    <button class="ap-btn ap-btn-primary" onclick="doReport()">Rapor Oluştur ↗</button>
+    <button class="ap-btn ap-btn-secondary" onclick="doResearch()">Araştırma Başlat ↗</button>
+  </div>
+</div>
+
+<div id="modal-bg" onclick="if(event.target===this)closeModal()">
+  <div id="modal">
+    <div id="modal-head"><h2 id="modal-title">Rapor</h2><button id="modal-close" onclick="closeModal()">✕</button></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="hud-tl">
+  <div class="hpill"><strong id="h-agents">9</strong> AI Ajan</div>
+  <div class="hpill"><strong id="h-reports">0</strong> Rapor</div>
+  <div class="hpill" id="h-focus" style="display:none"><span id="h-focus-txt"></span></div>
+</div>
+
+<div id="xhair">＋</div>
+<div id="room-label" id="room-label"></div>
+<canvas id="minimap" width="88" height="70"></canvas>
+
+<div id="hint">WASD · hareket &nbsp;|&nbsp; Fare · bak &nbsp;|&nbsp; Scroll · yakınlaş &nbsp;|&nbsp; Tıkla · ajan</div>
+<div id="controls">
+  <button class="cbtn" onclick="mv('left')">◀</button>
+  <button class="cbtn" onclick="mv('fwd')">▲</button>
+  <button class="cbtn" onclick="mv('back')">▼</button>
+  <button class="cbtn" onclick="mv('right')">▶</button>
+  <button class="cbtn" onclick="mv('up')">↑</button>
+  <button class="cbtn" onclick="mv('dn')">↓</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ── RENDERER ──
+const cvs = document.getElementById('c');
+const wrap = document.getElementById('wrap');
+let W = wrap.clientWidth, H = wrap.clientHeight;
+const renderer = new THREE.WebGLRenderer({canvas:cvs, antialias:true});
+renderer.setSize(W,H); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true; renderer.setClearColor(0x03020c);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x03020c,0,62);
+const cam = new THREE.PerspectiveCamera(68,W/H,.1,120);
+cam.position.set(0,2.4,22);
+
+// ── LIGHTS ──
+scene.add(new THREE.AmbientLight(0x120820,3));
+function ptl(c,i,d,x,y,z){const l=new THREE.PointLight(c,i,d);l.position.set(x,y,z);l.castShadow=false;scene.add(l);return l;}
+const mainPl = ptl(0x6a60c8,4,55,0,9,0);
+ptl(0x1d9e75,2.2,24,-13,3.5,0);
+ptl(0xd85a30,2,22,13,3.5,0);
+ptl(0x7f77dd,1.8,20,0,3.5,-14);
+ptl(0x185fa5,1.8,20,0,3.5,14);
+const sunDir = new THREE.DirectionalLight(0xfff8f0,.4);
+sunDir.position.set(10,20,10); sunDir.castShadow=true; scene.add(sunDir);
+
+// ── MATERIALS ──
+function m(color,emissive=0,ei=0,rough=.65,metal=.1){
+  return new THREE.MeshStandardMaterial({color,emissive,emissiveIntensity:ei,roughness:rough,metalness:metal});
+}
+function addM(geo,mat,x,y,z,ry=0,rx=0){
+  const o=new THREE.Mesh(geo,mat);
+  o.position.set(x,y,z);o.rotation.y=ry;o.rotation.x=rx;
+  o.castShadow=true;o.receiveShadow=true;scene.add(o);return o;
+}
+
+// ── FLOOR ──
+addM(new THREE.PlaneGeometry(90,90),m(0x060418),0,0,0,0,-Math.PI/2);
+// floor tiles grid
+const grid = new THREE.GridHelper(60,40,0x12103a,0x09071e);
+scene.add(grid);
+// floor accent strips
+function strip(c,x1,x2,z,w=.05){
+  const g=new THREE.BoxGeometry(Math.abs(x2-x1),w,.08);
+  const mo=new THREE.MeshStandardMaterial({color:c,emissive:c,emissiveIntensity:1.8});
+  const o=new THREE.Mesh(g,mo);o.position.set((x1+x2)/2,.01,z);scene.add(o);
+}
+[-16,-8,0,8,16].forEach(z=>{strip(0x18104a,-18,18,z);});
+[-16,-8,0,8,16].forEach(x=>{strip(0x0d0830,x,-0,0);strip(0x0d0830,x,0,0);});
+
+// ── CEILING ──
+addM(new THREE.PlaneGeometry(90,90),m(0x050315),0,7,0,0,Math.PI/2);
+// ceiling panels
+for(let x=-12;x<=12;x+=8) for(let z=-16;z<=16;z+=8){
+  addM(new THREE.BoxGeometry(7,.06,7),m(0x07051a),x,6.97,z);
+}
+
+// ── OUTER WALLS ──
+function wall(w,h,x,y,z,ry=0){addM(new THREE.BoxGeometry(w,h,.2),m(0x0b0920),x,y,z,ry);}
+wall(68,7,0,3.5,19); wall(68,7,0,3.5,-19);
+wall(7,7,-19,3.5,0,Math.PI/2); wall(7,7,19,3.5,0,Math.PI/2);
+
+// ── GLASS PARTITION WALLS (meeting room) ──
+// Meeting room is center: x=-6..6, z=-6..6
+function glassWall(w,h,x,y,z,ry=0,gap=0){
+  // frame
+  addM(new THREE.BoxGeometry(w,.1,.1),m(0x1a1640),x,y+h/2,z,ry); // top frame
+  addM(new THREE.BoxGeometry(w,.1,.1),m(0x1a1640),x,y-h/2,z,ry); // bot frame
+  // glass panes
+  if(!gap){
+    const gMat=new THREE.MeshStandardMaterial({color:0x7f77ff,emissive:0x3a3680,emissiveIntensity:.08,transparent:true,opacity:.18,roughness:.05,metalness:.1});
+    addM(new THREE.BoxGeometry(w,h,.06),gMat,x,y,z,ry);
+  } else {
+    // two panes with door gap
+    const hw=(w-gap)/2;
+    const gMat=new THREE.MeshStandardMaterial({color:0x7f77ff,emissive:0x3a3680,emissiveIntensity:.08,transparent:true,opacity:.18,roughness:.05,metalness:.1});
+    const offset=(hw+gap)/2;
+    addM(new THREE.BoxGeometry(hw,h,.06),gMat,x-offset+(ry!==0?0:0),y,z,ry);
+    addM(new THREE.BoxGeometry(hw,h,.06),gMat,x+offset-(ry!==0?0:0),y,z,ry);
+  }
+}
+// 4 sides of meeting room, z-front has door gap
+const MR=6; // half-size of meeting room
+glassWall(MR*2,3,0,1.5,MR,0,2.2);   // front (south)
+glassWall(MR*2,3,0,1.5,-MR);  // back (north)
+glassWall(MR*2,3,-MR,1.5,0,Math.PI/2); // left
+glassWall(MR*2,3,MR,1.5,0,Math.PI/2);  // right
+
+// Glass vertical posts
+[-MR,0,MR].forEach(x=>{
+  addM(new THREE.BoxGeometry(.09,3,.09),m(0x2a2460,0x7f77dd,.06),x,1.5,MR);
+  addM(new THREE.BoxGeometry(.09,3,.09),m(0x2a2460,0x7f77dd,.06),x,1.5,-MR);
+});
+[-MR,0,MR].forEach(z=>{
+  addM(new THREE.BoxGeometry(.09,3,.09),m(0x2a2460,0x7f77dd,.06),-MR,1.5,z);
+  addM(new THREE.BoxGeometry(.09,3,.09),m(0x2a2460,0x7f77dd,.06),MR,1.5,z);
+});
+
+// Floor accent inside meeting room
+addM(new THREE.PlaneGeometry(MR*2-.2,MR*2-.2),m(0x08061c),0,.02,0,0,-Math.PI/2);
+strip(0x534ab7,-MR+.1,MR-.1,-MR+.1);
+strip(0x534ab7,-MR+.1,MR-.1,MR-.1);
+strip(0x534ab7,-MR+.1,MR-.1,0);
+
+// ── MEETING TABLE ──
+// Oval table
+addM(new THREE.CylinderGeometry(2.8,2.8,.1,32),m(0x111028,0x534ab7,.1,.2,.6),0,.96,0);
+addM(new THREE.CylinderGeometry(.12,.12,.96,8),m(0x1a1640),0,.48,0);
+// Table edge glow
+addM(new THREE.TorusGeometry(2.8,.03,8,60),new THREE.MeshStandardMaterial({color:0x534ab7,emissive:0x534ab7,emissiveIntensity:1.5}),0,.97,0,0,Math.PI/2);
+ptl(0x534ab7,3.5,10,0,2,0);
+
+// Hologram centerpiece
+addM(new THREE.CylinderGeometry(.06,.06,1.8,6),new THREE.MeshStandardMaterial({color:0x7f77dd,emissive:0x7f77dd,emissiveIntensity:2.2,transparent:true,opacity:.5}),0,1.56,0);
+const holoOrb = addM(new THREE.SphereGeometry(.28,14,14),new THREE.MeshStandardMaterial({color:0x7f77dd,emissive:0x7f77dd,emissiveIntensity:2,transparent:true,opacity:.7}),0,2.5,0);
+
+// Meeting chairs around table (6 seats)
+for(let i=0;i<6;i++){
+  const ang=i/6*Math.PI*2;
+  const cx=Math.cos(ang)*3.6, cz=Math.sin(ang)*3.6;
+  addM(new THREE.CylinderGeometry(.42,.36,.1,12),m(0x0e0c1e),cx,.86,cz);
+  addM(new THREE.CylinderGeometry(.06,.06,.86,6),m(0x181430),cx,.43,cz);
+  addM(new THREE.BoxGeometry(.88,.78,.09),m(0x0e0c1e),cx,1.26,cz+.42*Math.sign(cz)||0.3,Math.atan2(cx,cz));
+  // mini hologram per seat
+  const sh=addM(new THREE.SphereGeometry(.1,8,8),new THREE.MeshStandardMaterial({color:0x7f77dd,emissive:0x7f77dd,emissiveIntensity:1.8,transparent:true,opacity:.65}),cx,1.6,cz);
+  sh.userData={isMeet:true,baseY:1.6,idx:i};
+  floaters.push(sh);
+}
+
+// Meeting room ceiling light
+addM(new THREE.BoxGeometry(4,.05,1.5),new THREE.MeshStandardMaterial({color:0xfff8e8,emissive:0xfff8e8,emissiveIntensity:.6}),0,6.9,0);
+ptl(0xfff0cc,.8,12,0,6.6,0);
+
+// Meeting room label sign
+addM(new THREE.BoxGeometry(2.5,.3,.04),new THREE.MeshStandardMaterial({color:0x534ab7,emissive:0x534ab7,emissiveIntensity:.5}),0,3.3,-MR+.06);
+
+// ── AGENTS ──
+const agents=[
+  // North row (z ~ -13)
+  {name:"Aria",role:"Strateji & Planlama",x:-10,z:-13,color:0x534ab7,em:0x3c3489,tasks:["Marka konumlandırma","Kampanya stratejisi","Hedef kitle analizi","KPI raporlama"],spec:"strategy"},
+  {name:"Nova",role:"Pazar Araştırma",x:0,z:-13,color:0x1d9e75,em:0x0f6e56,tasks:["Rakip analizi","Trend raporları","Sektör takibi","Büyüme fırsatları"],spec:"research"},
+  {name:"Orion",role:"Proje Yönetimi",x:10,z:-13,color:0xd85a30,em:0x993c1d,tasks:["Kampanya takvimi","Bütçe takibi","Koordinasyon","Haftalık rapor"],spec:"pm"},
+  // East row (x ~ 13)
+  {name:"Pixel",role:"Kreatif & Tasarım",x:13,z:-4,color:0x7f77dd,em:0x534ab7,tasks:["Marka kimliği","AI görsel üretimi","UI konseptleri","Sosyal görseller"],spec:"design"},
+  {name:"Rex",role:"Video & Medya",x:13,z:4,color:0xba7517,em:0x854f0b,tasks:["AI video üretimi","Reel & TikTok planı","Podcast içeriği","Post-prodüksiyon"],spec:"video"},
+  // South row (z ~ 13)
+  {name:"Sage",role:"SEO & Analitik",x:10,z:13,color:0x185fa5,em:0x0c447c,tasks:["Anahtar kelime araştırması","Google Ads optimizasyonu","Analytics raporları","ROI analizi"],spec:"seo"},
+  {name:"Vibe",role:"Sosyal Medya",x:0,z:13,color:0x639922,em:0x3b6d11,tasks:["Instagram & TikTok","Topluluk yönetimi","Influencer araştırması","Engagement raporu"],spec:"social"},
+  {name:"Byte",role:"Web & Altyapı",x:-10,z:13,color:0x0f6e56,em:0x085041,tasks:["Landing page opt.","API entegrasyonları","A/B testi","Teknik SEO raporu"],spec:"web"},
+  // West row (x ~ -13)
+  {name:"Luna",role:"İçerik & Metin",x:-13,z:0,color:0x993556,em:0x72243e,tasks:["Reklam metni","Blog & sosyal içerik","E-posta kampanyaları","SEO uyumlu yazı"],spec:"content"},
+];
+
+const floaters=[];
+const clickables=[];
+
+agents.forEach((d,i)=>{
+  const hex=d.color;
+  // Desk facing center
+  const ang=Math.atan2(d.x,d.z); // face toward center
+  const desk=addM(new THREE.BoxGeometry(3.2,.1,1.9),m(0x10102a,hex,.06,.3,.5),d.x,.95,d.z,ang+Math.PI);
+  desk.userData=d; clickables.push(desk);
+
+  // Desk legs
+  const dcos=Math.cos(ang+Math.PI),dsin=Math.sin(ang+Math.PI);
+  [[1.3,.8],[1.3,-.8],[-1.3,.8],[-1.3,-.8]].forEach(([dx,dz2])=>{
+    addM(new THREE.CylinderGeometry(.055,.055,.95,6),m(0x14102a),d.x+dx*dcos-dz2*dsin,.47,d.z+dx*dsin+dz2*dcos);
+  });
+
+  // Monitor (slightly rotated toward center)
+  const monOff=.75;
+  const mx2=d.x-Math.sin(ang+Math.PI)*monOff, mz2=d.z-Math.cos(ang+Math.PI)*monOff;
+  addM(new THREE.BoxGeometry(.11,.4,.11),m(0x0e0c1e),mx2,1.16,mz2);
+  addM(new THREE.BoxGeometry(.38,.04,.18),m(0x0e0c1e),mx2,.97,mz2);
+  const monFr=addM(new THREE.BoxGeometry(1.8,1.1,.07),m(0x080616,hex,.06,.2,.8),mx2,1.63,mz2,ang+Math.PI);
+  monFr.userData=d; clickables.push(monFr);
+  const scrMat=new THREE.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:.6,transparent:true,opacity:.88});
+  addM(new THREE.PlaneGeometry(1.56,.93),scrMat,mx2+Math.sin(ang+Math.PI)*.015,1.63,mz2+Math.cos(ang+Math.PI)*.015,ang+Math.PI);
+
+  // Keyboard
+  const kOff=.15;
+  addM(new THREE.BoxGeometry(1.05,.04,.36),m(0x141228),d.x-Math.sin(ang+Math.PI)*kOff,.97,d.z-Math.cos(ang+Math.PI)*kOff,ang+Math.PI);
+
+  // Chair (behind desk, away from center)
+  const chOff=1.05;
+  const chx=d.x+Math.sin(ang+Math.PI)*chOff, chz=d.z+Math.cos(ang+Math.PI)*chOff;
+  addM(new THREE.CylinderGeometry(.5,.4,.11,12),m(0x0e0c1e),chx,.87,chz);
+  addM(new THREE.CylinderGeometry(.065,.065,.87,6),m(0x181430),chx,.43,chz);
+  addM(new THREE.BoxGeometry(1,.82,.09),m(0x0e0c1e),chx+Math.sin(ang+Math.PI)*.44,1.27,chz+Math.cos(ang+Math.PI)*.44,ang+Math.PI);
+
+  // Nameplate
+  addM(new THREE.BoxGeometry(.85,.07,.24),new THREE.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:.4}),d.x,0.98,d.z);
+
+  // Agent orb (floating above desk, slightly toward center)
+  const orbOff=.5;
+  const ox=d.x-Math.sin(ang+Math.PI)*orbOff, oz=d.z-Math.cos(ang+Math.PI)*orbOff;
+  const orb=addM(new THREE.SphereGeometry(.28,14,14),new THREE.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:1.1,transparent:true,opacity:.9}),ox,2.2,oz);
+  orb.userData={isOrb:true,baseY:2.2,idx:i,dept:d}; floaters.push(orb); clickables.push(orb);
+
+  const ring=addM(new THREE.TorusGeometry(.4,.042,8,26),new THREE.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:1.6}),ox,2.2,oz);
+  ring.userData={isRing:true,baseY:2.2,idx:i}; floaters.push(ring);
+
+  // Point light
+  const dl=new THREE.PointLight(hex,1.6,6);dl.position.set(ox,2.4,oz);scene.add(dl);
+
+  // Overhead strip light
+  addM(new THREE.BoxGeometry(2.6,.05,.36),new THREE.MeshStandardMaterial({color:0xfff8e0,emissive:0xfff8e0,emissiveIntensity:.65}),d.x,6.88,d.z);
+  ptl(0xfff0cc,.55,9,d.x,6.6,d.z);
+});
+
+// ── PILLARS ──
+[[-16,-16],[16,-16],[-16,16],[16,16],[-16,0],[16,0],[0,-16],[0,16]].forEach(([x,z])=>{
+  addM(new THREE.BoxGeometry(.55,7,.55),m(0x12102a,0x534ab7,.04,.4,.5),x,3.5,z);
+  addM(new THREE.BoxGeometry(.7,.12,.7),m(0x1e1c40),x,6.94,z);
+  addM(new THREE.BoxGeometry(.7,.12,.7),m(0x1e1c40),x,.06,z);
+});
+
+// ── DECORATIVE WALL SCREENS ──
+[[-14,0,19],[-7,0,19],[0,0,19],[7,0,19],[14,0,19]].forEach(([x,y,z])=>{
+  addM(new THREE.BoxGeometry(4.5,2.4,.06),m(0x08061c,0x534ab7,.1),x,4,z-.1);
+  addM(new THREE.PlaneGeometry(4.1,2.1),new THREE.MeshStandardMaterial({color:0x534ab7,emissive:0x534ab7,emissiveIntensity:.08,transparent:true,opacity:.9}),x,4,z-.04);
+  addM(new THREE.BoxGeometry(4.5,.06,.06),new THREE.MeshStandardMaterial({color:0x7f77dd,emissive:0x7f77dd,emissiveIntensity:1.4}),x,5.3,z-.04);
+  ptl(0x534ab7,.6,7,x,4.5,z-1.5);
+});
+
+// ── STARS / PARTICLES ──
+const sv=[];
+for(let i=0;i<700;i++)sv.push((Math.random()-.5)*130,Math.random()*40+8,(Math.random()-.5)*130);
+const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));
+scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:.12,transparent:true,opacity:.4})));
+
+const parts=[];
+for(let i=0;i<55;i++){
+  const pc=[0x7f77dd,0x1d9e75,0xd85a30,0x993556,0x185fa5][Math.floor(Math.random()*5)];
+  const pm=new THREE.MeshStandardMaterial({color:pc,emissive:pc,emissiveIntensity:2.5,transparent:true,opacity:.6});
+  const p=new THREE.Mesh(new THREE.SphereGeometry(.04,4,4),pm);
+  p.userData={bx:(Math.random()-.5)*36,by:Math.random()*4+.5,bz:(Math.random()-.5)*36,spd:.25+Math.random()*.5,off:Math.random()*6.28};
+  p.position.set(p.userData.bx,p.userData.by,p.userData.bz);
+  scene.add(p);parts.push(p);
+}
+
+// ── CAMERA CONTROL ──
+let rotY=.05,rotX=.08,mode='walk';
+let drag=false,mx=0,my=0;
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;['arrowup','arrowdown','arrowleft','arrowright',' '].includes(e.key.toLowerCase())&&e.preventDefault();});
+document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+cvs.addEventListener('mousedown',e=>{drag=true;mx=e.clientX;my=e.clientY;});
+window.addEventListener('mouseup',e=>{
+  if(drag&&Math.abs(e.clientX-mx)<4&&Math.abs(e.clientY-my)<4)handleClick(e);
+  drag=false;
+});
+window.addEventListener('mousemove',e=>{
+  if(!drag)return;
+  rotY-=(e.clientX-mx)*.007;mx=e.clientX;
+  rotX-=(e.clientY-my)*.006;my=e.clientY;
+  rotX=Math.max(-.35,Math.min(.5,rotX));
+});
+cvs.addEventListener('wheel',e=>{
+  const f=new THREE.Vector3(-Math.sin(rotY),0,-Math.cos(rotY));
+  cam.position.addScaledVector(f,e.deltaY>0?-.7:.7);
+  clamp();e.preventDefault();
+},{passive:false});
+cvs.addEventListener('touchstart',e=>{if(e.touches.length===1){drag=true;mx=e.touches[0].clientX;my=e.touches[0].clientY;}},{passive:true});
+cvs.addEventListener('touchend',()=>drag=false);
+cvs.addEventListener('touchmove',e=>{
+  if(!drag||e.touches.length!==1)return;
+  rotY-=(e.touches[0].clientX-mx)*.007;mx=e.touches[0].clientX;
+  rotX-=(e.touches[0].clientY-my)*.006;my=e.touches[0].clientY;
+  rotX=Math.max(-.35,Math.min(.5,rotX));
+  e.preventDefault();
+},{passive:false});
+
+function clamp(){
+  cam.position.x=Math.max(-17,Math.min(17,cam.position.x));
+  cam.position.z=Math.max(-17,Math.min(17,cam.position.z));
+  cam.position.y=Math.max(.9,Math.min(6,cam.position.y));
+}
+function mv(dir){
+  const s=1.7,f=new THREE.Vector3(-Math.sin(rotY),0,-Math.cos(rotY)),r=new THREE.Vector3(-Math.cos(rotY),0,Math.sin(rotY));
+  if(dir==='fwd')cam.position.addScaledVector(f,s);
+  if(dir==='back')cam.position.addScaledVector(f,-s);
+  if(dir==='left')cam.position.addScaledVector(r,-s);
+  if(dir==='right')cam.position.addScaledVector(r,s);
+  if(dir==='up')cam.position.y+=s;
+  if(dir==='dn')cam.position.y-=s;
+  clamp();
+}
+function setMode(m){
+  mode=m;
+  document.getElementById('btn-walk').classList.toggle('active',m==='walk');
+  document.getElementById('btn-orbit').classList.toggle('active',m==='orbit');
+}
+
+// ── CLICK ──
+const rc=new THREE.Raycaster();
+let activeAgent=null,reportCount=0;
+function handleClick(e){
+  const rect=cvs.getBoundingClientRect();
+  const mouse=new THREE.Vector2(((e.clientX-rect.left)/rect.width)*2-1,-((e.clientY-rect.top)/rect.height)*2+1);
+  rc.setFromCamera(mouse,cam);
+  const hits=rc.intersectObjects(clickables);
+  if(hits.length){
+    const d=hits[0].object.userData;
+    const agent=d.name?d:(d.dept||null);
+    if(agent&&agent.name)openPanel(agent);
+  } else closePanel();
+}
+function openPanel(d){
+  activeAgent=d;
+  const hex='#'+d.color.toString(16).padStart(6,'0');
+  document.getElementById('ap-orb').style.background=hex+'25';
+  document.getElementById('ap-orb').style.color=hex;
+  document.getElementById('ap-orb').style.border=`0.5px solid ${hex}66`;
+  document.getElementById('ap-orb').textContent=d.name[0];
+  document.getElementById('ap-name').textContent=d.name;
+  document.getElementById('ap-role').textContent=d.role;
+  document.getElementById('ap-tasks').innerHTML=d.tasks.map(t=>`<li>${t}</li>`).join('');
+  document.getElementById('agent-panel').style.display='block';
+  document.getElementById('h-focus').style.display='flex';
+  document.getElementById('h-focus-txt').textContent=d.name+' seçili';
+}
+function closePanel(){document.getElementById('agent-panel').style.display='none';activeAgent=null;document.getElementById('h-focus').style.display='none';}
+
+// ── REPORTS ──
+async function callClaude(prompt){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+  });
+  const data=await res.json();
+  return data.content.map(b=>b.text||'').join('');
+}
+function openModal(title){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').className='loading';
+  document.getElementById('modal-body').innerHTML='<div class="spinner"></div><div>Hazırlanıyor...</div>';
+  document.getElementById('modal-bg').style.display='flex';
+}
+function closeModal(){document.getElementById('modal-bg').style.display='none';}
+function renderMd(text){
+  const sections=text.split(/###\s*/g).filter(s=>s.trim());
+  let html='';
+  sections.forEach(sec=>{
+    const lines=sec.trim().split('\n');
+    const title=lines[0].trim();
+    const body=lines.slice(1).join('\n').trim();
+    const items=body.split('\n').filter(l=>l.trim()).map(l=>l.replace(/^[-*•\d.]\s*/,'').trim()).filter(Boolean);
+    html+=`<div class="r-section"><h3>${title}</h3>`;
+    if(items.length>1&&(body.match(/\n[-*•]/)||body.match(/\n\d\./)))html+='<ul>'+items.map(i=>`<li>${i}</li>`).join('')+'</ul>';
+    else html+='<p>'+items.join(' ')+'</p>';
+    html+='</div>';
+  });
+  if(activeAgent)html+=`<div class="r-meta">Hazırlayan: ${activeAgent.name} · MADMEXT ADS · ${new Date().toLocaleDateString('tr-TR')}</div>`;
+  document.getElementById('modal-body').className='';
+  document.getElementById('modal-body').innerHTML=html;
+  reportCount++;document.getElementById('h-reports').textContent=reportCount;
+}
+async function doReport(){
+  if(!activeAgent)return;
+  openModal('Rapor · '+activeAgent.name);
+  try{
+    const txt=await callClaude(`Sen madmext.com için çalışan AI ajanısın. Adın ${activeAgent.name}, görevin: ${activeAgent.role}. MADMEXT ADS reklam ajansı için kapsamlı bir ${activeAgent.role} raporu hazırla. Türkçe yaz. Başlıkları ### ile belirt. Şunları içer: 1) Mevcut durum 2) Temel bulgular (4+ madde) 3) Önerilen aksiyonlar (3+ madde) 4) Önümüzdeki 30 gün için öncelikler`);
+    renderMd(txt);
+  }catch{document.getElementById('modal-body').innerHTML='<p style="color:#e24b4a;font-size:13px">API bağlantısı kurulamadı.</p>';}
+}
+async function doResearch(){
+  if(!activeAgent)return;
+  openModal('Araştırma · '+activeAgent.name);
+  try{
+    const txt=await callClaude(`Sen madmext.com için çalışan ${activeAgent.name} ajanısın. MADMEXT ADS için ${activeAgent.role} alanında derin araştırma yap. Türkçe, aksiyon odaklı yaz. Başlıkları ### ile belirt. Kapsam: 1) Sektör trendi 2) Rakip stratejileri (genel) 3) Fırsat alanları (3 spesifik) 4) Riskler 5) Öncelikli adımlar`);
+    renderMd(txt);
+  }catch{document.getElementById('modal-body').innerHTML='<p style="color:#e24b4a;font-size:13px">API bağlantısı kurulamadı.</p>';}
+}
+
+// ── MINIMAP ──
+const mmCvs=document.getElementById('minimap');
+const mmCtx=mmCvs.getContext('2d');
+function drawMM(){
+  mmCtx.clearRect(0,0,88,70);
+  mmCtx.fillStyle='rgba(6,4,20,.92)';mmCtx.fillRect(0,0,88,70);
+  mmCtx.strokeStyle='rgba(83,74,183,.25)';mmCtx.strokeRect(.5,.5,87,69);
+  // meeting room outline
+  mmCtx.strokeStyle='rgba(127,119,221,.3)';mmCtx.strokeRect(28,23,32,24);
+  agents.forEach(d=>{
+    const mpx=(d.x/38)*80+44,mpy=(d.z/38)*64+35;
+    mmCtx.beginPath();mmCtx.arc(mpx,mpy,3.5,0,Math.PI*2);
+    mmCtx.fillStyle='#'+d.color.toString(16).padStart(6,'0');mmCtx.fill();
+  });
+  const cpx=(cam.position.x/38)*80+44,cpy=(cam.position.z/38)*64+35;
+  mmCtx.beginPath();mmCtx.arc(Math.max(3,Math.min(85,cpx)),Math.max(3,Math.min(67,cpy)),2.5,0,Math.PI*2);
+  mmCtx.fillStyle='#fff';mmCtx.fill();
+}
+
+// ── ANIMATE ──
+let t=0,orbitAngle=0;
+const rcC=new THREE.Raycaster();
+(function loop(){
+  requestAnimationFrame(loop);
+  t+=.015;
+
+  if(mode==='walk'){
+    const s=.07,f=new THREE.Vector3(-Math.sin(rotY),0,-Math.cos(rotY)),r=new THREE.Vector3(-Math.cos(rotY),0,Math.sin(rotY));
+    if(keys['w']||keys['arrowup'])cam.position.addScaledVector(f,s);
+    if(keys['s']||keys['arrowdown'])cam.position.addScaledVector(f,-s);
+    if(keys['a']||keys['arrowleft'])cam.position.addScaledVector(r,-s);
+    if(keys['d']||keys['arrowright'])cam.position.addScaledVector(r,s);
+    clamp();
+    const dir=new THREE.Vector3(-Math.sin(rotY),Math.sin(rotX),-Math.cos(rotY)).normalize();
+    cam.lookAt(cam.position.clone().add(dir));
+  } else {
+    orbitAngle+=.004;
+    cam.position.set(Math.sin(orbitAngle)*26,12,Math.cos(orbitAngle)*26);
+    cam.lookAt(0,2,0);
+  }
+
+  mainPl.intensity=3.5+Math.sin(t*.8)*.5;
+  holoOrb.scale.setScalar(1+Math.sin(t*2)*.12);
+  holoOrb.rotation.y=t*.6;
+
+  floaters.forEach(o=>{
+    if(o.userData.isOrb||o.userData.isMeet)o.position.y=o.userData.baseY+Math.sin(t*1.5+o.userData.idx*.85)*.13;
+    if(o.userData.isRing){o.position.y=o.userData.baseY+Math.sin(t*1.5+o.userData.idx*.85)*.13;o.rotation.y=t*1.1;}
+  });
+
+  parts.forEach(p=>{
+    p.position.y=p.userData.by+Math.sin(t*p.userData.spd+p.userData.off)*.8;
+    p.position.x=p.userData.bx+Math.cos(t*.35+p.userData.off)*.5;
+    p.material.opacity=.3+Math.sin(t*1.6+p.userData.off)*.28;
+  });
+
+  // Crosshair highlight
+  rcC.setFromCamera(new THREE.Vector2(0,0),cam);
+  const ch=rcC.intersectObjects(clickables);
+  document.getElementById('xhair').style.color=ch.length&&ch[0].distance<6?'rgba(127,119,221,.9)':'rgba(127,119,221,.25)';
+
+  // Proximity room label
+  const inMeet=Math.abs(cam.position.x)<MR+1&&Math.abs(cam.position.z)<MR+1;
+  const rl=document.getElementById('room-label');
+  rl.style.display=inMeet?'block':'none';
+  if(inMeet)rl.textContent='Toplantı Odası';
+
+  drawMM();
+  renderer.render(scene,cam);
+})();
+
+window.addEventListener('resize',()=>{
+  W=wrap.clientWidth;H=wrap.clientHeight;
+  renderer.setSize(W,H);cam.aspect=W/H;cam.updateProjectionMatrix();
+});
+</script>
+</body>
+</html>
