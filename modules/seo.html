@@ -811,7 +811,6 @@ const SE = window.SE = {
   }
 };
 
-document.addEventListener('DOMContentLoaded', () => SE.init());
-if(document.readyState!=='loading') SE.init();
+setTimeout(() => SE.init(), 0);
 })();
 </script>
