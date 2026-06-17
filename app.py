@@ -19,6 +19,7 @@ app.permanent_session_lifetime = timedelta(days=30)
 CORS(app, supports_credentials=True)
 META_TOKEN = os.environ.get('META_TOKEN', '')
 ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
+PSI_KEY = os.environ.get('PSI_KEY', '')  # Google PageSpeed Insights API key (opsiyonel ama onerilen)
 GA4_PROPERTY_ID = os.environ.get('GA4_PROPERTY_ID', '')
 GA4_REFRESH_TOKEN = os.environ.get('GA4_REFRESH_TOKEN', '')
 GA4_CLIENT_ID = os.environ.get('GA4_CLIENT_ID', '')
@@ -760,6 +761,30 @@ def gads_status():
         'login_customer_id': GADS_LOGIN_CUSTOMER_ID,
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
     })
+
+@app.route('/psi', methods=['GET'])
+def psi_proxy():
+    """PageSpeed Insights proxy - rate limit korumasi ve key yonetimi"""
+    url = request.args.get('url','')
+    strategy = request.args.get('strategy','mobile')
+    if not url:
+        return jsonify({'error':{'message':'url parametresi gerekli'}}), 400
+    try:
+        api_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
+        params = {'url': url, 'strategy': strategy, 'locale': 'tr'}
+        if PSI_KEY:
+            params['key'] = PSI_KEY
+        r = requests.get(api_url, params=params, timeout=30)
+        # Her durumda JSON don
+        try:
+            data = r.json()
+        except Exception:
+            return jsonify({'error':{'message':'PSI API yaniti parse edilemedi: '+r.text[:200]}}), 500
+        return jsonify(data), r.status_code
+    except requests.Timeout:
+        return jsonify({'error':{'message':'PageSpeed API zaman asimi. Tekrar deneyin.'}}), 504
+    except Exception as e:
+        return jsonify({'error':{'message': str(e)}}), 500
 
 @app.route('/claude/test', methods=['GET'])
 def claude_test():
