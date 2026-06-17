@@ -19,7 +19,7 @@ app.permanent_session_lifetime = timedelta(days=30)
 CORS(app, supports_credentials=True)
 META_TOKEN = os.environ.get('META_TOKEN', '')
 ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
-PSI_KEY = os.environ.get('PSI_KEY', '')  # Google PageSpeed Insights API key (opsiyonel ama onerilen)
+PSI_KEY = os.environ.get('PSI_KEY', '')
 GA4_PROPERTY_ID = os.environ.get('GA4_PROPERTY_ID', '')
 GA4_REFRESH_TOKEN = os.environ.get('GA4_REFRESH_TOKEN', '')
 GA4_CLIENT_ID = os.environ.get('GA4_CLIENT_ID', '')
@@ -249,7 +249,7 @@ def auth_login():
     password = data.get('password') or ''
     users = get_users()
     user = next((u for u in users if u['email'].lower()==email and u['password_hash']==hash_pw(password)), None)
-    if not user: return jsonify({'error':'Email veya şifre hatalı'}), 401
+    if not user: return jsonify({'error':'Email veya sifre hatali'}), 401
     session['user_email'] = user['email']
     session['user_name'] = user.get('name', email)
     session['user_role'] = user.get('role') or 'admin'
@@ -264,7 +264,7 @@ def forgot_password():
     data = request.json or {}
     current = read_logs()
     current.setdefault('resetRequests',[]).insert(0,{
-        'email':data.get('email',''), 'message':data.get('message','Şifremi unuttum'),
+        'email':data.get('email',''), 'message':data.get('message','Sifremi unuttum'),
         'time':datetime.utcnow().isoformat(), 'status':'pending'
     })
     write_logs(current)
@@ -373,7 +373,7 @@ def ga4_proxy():
         data = request.json
         token = get_ga4_token()
         if not token:
-            return jsonify({'error': 'GA4 token alınamadı'})
+            return jsonify({'error': 'GA4 token alinamadi'})
         report_type = data.get('type', 'runReport')
         url = f'https://analyticsdata.googleapis.com/v1beta/properties/{GA4_PROPERTY_ID}:{report_type}'
         r = requests.post(url,
@@ -456,36 +456,25 @@ def gads_get_token():
         data = r.json()
         token = data.get('access_token')
         if not token:
-            print(f'Google Ads token hatası: {data}')
+            print(f'Google Ads token hatasi: {data}')
         return token
     except Exception as e:
-        print(f'Google Ads token hatası: {e}')
+        print(f'Google Ads token hatasi: {e}')
         return None
 
 def gads_customer_id():
     return GADS_CUSTOMER_ID.replace('-', '').replace(' ', '')
 
 def gads_date_condition(data):
-    """
-    date_range veya date_from/date_to'dan GAQL WHERE koşulu üret.
-    Desteklenen preset'ler: TODAY, YESTERDAY, LAST_7_DAYS, LAST_14_DAYS,
-    LAST_30_DAYS, THIS_MONTH, LAST_MONTH, LAST_BUSINESS_WEEK, THIS_WEEK_SUN_TODAY
-    Custom range: date_from + date_to (YYYY-MM-DD)
-    """
     date_from = data.get('date_from', '')
     date_to = data.get('date_to', '')
     if date_from and date_to:
-        # GAQL BETWEEN formatı
         return f"segments.date BETWEEN '{date_from}' AND '{date_to}'"
-    
     date_range = data.get('date_range', 'LAST_7_DAYS')
-    # BETWEEN_ prefix'li string gelirse parse et
     if date_range.startswith('BETWEEN_'):
         parts = date_range.replace('BETWEEN_', '').split('_')
         if len(parts) == 2:
             return f"segments.date BETWEEN '{parts[0]}' AND '{parts[1]}'"
-    
-    # Geçerli GAQL preset'leri
     valid_presets = {
         'TODAY', 'YESTERDAY', 'LAST_7_DAYS', 'LAST_14_DAYS', 'LAST_30_DAYS',
         'THIS_MONTH', 'LAST_MONTH', 'LAST_BUSINESS_WEEK', 'THIS_WEEK_SUN_TODAY',
@@ -493,8 +482,6 @@ def gads_date_condition(data):
     }
     if date_range.upper() in valid_presets:
         return f"segments.date DURING {date_range.upper()}"
-    
-    # Bilinmeyen preset — varsayılan
     return "segments.date DURING LAST_7_DAYS"
 
 @app.route('/gads/campaigns', methods=['POST'])
@@ -502,36 +489,25 @@ def gads_campaigns():
     token = gads_get_token()
     if not token:
         return jsonify({
-            'error': 'Google Ads token alınamadı. GADS_REFRESH_TOKEN, GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_DEVELOPER_TOKEN ve GADS_CUSTOMER_ID değerlerini kontrol edin.',
+            'error': 'Google Ads token alinamadi.',
             'configured': bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID)
         })
-
     data = request.json or {}
     date_cond = gads_date_condition(data)
-
     query = f"""
         SELECT
-          campaign.id,
-          campaign.name,
-          campaign.status,
+          campaign.id, campaign.name, campaign.status,
           campaign.advertising_channel_type,
-          campaign_budget.amount_micros,
-          campaign_budget.type,
-          metrics.cost_micros,
-          metrics.conversions,
-          metrics.conversions_value,
-          metrics.clicks,
-          metrics.impressions,
-          metrics.ctr,
-          metrics.average_cpc,
-          metrics.cost_per_conversion
+          campaign_budget.amount_micros, campaign_budget.type,
+          metrics.cost_micros, metrics.conversions, metrics.conversions_value,
+          metrics.clicks, metrics.impressions, metrics.ctr,
+          metrics.average_cpc, metrics.cost_per_conversion
         FROM campaign
         WHERE {date_cond}
           AND campaign.status != 'REMOVED'
         ORDER BY metrics.cost_micros DESC
         LIMIT 100
     """
-
     cid = gads_customer_id()
     url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
     headers = {
@@ -541,26 +517,13 @@ def gads_campaigns():
     }
     if GADS_LOGIN_CUSTOMER_ID:
         headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
-
     try:
         r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
-        print(f'Google Ads campaigns URL: {url}')
-        print(f'Google Ads campaigns status: {r.status_code}')
-        print(f'Google Ads campaigns body: {r.text[:500]}')
-        
-        # Boş yanıt kontrolü
         if not r.text or not r.text.strip():
             return jsonify({'rows': [], 'configured': True})
-        
         result = r.json()
-        print(f'Google Ads campaigns result keys: {list(result.keys())}')
-
         if 'error' in result:
-            err_msg = result['error'].get('message', 'Google Ads API hatası')
-            details = result['error'].get('details', [])
-            print(f'Google Ads API hatası: {err_msg}, details: {details}')
-            return jsonify({'error': err_msg, 'configured': True})
-
+            return jsonify({'error': result['error'].get('message', 'Google Ads API hatasi'), 'configured': True})
         rows = []
         for row in result.get('results', []):
             camp = row.get('campaign', {})
@@ -584,20 +547,17 @@ def gads_campaigns():
             })
         return jsonify({'rows': rows, 'configured': True})
     except Exception as e:
-        print(f'Google Ads campaigns exception: {e}')
         return jsonify({'error': str(e), 'configured': True})
 
 @app.route('/gads/adgroups', methods=['POST'])
 def gads_adgroups():
     token = gads_get_token()
     if not token:
-        return jsonify({'error': 'Google Ads yapılandırılmamış.', 'configured': False})
-
+        return jsonify({'error': 'Google Ads yapilandirilmamis.', 'configured': False})
     data = request.json or {}
     date_cond = gads_date_condition(data)
     campaign_id = data.get('campaign_id', '')
     where_extra = f"AND campaign.id = '{campaign_id}'" if campaign_id else ''
-
     query = f"""
         SELECT
           ad_group.id, ad_group.name, ad_group.status,
@@ -611,7 +571,6 @@ def gads_adgroups():
         ORDER BY metrics.cost_micros DESC
         LIMIT 100
     """
-
     cid = gads_customer_id()
     url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
     headers = {
@@ -621,14 +580,13 @@ def gads_adgroups():
     }
     if GADS_LOGIN_CUSTOMER_ID:
         headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
-
     try:
         r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
         if not r.text or not r.text.strip():
             return jsonify({'rows': [], 'configured': True})
         result = r.json()
         if 'error' in result:
-            return jsonify({'error': result['error'].get('message', 'API hatası'), 'configured': True})
+            return jsonify({'error': result['error'].get('message', 'API hatasi'), 'configured': True})
         rows = []
         for row in result.get('results', []):
             ag = row.get('adGroup', {})
@@ -655,12 +613,12 @@ def gads_adgroups():
 def gads_update_budget():
     token = gads_get_token()
     if not token:
-        return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
+        return jsonify({'error': 'Google Ads yapilandirilmamis.', 'success': False})
     data = request.json or {}
     budget_id = data.get('budget_id', '')
     new_amount_tl = float(data.get('amount_tl', 0))
     if not budget_id or new_amount_tl <= 0:
-        return jsonify({'error': 'Geçersiz parametre', 'success': False})
+        return jsonify({'error': 'Gecersiz parametre', 'success': False})
     cid = gads_customer_id()
     amount_micros = int(new_amount_tl * 1_000_000)
     patch_url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaignBudgets:mutate'
@@ -684,7 +642,7 @@ def gads_update_budget():
         r = requests.post(patch_url, headers=headers, json=mutate_body, timeout=15)
         result = r.json()
         if 'error' in result:
-            return jsonify({'error': result['error'].get('message', 'API hatası'), 'success': False})
+            return jsonify({'error': result['error'].get('message', 'API hatasi'), 'success': False})
         try:
             current = read_logs()
             current.setdefault('actionLog', []).insert(0, {
@@ -702,12 +660,12 @@ def gads_update_budget():
 def gads_toggle_status():
     token = gads_get_token()
     if not token:
-        return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
+        return jsonify({'error': 'Google Ads yapilandirilmamis.', 'success': False})
     data = request.json or {}
     campaign_id = data.get('campaign_id', '')
     new_status = data.get('status', 'PAUSED')
     if new_status not in ('ENABLED', 'PAUSED'):
-        return jsonify({'error': 'Geçersiz durum', 'success': False})
+        return jsonify({'error': 'Gecersiz durum', 'success': False})
     cid = gads_customer_id()
     url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaigns:mutate'
     headers = {
@@ -730,7 +688,7 @@ def gads_toggle_status():
         r = requests.post(url, headers=headers, json=body, timeout=15)
         result = r.json()
         if 'error' in result:
-            return jsonify({'error': result['error'].get('message', 'API hatası'), 'success': False})
+            return jsonify({'error': result['error'].get('message', 'API hatasi'), 'success': False})
         try:
             current = read_logs()
             current.setdefault('actionLog', []).insert(0, {
@@ -762,29 +720,35 @@ def gads_status():
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
     })
 
+# ── PSI PROXY — DÜZELTİLDİ ───────────────────────────────────────────────
 @app.route('/psi', methods=['GET'])
 def psi_proxy():
-    """PageSpeed Insights proxy - rate limit korumasi ve key yonetimi"""
-    url = request.args.get('url','')
-    strategy = request.args.get('strategy','mobile')
+    """PageSpeed Insights proxy - tum kategorileri destekler, timeout 60sn"""
+    url = request.args.get('url', '')
+    strategy = request.args.get('strategy', 'mobile')
     if not url:
-        return jsonify({'error':{'message':'url parametresi gerekli'}}), 400
+        return jsonify({'error': {'message': 'url parametresi gerekli'}}), 400
     try:
         api_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
-        params = {'url': url, 'strategy': strategy, 'locale': 'tr'}
+        # category parametrelerini list olarak al — coklu category destegi
+        cats = request.args.getlist('category') or ['performance', 'seo', 'accessibility', 'best-practices']
+        # params list olarak — ayni key'i birden fazla gondermek icin zorunlu
+        params = [('url', url), ('strategy', strategy), ('locale', 'tr')]
+        for c in cats:
+            params.append(('category', c))
         if PSI_KEY:
-            params['key'] = PSI_KEY
-        r = requests.get(api_url, params=params, timeout=30)
-        # Her durumda JSON don
+            params.append(('key', PSI_KEY))
+        # timeout=60 — PSI API bazen 30sn+ suruyor
+        r = requests.get(api_url, params=params, timeout=60)
         try:
             data = r.json()
         except Exception:
-            return jsonify({'error':{'message':'PSI API yaniti parse edilemedi: '+r.text[:200]}}), 500
+            return jsonify({'error': {'message': 'PSI API yaniti parse edilemedi: ' + r.text[:200]}}), 500
         return jsonify(data), r.status_code
     except requests.Timeout:
-        return jsonify({'error':{'message':'PageSpeed API zaman asimi. Tekrar deneyin.'}}), 504
+        return jsonify({'error': {'message': 'PageSpeed API zaman asimi (60sn). Tekrar deneyin.'}}), 504
     except Exception as e:
-        return jsonify({'error':{'message': str(e)}}), 500
+        return jsonify({'error': {'message': str(e)}}), 500
 
 @app.route('/claude/test', methods=['GET'])
 def claude_test():
@@ -799,11 +763,9 @@ def claude_test():
 
 @app.route('/claude', methods=['POST'])
 def claude_proxy():
-    # Her zaman JSON don - hic bir kosulda HTML donme
     try:
         data = request.get_json(force=True, silent=True) or {}
         if not ANTHROPIC_KEY:
-            app.logger.error('ANTHROPIC_KEY tanimli degil')
             return jsonify({'error': {'message': 'ANTHROPIC_KEY Railway ortam degiskeni tanimli degil.'}}), 500
         r = requests.post(
             'https://api.anthropic.com/v1/messages',
@@ -822,7 +784,6 @@ def claude_proxy():
     except requests.Timeout:
         return jsonify({'error': {'message': 'Zaman asimi (90s). Tekrar deneyin.'}}), 504
     except Exception as e:
-        app.logger.error('Claude proxy hatasi: ' + str(e))
         return jsonify({'error': {'message': str(e)}}), 500
 
 if __name__ == '__main__':
@@ -837,7 +798,6 @@ def ty_init_db():
     if not conn: return False
     try:
         cur = conn.cursor()
-        # Ürün reklamları kampanya bazlı
         cur.execute("""CREATE TABLE IF NOT EXISTS ty_urun (
             id SERIAL PRIMARY KEY,
             ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
@@ -853,7 +813,6 @@ def ty_init_db():
         try:
             cur.execute("ALTER TABLE ty_urun ADD COLUMN IF NOT EXISTS content_ids TEXT")
         except: pass
-        # Ürün bazlı detay raporu
         cur.execute("""CREATE TABLE IF NOT EXISTS ty_urun_detay (
             id SERIAL PRIMARY KEY,
             kampanya TEXT, urun_adi TEXT, content_id TEXT, model TEXT,
@@ -863,7 +822,6 @@ def ty_init_db():
             created_at TIMESTAMP DEFAULT NOW(),
             UNIQUE(kampanya, content_id)
         )""")
-        # Mağaza reklamları
         cur.execute("""CREATE TABLE IF NOT EXISTS ty_magaza (
             id SERIAL PRIMARY KEY,
             ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
@@ -872,7 +830,6 @@ def ty_init_db():
             created_at TIMESTAMP DEFAULT NOW(),
             UNIQUE(ad, baslangic)
         )""")
-        # Influencer reklamları
         cur.execute("""CREATE TABLE IF NOT EXISTS ty_influencer (
             id SERIAL PRIMARY KEY,
             ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
@@ -881,7 +838,6 @@ def ty_init_db():
             created_at TIMESTAMP DEFAULT NOW(),
             UNIQUE(ad, baslangic)
         )""")
-        # Meta reklamları (Trendyol üzerinden)
         cur.execute("""CREATE TABLE IF NOT EXISTS ty_meta (
             id SERIAL PRIMARY KEY,
             ad TEXT, statu TEXT, baslangic TEXT, bitis TEXT,
@@ -902,20 +858,18 @@ try: ty_init_db()
 except: pass
 
 def ty_detect(ws):
-    """Excel tipini tespit et"""
     headers = [str(c.value).strip() if c.value else '' for c in ws[1]]
     h = set(headers)
     if 'Content Id' in h or 'Model Kodu' in h:
         return 'urun_detay'
-    if 'Reklam Adı' in h and 'Harcama Getirisi' in h and 'TBM Teklifi' in h:
+    if 'Reklam Adi' in h and 'Harcama Getirisi' in h and 'TBM Teklifi' in h:
         return 'urun'
-    if 'Reklam Adı' in h and 'Bütçe Tipi' in h:
+    if 'Reklam Adi' in h and 'Butce Tipi' in h:
         return 'influencer'
-    if 'Reklam Adı' in h and 'Toplam Bütçe' in h and 'Reklam Cirosu' in h:
+    if 'Reklam Adi' in h and 'Toplam Butce' in h and 'Reklam Cirosu' in h:
         return 'meta'
-    if 'Reklam Adı' in h and 'Harcanan Bütçe' in h:
+    if 'Reklam Adi' in h and 'Harcanan Butce' in h:
         return 'magaza'
-    # Fallback: sütun sayısına göre
     if ws.max_column >= 20:
         return 'urun'
     return 'unknown'
@@ -929,18 +883,16 @@ def trendyol_upload():
     try:
         file = request.files.get('file')
         if not file:
-            return jsonify({'error': 'Dosya bulunamadı', 'success': False})
+            return jsonify({'error': 'Dosya bulunamadi', 'success': False})
         try:
             import openpyxl
         except ImportError:
-            return jsonify({'error': 'openpyxl kurulu değil', 'success': False})
-
+            return jsonify({'error': 'openpyxl kurulu degil', 'success': False})
         data = file.read()
         wb = openpyxl.load_workbook(_io.BytesIO(data))
         ws = wb.active
         rtype = ty_detect(ws)
         sheet_name = ws.title
-
         if rtype == 'urun':
             return _ty_upload_urun(ws)
         elif rtype == 'urun_detay':
@@ -952,12 +904,11 @@ def trendyol_upload():
         elif rtype == 'meta':
             return _ty_upload_meta(ws)
         else:
-            return jsonify({'error': 'Tanınmayan dosya. Trendyol Excel raporlarından birini yükleyin.', 'success': False})
+            return jsonify({'error': 'Taninmayan dosya. Trendyol Excel raporlarindan birini yukleyin.', 'success': False})
     except Exception as e:
         return jsonify({'error': str(e), 'success': False})
 
 def _ty_upsert(conn, table, rows, cols, conflict_cols, update_cols):
-    """Genel upsert fonksiyonu"""
     if not rows: return 0
     cur = conn.cursor()
     placeholders = ','.join(['%s']*len(cols))
@@ -984,7 +935,7 @@ def _ty_upload_urun(ws):
         if not row[0]: continue
         rows.append((
             safe(row[0]), safe(row[1]), safe(row[2]), safe(row[3]),
-            safe(row[4]), safe(row[5]),  # content_ids
+            safe(row[4]), safe(row[5]),
             safe(row[6]), safe(row[7]), safe(row[8]),
             safe(row[9]), safe(row[10]), safe(row[11]),
             safe(row[12]), safe(row[13]),
@@ -998,11 +949,11 @@ def _ty_upload_urun(ws):
     update_cols = ['statu','harcama','tiklanma','goruntulenme','toplam_satis','toplam_ciro','roas','kalan_butce','content_ids']
     conn = get_db()
     if not conn:
-        return jsonify({'error': 'Veritabanı bağlantısı yok. DATABASE_URL kontrol edin.', 'success': False})
+        return jsonify({'error': 'Veritabani baglantisi yok.', 'success': False})
     try:
         count = _ty_upsert(conn, 'ty_urun', rows, cols, ['ad','baslangic'], update_cols)
         conn.close()
-        return jsonify({'success':True,'count':count,'type':'Ürün Reklamları','tab':'urun'})
+        return jsonify({'success':True,'count':count,'type':'Urun Reklamlari','tab':'urun'})
     except Exception as e:
         return jsonify({'error':str(e),'success':False})
 
@@ -1025,7 +976,7 @@ def _ty_upload_urun_detay(ws, kampanya):
         try:
             count = _ty_upsert(conn, 'ty_urun_detay', rows, cols, ['kampanya','content_id'], update_cols)
             conn.close()
-            return jsonify({'success':True,'count':count,'type':'Ürün Detay ('+kampanya+')','tab':'urun'})
+            return jsonify({'success':True,'count':count,'type':'Urun Detay ('+kampanya+')','tab':'urun'})
         except Exception as e:
             return jsonify({'error':str(e),'success':False})
     else:
@@ -1034,14 +985,12 @@ def _ty_upload_urun_detay(ws, kampanya):
         for row in rows:
             current['ty_urun_detay'].append(dict(zip(cols, row)))
         write_logs(current)
-        return jsonify({'success':True,'count':len(rows),'type':'Ürün Detay','tab':'urun'})
+        return jsonify({'success':True,'count':len(rows),'type':'Urun Detay','tab':'urun'})
 
 def _ty_upload_magaza(ws):
-    # Mağaza reklam sütunları: Ad, Statü, Başlangıç, Bitiş, Harcama, Gösterim, Tıklanma, Satış, Ciro, ROAS
     rows = []
     for row in ws.iter_rows(min_row=2, values_only=True):
         if not row[0]: continue
-        # Sütun sayısına göre esnek parse
         r = list(row) + [''] * 20
         rows.append((safe(r[0]),safe(r[1]),safe(r[2]),safe(r[3]),
                      safe(r[4]),safe(r[5]),safe(r[6]),safe(r[7]),safe(r[8]),safe(r[9])))
@@ -1049,12 +998,12 @@ def _ty_upload_magaza(ws):
             'toplam_satis','toplam_ciro','roas']
     conn = get_db()
     if not conn:
-        return jsonify({'error': 'Veritabanı bağlantısı yok.', 'success': False})
+        return jsonify({'error': 'Veritabani baglantisi yok.', 'success': False})
     try:
         count = _ty_upsert(conn, 'ty_magaza', rows, cols, ['ad','baslangic'],
                            ['statu','harcama','tiklanma','toplam_satis','toplam_ciro','roas'])
         conn.close()
-        return jsonify({'success':True,'count':count,'type':'Mağaza Reklamları','tab':'magaza'})
+        return jsonify({'success':True,'count':count,'type':'Magaza Reklamlari','tab':'magaza'})
     except Exception as e:
         return jsonify({'error':str(e),'success':False})
 
@@ -1069,12 +1018,12 @@ def _ty_upload_influencer(ws):
             'satis','ciro','paylasim']
     conn = get_db()
     if not conn:
-        return jsonify({'error': 'Veritabanı bağlantısı yok.', 'success': False})
+        return jsonify({'error': 'Veritabani baglantisi yok.', 'success': False})
     try:
         count = _ty_upsert(conn, 'ty_influencer', rows, cols, ['ad','baslangic'],
                            ['statu','odeme','ziyaret','satis','ciro'])
         conn.close()
-        return jsonify({'success':True,'count':count,'type':'Influencer Reklamları','tab':'influencer'})
+        return jsonify({'success':True,'count':count,'type':'Influencer Reklamlari','tab':'influencer'})
     except Exception as e:
         return jsonify({'error':str(e),'success':False})
 
@@ -1089,12 +1038,12 @@ def _ty_upload_meta(ws):
             'goruntulenme','tiklanma','satis','ciro','roas']
     conn = get_db()
     if not conn:
-        return jsonify({'error': 'Veritabanı bağlantısı yok.', 'success': False})
+        return jsonify({'error': 'Veritabani baglantisi yok.', 'success': False})
     try:
         count = _ty_upsert(conn, 'ty_meta', rows, cols, ['ad','baslangic'],
                            ['statu','harcama','tiklanma','satis','ciro','roas'])
         conn.close()
-        return jsonify({'success':True,'count':count,'type':'Meta Reklamları','tab':'meta'})
+        return jsonify({'success':True,'count':count,'type':'Meta Reklamlari','tab':'meta'})
     except Exception as e:
         return jsonify({'error':str(e),'success':False})
 
@@ -1122,7 +1071,10 @@ def trendyol_data():
             }
             for key, (table, cols) in tables.items():
                 try:
-                    cur.execute(f'SELECT {",".join(cols)} FROM {table} ORDER BY baslangic DESC LIMIT 3000' if 'baslangic' in cols else f'SELECT {",".join(cols)} FROM {table} ORDER BY created_at DESC LIMIT 5000')
+                    if 'baslangic' in cols:
+                        cur.execute(f'SELECT {",".join(cols)} FROM {table} ORDER BY baslangic DESC LIMIT 3000')
+                    else:
+                        cur.execute(f'SELECT {",".join(cols)} FROM {table} ORDER BY created_at DESC LIMIT 5000')
                     result[key] = [dict(zip(cols, row)) for row in cur.fetchall()]
                 except Exception as e:
                     print(f'{table} select:', e)
@@ -1133,7 +1085,6 @@ def trendyol_data():
 
 @app.route('/trendyol/stats', methods=['GET'])
 def trendyol_stats():
-    """Özet istatistikler"""
     conn = get_db()
     stats = {}
     if conn:
