@@ -1108,3 +1108,6 @@ def trendyol_stats():
             cur.close(); conn.close()
         except: pass
     return jsonify(stats)
+@app.route('/ai-ajans')
+def ai_ajans():
+    return render_template('modules/ai-ajans.html')
