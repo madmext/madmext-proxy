@@ -185,32 +185,40 @@ function save(){ try{localStorage.setItem('seo_sites',JSON.stringify(_sites));}c
 
 /* ─── CLAUDE API ─── */
 async function callClaude(prompt){
-  var r=await fetch('/claude',{
-    method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
-    body:JSON.stringify({
-      model:'claude-sonnet-4-6',max_tokens:3500,
-      system:'Sen bir SEO uzmanısın. SADECE geçerli JSON döndür, başka HİÇBİR şey yazma. Markdown, kod bloğu, açıklama YOK.',
-      messages:[{role:'user',content:prompt}]
-    })
-  });
-  if(!r.ok){
-    var errText=await r.text();
-    // HTML gelirse daha anlaşılır hata ver
-    if(errText.includes('<html') || errText.includes('<!DOCTYPE')){
-      throw new Error('Sunucu hatası ('+r.status+'). Railway\'de ANTHROPIC_KEY değişkeninin tanımlı olduğundan emin olun.');
-    }
-    var errJson=JSON.parse(errText);
-    throw new Error(errJson.error&&errJson.error.message||'HTTP '+r.status);
+  // Trendyol ile aynı yöntemi kullan - tam URL + proxy desteği
+  var base = window.px ? window.px() : (window.location.origin || '');
+  var url = base + '/claude';
+  var r;
+  try {
+    r = await fetch(url, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:3500,
+        system:'Sen bir SEO uzmanısın. SADECE geçerli JSON döndür, başka HİÇBİR şey yazma. Markdown, kod bloğu, açıklama YOK.',
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+  } catch(netErr) {
+    throw new Error('Ağ hatası: ' + netErr.message);
   }
-  var res=await r.json();
-  if(res.error) throw new Error(res.error.message||'Claude API hatası');
-  var txt=(res.content&&res.content[0]&&res.content[0].text)||'';
-  // JSON bloğunu temizle
-  txt=txt.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
-  // Sadece { } arasını al
-  var s=txt.indexOf('{'), e=txt.lastIndexOf('}');
-  if(s>=0&&e>s) txt=txt.slice(s,e+1);
-  return JSON.parse(txt);
+  // Her durumda önce text al, sonra parse et
+  var raw = await r.text();
+  // HTML gelirse anlamlı hata ver
+  if(raw.trim().startsWith('<')){
+    throw new Error('Sunucu hata sayfası döndü (' + r.status + '). Railway > Variables > ANTHROPIC_KEY kontrol edin.');
+  }
+  var res;
+  try { res = JSON.parse(raw); } catch(e) { throw new Error('JSON parse hatası: ' + raw.slice(0,100)); }
+  if(res.error) throw new Error(res.error.message || 'Claude API hatası: ' + r.status);
+  var txt = (res.content && res.content[0] && res.content[0].text) || '';
+  txt = txt.replace(/```json\s*/gi,'').replace(/```\s*/g,'').trim();
+  var si = txt.indexOf('{'), ei = txt.lastIndexOf('}');
+  if(si >= 0 && ei > si) txt = txt.slice(si, ei+1);
+  try { return JSON.parse(txt); }
+  catch(e) { throw new Error('Claude yanıtı JSON değil: ' + txt.slice(0,150)); }
 }
 
 function buildPrompt(url){
