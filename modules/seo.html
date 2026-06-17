@@ -162,16 +162,26 @@ var _sel=[];
 function load(){ try{_sites=JSON.parse(localStorage.getItem('seo_sites2')||'[]');}catch(e){_sites=[];} }
 function save(){ try{localStorage.setItem('seo_sites2',JSON.stringify(_sites));}catch(e){} }
 
-/* ── PAGESPEED API ── */
+/* ── PAGESPEED API - Railway proxy uzerinden ── */
 async function fetchPSI(url){
-  var apiBase='https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
-  // Her iki strateji paralel cek
-  var [mobRes, deskRes] = await Promise.all([
-    fetch(apiBase+'?url='+encodeURIComponent(url)+'&strategy=mobile&locale=tr').then(function(r){return r.json();}),
-    fetch(apiBase+'?url='+encodeURIComponent(url)+'&strategy=desktop&locale=tr').then(function(r){return r.json();})
-  ]);
-
+  var base = window.location.origin || '';
+  // Once mobil, sonra desktop - ayri istekler, sirayla (kota koruma)
+  var mobRes, deskRes;
+  var r1 = await fetch(base+'/psi?url='+encodeURIComponent(url)+'&strategy=mobile');
+  if(!r1.ok){
+    var errTxt = await r1.text();
+    try{ var errJ=JSON.parse(errTxt); throw new Error(errJ.error&&errJ.error.message||'HTTP '+r1.status); }
+    catch(pe){ if(pe.message!=='HTTP '+r1.status) throw pe; throw new Error('Sunucu hatasi '+r1.status); }
+  }
+  mobRes = await r1.json();
   if(mobRes.error){ throw new Error(mobRes.error.message||'PageSpeed API hatasi'); }
+
+  // Desktop icin 500ms bekle (rate limit koruma)
+  await new Promise(function(res){setTimeout(res,500);});
+  try{
+    var r2 = await fetch(base+'/psi?url='+encodeURIComponent(url)+'&strategy=desktop');
+    deskRes = r2.ok ? await r2.json() : null;
+  }catch(e){ deskRes = null; }
 
   return parsePSI(url, mobRes, deskRes);
 }
