@@ -720,33 +720,43 @@ def gads_status():
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
     })
 
-# ── PSI PROXY — DÜZELTİLDİ ───────────────────────────────────────────────
+# ── PSI PROXY — THREAD ÇÖZÜMÜ ─────────────────────────────────────────
 @app.route('/psi', methods=['GET'])
 def psi_proxy():
-    """PageSpeed Insights proxy - tum kategorileri destekler, timeout 60sn"""
+    import queue as _queue
     url = request.args.get('url', '')
     strategy = request.args.get('strategy', 'mobile')
     if not url:
         return jsonify({'error': {'message': 'url parametresi gerekli'}}), 400
     try:
         api_url = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
-        # category parametrelerini list olarak al — coklu category destegi
         cats = request.args.getlist('category') or ['performance', 'seo', 'accessibility', 'best-practices']
-        # params list olarak — ayni key'i birden fazla gondermek icin zorunlu
         params = [('url', url), ('strategy', strategy), ('locale', 'tr')]
         for c in cats:
             params.append(('category', c))
         if PSI_KEY:
             params.append(('key', PSI_KEY))
-        # timeout=60 — PSI API bazen 30sn+ suruyor
-        r = requests.get(api_url, params=params, timeout=60)
+        q = _queue.Queue()
+        def do_req():
+            try:
+                r = requests.get(api_url, params=params, timeout=55)
+                q.put(('ok', r))
+            except Exception as e:
+                q.put(('err', e))
+        t = threading.Thread(target=do_req)
+        t.daemon = True
+        t.start()
         try:
-            data = r.json()
+            kind, val = q.get(timeout=57)
+        except _queue.Empty:
+            return jsonify({'error': {'message': 'Zaman asimi. Tekrar deneyin.'}}), 504
+        if kind == 'err':
+            return jsonify({'error': {'message': str(val)}}), 500
+        try:
+            data = val.json()
         except Exception:
-            return jsonify({'error': {'message': 'PSI API yaniti parse edilemedi: ' + r.text[:200]}}), 500
-        return jsonify(data), r.status_code
-    except requests.Timeout:
-        return jsonify({'error': {'message': 'PageSpeed API zaman asimi (60sn). Tekrar deneyin.'}}), 504
+            return jsonify({'error': {'message': 'PSI yaniti parse edilemedi: ' + val.text[:200]}}), 500
+        return jsonify(data), val.status_code
     except Exception as e:
         return jsonify({'error': {'message': str(e)}}), 500
 
