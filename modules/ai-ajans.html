@@ -1,609 +1,111 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MADMEXT ADS · AI Ajans Merkezi</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;700&display=swap');
-  *{margin:0;padding:0;box-sizing:border-box}
-  :root{
-    --purple:#534AB7;--purple-light:#7f77dd;--purple-dark:#3C3489;
-    --teal:#1D9E75;--coral:#D85A30;--amber:#BA7517;
-    --bg:#04030e;--surface:#0a0818;--surface2:#110f24;
-    --text:#e0d8ff;--muted:#9090b8;--border:rgba(127,119,221,0.25);
-  }
-  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
-  
-  /* ── TOP NAV ── */
-  #nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:rgba(4,3,14,0.85);backdrop-filter:blur(12px);border-bottom:0.5px solid var(--border)}
-  #nav .logo{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:0.04em}
-  #nav .logo span{color:var(--purple-light)}
-  #nav .nav-right{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted)}
-  #nav .pill{background:rgba(83,74,183,0.2);border:0.5px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--purple-light);font-size:11px}
-  #nav .live-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+<section class="ai-agency-module">
+  <style>
+    .ai-agency-module{min-height:calc(100vh - 120px);color:#e5e7eb;font-family:Inter,Arial,sans-serif;position:relative;overflow:hidden;background:radial-gradient(circle at top,#172033 0,#0f1011 55%,#08090b 100%);border:1px solid #2d2e30;border-radius:18px;padding:18px}
+    .ai-agency-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:14px;position:relative;z-index:3}
+    .ai-agency-title h2{font-size:22px;margin:0 0 5px;font-weight:800;letter-spacing:-.5px}.ai-agency-title p{margin:0;color:#9ca3af;font-size:12px;line-height:1.5;max-width:720px}
+    .ai-agency-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.ai-agency-btn{background:#1877f2;color:white;border:none;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:700;cursor:pointer}.ai-agency-btn.secondary{background:#1f2937;border:1px solid #374151;color:#d1d5db}.ai-agency-btn:hover{filter:brightness(1.1)}
+    .agency-layout{display:grid;grid-template-columns:minmax(460px,1.2fr) minmax(320px,.8fr);gap:16px;position:relative;z-index:2}@media(max-width:980px){.agency-layout{grid-template-columns:1fr}.office-3d{min-height:520px}}
+    .office-3d{min-height:680px;background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.08);border-radius:18px;position:relative;overflow:hidden;perspective:1100px;box-shadow:inset 0 0 80px rgba(24,119,242,.06)}
+    .office-floor{position:absolute;left:50%;top:52%;width:760px;height:520px;transform:translate(-50%,-50%) rotateX(62deg) rotateZ(-36deg);transform-style:preserve-3d;background:linear-gradient(135deg,#1f2937,#111827);border:2px solid rgba(255,255,255,.18);border-radius:28px;box-shadow:0 60px 120px rgba(0,0,0,.55),inset 0 0 0 12px rgba(255,255,255,.025)}
+    .floor-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:42px 42px;border-radius:26px;opacity:.7}.meeting-room{position:absolute;left:50%;top:50%;width:230px;height:160px;transform:translate(-50%,-50%) translateZ(14px);border:3px solid rgba(96,165,250,.65);border-radius:22px;background:rgba(24,119,242,.12);box-shadow:0 0 45px rgba(24,119,242,.25),inset 0 0 24px rgba(96,165,250,.12)}
+    .meeting-table{position:absolute;left:50%;top:50%;width:135px;height:70px;transform:translate(-50%,-50%);border-radius:40px;background:linear-gradient(135deg,#334155,#0f172a);border:2px solid rgba(255,255,255,.22);box-shadow:0 0 22px rgba(96,165,250,.28)}.meeting-label{position:absolute;left:50%;top:-32px;transform:translateX(-50%) rotateZ(36deg);font-size:18px;font-weight:900;color:#93c5fd;white-space:nowrap;text-shadow:0 0 12px #2563eb}
+    .desk{position:absolute;width:126px;height:78px;border-radius:16px;background:linear-gradient(145deg,#374151,#111827);border:2px solid rgba(255,255,255,.14);box-shadow:0 20px 34px rgba(0,0,0,.38);cursor:pointer;transition:transform .22s,box-shadow .22s,border-color .22s}.desk:hover{transform:translateZ(18px) scale(1.04);border-color:#60a5fa;box-shadow:0 0 34px rgba(96,165,250,.4),0 22px 42px rgba(0,0,0,.42)}
+    .desk-screen{position:absolute;left:16px;top:10px;width:48px;height:30px;border-radius:5px;background:linear-gradient(135deg,#22c55e,#1877f2);box-shadow:0 0 18px rgba(34,197,94,.35)}.desk-chair{position:absolute;right:14px;bottom:10px;width:28px;height:28px;border-radius:50%;background:#0f172a;border:2px solid rgba(255,255,255,.2)}.agent-dot{position:absolute;right:18px;top:13px;width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 30% 20%,#fff,#60a5fa 35%,#1d4ed8);box-shadow:0 0 24px rgba(96,165,250,.65)}.desk-name{position:absolute;left:13px;bottom:8px;font-size:13px;font-weight:900;color:white;text-shadow:0 1px 5px #000}.desk-role{position:absolute;left:13px;bottom:-15px;font-size:10px;color:#cbd5e1;white-space:nowrap;text-shadow:0 1px 5px #000}
+    .d1{left:72px;top:58px}.d2{left:314px;top:38px}.d3{right:72px;top:58px}.d4{left:42px;top:220px}.d5{right:42px;top:220px}.d6{left:72px;bottom:58px}.d7{left:314px;bottom:38px}.d8{right:72px;bottom:58px}.d9{left:314px;top:222px}
+    .wall{position:absolute;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}.wall.left{left:0;top:0;width:16px;height:100%;border-radius:24px 0 0 24px}.wall.top{left:0;top:0;width:100%;height:16px;border-radius:24px 24px 0 0}.plant{position:absolute;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle,#22c55e,#14532d);box-shadow:0 0 20px rgba(34,197,94,.28)}.p1{left:32px;bottom:28px}.p2{right:32px;top:28px}.holo{position:absolute;left:50%;top:50%;width:95px;height:95px;transform:translate(-50%,-50%) translateZ(42px);border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,.55),rgba(24,119,242,.08) 60%,transparent 70%);animation:holoPulse 2.4s infinite ease-in-out}@keyframes holoPulse{0%,100%{opacity:.55;filter:blur(.2px)}50%{opacity:1;filter:blur(0)}}
+    .agency-panel{background:rgba(15,16,17,.82);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;min-height:680px;display:flex;flex-direction:column}.selected-card{border:1px solid rgba(96,165,250,.35);background:rgba(24,119,242,.08);border-radius:14px;padding:14px;margin-bottom:12px}.selected-card h3{margin:0 0 4px;font-size:18px}.selected-card p{margin:0;color:#9ca3af;font-size:12px;line-height:1.5}.agent-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.agent-buttons button{background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:10px;font-size:11px;text-align:left;cursor:pointer}.agent-buttons button:hover{border-color:#60a5fa;color:white;background:#172033}
+    .report-box{flex:1;background:#090a0c;border:1px solid #22252a;border-radius:14px;padding:14px;overflow:auto;white-space:pre-wrap;color:#d1d5db;font-size:12px;line-height:1.65}.report-box strong{color:#93c5fd}.status-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.28);color:#86efac;border-radius:999px;padding:5px 9px;font-size:11px;margin-top:8px}.pulse-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e}.mini-help{color:#9ca3af;font-size:11px;line-height:1.55;margin-top:10px}.mini-help code{background:#111827;border:1px solid #374151;border-radius:5px;padding:1px 5px;color:#bfdbfe}
+  </style>
 
-  /* ── 3D CANVAS ── */
-  #canvas-wrap{position:fixed;top:40px;left:0;right:0;bottom:0}
-  canvas{display:block;width:100%;height:100%}
-
-  /* ── SIDE PANEL ── */
-  #side-panel{position:fixed;top:56px;right:16px;width:260px;background:rgba(8,6,24,0.94);border:0.5px solid var(--border);border-radius:12px;padding:0;z-index:50;overflow:hidden;display:none;max-height:calc(100vh - 80px);overflow-y:auto}
-  #sp-header{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:10px}
-  #sp-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
-  #sp-name{font-size:13px;font-weight:500;color:#e0d8ff}
-  #sp-role{font-size:11px;color:var(--muted);margin-top:1px}
-  #sp-body{padding:14px 16px}
-  #sp-body h4{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px}
-  #sp-tasks{list-style:none;margin-bottom:14px}
-  #sp-tasks li{font-size:12px;color:#b0a8d8;padding:4px 0;border-bottom:0.5px solid rgba(127,119,221,0.1)}
-  #sp-tasks li::before{content:"▸ ";color:var(--purple-light)}
-  #sp-report-btn{width:100%;padding:9px;background:rgba(83,74,183,0.2);border:0.5px solid var(--purple);border-radius:8px;color:var(--purple-light);font-size:12px;cursor:pointer;margin-bottom:8px;font-family:'Inter',sans-serif}
-  #sp-report-btn:hover{background:rgba(83,74,183,0.35)}
-  #sp-research-btn{width:100%;padding:9px;background:rgba(29,158,117,0.15);border:0.5px solid rgba(29,158,117,0.4);border-radius:8px;color:#5dcaa5;font-size:12px;cursor:pointer;font-family:'Inter',sans-serif}
-  #sp-research-btn:hover{background:rgba(29,158,117,0.25)}
-
-  /* ── REPORT OVERLAY ── */
-  #report-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:center;justify-content:center}
-  #report-box{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;width:min(600px,94vw);max-height:80vh;overflow-y:auto}
-  #report-head{padding:16px 20px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-  #report-head h2{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:#e0d8ff}
-  #close-report{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1}
-  #report-body{padding:20px}
-  #report-body.loading{text-align:center;padding:40px;color:var(--muted);font-size:13px}
-  .report-section{margin-bottom:18px}
-  .report-section h3{font-size:12px;font-weight:500;color:var(--purple-light);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--border)}
-  .report-section p,.report-section li{font-size:13px;color:#b0a8d8;line-height:1.7}
-  .report-section ul{padding-left:16px}
-  .report-section li{margin-bottom:4px}
-  .report-meta{font-size:11px;color:var(--muted);margin-top:14px;padding-top:10px;border-top:0.5px solid var(--border)}
-
-  /* ── HUD ── */
-  #hud-bottom{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:50}
-  #hud-bottom button{background:rgba(10,8,24,0.9);color:var(--muted);border:0.5px solid var(--border);padding:7px 14px;border-radius:8px;font-size:11px;cursor:pointer;font-family:'Inter',sans-serif}
-  #hud-bottom button:hover{color:var(--text);border-color:var(--purple)}
-  #hud-left{position:fixed;bottom:14px;left:16px;z-index:50;font-size:11px;color:rgba(130,120,180,0.5);line-height:1.8}
-  #hud-right{position:fixed;top:56px;left:16px;z-index:50;display:flex;flex-direction:column;gap:6px}
-  .stat-pill{background:rgba(8,6,24,0.85);border:0.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px}
-  .stat-pill strong{color:var(--text);font-weight:500}
-
-  /* ── CROSSHAIR ── */
-  #xhair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(200,192,255,0.3);font-size:16px;pointer-events:none;z-index:50;line-height:1}
-
-  /* ── MINIMAP ── */
-  #minimap{position:fixed;bottom:54px;right:16px;z-index:50;border-radius:8px;border:0.5px solid var(--border);background:rgba(8,6,24,0.8)}
-
-  /* ── TOOLTIP ── */
-  #tooltip{position:fixed;padding:6px 12px;background:rgba(8,6,24,0.95);border:0.5px solid var(--border);border-radius:6px;font-size:11px;color:var(--text);pointer-events:none;z-index:80;display:none}
-
-  scrollbar-width:thin;
-  ::-webkit-scrollbar{width:4px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:rgba(127,119,221,0.3);border-radius:2px}
-</style>
-</head>
-<body>
-
-<!-- NAV -->
-<div id="nav">
-  <div class="logo">MADMEXT <span>ADS</span> · AI Ajans</div>
-  <div class="nav-right">
-    <div class="live-dot"></div>
-    <span>9 ajan aktif</span>
-    <div class="pill">3D Çalışma Alanı</div>
-  </div>
-</div>
-
-<!-- HUD -->
-<div id="hud-right">
-  <div class="stat-pill"><strong id="stat-agents">9</strong> AI Ajan</div>
-  <div class="stat-pill"><strong id="stat-reports">0</strong> Rapor</div>
-  <div class="stat-pill" id="stat-focus" style="display:none">
-    <span id="stat-focus-txt">–</span>
-  </div>
-</div>
-<div id="hud-left">WASD · hareket<br>Fare · bak<br>Tıkla · ajan bilgisi</div>
-<div id="xhair">+</div>
-<canvas id="minimap" width="90" height="72"></canvas>
-
-<!-- 3D CANVAS -->
-<div id="canvas-wrap"><canvas id="c"></canvas></div>
-
-<!-- SIDE PANEL -->
-<div id="side-panel">
-  <div id="sp-header">
-    <div id="sp-avatar"></div>
-    <div>
-      <div id="sp-name"></div>
-      <div id="sp-role"></div>
+  <div class="ai-agency-head">
+    <div class="ai-agency-title">
+      <h2>Madmext AI Ajans Merkezi</h2>
+      <p>Açık planlı sanal ajans: ortada toplantı alanı, etrafta reklam, SEO, içerik, tasarım, sosyal medya ve veri ajanları. Her ajan Madmext için kendi alanında araştırma ve raporlama yapar.</p>
+      <span class="status-pill"><span class="pulse-dot"></span> Claude proxy: /claude üzerinden güvenli çalışır</span>
+    </div>
+    <div class="ai-agency-actions">
+      <button class="ai-agency-btn" onclick="mxAgencyRunDaily()">Günlük Ajans Raporu</button>
+      <button class="ai-agency-btn secondary" onclick="mxAgencyResetView()">Görünümü Sıfırla</button>
     </div>
   </div>
-  <div id="sp-body">
-    <h4>Görevler</h4>
-    <ul id="sp-tasks"></ul>
-    <button id="sp-report-btn" onclick="requestReport()">Rapor Oluştur ↗</button>
-    <button id="sp-research-btn" onclick="requestResearch()">Araştırma Başlat ↗</button>
-  </div>
-</div>
 
-<!-- REPORT OVERLAY -->
-<div id="report-overlay">
-  <div id="report-box">
-    <div id="report-head">
-      <h2 id="report-title">Rapor</h2>
-      <button id="close-report" onclick="closeReport()">✕</button>
+  <div class="agency-layout">
+    <div class="office-3d" id="mxOffice3d">
+      <div class="office-floor">
+        <div class="floor-grid"></div><div class="wall left"></div><div class="wall top"></div><div class="plant p1"></div><div class="plant p2"></div>
+        <div class="meeting-room"><div class="meeting-label">TOPLANTI MERKEZİ</div><div class="meeting-table"></div><div class="holo"></div></div>
+        <div class="desk d1" onclick="mxAgencySelect('aria')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Aria</div><div class="desk-role">Strateji</div></div>
+        <div class="desk d2" onclick="mxAgencySelect('nova')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Nova</div><div class="desk-role">Pazar Araştırma</div></div>
+        <div class="desk d3" onclick="mxAgencySelect('orion')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Orion</div><div class="desk-role">Proje Yönetimi</div></div>
+        <div class="desk d4" onclick="mxAgencySelect('luna')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Luna</div><div class="desk-role">İçerik</div></div>
+        <div class="desk d5" onclick="mxAgencySelect('pixel')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Pixel</div><div class="desk-role">Tasarım</div></div>
+        <div class="desk d6" onclick="mxAgencySelect('rex')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Rex</div><div class="desk-role">Video</div></div>
+        <div class="desk d7" onclick="mxAgencySelect('sage')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Sage</div><div class="desk-role">SEO</div></div>
+        <div class="desk d8" onclick="mxAgencySelect('vibe')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Vibe</div><div class="desk-role">Sosyal Medya</div></div>
+        <div class="desk d9" onclick="mxAgencySelect('byte')"><div class="desk-screen"></div><div class="agent-dot"></div><div class="desk-chair"></div><div class="desk-name">Byte</div><div class="desk-role">Web & Veri</div></div>
+      </div>
     </div>
-    <div id="report-body"></div>
+
+    <aside class="agency-panel">
+      <div class="selected-card">
+        <h3 id="mxAgentName">Aria — Strateji Direktörü</h3>
+        <p id="mxAgentDesc">Meta, Google ve pazaryeri reklamlarını Madmext hedeflerine göre stratejiye çevirir.</p>
+      </div>
+      <div class="agent-buttons">
+        <button onclick="mxAgencyRunTask('Kendi alanınla ilgili bugünkü en önemli fırsatları araştır ve uygulanabilir rapor hazırla.')">Araştırma Başlat</button>
+        <button onclick="mxAgencyRunTask('Madmext ADS verileriyle yorumlanabilecek günlük aksiyon listesi hazırla.')">Rapor Oluştur</button>
+        <button onclick="mxAgencyRunTask('Bu hafta öncelik verilmesi gereken işleri önem sırasına göre çıkar.')">Öncelik Çıkar</button>
+        <button onclick="mxAgencyRunTask('Riskleri, eksikleri ve ölçülmesi gereken metrikleri listele.')">Risk Kontrol</button>
+      </div>
+      <div class="report-box" id="mxAgencyReport"><strong>Ajans hazır.</strong> Soldaki 3D ofiste bir ajan seç ve rapor başlat. Günlük Ajans Raporu tüm ajanların ortak özetini üretir.</div>
+      <div class="mini-help">Not: Bu modül API key’i tarayıcıya yazmaz. İstekleri mevcut <code>/claude</code> backend proxy üzerinden gönderir.</div>
+    </aside>
   </div>
-</div>
 
-<!-- BOTTOM CONTROLS -->
-<div id="hud-bottom">
-  <button onclick="mv('left')">◀</button>
-  <button onclick="mv('forward')">▲ İleri</button>
-  <button onclick="mv('back')">▼ Geri</button>
-  <button onclick="mv('right')">▶</button>
-  <button onclick="mv('up')">↑ Yüksel</button>
-  <button onclick="mv('down')">↓ İn</button>
-</div>
-
-<div id="tooltip"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
-// ── SCENE SETUP ──
-const cvs = document.getElementById('c');
-const W = cvs.parentElement.clientWidth;
-const H = cvs.parentElement.clientHeight;
-const renderer = new THREE.WebGLRenderer({canvas:cvs, antialias:true});
-renderer.setSize(W,H);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
-renderer.shadowMap.enabled = true;
-renderer.setClearColor(0x04030e);
-
-const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0x04030e, 0, 60);
-
-const cam = new THREE.PerspectiveCamera(65, W/H, 0.1, 100);
-cam.position.set(0, 2.2, 20);
-
-// LIGHTS
-scene.add(new THREE.AmbientLight(0x180a30, 2.5));
-function pl(c,i,d,x,y,z){const l=new THREE.PointLight(c,i,d);l.position.set(x,y,z);scene.add(l);return l;}
-const mainLight = pl(0x7f77dd,4,50,0,10,0);
-pl(0x1d9e75,2.5,25,-12,4,0);
-pl(0xd85a30,2,22,12,4,0);
-pl(0x993556,1.8,18,0,4,-10);
-pl(0x185fa5,2,20,0,4,10);
-
-// MATERIALS
-function mat(color,emissive=0,emInt=0,rough=0.6,metal=0.1){
-  return new THREE.MeshStandardMaterial({color,emissive,emissiveIntensity:emInt,roughness:rough,metalness:metal});
-}
-function addMesh(geo,m,x,y,z,ry=0){
-  const o=new THREE.Mesh(geo,m);
-  o.position.set(x,y,z);o.rotation.y=ry;
-  o.castShadow=true;o.receiveShadow=true;scene.add(o);return o;
-}
-
-// FLOOR & GRID
-addMesh(new THREE.PlaneGeometry(80,80),mat(0x060418),0,0,0,-Math.PI/2);
-scene.add(new THREE.GridHelper(60,35,0x1a1040,0x0d0824));
-
-// NEON FLOOR STRIPS
-function neon(color,x1,x2,z,y=0.02){
-  const g=new THREE.BoxGeometry(Math.abs(x2-x1),0.04,0.08);
-  const m=new THREE.MeshStandardMaterial({color,emissive:color,emissiveIntensity:2.5});
-  const o=new THREE.Mesh(g,m);o.position.set((x1+x2)/2,y,z);scene.add(o);
-}
-[-15,-7.5,0,7.5,15].forEach(z=>neon(0x1a0a40,-16,16,z));
-[-15,-7.5,0,7.5,15].forEach(x=>neon(0x0d0530,-16,16,0,0.02));
-
-// CEILING
-addMesh(new THREE.PlaneGeometry(80,80),mat(0x06041a),0,7,0,Math.PI/2);
-
-// WALLS
-function wall(w,h,x,y,z,ry=0){addMesh(new THREE.BoxGeometry(w,h,0.18),mat(0x0c0a1e),x,y,z,ry);}
-wall(60,7,0,3.5,18);wall(60,7,0,3.5,-18);
-wall(7,7,-18,3.5,0,Math.PI/2);wall(7,7,18,3.5,0,Math.PI/2);
-
-// WALL SCREENS (decorative)
-[-14,0,14].forEach(x=>{
-  addMesh(new THREE.PlaneGeometry(5,2.8),new THREE.MeshStandardMaterial({color:0x0a0628,emissive:0x534ab7,emissiveIntensity:0.12}),x,4,17.85);
-  addMesh(new THREE.PlaneGeometry(4,0.04),new THREE.MeshStandardMaterial({color:0x7f77dd,emissive:0x7f77dd,emissiveIntensity:1.5}),x,5.5,17.88);
-  pl(0x534ab7,0.6,8,x,4.5,17);
-});
-
-// ── AGENTS ──
-const agentsData = [
-  {name:"Aria",role:"Strateji & Planlama",x:-11,z:-10,color:0x534ab7,emissive:0x3c3489,
-   tasks:["Marka konumlandırma & mesaj","Reklam kampanya stratejisi","Hedef kitle segmentasyonu","Aylık strateji raporu"],
-   specialty:"advertising_strategy"},
-  {name:"Nova",role:"Pazar & Rakip Analizi",x:0,z:-10,color:0x1d9e75,emissive:0x0f6e56,
-   tasks:["Rakip reklam analizi","Pazar payı takibi","Trend araştırması","Sektör karşılaştırma raporu"],
-   specialty:"market_research"},
-  {name:"Orion",role:"Proje & Kampanya Yönetimi",x:11,z:-10,color:0xd85a30,emissive:0x993c1d,
-   tasks:["Kampanya takvimi yönetimi","Bütçe takibi","Ekip koordinasyonu","Haftalık ilerleme raporu"],
-   specialty:"project_management"},
-  {name:"Luna",role:"İçerik & Metin Uzmanı",x:-11,z:0,color:0x993556,emissive:0x72243e,
-   tasks:["Reklam metni & başlıklar","Sosyal medya içerikleri","E-posta kampanyaları","SEO uyumlu blog içeriği"],
-   specialty:"content_writing"},
-  {name:"Pixel",role:"Kreatif & Görsel Yönetmen",x:0,z:0,color:0x7f77dd,emissive:0x534ab7,
-   tasks:["Reklam görseli konseptleri","Marka kimliği tasarımı","AI görsel üretimi (Midjourney)","Sosyal medya şablonları"],
-   specialty:"creative_design"},
-  {name:"Rex",role:"Video & Medya Prodüksiyon",x:11,z:0,color:0xba7517,emissive:0x854f0b,
-   tasks:["Reklam filmi konsepti","AI video üretimi (Sora/Runway)","Reel & TikTok video planı","YouTube kampanya içeriği"],
-   specialty:"video_production"},
-  {name:"Sage",role:"SEO & Performans Analitik",x:-11,z:10,color:0x185fa5,emissive:0x0c447c,
-   tasks:["Reklam performans analizi","Google Ads optimizasyonu","Anahtar kelime araştırması","ROI & dönüşüm raporu"],
-   specialty:"seo_analytics"},
-  {name:"Vibe",role:"Sosyal Medya & Topluluk",x:0,z:10,color:0x639922,emissive:0x3b6d11,
-   tasks:["Instagram & TikTok kampanyaları","Influencer işbirliği araştırması","Topluluk yönetimi","Engagement raporu"],
-   specialty:"social_media"},
-  {name:"Byte",role:"Web & Dijital Altyapı",x:11,z:10,color:0x0f6e56,emissive:0x085041,
-   tasks:["Landing page optimizasyonu","Reklam tracking kurulumu","A/B test yönetimi","Teknik SEO raporu"],
-   specialty:"web_dev"},
-];
-
-const clickables = [];
-const floaters = [];
-
-agentsData.forEach((d,i)=>{
-  const fy = 0;
-  // Desk surface
-  const desk = addMesh(new THREE.BoxGeometry(3.4,0.1,2),mat(0x12102a,d.color,0.07,0.3,0.5),d.x,0.95,d.z);
-  desk.userData = d;
-  clickables.push(desk);
-
-  // Desk legs
-  [[1.4,0.85],[1.4,-0.85],[-1.4,0.85],[-1.4,-0.85]].forEach(([dx,dz])=>{
-    addMesh(new THREE.CylinderGeometry(0.06,0.06,0.95,6),mat(0x181430),d.x+dx,0.47,d.z+dz);
-  });
-
-  // Monitor
-  addMesh(new THREE.BoxGeometry(0.12,0.42,0.12),mat(0x0e0c20,0,0,0.3,0.8),d.x,1.17,d.z-0.72);
-  addMesh(new THREE.BoxGeometry(0.4,0.04,0.2),mat(0x0e0c20,0,0,0.3,0.8),d.x,0.97,d.z-0.72);
-  const monFrame = addMesh(new THREE.BoxGeometry(1.9,1.15,0.07),mat(0x080616,d.color,0.06,0.2,0.8),d.x,1.65,d.z-0.8);
-  monFrame.userData = d; clickables.push(monFrame);
-  // Screen content glow
-  addMesh(new THREE.PlaneGeometry(1.65,0.98),new THREE.MeshStandardMaterial({color:d.color,emissive:d.color,emissiveIntensity:0.65,transparent:true,opacity:0.9}),d.x,1.65,d.z-0.76);
-
-  // Keyboard
-  addMesh(new THREE.BoxGeometry(1.1,0.04,0.38),mat(0x14112a,0,0,0.8,0.2),d.x,0.97,d.z-0.2);
-
-  // Mouse
-  addMesh(new THREE.BoxGeometry(0.16,0.04,0.22),mat(0x1a1530,0,0,0.6,0.3),d.x+0.72,0.97,d.z-0.18);
-
-  // Chair seat
-  addMesh(new THREE.CylinderGeometry(0.55,0.45,0.13,12),mat(0x0e0b1c,0,0,0.9),d.x,0.88,d.z+1.1);
-  // Chair back
-  addMesh(new THREE.BoxGeometry(1.08,0.88,0.1),mat(0x0e0b1c,0,0,0.9),d.x,1.3,d.z+1.55);
-  // Chair leg
-  addMesh(new THREE.CylinderGeometry(0.07,0.07,0.88,6),mat(0x1c1835,0,0,0.5,0.5),d.x,0.44,d.z+1.1);
-
-  // Nameplate
-  addMesh(new THREE.BoxGeometry(0.9,0.07,0.28),new THREE.MeshStandardMaterial({color:d.color,emissive:d.color,emissiveIntensity:0.35}),d.x-0.8,0.98,d.z+0.55);
-
-  // Agent orb (floating)
-  const orb = addMesh(new THREE.SphereGeometry(0.3,14,14),new THREE.MeshStandardMaterial({color:d.color,emissive:d.color,emissiveIntensity:1.1,transparent:true,opacity:0.9}),d.x,2.25,d.z+0.9);
-  orb.userData = {isOrb:true, baseY:2.25, idx:i, dept:d};
-  floaters.push(orb);
-  clickables.push(orb);
-
-  // Agent ring
-  const ring = addMesh(new THREE.TorusGeometry(0.42,0.045,8,28),new THREE.MeshStandardMaterial({color:d.color,emissive:d.color,emissiveIntensity:1.6}),d.x,2.25,d.z+0.9);
-  ring.userData = {isRing:true, baseY:2.25, idx:i};
-  floaters.push(ring);
-
-  // Desk point light
-  const dl = new THREE.PointLight(d.color,1.8,6);
-  dl.position.set(d.x,2.4,d.z+0.9); scene.add(dl);
-
-  // Overhead light
-  addMesh(new THREE.BoxGeometry(2.8,0.05,0.38),new THREE.MeshStandardMaterial({color:0xfff5e0,emissive:0xfff5e0,emissiveIntensity:0.7}),d.x,6.88,d.z);
-  pl(0xfff0cc,0.5,9,d.x,6.7,d.z);
-
-  // Partition
-  if(i%3<2){
-    addMesh(new THREE.BoxGeometry(0.07,1.4,2.3),mat(0x0f0d26,d.color,0.04,0.6),d.x+5.5,1.6,d.z);
-  }
-});
-
-// MEETING TABLE
-addMesh(new THREE.CylinderGeometry(2.2,2.2,0.12,24),mat(0x1a1638,0x534ab7,0.1,0.3,0.5),0,0.97,-15);
-addMesh(new THREE.CylinderGeometry(0.1,0.1,0.97,8),mat(0x14102a),0,0.48,-15);
-for(let a=0;a<6;a++){
-  const ang=a/6*Math.PI*2;
-  const cx=Math.cos(ang)*1.65, cz=Math.sin(ang)*1.65-15;
-  addMesh(new THREE.CylinderGeometry(0.42,0.35,0.11,10),mat(0x0e0c1e),cx,0.86,cz);
-  const holo=addMesh(new THREE.SphereGeometry(0.13,8,8),new THREE.MeshStandardMaterial({color:0x7f77dd,emissive:0x7f77dd,emissiveIntensity:2,transparent:true,opacity:0.75}),cx,1.55,cz);
-  holo.userData={isOrb:true,baseY:1.55,idx:100+a};
-  floaters.push(holo);
-}
-addMesh(new THREE.CylinderGeometry(0.06,0.06,1.6,6),new THREE.MeshStandardMaterial({color:0x7f77dd,emissive:0x7f77dd,emissiveIntensity:2,transparent:true,opacity:0.6}),0,1.6,-15);
-pl(0x7f77dd,3.5,9,0,3,-15);
-
-// COLUMNS
-[-15,15].forEach(x=>[-16,16].forEach(z=>{
-  addMesh(new THREE.CylinderGeometry(0.22,0.22,7,10),mat(0x141230,0,0,0.4,0.6),x,3.5,z);
-}));
-
-// STARS
-const sv=[];for(let i=0;i<900;i++)sv.push((Math.random()-.5)*120,Math.random()*40+8,(Math.random()-.5)*120);
-const sg=new THREE.BufferGeometry();sg.setAttribute('position',new THREE.Float32BufferAttribute(sv,3));
-scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xffffff,size:0.13,transparent:true,opacity:0.45})));
-
-// FLOATING PARTICLES
-const particles=[];
-for(let i=0;i<50;i++){
-  const colors=[0x7f77dd,0x1d9e75,0xd85a30,0x993556,0x185fa5];
-  const pc=colors[Math.floor(Math.random()*colors.length)];
-  const pm=new THREE.MeshStandardMaterial({color:pc,emissive:pc,emissiveIntensity:2.5,transparent:true,opacity:0.65});
-  const p=new THREE.Mesh(new THREE.SphereGeometry(0.04,4,4),pm);
-  p.userData={bx:(Math.random()-.5)*32,by:Math.random()*4+0.5,bz:(Math.random()-.5)*32,spd:0.25+Math.random()*0.5,off:Math.random()*6.28};
-  p.position.set(p.userData.bx,p.userData.by,p.userData.bz);
-  scene.add(p); particles.push(p);
-}
-
-// ── CONTROLS ──
-let rotY=0.05, rotX=0.06;
-let dragging=false, mx=0, my=0;
-const keys={};
-document.addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;e.preventDefault&&e.key.startsWith('Arrow')&&e.preventDefault();});
-document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-
-cvs.addEventListener('mousedown',e=>{dragging=true;mx=e.clientX;my=e.clientY;});
-window.addEventListener('mouseup',e=>{
-  if(dragging&&Math.abs(e.clientX-mx)<4&&Math.abs(e.clientY-my)<4) handleClick(e);
-  dragging=false;
-});
-window.addEventListener('mousemove',e=>{
-  if(!dragging)return;
-  rotY-=(e.clientX-mx)*0.007; mx=e.clientX;
-  rotX-=(e.clientY-my)*0.006; my=e.clientY;
-  rotX=Math.max(-0.35,Math.min(0.5,rotX));
-});
-cvs.addEventListener('wheel',e=>{
-  const fwd=new THREE.Vector3(-Math.sin(rotY),0,-Math.cos(rotY));
-  cam.position.addScaledVector(fwd,e.deltaY>0?-0.6:0.6);
-  clampCam(); e.preventDefault();
-},{passive:false});
-
-cvs.addEventListener('touchstart',e=>{if(e.touches.length===1){dragging=true;mx=e.touches[0].clientX;my=e.touches[0].clientY;}});
-cvs.addEventListener('touchend',()=>dragging=false);
-cvs.addEventListener('touchmove',e=>{
-  if(!dragging||e.touches.length!==1)return;
-  rotY-=(e.touches[0].clientX-mx)*0.007;mx=e.touches[0].clientX;
-  rotX-=(e.touches[0].clientY-my)*0.006;my=e.touches[0].clientY;
-  rotX=Math.max(-0.35,Math.min(0.5,rotX));
-  e.preventDefault();
-},{passive:false});
-
-function clampCam(){
-  cam.position.x=Math.max(-16,Math.min(16,cam.position.x));
-  cam.position.z=Math.max(-16,Math.min(17,cam.position.z));
-  cam.position.y=Math.max(0.9,Math.min(6,cam.position.y));
-}
-function mv(dir){
-  const spd=1.6;
-  const fwd=new THREE.Vector3(-Math.sin(rotY),0,-Math.cos(rotY));
-  const right=new THREE.Vector3(-Math.cos(rotY),0,Math.sin(rotY));
-  if(dir==='forward')cam.position.addScaledVector(fwd,spd);
-  if(dir==='back')cam.position.addScaledVector(fwd,-spd);
-  if(dir==='left')cam.position.addScaledVector(right,-spd);
-  if(dir==='right')cam.position.addScaledVector(right,spd);
-  if(dir==='up')cam.position.y+=spd;
-  if(dir==='down')cam.position.y-=spd;
-  clampCam();
-}
-
-// ── CLICK HANDLER ──
-const rc=new THREE.Raycaster();
-let activeAgent=null;
-let reportCount=0;
-
-function handleClick(e){
-  const rect=cvs.getBoundingClientRect();
-  const mouse=new THREE.Vector2(((e.clientX-rect.left)/rect.width)*2-1,-((e.clientY-rect.top)/rect.height)*2+1);
-  rc.setFromCamera(mouse,cam);
-  const hits=rc.intersectObjects(clickables);
-  if(hits.length&&hits[0].object.userData.name){
-    openAgent(hits[0].object.userData.name?hits[0].object.userData:hits[0].object.userData.dept);
-  } else {
-    document.getElementById('side-panel').style.display='none';
-    activeAgent=null;
-    document.getElementById('stat-focus').style.display='none';
-  }
-}
-
-function openAgent(d){
-  if(!d||!d.name)return;
-  activeAgent=d;
-  const hex='#'+d.color.toString(16).padStart(6,'0');
-  document.getElementById('sp-avatar').style.background=hex+'33';
-  document.getElementById('sp-avatar').style.color=hex;
-  document.getElementById('sp-avatar').textContent=d.name[0];
-  document.getElementById('sp-name').textContent=d.name+' · '+d.role;
-  document.getElementById('sp-role').textContent='madmext.com AI Ajanı';
-  document.getElementById('sp-tasks').innerHTML=d.tasks.map(t=>`<li>${t}</li>`).join('');
-  document.getElementById('side-panel').style.display='block';
-  document.getElementById('stat-focus').style.display='flex';
-  document.getElementById('stat-focus-txt').textContent=d.name+' seçili';
-}
-
-// ── REPORT SYSTEM (Claude API) ──
-async function requestReport(){
-  if(!activeAgent)return;
-  openReportOverlay('Rapor Oluşturuluyor...');
-  document.getElementById('report-body').className='loading';
-  document.getElementById('report-body').innerHTML='<div style="margin-bottom:12px">'+activeAgent.name+' rapor hazırlıyor...</div><div style="color:rgba(127,119,221,0.5);font-size:12px">MADMEXT ADS verilerine göre analiz yapılıyor</div>';
-
-  const prompt=`Sen madmext.com için çalışan bir AI reklam ajansı ajanısın. Adın ${activeAgent.name}, görevin: ${activeAgent.role}.
-
-MADMEXT ADS için kapsamlı bir ${activeAgent.role} raporu oluştur. Rapor şunları içermeli:
-1. Mevcut durum özeti
-2. Temel bulgular ve içgörüler (en az 4 madde)
-3. Önerilen aksiyonlar (en az 3 madde)
-4. Önümüzdeki 30 gün için odak alanları
-
-Raporu Türkçe, profesyonel ve aksiyon odaklı yaz. HTML formatında değil, düz metin olarak yaz. Başlıkları ### ile belirt.`;
-
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data=await res.json();
-    const text=data.content.map(b=>b.text||'').join('');
-    renderReport(text);
-    reportCount++;
-    document.getElementById('stat-reports').textContent=reportCount;
-  }catch(err){
-    document.getElementById('report-body').innerHTML='<p style="color:#e24b4a;font-size:13px">Rapor oluşturulamadı. API bağlantısını kontrol edin.</p>';
-  }
-}
-
-async function requestResearch(){
-  if(!activeAgent)return;
-  openReportOverlay('Araştırma Yapılıyor...');
-  document.getElementById('report-body').className='loading';
-  document.getElementById('report-body').innerHTML='<div style="margin-bottom:12px">'+activeAgent.name+' araştırma başlatıyor...</div><div style="color:rgba(127,119,221,0.5);font-size:12px">Sektör verileri taranıyor</div>';
-
-  const prompt=`Sen madmext.com için çalışan ${activeAgent.name} adlı AI ajanısın. Uzmanlık alanın: ${activeAgent.role}.
-
-MADMEXT ADS'in reklam ve moda sektöründeki konumunu güçlendirmek için ${activeAgent.specialty} alanında derinlemesine bir araştırma hazırla. İçermeli:
-
-1. Sektör trendi analizi (güncel)
-2. Rakip stratejileri (genel çerçeve)
-3. Fırsat alanları (en az 3 spesifik)
-4. Risk ve dikkat edilmesi gerekenler
-5. Önerilen öncelikli adımlar
-
-Türkçe, data-driven ve uygulanabilir içgörüler sun. Başlıkları ### ile belirt.`;
-
-  try{
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data=await res.json();
-    const text=data.content.map(b=>b.text||'').join('');
-    renderReport(text);
-    reportCount++;
-    document.getElementById('stat-reports').textContent=reportCount;
-  }catch(err){
-    document.getElementById('report-body').innerHTML='<p style="color:#e24b4a;font-size:13px">Araştırma yapılamadı. API bağlantısını kontrol edin.</p>';
-  }
-}
-
-function renderReport(text){
-  const sections=text.split(/###\s*/g).filter(s=>s.trim());
-  let html='';
-  sections.forEach(sec=>{
-    const lines=sec.trim().split('\n');
-    const title=lines[0].trim();
-    const body=lines.slice(1).join('\n').trim();
-    const items=body.split('\n').filter(l=>l.trim()).map(l=>l.replace(/^[-*•]\s*/,'').trim());
-    html+=`<div class="report-section"><h3>${title}</h3>`;
-    if(items.length>1&&(body.includes('\n-')||body.includes('\n•')||body.includes('\n*'))){
-      html+='<ul>'+items.map(i=>`<li>${i}</li>`).join('')+'</ul>';
-    }else{
-      html+='<p>'+items.join(' ')+'</p>';
-    }
-    html+='</div>';
-  });
-  html+=`<div class="report-meta">Hazırlayan: ${activeAgent.name} · MADMEXT ADS AI Ajansı · ${new Date().toLocaleDateString('tr-TR')}</div>`;
-  document.getElementById('report-body').className='';
-  document.getElementById('report-body').innerHTML=html;
-}
-
-function openReportOverlay(title){
-  document.getElementById('report-title').textContent=title+(activeAgent?' · '+activeAgent.name:'');
-  document.getElementById('report-overlay').style.display='flex';
-}
-function closeReport(){document.getElementById('report-overlay').style.display='none';}
-document.getElementById('report-overlay').addEventListener('click',e=>{if(e.target===e.currentTarget)closeReport();});
-
-// ── MINIMAP ──
-const mmCvs=document.getElementById('minimap');
-const mmCtx=mmCvs.getContext('2d');
-function drawMinimap(){
-  mmCtx.clearRect(0,0,90,72);
-  mmCtx.fillStyle='rgba(8,4,20,0.92)';mmCtx.fillRect(0,0,90,72);
-  mmCtx.strokeStyle='rgba(83,74,183,0.3)';mmCtx.strokeRect(0,0,90,72);
-  agentsData.forEach(d=>{
-    const mx=(d.x/34)*80+45, my=(d.z/34)*64+36;
-    mmCtx.beginPath();mmCtx.arc(mx,my,4,0,Math.PI*2);
-    mmCtx.fillStyle='#'+d.color.toString(16).padStart(6,'0');mmCtx.fill();
-  });
-  const cpx=(cam.position.x/34)*80+45, cpy=(cam.position.z/34)*64+36;
-  mmCtx.beginPath();mmCtx.arc(Math.max(4,Math.min(86,cpx)),Math.max(4,Math.min(68,cpy)),3,0,Math.PI*2);
-  mmCtx.fillStyle='#ffffff';mmCtx.fill();
-}
-
-// ── CROSSHAIR DETECTION ──
-const rcCenter=new THREE.Raycaster();
-const sidePanel=document.getElementById('side-panel');
-
-// ── ANIMATE ──
-let t=0;
-(function animate(){
-  requestAnimationFrame(animate);
-  t+=0.015;
-
-  const spd=0.07;
-  const fwd=new THREE.Vector3(-Math.sin(rotY),0,-Math.cos(rotY));
-  const right=new THREE.Vector3(-Math.cos(rotY),0,Math.sin(rotY));
-  if(keys['w']||keys['arrowup'])cam.position.addScaledVector(fwd,spd);
-  if(keys['s']||keys['arrowdown'])cam.position.addScaledVector(fwd,-spd);
-  if(keys['a']||keys['arrowleft'])cam.position.addScaledVector(right,-spd);
-  if(keys['d']||keys['arrowright'])cam.position.addScaledVector(right,spd);
-  clampCam();
-
-  const dir=new THREE.Vector3(-Math.sin(rotY),Math.sin(rotX),-Math.cos(rotY)).normalize();
-  cam.lookAt(cam.position.clone().add(dir));
-
-  mainLight.intensity=3.5+Math.sin(t*0.8)*0.5;
-
-  floaters.forEach(obj=>{
-    if(obj.userData.isOrb)obj.position.y=obj.userData.baseY+Math.sin(t*1.5+obj.userData.idx*0.9)*0.14;
-    if(obj.userData.isRing){obj.position.y=obj.userData.baseY+Math.sin(t*1.5+obj.userData.idx*0.9)*0.14;obj.rotation.y=t*1.1;}
-  });
-
-  particles.forEach(p=>{
-    p.position.y=p.userData.by+Math.sin(t*p.userData.spd+p.userData.off)*0.8;
-    p.position.x=p.userData.bx+Math.cos(t*0.35+p.userData.off)*0.5;
-    p.material.opacity=0.35+Math.sin(t*1.6+p.userData.off)*0.3;
-  });
-
-  // Crosshair proximity detection
-  rcCenter.setFromCamera(new THREE.Vector2(0,0),cam);
-  const cHits=rcCenter.intersectObjects(clickables);
-  if(cHits.length&&cHits[0].distance<5&&cHits[0].object.userData.name){
-    document.getElementById('xhair').style.color='rgba(127,119,221,0.9)';
-  } else {
-    document.getElementById('xhair').style.color='rgba(200,192,255,0.25)';
-  }
-
-  drawMinimap();
-  renderer.render(scene,cam);
-})();
-
-window.addEventListener('resize',()=>{
-  const nW=cvs.parentElement.clientWidth, nH=cvs.parentElement.clientHeight;
-  renderer.setSize(nW,nH); cam.aspect=nW/nH; cam.updateProjectionMatrix();
-});
-</script>
-</body>
-</html>
+  <script>
+    window.mxAgencyAgents = {
+      aria:{name:'Aria — Strateji Direktörü',role:'Strateji',desc:'Meta, Google ve pazaryeri reklamlarını Madmext hedeflerine göre stratejiye çevirir.'},
+      nova:{name:'Nova — Pazar Araştırmacısı',role:'Pazar Araştırma',desc:'Rakip, trend, fiyat, kategori ve sezon fırsatlarını araştırır.'},
+      orion:{name:'Orion — Proje Yöneticisi',role:'Proje Yönetimi',desc:'Ajans görevlerini sıraya koyar, takip listesi ve sorumluluk önerisi çıkarır.'},
+      luna:{name:'Luna — İçerik Uzmanı',role:'İçerik',desc:'Reklam metni, ürün açıklaması, kategori metni ve kampanya söylemi üretir.'},
+      pixel:{name:'Pixel — Kreatif Tasarımcı',role:'Tasarım',desc:'Banner, ürün görseli, kreatif açı ve çekim fikri üretir.'},
+      rex:{name:'Rex — Video Editörü',role:'Video',desc:'Reels, TikTok, UGC ve kısa video akışları için senaryo hazırlar.'},
+      sage:{name:'Sage — SEO Analisti',role:'SEO',desc:'Kategori, ürün, blog ve teknik SEO tarafında fırsatları listeler.'},
+      vibe:{name:'Vibe — Sosyal Medya Uzmanı',role:'Sosyal Medya',desc:'Instagram, TikTok ve içerik takvimi için öneriler üretir.'},
+      byte:{name:'Byte — Web & Veri Analisti',role:'Web & Veri',desc:'Madmext.com, GA4, performans, trafik ve dönüşüm tarafını analiz eder.'}
+    };
+    window.mxAgencyCurrent = 'aria';
+    window.mxAgencySelect = function(id){
+      window.mxAgencyCurrent = id;
+      var a = window.mxAgencyAgents[id];
+      document.getElementById('mxAgentName').textContent = a.name;
+      document.getElementById('mxAgentDesc').textContent = a.desc;
+      document.getElementById('mxAgencyReport').innerHTML = '<strong>'+a.name+'</strong> seçildi. Rapor veya araştırma başlatabilirsin.';
+    };
+    window.mxAgencyClaude = async function(prompt){
+      var res = await fetch('/claude', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-3-5-sonnet-20241022',max_tokens:1600,messages:[{role:'user',content:prompt}]})
+      });
+      var data = await res.json();
+      if(!res.ok){ throw new Error((data.error && (data.error.message || data.error)) || 'Claude API hatası'); }
+      if(data.content && data.content[0] && data.content[0].text) return data.content[0].text;
+      if(data.response) return data.response;
+      return JSON.stringify(data,null,2);
+    };
+    window.mxAgencyRunTask = async function(task){
+      var a = window.mxAgencyAgents[window.mxAgencyCurrent];
+      var box = document.getElementById('mxAgencyReport');
+      box.textContent = a.name + ' çalışıyor...';
+      var prompt = 'Sen Madmext ADS içindeki '+a.name+' isimli yapay zeka ajans çalışanısın. Rolün: '+a.role+'. Marka: Madmext. Site: madmext.com. Alan: e-ticaret moda, erkek/kadın giyim, Meta Ads, Google Ads, SEO, sosyal medya, kreatif, pazaryeri reklamları. Görev: '+task+' Çıktı Türkçe olsun. Format: 1) Kısa durum özeti 2) Fırsatlar 3) Yapılacak aksiyonlar 4) Öncelik sırası 5) Ölçülecek metrikler. Net, uygulanabilir ve kısa yaz.';
+      try{ box.textContent = await window.mxAgencyClaude(prompt); }catch(e){ box.textContent = 'Hata: '+e.message; }
+    };
+    window.mxAgencyRunDaily = async function(){
+      var box = document.getElementById('mxAgencyReport');
+      box.textContent = 'Tüm ajans günlük raporu hazırlanıyor...';
+      var prompt = 'Madmext ADS için 9 yapay zeka ajanın ortak günlük ajans raporunu hazırla. Ajanlar: Strateji, Pazar Araştırma, Proje Yönetimi, İçerik, Tasarım, Video, SEO, Sosyal Medya, Web & Veri. Marka madmext.com, moda e-ticaret. Kısa yönetici özeti, kanal bazlı aksiyonlar, bugün yapılacaklar, bu hafta takip edilecekler ve metrikler şeklinde Türkçe rapor ver.';
+      try{ box.textContent = await window.mxAgencyClaude(prompt); }catch(e){ box.textContent = 'Hata: '+e.message; }
+    };
+    window.mxAgencyResetView = function(){ window.mxAgencySelect('aria'); };
+  </script>
+</section>
