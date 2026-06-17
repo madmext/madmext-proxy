@@ -167,7 +167,8 @@ async function fetchPSI(url){
   var base = window.location.origin || '';
   // Once mobil, sonra desktop - ayri istekler, sirayla (kota koruma)
   var mobRes, deskRes;
-  var r1 = await fetch(base+'/psi?url='+encodeURIComponent(url)+'&strategy=mobile');
+  var cats = '&category=performance&category=seo&category=accessibility&category=best-practices';
+  var r1 = await fetch(base+'/psi?url='+encodeURIComponent(url)+'&strategy=mobile'+cats);
   if(!r1.ok){
     var errTxt = await r1.text();
     try{ var errJ=JSON.parse(errTxt); throw new Error(errJ.error&&errJ.error.message||'HTTP '+r1.status); }
@@ -179,7 +180,7 @@ async function fetchPSI(url){
   // Desktop icin 500ms bekle (rate limit koruma)
   await new Promise(function(res){setTimeout(res,500);});
   try{
-    var r2 = await fetch(base+'/psi?url='+encodeURIComponent(url)+'&strategy=desktop');
+    var r2 = await fetch(base+'/psi?url='+encodeURIComponent(url)+'&strategy=desktop'+cats);
     deskRes = r2.ok ? await r2.json() : null;
   }catch(e){ deskRes = null; }
 
