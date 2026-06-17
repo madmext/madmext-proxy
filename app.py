@@ -764,13 +764,17 @@ def gads_status():
 @app.route('/claude', methods=['POST'])
 def claude_proxy():
     data = request.json
+    if not ANTHROPIC_KEY:
+        return jsonify({'error': {'message': 'ANTHROPIC_KEY env degiskeni tanimli degil. Railway > Variables kontrol edin.'}}), 500
     try:
         r = requests.post('https://api.anthropic.com/v1/messages',
             headers={'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-            json=data, timeout=60)
+            json=data, timeout=90)
+        if r.status_code != 200:
+            return jsonify({'error': {'message': 'Anthropic API hatasi: ' + str(r.status_code) + ' - ' + r.text[:300]}}), r.status_code
         return jsonify(r.json())
     except requests.Timeout:
-        return jsonify({'error': {'message': 'Claude zaman aşımı (60s)'}}), 504
+        return jsonify({'error': {'message': 'Claude zaman asimi (90s). Tekrar deneyin.'}}), 504
     except Exception as e:
         return jsonify({'error': {'message': str(e)}}), 500
 
