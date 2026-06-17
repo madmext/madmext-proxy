@@ -1,437 +1,700 @@
+<!-- SEO Modülü -->
 <style>
-.seo-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
-.seo-topbar{flex-shrink:0;padding:16px 0;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:12px}
-.seo-search-wrap{flex:1;position:relative}
-.seo-search-wrap::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
-.seo-search-input{width:100%;background:var(--s);border:1.5px solid var(--b2);color:var(--t);padding:10px 14px 10px 40px;font-size:13px;border-radius:10px;outline:none;font-family:inherit;transition:border-color .2s;box-sizing:border-box}
-.seo-search-input:focus{border-color:#f27a1a}
-.seo-add-btn{background:#40c9a2;color:#fff;border:none;padding:10px 20px;font-size:13px;font-weight:600;border-radius:10px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;flex-shrink:0;transition:opacity .15s}
-.seo-add-btn:hover{opacity:.85}
-.seo-content{flex:1;overflow-y:auto;padding:20px 0}
-/* Kart grid */
-.seo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.seo-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px;position:relative}
-.seo-card:hover{border-color:#40c9a2;box-shadow:0 2px 12px rgba(64,201,162,.1)}
-.seo-card-favicon{width:40px;height:40px;border-radius:8px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
-.seo-card-favicon img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.seo-card-info{flex:1;min-width:0}
-.seo-card-url{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px}
-.seo-card-time{font-size:11px;color:var(--m)}
-.seo-card-score{flex-shrink:0}
-.seo-ring-wrap{position:relative;width:52px;height:52px;display:flex;align-items:center;justify-content:center}
-.seo-ring-wrap svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
-.seo-ring-num{font-size:16px;font-weight:700;font-family:'DM Mono',monospace;position:relative;z-index:1}
-.seo-card-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--m);font-size:12px;cursor:pointer;opacity:0;transition:opacity .15s;padding:2px 5px;border-radius:4px}
-.seo-card:hover .seo-card-del{opacity:1}
-.seo-card-del:hover{background:rgba(250,62,62,.1);color:var(--r)}
-/* Analiz sayfası */
-.seo-back-btn{display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b);color:var(--t);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;flex-shrink:0;transition:border-color .15s}
-.seo-back-btn:hover{border-color:#f27a1a}
-/* Analiz içerik stilleri */
-.seo-score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;width:110px;height:110px}
-.seo-score-ring svg{transform:rotate(-90deg)}
-.seo-score-num{position:absolute;font-size:32px;font-weight:800}
-.seo-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-@media(max-width:800px){.seo-stat-grid{grid-template-columns:repeat(2,1fr)}}
-.seo-stat{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:11px 12px;text-align:center}
-.seo-stat-n{font-size:20px;font-weight:700;font-family:'DM Mono',monospace}
-.seo-stat-l{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
-.seo-tabs{display:flex;gap:4px;border-bottom:1px solid var(--b);margin-bottom:14px;overflow-x:auto}
-.seo-tab{padding:8px 14px;font-size:12px;font-weight:600;color:var(--m);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s}
-.seo-tab.active{color:#40c9a2;border-bottom-color:#40c9a2}
-.seo-tab:hover:not(.active){color:var(--t)}
-.seo-issue{display:flex;gap:12px;padding:11px 13px;border-radius:8px;margin-bottom:7px;background:var(--s2);border:1px solid var(--b)}
-.seo-issue.ok{background:rgba(64,201,162,.05);border-color:rgba(64,201,162,.2)}
-.seo-issue.warn{background:rgba(240,180,41,.05);border-color:rgba(240,180,41,.2)}
-.seo-issue.err{background:rgba(250,62,62,.05);border-color:rgba(250,62,62,.2)}
-.seo-issue-title{font-size:12px;font-weight:600;margin-bottom:3px}
-.seo-issue-desc{font-size:11px;color:var(--m);line-height:1.6}
-.seo-issue-fix{font-size:11px;margin-top:6px;padding:6px 10px;border-radius:5px;background:rgba(64,201,162,.08);border-left:2px solid #40c9a2}
-.seo-section{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:14px 16px;margin-bottom:10px}
-.seo-section h3{font-size:12px;font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px;color:var(--m)}
-.seo-preview{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:13px 15px;margin-bottom:11px}
-.seo-preview-url{font-size:11px;color:#40c9a2;margin-bottom:3px}
-.seo-preview-title{font-size:16px;color:#1a73e8;margin-bottom:3px}
-.seo-preview-desc{font-size:12px;color:var(--m);line-height:1.5}
-.seo-kw{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:rgba(24,119,242,.1);color:var(--a);border:1px solid rgba(24,119,242,.2);margin:3px}
-.seo-prog{background:var(--b);border-radius:4px;height:8px;overflow:hidden;margin-top:4px}
-.seo-prog-bar{height:100%;border-radius:4px;transition:width .4s}
-.seo-tip{background:rgba(64,201,162,.06);border:1px solid rgba(64,201,162,.2);border-radius:8px;padding:10px 13px;margin-bottom:7px;font-size:11px;line-height:1.7}
-.seo-ai-card{background:linear-gradient(135deg,rgba(64,201,162,.08),rgba(24,119,242,.08));border:1px solid rgba(64,201,162,.2);border-radius:10px;padding:14px 16px;margin-bottom:10px}
-.seo-spinner{width:36px;height:36px;border:3px solid var(--b);border-top-color:#40c9a2;border-radius:50%;animation:seoSpin 1s linear infinite}
-@keyframes seoSpin{to{transform:rotate(360deg)}}
+/* ── Genel ── */
+#seoRoot{display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden;font-family:inherit}
+
+/* ── Üst bar ── */
+#seoTopBar{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:12px;
+  padding:16px 0 14px;
+  border-bottom:1px solid var(--b)
+}
+#seoSearchWrap{
+  flex:1;position:relative
+}
+#seoSearchWrap svg{
+  position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--m);pointer-events:none
+}
+#seoSearchInput{
+  width:100%;box-sizing:border-box;
+  background:var(--bg);border:1.5px solid var(--b2);
+  color:var(--t);padding:10px 14px 10px 40px;
+  font-size:13px;border-radius:10px;outline:none;font-family:inherit;
+  transition:border-color .18s
+}
+#seoSearchInput:focus{border-color:#3ecfa0}
+#seoAddBtn{
+  flex-shrink:0;
+  display:flex;align-items:center;gap:7px;
+  background:#3ecfa0;color:#fff;border:none;
+  padding:10px 20px;font-size:13px;font-weight:600;
+  border-radius:10px;cursor:pointer;white-space:nowrap;
+  transition:opacity .15s
+}
+#seoAddBtn:hover{opacity:.88}
+#seoAddBtn svg{width:16px;height:16px}
+
+/* ── İçerik alanı ── */
+#seoBody{flex:1;overflow-y:auto;padding:20px 0}
+
+/* ── Kart listesi ── */
+.sg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+
+.sg-card{
+  position:relative;
+  background:var(--s);border:1px solid var(--b);
+  border-radius:12px;padding:18px 20px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s
+}
+.sg-card:hover{border-color:#3ecfa0;box-shadow:0 2px 14px rgba(62,207,160,.1)}
+
+.sg-favicon{
+  width:42px;height:42px;border-radius:9px;
+  background:var(--s2);display:flex;align-items:center;
+  justify-content:center;font-size:20px;flex-shrink:0;overflow:hidden
+}
+.sg-favicon img{width:100%;height:100%;object-fit:cover;border-radius:9px}
+
+.sg-info{flex:1;min-width:0}
+.sg-url{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px}
+.sg-time{font-size:11px;color:var(--m)}
+
+/* Skor halkası - kart */
+.sg-ring{position:relative;width:54px;height:54px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.sg-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.sg-ring-num{position:relative;z-index:1;font-size:16px;font-weight:700;font-family:'DM Mono',monospace}
+
+/* Sil butonu */
+.sg-del{
+  position:absolute;top:7px;right:8px;
+  background:none;border:none;color:var(--m);
+  font-size:11px;cursor:pointer;padding:2px 6px;border-radius:4px;
+  opacity:0;transition:opacity .15s
+}
+.sg-card:hover .sg-del{opacity:1}
+.sg-del:hover{background:rgba(250,62,62,.12);color:#fa3e3e}
+
+/* Boş durum */
+.sg-empty{text-align:center;padding:70px 20px;color:var(--m)}
+.sg-empty-icon{font-size:52px;margin-bottom:14px}
+.sg-empty-title{font-size:14px;font-weight:600;color:var(--t);margin-bottom:6px}
+.sg-empty-sub{font-size:12px;line-height:1.8}
+
+/* ── Yükleme spinnerı ── */
+@keyframes sg-spin{to{transform:rotate(360deg)}}
+.sg-spinner{
+  width:20px;height:20px;border-radius:50%;
+  border:2px solid var(--b);border-top-color:#3ecfa0;
+  animation:sg-spin .9s linear infinite;flex-shrink:0
+}
+
+/* ── ANALİZ EKRANI ── */
+#seoDetail{display:none}
+
+/* Geri butonu */
+.sa-back{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--s2);border:1px solid var(--b);color:var(--t);
+  padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;
+  cursor:pointer;transition:border-color .15s;margin-bottom:14px
+}
+.sa-back:hover{border-color:#3ecfa0}
+
+/* Özet kartı */
+.sa-summary{
+  background:var(--s);border:1px solid var(--b);border-radius:12px;
+  padding:18px 20px;margin-bottom:12px
+}
+.sa-score-ring{position:relative;display:inline-flex;align-items:center;justify-content:center;width:108px;height:108px;flex-shrink:0}
+.sa-score-ring svg{transform:rotate(-90deg)}
+.sa-score-num{position:absolute;font-size:30px;font-weight:800}
+
+/* İstatistik grid */
+.sa-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+@media(max-width:720px){.sa-stats{grid-template-columns:repeat(2,1fr)}}
+.sa-stat{background:var(--s2);border:1px solid var(--b);border-radius:8px;padding:10px 12px;text-align:center}
+.sa-stat-v{font-size:18px;font-weight:700;font-family:'DM Mono',monospace}
+.sa-stat-l{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+/* Sekmeler */
+.sa-tabs{display:flex;gap:2px;border-bottom:2px solid var(--b);margin-bottom:14px;overflow-x:auto}
+.sa-tab{
+  padding:9px 16px;font-size:12px;font-weight:600;color:var(--m);
+  border:none;background:transparent;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-2px;
+  white-space:nowrap;transition:all .15s
+}
+.sa-tab.on{color:#3ecfa0;border-bottom-color:#3ecfa0}
+.sa-tab:hover:not(.on){color:var(--t)}
+
+/* Bölüm kutusu */
+.sa-box{background:var(--s);border:1px solid var(--b);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.sa-box-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--m);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+/* Kontrol satırı */
+.sa-check{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid rgba(128,128,128,.08)}
+.sa-check:last-child{border-bottom:none}
+.sa-check-icon{font-size:13px;flex-shrink:0;margin-top:1px}
+.sa-check-label{font-size:12px;font-weight:600}
+.sa-check-sub{font-size:11px;color:var(--m);margin-top:2px;line-height:1.5}
+
+/* Sorun kartı */
+.sa-issue{display:flex;gap:11px;padding:11px 13px;border-radius:8px;margin-bottom:7px}
+.sa-issue.err{background:rgba(250,62,62,.05);border:1px solid rgba(250,62,62,.18)}
+.sa-issue.warn{background:rgba(240,180,41,.05);border:1px solid rgba(240,180,41,.18)}
+.sa-issue.ok{background:rgba(62,207,160,.05);border:1px solid rgba(62,207,160,.18)}
+.sa-issue-title{font-size:12px;font-weight:600;margin-bottom:3px}
+.sa-issue-desc{font-size:11px;color:var(--m);line-height:1.6}
+.sa-issue-fix{font-size:11px;margin-top:6px;padding:6px 10px;border-radius:5px;background:rgba(62,207,160,.08);border-left:2px solid #3ecfa0;line-height:1.6}
+
+/* Etiket badge */
+.sa-badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:9px;font-weight:700;margin-left:7px}
+.sa-badge.err{background:rgba(250,62,62,.18);color:#fa3e3e}
+.sa-badge.warn{background:rgba(240,180,41,.18);color:#f0b429}
+
+/* Anahtar kelime */
+.sa-kw{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:rgba(24,119,242,.1);color:var(--a);border:1px solid rgba(24,119,242,.2);margin:3px}
+
+/* Prog bar */
+.sa-prog{background:var(--b2);border-radius:4px;height:8px;overflow:hidden;margin-top:4px}
+.sa-prog-fill{height:100%;border-radius:4px;transition:width .5s}
+
+/* Bar satırı (başlık hiyerarşisi) */
+.sa-bar-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+
+/* Teknik satır */
+.sa-tech-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(128,128,128,.08);font-size:12px}
+.sa-tech-row:last-child{border-bottom:none}
+.sa-tech-label{color:var(--m)}
+.sa-tech-val{display:flex;align-items:center;gap:5px;font-family:'DM Mono',monospace;font-size:11px}
+
+/* Google önizleme */
+.sa-preview{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:13px 15px;margin-bottom:12px}
+.sa-preview-url{font-size:11px;color:#3ecfa0;margin-bottom:3px}
+.sa-preview-title{font-size:15px;color:#1a73e8;margin-bottom:3px;line-height:1.3}
+.sa-preview-desc{font-size:12px;color:var(--m);line-height:1.5}
+
+/* AI kart */
+.sa-ai{background:linear-gradient(135deg,rgba(62,207,160,.07),rgba(24,119,242,.07));border:1px solid rgba(62,207,160,.22);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+
+/* Öneri */
+.sa-tip{padding:9px 12px 9px 14px;border-left:3px solid #3ecfa0;border-radius:0 6px 6px 0;background:rgba(62,207,160,.06);font-size:11px;line-height:1.7;margin-bottom:7px}
 </style>
 
-<div class="seo-wrap">
-  <!-- Üst çubuk: arama + yeni site ekle -->
-  <div class="seo-topbar" id="seoTopbar">
-    <div class="seo-search-wrap">
-      <input type="url" class="seo-search-input" id="seoSearchInput" placeholder="Analiz etmek istediğiniz internet sitesini arayın ve ekleyin..." onkeydown="if(event.key==='Enter')seoAddSite()">
+<!-- ── KÖKLER ── -->
+<div id="seoRoot">
+
+  <!-- Üst bar (her zaman görünür) -->
+  <div id="seoTopBar">
+    <div id="seoSearchWrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="seoSearchInput" type="text" placeholder="Analiz etmek istediğiniz internet sitesini arayın ve ekleyin..." autocomplete="off">
     </div>
-    <button class="seo-add-btn" onclick="seoAddSite()">
-      <span style="font-size:16px;font-weight:300">⊕</span> Yeni Site Ekle
+    <button id="seoAddBtn" onclick="_seo.add()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Yeni Site Ekle
     </button>
   </div>
 
-  <!-- İçerik alanı -->
-  <div class="seo-content" id="seoContent">
-    <!-- Liste görünümü (varsayılan) -->
-    <div id="seoListView">
-      <div id="seoGrid" class="seo-grid"></div>
-      <div id="seoEmpty" style="display:none;text-align:center;padding:60px 20px;color:var(--m)">
-        <div style="font-size:48px;margin-bottom:12px">🔍</div>
-        <div style="font-size:14px;font-weight:600;color:var(--t);margin-bottom:6px">Henüz site eklenmemiş</div>
-        <div style="font-size:12px">Üstteki alandan analiz etmek istediğin URL'yi gir ve "Yeni Site Ekle" butonuna bas.</div>
+  <!-- Gövde -->
+  <div id="seoBody">
+
+    <!-- LİSTE EKRANI -->
+    <div id="seoList">
+      <div id="seoGrid" class="sg-grid"></div>
+      <div id="seoEmpty" class="sg-empty" style="display:none">
+        <div class="sg-empty-icon">🔍</div>
+        <div class="sg-empty-title">Henüz site eklenmemiş</div>
+        <div class="sg-empty-sub">Üstteki alana URL gir ve<br>"Yeni Site Ekle" butonuna bas.</div>
       </div>
     </div>
-    <!-- Analiz görünümü -->
-    <div id="seoAnalysisView" style="display:none"></div>
+
+    <!-- ANALİZ EKRANI -->
+    <div id="seoDetail"></div>
+
   </div>
 </div>
 
 <script>
-(function(){
+(function () {
 'use strict';
-var _sites = [];   // {url, skor, baslik, favicon, tarih, data}
-var _view = 'list'; // 'list' | 'analysis'
 
-// LocalStorage
-function loadSites(){
-  try{ _sites = JSON.parse(localStorage.getItem('seo_sites')||'[]'); }catch(e){ _sites=[]; }
-}
-function saveSites(){
-  try{ localStorage.setItem('seo_sites', JSON.stringify(_sites)); }catch(e){}
+/* ──────────────────────────────────────
+   YARDIMCI FONKSİYONLAR
+──────────────────────────────────────── */
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function timeAgo(iso){
-  var d = new Date(iso);
-  var diff = Math.floor((Date.now()-d)/1000);
-  if(diff<60) return 'Az önce';
-  if(diff<3600) return Math.floor(diff/60)+' dakika önce';
-  if(diff<86400) return Math.floor(diff/3600)+' saat önce';
-  return Math.floor(diff/86400)+' gün önce';
+function timeAgo(iso) {
+  var diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (diff < 60)    return 'az önce eklendi';
+  if (diff < 3600)  return Math.floor(diff/60) + ' dakika önce eklendi';
+  if (diff < 86400) return Math.floor(diff/3600) + ' saat önce eklendi';
+  return Math.floor(diff/86400) + ' gün önce eklendi';
 }
 
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function ring(skor, r, sw) {
+  var c = 2 * Math.PI * r;
+  var off = c - (skor / 100) * c;
+  var col = skor >= 80 ? '#3ecfa0' : skor >= 60 ? '#f0b429' : '#fa3e3e';
+  var d = r * 2 + sw * 2;
+  var cx = d / 2, cy = d / 2;
+  return {
+    html: '<svg width="'+d+'" height="'+d+'">'
+      + '<circle stroke-width="'+sw+'" stroke="var(--b2)" fill="transparent" r="'+r+'" cx="'+cx+'" cy="'+cy+'"></circle>'
+      + '<circle stroke-width="'+sw+'" stroke-linecap="round" stroke="'+col+'" fill="transparent" r="'+r+'" cx="'+cx+'" cy="'+cy+'" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+off.toFixed(2)+'"></circle>'
+      + '</svg>',
+    col: col
+  };
+}
 
-// ── LİSTE GÖRÜNÜMÜ ──────────────────────────────────────
-function renderList(){
-  var grid = document.getElementById('seoGrid');
+/* ──────────────────────────────────────
+   VERİ KATMANI
+──────────────────────────────────────── */
+var _sites = [];
+
+function load() {
+  try { _sites = JSON.parse(localStorage.getItem('seo_sites') || '[]'); } catch(e) { _sites = []; }
+}
+function save() {
+  try { localStorage.setItem('seo_sites', JSON.stringify(_sites)); } catch(e) {}
+}
+
+/* ──────────────────────────────────────
+   CLAUDE API
+──────────────────────────────────────── */
+async function fetchAnalysis(url) {
+  var prompt = 'Şu URL için kapsamlı SEO analizi yap: ' + url + '\n\n'
+    + 'SADECE geçerli JSON döndür. Başka hiçbir şey yazma:\n'
+    + '{"skor":72,"url":"'+url+'","baslik":"Sayfa Başlığı","baslik_uzunluk":45,'
+    + '"meta_desc":"Meta açıklama metni","meta_desc_uzunluk":120,'
+    + '"h1_sayisi":1,"h2_sayisi":5,"h3_sayisi":3,'
+    + '"gorsel_toplam":25,"gorsel_altsiz":3,'
+    + '"ic_link":45,"dis_link":8,'
+    + '"sayfa_boyut_kb":450,"https":true,"mobil_uyumlu":true,'
+    + '"robots_txt":true,"sitemap":true,"favicon":true,'
+    + '"dil":"tr","charset":"UTF-8","canonical":true,"og_tags":true,'
+    + '"yukleme_hizi":"Orta","js_erteleme":false,"dom_boyutu":1200,'
+    + '"http_istekleri":65,"metin_html_oran":18,"noindex":false,'
+    + '"anahtar_kelimeler":["örnek","kelime"],'
+    + '"iyi_yonler":[{"baslik":"HTTPS","aciklama":"SSL sertifikası aktif."},{"baslik":"Robots.txt","aciklama":"Arama motorları erişebiliyor."}],'
+    + '"sorunlar":[{"seviye":"hata","baslik":"H1 Eksik","aciklama":"Sayfada H1 etiketi bulunamadı.","cozum":"Her sayfaya yalnızca 1 tane H1 ekleyin.","etki":"Yüksek"},{"seviye":"uyari","baslik":"Görsel Alt Metni","aciklama":"Bazı görsellerde alt özelliği yok.","cozum":"Tüm img etiketlerine açıklayıcı alt değeri ekleyin.","etki":"Orta"}],'
+    + '"oneriler":["Anahtar kelime yoğunluğunu artırın.","Schema.org yapılandırılmış veri ekleyin.","İç linkleme stratejisi geliştirin.","Görselleri WebP formatına çevirin."],'
+    + '"ai_analiz":"Genel SEO durumu ortalama seviyede. Teknik altyapı sağlam fakat içerik optimizasyonu ve başlık hiyerarşisi iyileştirilmeli."}';
+
+  var r = await fetch('/claude', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 3000,
+      system: 'Sen bir SEO uzmanısın. SADECE geçerli JSON döndür, başka hiçbir şey yazma. JSON dışı hiçbir karakter olmamalı.',
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  var res = await r.json();
+  var txt = (res.content && res.content[0] && res.content[0].text) || '';
+  txt = txt.replace(/```json|```/g, '').trim();
+  return JSON.parse(txt);
+}
+
+/* ──────────────────────────────────────
+   LİSTE EKRANI
+──────────────────────────────────────── */
+function showList() {
+  document.getElementById('seoList').style.display = 'block';
+  document.getElementById('seoDetail').style.display = 'none';
+  renderGrid();
+}
+
+function renderGrid() {
+  var q = (document.getElementById('seoSearchInput').value || '').toLowerCase();
+  var grid  = document.getElementById('seoGrid');
   var empty = document.getElementById('seoEmpty');
-  if(!_sites.length){ grid.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display='none';
 
-  // Arama filtresi
-  var q = (document.getElementById('seoSearchInput').value||'').toLowerCase();
-  var filtered = q ? _sites.filter(function(s){ return s.url.toLowerCase().includes(q); }) : _sites;
+  var items = q
+    ? _sites.filter(function(s){ return s.url.toLowerCase().includes(q); })
+    : _sites;
 
-  if(!filtered.length){ grid.innerHTML='<div style="color:var(--m);font-size:12px;padding:20px">Sonuç bulunamadı.</div>'; return; }
+  if (!items.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
 
-  grid.innerHTML = filtered.map(function(site, idx){
-    var skor = site.skor||0;
-    var skorRenk = skor>=80?'#40c9a2':skor>=60?'#f0b429':'#fa3e3e';
-    var c = 2*Math.PI*22;
-    var offset = c-(skor/100)*c;
-    var host = site.url.replace(/^https?:\/\//,'').replace(/\/$/,'');
-    var faviconUrl = 'https://www.google.com/s2/favicons?domain='+encodeURIComponent(site.url)+'&sz=64';
-    return '<div class="seo-card" onclick="seoOpenSite('+idx+')">'
-      +'<button class="seo-card-del" onclick="event.stopPropagation();seoDeleteSite('+idx+')" title="Sil">✕</button>'
-      +'<div class="seo-card-favicon"><img src="'+faviconUrl+'" onerror="this.parentNode.innerHTML=\'🌐\'"></div>'
-      +'<div class="seo-card-info">'
-      +'<div class="seo-card-url">'+esc(host)+'</div>'
-      +'<div class="seo-card-time">'+timeAgo(site.tarih||new Date().toISOString())+'</div>'
-      +'</div>'
-      +'<div class="seo-card-score">'
-      +'<div class="seo-ring-wrap">'
-      +'<svg width="52" height="52"><circle stroke-width="4" stroke="var(--b)" fill="transparent" r="22" cx="26" cy="26"></circle>'
-      +'<circle stroke-width="4" stroke-linecap="round" stroke="'+skorRenk+'" fill="transparent" r="22" cx="26" cy="26" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+offset.toFixed(2)+'"></circle></svg>'
-      +'<span class="seo-ring-num" style="color:'+skorRenk+'">'+skor+'</span>'
-      +'</div>'
-      +'</div>'
-      +'</div>';
+  grid.innerHTML = items.map(function(site, i) {
+    var idx = q ? _sites.indexOf(site) : i;
+    var skor = site.skor || 0;
+    var rv   = ring(skor, 22, 3.5);
+    var host = site.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    var fav  = 'https://www.google.com/s2/favicons?domain=' + encodeURIComponent(site.url) + '&sz=64';
+
+    return '<div class="sg-card" onclick="_seo.open(' + idx + ')">'
+      + '<button class="sg-del" onclick="event.stopPropagation();_seo.del(' + idx + ')" title="Sil">✕</button>'
+      + '<div class="sg-favicon"><img src="' + fav + '" onerror="this.parentNode.innerHTML=\'🌐\'"></div>'
+      + '<div class="sg-info">'
+      +   '<div class="sg-url">' + esc(host) + '</div>'
+      +   '<div class="sg-time">' + timeAgo(site.tarih) + '</div>'
+      + '</div>'
+      + '<div class="sg-ring">'
+      +   rv.html
+      +   '<span class="sg-ring-num" style="color:' + rv.col + '">' + skor + '</span>'
+      + '</div>'
+      + '</div>';
   }).join('');
 }
 
-// ── SİTE EKLE ───────────────────────────────────────────
-window.seoAddSite = async function(){
-  var input = document.getElementById('seoSearchInput');
-  var url = input.value.trim();
-  if(!url) return;
-  if(!url.startsWith('http')) url = 'https://'+url;
-  input.value = '';
-
-  // Yükleme kartı ekle
-  var tmpId = 'tmp_'+Date.now();
-  var host = url.replace(/^https?:\/\//,'').replace(/\/$/,'');
-  var tmpHtml = '<div id="'+tmpId+'" class="seo-card" style="opacity:.6">'
-    +'<div class="seo-card-favicon" style="animation:seoSpin 1s linear infinite;border:2px solid var(--b);border-top-color:#40c9a2;border-radius:50%"></div>'
-    +'<div class="seo-card-info"><div class="seo-card-url">'+esc(host)+'</div><div class="seo-card-time">Analiz ediliyor...</div></div>'
-    +'<div class="seo-card-score"><div style="width:52px;height:52px;border-radius:50%;border:3px solid var(--b);border-top-color:#40c9a2;animation:seoSpin 1s linear infinite"></div></div>'
-    +'</div>';
-
-  var grid = document.getElementById('seoGrid');
-  document.getElementById('seoEmpty').style.display='none';
-  grid.insertAdjacentHTML('afterbegin', tmpHtml);
-
-  try{
-    var data = await fetchSeoData(url);
-    var tmpEl = document.getElementById(tmpId);
-    if(tmpEl) tmpEl.remove();
-
-    // Mevcut site varsa güncelle
-    var existing = _sites.findIndex(function(s){ return s.url===url; });
-    var siteObj = {url:url, skor:data.skor||0, baslik:data.baslik||host, tarih:new Date().toISOString(), data:data};
-    if(existing>=0) _sites[existing]=siteObj; else _sites.unshift(siteObj);
-    saveSites();
-    renderList();
-    // Analizi hemen aç
-    seoOpenSite(0);
-  }catch(e){
-    var tmpEl = document.getElementById(tmpId);
-    if(tmpEl) tmpEl.remove();
-    alert('Analiz sırasında hata: '+e.message);
-    renderList();
-  }
-};
-
-// ── ANALİZ VERİSİ ÇEK ───────────────────────────────────
-async function fetchSeoData(url){
-  var payload = {
-    model:'claude-sonnet-4-6', max_tokens:3000,
-    system:'Sen bir SEO uzmanısın. SADECE geçerli JSON döndür, başka hiçbir şey yazma.',
-    messages:[{role:'user', content:'Şu URL için SEO analizi yap: '+url+'\n\nJSON formatında yanıt ver:\n{"skor":72,"url":"'+url+'","baslik":"Sayfa Başlığı","baslik_uzunluk":45,"meta_desc":"Meta açıklama","meta_desc_uzunluk":120,"h1_sayisi":1,"h1_icerik":"H1 başlık","h2_sayisi":5,"h3_sayisi":3,"gorsel_toplam":25,"gorsel_altsiz":3,"ic_link":45,"dis_link":8,"sayfa_boyut_kb":450,"https":true,"mobil_uyumlu":true,"robots_txt":true,"sitemap":true,"favicon":true,"dil":"tr","charset":"UTF-8","canonical":true,"og_tags":true,"yukleme_hizi":"Orta","js_erteleme":false,"dom_boyutu":1200,"http_istekleri":65,"metin_html_oran":18,"noindex":false,"anahtar_kelimeler":["madmext","giyim","erkek"],"iyi_yonler":[{"baslik":"HTTPS","aciklama":"SSL sertifikası var."},{"baslik":"Meta Açıklama","aciklama":"Uygun uzunlukta."}],"sorunlar":[{"seviye":"hata","baslik":"H1 Eksik","aciklama":"H1 etiketi yok.","cozum":"Her sayfaya tek H1 ekleyin.","etki":"Yüksek"},{"seviye":"uyari","baslik":"Görsel Alt Etiketleri","aciklama":"Bazı görsellerde alt yok.","cozum":"Tüm görsellere alt ekleyin.","etki":"Orta"}],"oneriler":["Anahtar kelime optimizasyonu yapın.","Schema.org ekleyin.","İç linklemeyi güçlendirin."],"ai_analiz":"Sitenin genel SEO durumu ortalama. Teknik altyapı sağlam ancak içerik ve başlık hiyerarşisi iyileştirilmeli."}'}]
-  };
-  var r = await fetch('/claude',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)});
-  var res = await r.json();
-  var text = (res.content&&res.content[0]&&res.content[0].text)||'';
-  var clean = text.replace(/```json|```/g,'').trim();
-  return JSON.parse(clean);
+/* ──────────────────────────────────────
+   ANALİZ EKRANI
+──────────────────────────────────────── */
+function showDetail(idx) {
+  document.getElementById('seoList').style.display = 'none';
+  var det = document.getElementById('seoDetail');
+  det.style.display = 'block';
+  renderDetail(idx);
 }
 
-// ── SİTE AÇ ─────────────────────────────────────────────
-window.seoOpenSite = function(idx){
+function renderDetail(idx) {
   var site = _sites[idx];
-  if(!site) return;
-  _view = 'analysis';
-  document.getElementById('seoListView').style.display='none';
-  var av = document.getElementById('seoAnalysisView');
-  av.style.display='block';
-  renderAnalysis(site, idx);
-};
+  if (!site) { showList(); return; }
+  var d    = site.data || {};
+  var skor = d.skor || site.skor || 0;
+  var rv   = ring(skor, 50, 9);
+  var etiket = skor >= 80 ? 'İyi' : skor >= 60 ? 'Ortalama' : 'Zayıf';
+  var errC = (d.sorunlar||[]).filter(function(s){ return s.seviye==='hata'; }).length;
+  var wrnC = (d.sorunlar||[]).filter(function(s){ return s.seviye==='uyari'; }).length;
+  var okC  = (d.iyi_yonler||[]).length;
 
-window.seoDeleteSite = function(idx){
-  _sites.splice(idx,1);
-  saveSites();
-  renderList();
-};
+  var det = document.getElementById('seoDetail');
+  det.innerHTML =
 
-// ── GERİ ────────────────────────────────────────────────
-function goBack(){
-  _view='list';
-  document.getElementById('seoListView').style.display='block';
-  document.getElementById('seoAnalysisView').style.display='none';
-  document.getElementById('seoTopbar').querySelector('.seo-back-btn') && document.getElementById('seoTopbar').querySelector('.seo-back-btn').remove();
-  renderList();
+    /* Geri + yenile */
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
+    + '<button class="sa-back" onclick="_seo.back()">← Geri</button>'
+    + '<div style="flex:1;min-width:0">'
+    +   '<div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(site.url) + '</div>'
+    +   '<div style="font-size:10px;color:var(--m)">' + timeAgo(site.tarih) + ' · AI analizi</div>'
+    + '</div>'
+    + '<button onclick="_seo.reanalyze(' + idx + ')" style="background:var(--s2);border:1px solid var(--b);color:var(--t);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;transition:border-color .15s" onmouseover="this.style.borderColor=\'#3ecfa0\'" onmouseout="this.style.borderColor=\'var(--b)\'">🔄 Yenile</button>'
+    + '</div>'
+
+    /* Özet */
+    + '<div class="sa-summary">'
+    +   '<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
+    +     '<div style="text-align:center;flex-shrink:0">'
+    +       '<div class="sa-score-ring">' + rv.html + '<span class="sa-score-num" style="color:' + rv.col + '">' + skor + '</span></div>'
+    +       '<div style="display:inline-block;margin-top:7px;padding:3px 12px;border-radius:10px;font-size:11px;font-weight:700;background:' + (skor>=80?'rgba(62,207,160,.15)':skor>=60?'rgba(240,180,41,.15)':'rgba(250,62,62,.15)') + ';color:' + rv.col + '">' + etiket + '</div>'
+    +     '</div>'
+    +     '<div style="flex:1;min-width:180px">'
+    +       '<div style="font-size:14px;font-weight:700;margin-bottom:5px">' + esc(d.baslik || site.url) + '</div>'
+    +       '<div style="font-size:11px;color:var(--m);margin-bottom:10px">'
+    +         (d.dil||'tr') + ' · ' + (d.https?'🔒 HTTPS':'⚠️ HTTP') + ' · ' + (d.mobil_uyumlu?'📱 Mobil Uyumlu':'⚠️ Mobil')
+    +       '</div>'
+    +       '<div style="display:flex;gap:14px;flex-wrap:wrap">'
+    +         _cnt('#fa3e3e','⚠',errC,'Hata')
+    +         _cnt('#f0b429','△',wrnC,'Uyarı')
+    +         _cnt('#3ecfa0','✓',okC,'İyi')
+    +       '</div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="sa-stats">'
+    +     _st('Başlık',(d.baslik_uzunluk||0)+' kr', d.baslik_uzunluk>=30&&d.baslik_uzunluk<=65?'#3ecfa0':'#f0b429')
+    +     _st('Meta',(d.meta_desc_uzunluk||0)+' kr', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'#3ecfa0':'#f0b429')
+    +     _st('İç Link',(d.ic_link||0),'var(--t)')
+    +     _st('Dış Link',(d.dis_link||0),'var(--t)')
+    +     _st('Görsel',(d.gorsel_toplam||0),'var(--t)')
+    +     _st('Alt Eksik',(d.gorsel_altsiz||0), (d.gorsel_altsiz||0)>0?'#fa3e3e':'#3ecfa0')
+    +     _st('HTTP İstek',(d.http_istekleri||0), (d.http_istekleri||0)<80?'#3ecfa0':'#f0b429')
+    +     _st('Metin/HTML','%'+(d.metin_html_oran||0), (d.metin_html_oran||0)>=20?'#3ecfa0':'#f0b429')
+    +   '</div>'
+    + '</div>'
+
+    /* Sekmeler */
+    + '<div class="sa-tabs">'
+    +   _tabBtn('genel','📊 Genel',true,idx)
+    +   _tabBtn('sorunlar','⚠️ Sorunlar ('+errC+'+'+wrnC+')',false,idx)
+    +   _tabBtn('basari','✅ Başarılı ('+okC+')',false,idx)
+    +   _tabBtn('teknik','⚙️ Teknik',false,idx)
+    +   _tabBtn('oneriler','💡 AI Öneriler',false,idx)
+    + '</div>'
+    + '<div id="saTabBody"></div>';
+
+  _renderTab('genel', idx);
 }
 
-// ── ANALİZ RENDER ────────────────────────────────────────
-function renderAnalysis(site, idx){
-  var d = site.data || {};
-  var skor = d.skor||site.skor||0;
-  var skorRenk = skor>=80?'#40c9a2':skor>=60?'#f0b429':'#fa3e3e';
-  var skorEtiket = skor>=80?'İyi':skor>=60?'Ortalama':'Zayıf';
-  var c = 2*Math.PI*50;
-  var dashoffset = c-(skor/100)*c;
-  var errCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='hata';}).length;
-  var warnCount = (d.sorunlar||[]).filter(function(s){return s.seviye==='uyari';}).length;
-  var okCount = (d.iyi_yonler||[]).length;
-
-  var av = document.getElementById('seoAnalysisView');
-  av.innerHTML =
-    // Geri + başlık
-    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
-    +'<button class="seo-back-btn" onclick="goBack()">← Geri</button>'
-    +'<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(site.url)+'</div>'
-    +'<div style="font-size:10px;color:var(--m)">'+timeAgo(site.tarih)+'eklendi · Sonuçlar AI tarafından oluşturuldu</div></div>'
-    +'<button onclick="seoReAnalyze('+idx+')" style="background:var(--s2);border:1px solid var(--b);color:var(--t);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600">🔄 Yenile</button>'
-    +'</div>'
-    // Skor + özet
-    +'<div class="seo-section">'
-    +'<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">'
-    +'<div style="text-align:center;flex-shrink:0">'
-    +'<div class="seo-score-ring"><svg width="110" height="110"><circle stroke-width="9" stroke="var(--b)" fill="transparent" r="50" cx="55" cy="55"></circle><circle stroke-width="9" stroke-linecap="round" stroke="'+skorRenk+'" fill="transparent" r="50" cx="55" cy="55" stroke-dasharray="'+c.toFixed(2)+'" stroke-dashoffset="'+dashoffset.toFixed(2)+'"></circle></svg><span class="seo-score-num" style="color:'+skorRenk+'">'+skor+'</span></div>'
-    +'<div style="display:inline-block;padding:3px 12px;border-radius:10px;font-size:11px;font-weight:700;margin-top:6px;background:'+(skor>=80?'rgba(64,201,162,.15)':skor>=60?'rgba(240,180,41,.15)':'rgba(250,62,62,.15)')+';color:'+skorRenk+'">'+skorEtiket+'</div>'
-    +'</div>'
-    +'<div style="flex:1;min-width:180px">'
-    +'<div style="font-size:14px;font-weight:700;margin-bottom:6px">'+esc(d.baslik||site.url)+'</div>'
-    +'<div style="font-size:11px;color:var(--m);margin-bottom:10px">'+(d.dil||'tr')+' · '+(d.https?'🔒 HTTPS':'⚠️ HTTP')+' · '+(d.mobil_uyumlu?'📱 Mobil Uyumlu':'⚠️ Mobil Sorun')+'</div>'
-    +'<div style="display:flex;gap:14px;flex-wrap:wrap">'
-    +'<span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="color:#fa3e3e">⚠</span><b>'+errCount+'</b><span style="color:var(--m)">Hata</span></span>'
-    +'<span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="color:#f0b429">△</span><b>'+warnCount+'</b><span style="color:var(--m)">Uyarı</span></span>'
-    +'<span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="color:#40c9a2">✓</span><b>'+okCount+'</b><span style="color:var(--m)">İyi</span></span>'
-    +'</div></div></div>'
-    // İstatistikler
-    +'<div class="seo-stat-grid" style="margin-top:14px">'
-    +_statBox('Başlık',(d.baslik_uzunluk||0)+' kr',d.baslik_uzunluk>=30&&d.baslik_uzunluk<=65?'#40c9a2':'#f0b429')
-    +_statBox('Meta',(d.meta_desc_uzunluk||0)+' kr',d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'#40c9a2':'#f0b429')
-    +_statBox('İç Link',(d.ic_link||0)+'','var(--t)')
-    +_statBox('Dış Link',(d.dis_link||0)+'','var(--t)')
-    +_statBox('Görsel',(d.gorsel_toplam||0)+'','var(--t)')
-    +_statBox('Alt Eksik',(d.gorsel_altsiz||0)+'',d.gorsel_altsiz>0?'#fa3e3e':'#40c9a2')
-    +_statBox('HTTP İstek',(d.http_istekleri||0)+'',d.http_istekleri>80?'#f0b429':'#40c9a2')
-    +_statBox('Metin/HTML','%'+(d.metin_html_oran||0),d.metin_html_oran>=20?'#40c9a2':'#f0b429')
-    +'</div>'
-    +'</div>'
-    // Sekmeler
-    +'<div class="seo-tabs">'
-    +'<button class="seo-tab active" onclick="seoTab(\'genel\',this,'+idx+')">📊 Genel</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'sorunlar\',this,'+idx+')">⚠️ Sorunlar ('+errCount+'+'+warnCount+')</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'basari\',this,'+idx+')">✅ Başarılı ('+okCount+')</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'teknik\',this,'+idx+')">⚙️ Teknik</button>'
-    +'<button class="seo-tab" onclick="seoTab(\'oneriler\',this,'+idx+')">💡 AI Öneriler</button>'
-    +'</div>'
-    +'<div id="seoTabContent"></div>';
-
-  seoTab('genel', av.querySelector('.seo-tab'), idx);
+function _cnt(col, icon, n, lbl){
+  return '<span style="font-size:12px;display:flex;align-items:center;gap:5px"><span style="color:'+col+'">'+icon+'</span><b>'+n+'</b><span style="color:var(--m)">'+lbl+'</span></span>';
+}
+function _st(l,v,col){
+  return '<div class="sa-stat"><div class="sa-stat-v" style="color:'+col+'">'+esc(v)+'</div><div class="sa-stat-l">'+l+'</div></div>';
+}
+function _tabBtn(tab, lbl, active, idx){
+  return '<button class="sa-tab'+(active?' on':'')+'" onclick="_seo.tab(\''+tab+'\',this,'+idx+')">'+lbl+'</button>';
 }
 
-window.seoReAnalyze = async function(idx){
-  var site = _sites[idx];
-  if(!site) return;
-  var av = document.getElementById('seoAnalysisView');
-  av.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px;gap:14px"><div class="seo-spinner"></div><div style="font-size:12px;color:var(--m)">Yeniden analiz ediliyor...</div></div>';
-  try{
-    var data = await fetchSeoData(site.url);
-    _sites[idx].data = data;
-    _sites[idx].skor = data.skor||0;
-    _sites[idx].tarih = new Date().toISOString();
-    saveSites();
-    renderAnalysis(_sites[idx], idx);
-  }catch(e){
-    renderAnalysis(site, idx);
-  }
-};
+/* ── Sekme içerikleri ── */
+function _renderTab(tab, idx) {
+  var d  = (_sites[idx] && _sites[idx].data) || {};
+  var tc = document.getElementById('saTabBody');
+  if (!tc) return;
 
-window.seoTab = function(tab, el, idx){
-  document.querySelectorAll('.seo-tab').forEach(function(t){t.classList.remove('active');});
-  el.classList.add('active');
-  var tc = document.getElementById('seoTabContent');
-  if(!tc) return;
-  var d = (_sites[idx]&&_sites[idx].data)||{};
-
-  if(tab==='genel'){
+  if (tab === 'genel') {
     tc.innerHTML =
-      '<div class="seo-section"><h3>🔍 Google Önizlemesi</h3>'
-      +'<div class="seo-preview">'
-      +'<div class="seo-preview-url">'+esc(d.url||'')+'</div>'
-      +'<div class="seo-preview-title">'+esc(d.baslik||'Başlık bulunamadı')+'</div>'
-      +'<div class="seo-preview-desc">'+esc(d.meta_desc||'Meta açıklama bulunamadı.')+'</div>'
-      +'</div></div>'
-      +'<div class="seo-section"><h3>📋 Temel Kontroller</h3>'
-      +_checkRow('H1 Etiketi', d.h1_sayisi===1,'H1: '+d.h1_sayisi, d.h1_sayisi===1?'Tek H1 mevcut.':'Her sayfada tam 1 H1 kullanın.')
-      +_checkRow('Meta Açıklama', !!d.meta_desc,(d.meta_desc_uzunluk||0)+' karakter', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'İdeal uzunluk.':'100-160 karakter arası olmalı.')
-      +_checkRow('Favicon', !!d.favicon,'', d.favicon?'Favicon mevcut.':'Favicon ekleyin.')
-      +_checkRow('Robots.txt', !!d.robots_txt,'', d.robots_txt?'Erişilebilir.':'Robots.txt oluşturun.')
-      +_checkRow('Sitemap', !!d.sitemap,'', d.sitemap?'Sitemap bulundu.':'XML sitemap ekleyin.')
-      +_checkRow('Canonical', !!d.canonical,'', d.canonical?'Canonical mevcut.':'Duplicate content için canonical ekleyin.')
-      +_checkRow('OG Etiketleri', !!d.og_tags,'', d.og_tags?'Open Graph var.':'Sosyal paylaşım için OG etiketleri ekleyin.')
-      +_checkRow('Noindex Yok', !d.noindex,'', !d.noindex?'Sayfa dizine alınabilir.':'Noindex var — sayfa Google\'a görünmeyebilir!')
-      +'</div>'
-      +'<div class="seo-section"><h3>🏷️ Başlık Hiyerarşisi</h3>'
-      +_barRow('H1',d.h1_sayisi,Math.max(d.h1_sayisi||1,1),'#fa3e3e')
-      +_barRow('H2',d.h2_sayisi,Math.max(d.h2_sayisi||1,10),'var(--a)')
-      +_barRow('H3',d.h3_sayisi,Math.max(d.h3_sayisi||1,10),'var(--m)')
-      +'</div>'
-      +'<div class="seo-section"><h3>🔑 Anahtar Kelimeler</h3>'
-      +(d.anahtar_kelimeler||[]).map(function(k){return '<span class="seo-kw">'+esc(k)+'</span>';}).join('')
-      +'</div>';
+      '<div class="sa-box"><div class="sa-box-title">🔍 Google Arama Önizlemesi</div>'
+      + '<div class="sa-preview">'
+      +   '<div class="sa-preview-url">' + esc(d.url||'') + '</div>'
+      +   '<div class="sa-preview-title">' + esc(d.baslik||'Başlık bulunamadı') + '</div>'
+      +   '<div class="sa-preview-desc">' + esc(d.meta_desc||'Meta açıklama bulunamadı.') + '</div>'
+      + '</div></div>'
+
+      + '<div class="sa-box"><div class="sa-box-title">📋 Temel Kontroller</div>'
+      + _chk(d.h1_sayisi===1, 'H1 Etiketi', 'H1: '+(d.h1_sayisi||0), d.h1_sayisi===1?'Mükemmel, tek H1 var.':'Her sayfada tam 1 H1 kullanın.')
+      + _chk(!!d.meta_desc, 'Meta Açıklama', (d.meta_desc_uzunluk||0)+' karakter', d.meta_desc_uzunluk>=100&&d.meta_desc_uzunluk<=160?'İdeal uzunluk (100-160 kr).':'100-160 karakter arasında olmalı.')
+      + _chk(!!d.favicon, 'Favicon', '', d.favicon?'Favicon mevcut.':'Favicon ekleyin, marka bilinirliği için önemli.')
+      + _chk(!!d.robots_txt, 'Robots.txt', '', d.robots_txt?'Erişilebilir.':'robots.txt dosyası oluşturun.')
+      + _chk(!!d.sitemap, 'Sitemap', '', d.sitemap?'Sitemap bulundu.':'XML sitemap oluşturun.')
+      + _chk(!!d.canonical, 'Canonical Tag', '', d.canonical?'Canonical mevcut.':'Duplicate içerik için canonical ekleyin.')
+      + _chk(!!d.og_tags, 'Open Graph', '', d.og_tags?'OG etiketleri var.':'Sosyal medya için OG etiketleri ekleyin.')
+      + _chk(!d.noindex, 'Noindex Yok', '', !d.noindex?'Sayfa dizine alınabilir.':'Noindex var! Sayfa Google\'a görünmeyebilir.')
+      + '</div>'
+
+      + '<div class="sa-box"><div class="sa-box-title">🏷️ Başlık Hiyerarşisi</div>'
+      + _bar('H1', d.h1_sayisi||0, Math.max(d.h1_sayisi||1,1), '#fa3e3e')
+      + _bar('H2', d.h2_sayisi||0, Math.max(d.h2_sayisi||1,10), 'var(--a)')
+      + _bar('H3', d.h3_sayisi||0, Math.max(d.h3_sayisi||1,10), 'var(--m)')
+      + '<div style="font-size:11px;color:var(--m);margin-top:8px;padding:7px 10px;background:var(--bg);border-radius:6px">💡 H1 yalnızca 1 adet olmalı. H2 bölüm, H3 alt başlıklar için kullanılmalı.</div>'
+      + '</div>'
+
+      + '<div class="sa-box"><div class="sa-box-title">🔑 Tespit Edilen Anahtar Kelimeler</div>'
+      + (d.anahtar_kelimeler||[]).map(function(k){ return '<span class="sa-kw">'+esc(k)+'</span>'; }).join('')
+      + '</div>';
   }
-  else if(tab==='sorunlar'){
-    var sorunlar = d.sorunlar||[];
-    var hatalar = sorunlar.filter(function(s){return s.seviye==='hata';});
-    var uyarilar = sorunlar.filter(function(s){return s.seviye==='uyari';});
-    var html='';
-    if(!sorunlar.length){ tc.innerHTML='<div style="text-align:center;padding:40px;color:#40c9a2;font-size:13px">🎉 Tespit edilen sorun yok!</div>'; return; }
-    if(hatalar.length){
-      html+='<div style="font-size:10px;font-weight:700;color:#fa3e3e;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Ciddi Sorunlar ('+hatalar.length+')</div>';
-      hatalar.forEach(function(s){
-        html+='<div class="seo-issue err"><span style="font-size:14px;flex-shrink:0">🔴</span><div style="flex:1"><div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:7px;font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(250,62,62,.2);color:#fa3e3e">'+esc(s.etki||'Yüksek')+'</span></div><div class="seo-issue-desc">'+esc(s.aciklama)+'</div><div class="seo-issue-fix">💡 '+esc(s.cozum)+'</div></div></div>';
+
+  else if (tab === 'sorunlar') {
+    var sorunlar = d.sorunlar || [];
+    var hatalar  = sorunlar.filter(function(s){ return s.seviye==='hata'; });
+    var uyarilar = sorunlar.filter(function(s){ return s.seviye==='uyari'; });
+    if (!sorunlar.length) {
+      tc.innerHTML = '<div style="text-align:center;padding:50px;color:#3ecfa0;font-size:14px">🎉 Tespit edilen sorun yok!</div>';
+      return;
+    }
+    var html = '';
+    if (hatalar.length) {
+      html += '<div style="font-size:10px;font-weight:700;color:#fa3e3e;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Ciddi Sorunlar — ' + hatalar.length + ' adet</div>';
+      hatalar.forEach(function(s) {
+        html += '<div class="sa-issue err">'
+          + '<span style="font-size:14px;flex-shrink:0;margin-top:1px">🔴</span>'
+          + '<div style="flex:1"><div class="sa-issue-title">' + esc(s.baslik) + '<span class="sa-badge err">' + esc(s.etki||'Yüksek') + '</span></div>'
+          + '<div class="sa-issue-desc">' + esc(s.aciklama) + '</div>'
+          + '<div class="sa-issue-fix">💡 ' + esc(s.cozum) + '</div>'
+          + '</div></div>';
       });
     }
-    if(uyarilar.length){
-      html+='<div style="font-size:10px;font-weight:700;color:#f0b429;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Uyarılar ('+uyarilar.length+')</div>';
-      uyarilar.forEach(function(s){
-        html+='<div class="seo-issue warn"><span style="font-size:14px;flex-shrink:0">🟡</span><div style="flex:1"><div class="seo-issue-title">'+esc(s.baslik)+'<span style="margin-left:7px;font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(240,180,41,.2);color:#f0b429">'+esc(s.etki||'Orta')+'</span></div><div class="seo-issue-desc">'+esc(s.aciklama)+'</div><div class="seo-issue-fix">💡 '+esc(s.cozum)+'</div></div></div>';
+    if (uyarilar.length) {
+      html += '<div style="font-size:10px;font-weight:700;color:#f0b429;text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Uyarılar — ' + uyarilar.length + ' adet</div>';
+      uyarilar.forEach(function(s) {
+        html += '<div class="sa-issue warn">'
+          + '<span style="font-size:14px;flex-shrink:0;margin-top:1px">🟡</span>'
+          + '<div style="flex:1"><div class="sa-issue-title">' + esc(s.baslik) + '<span class="sa-badge warn">' + esc(s.etki||'Orta') + '</span></div>'
+          + '<div class="sa-issue-desc">' + esc(s.aciklama) + '</div>'
+          + '<div class="sa-issue-fix">💡 ' + esc(s.cozum) + '</div>'
+          + '</div></div>';
       });
     }
-    tc.innerHTML='<div class="seo-section"><h3>Tespit Edilen Sorunlar</h3>'+html+'</div>';
+    tc.innerHTML = '<div class="sa-box"><div class="sa-box-title">Tespit Edilen Sorunlar</div>' + html + '</div>';
   }
-  else if(tab==='basari'){
-    var iyiler = d.iyi_yonler||[];
-    if(!iyiler.length){ tc.innerHTML='<div style="color:var(--m);font-size:12px;padding:20px">İyi yön bulunamadı.</div>'; return; }
-    tc.innerHTML='<div class="seo-section"><h3>Başarılı Kontroller</h3>'
-      +iyiler.map(function(iy){
-        return '<div class="seo-issue ok"><span style="font-size:14px;flex-shrink:0">🟢</span><div style="flex:1"><div class="seo-issue-title">'+esc(iy.baslik)+'</div><div class="seo-issue-desc">'+esc(iy.aciklama)+'</div></div></div>';
-      }).join('')+'</div>';
+
+  else if (tab === 'basari') {
+    var iyiler = d.iyi_yonler || [];
+    if (!iyiler.length) { tc.innerHTML='<div style="color:var(--m);font-size:12px;padding:20px">İyi yön bulunamadı.</div>'; return; }
+    tc.innerHTML = '<div class="sa-box"><div class="sa-box-title">Başarılı Kontroller</div>'
+      + iyiler.map(function(iy){
+          return '<div class="sa-issue ok"><span style="font-size:14px;flex-shrink:0;margin-top:1px">🟢</span>'
+            + '<div><div class="sa-issue-title">' + esc(iy.baslik) + '</div>'
+            + '<div class="sa-issue-desc">' + esc(iy.aciklama) + '</div></div></div>';
+        }).join('')
+      + '</div>';
   }
-  else if(tab==='teknik'){
-    tc.innerHTML=
-      '<div class="seo-section"><h3>⚡ Performans</h3>'
-      +_techRow('Yükleme Hızı',d.yukleme_hizi||'—',d.yukleme_hizi==='Hızlı'?'✅':'⚠️')
-      +_techRow('Sayfa Boyutu',(d.sayfa_boyut_kb||0)+' KB',d.sayfa_boyut_kb<500?'✅':'⚠️')
-      +_techRow('DOM Boyutu',(d.dom_boyutu||0)+' düğüm',d.dom_boyutu<1500?'✅':'⚠️')
-      +_techRow('HTTP İstekleri',(d.http_istekleri||0)+' istek',d.http_istekleri<80?'✅':'⚠️')
-      +_techRow('JS Erteleme',d.js_erteleme?'Evet':'Hayır',d.js_erteleme?'✅':'⚠️')
-      +'</div>'
-      +'<div class="seo-section"><h3>🔒 Güvenlik</h3>'
-      +_techRow('HTTPS',d.https?'Evet':'Hayır',d.https?'✅':'🔴')
-      +_techRow('Mobil Uyumlu',d.mobil_uyumlu?'Evet':'Hayır',d.mobil_uyumlu?'✅':'🔴')
-      +_techRow('Robots.txt',d.robots_txt?'Erişilebilir':'Bulunamadı',d.robots_txt?'✅':'⚠️')
-      +_techRow('Sitemap',d.sitemap?'Mevcut':'Bulunamadı',d.sitemap?'✅':'⚠️')
-      +_techRow('Noindex',d.noindex?'Var (Dikkat!)':'Yok',!d.noindex?'✅':'🔴')
-      +'</div>'
-      +'<div class="seo-section"><h3>📝 Meta & İçerik</h3>'
-      +_techRow('Dil',d.dil||'—','🌐')
-      +_techRow('Karakter Seti',d.charset||'—',d.charset?'✅':'⚠️')
-      +_techRow('Canonical',d.canonical?'Var':'Yok',d.canonical?'✅':'⚠️')
-      +_techRow('OG Etiketleri',d.og_tags?'Var':'Yok',d.og_tags?'✅':'⚠️')
-      +_techRow('Metin/HTML Oranı','%'+(d.metin_html_oran||0),d.metin_html_oran>=20?'✅':'⚠️')
-      +'</div>';
+
+  else if (tab === 'teknik') {
+    tc.innerHTML =
+      '<div class="sa-box"><div class="sa-box-title">⚡ Performans</div>'
+      + _tech('Yükleme Hızı', d.yukleme_hizi||'—', d.yukleme_hizi==='Hızlı'?'✅':'⚠️')
+      + _tech('Sayfa Boyutu', (d.sayfa_boyut_kb||0)+' KB', (d.sayfa_boyut_kb||0)<500?'✅':'⚠️')
+      + _tech('DOM Boyutu', (d.dom_boyutu||0)+' düğüm', (d.dom_boyutu||0)<1500?'✅':'⚠️')
+      + _tech('HTTP İstekleri', (d.http_istekleri||0)+' istek', (d.http_istekleri||0)<80?'✅':'⚠️')
+      + _tech('JS Erteleme', d.js_erteleme?'Evet':'Hayır', d.js_erteleme?'✅':'⚠️')
+      + '</div>'
+      + '<div class="sa-box"><div class="sa-box-title">🔒 Güvenlik & Erişim</div>'
+      + _tech('HTTPS', d.https?'Evet':'Hayır', d.https?'✅':'🔴')
+      + _tech('Mobil Uyumlu', d.mobil_uyumlu?'Evet':'Hayır', d.mobil_uyumlu?'✅':'🔴')
+      + _tech('Robots.txt', d.robots_txt?'Erişilebilir':'Bulunamadı', d.robots_txt?'✅':'⚠️')
+      + _tech('Sitemap', d.sitemap?'Mevcut':'Bulunamadı', d.sitemap?'✅':'⚠️')
+      + _tech('Noindex', d.noindex?'Var (Dikkat!)':'Yok', !d.noindex?'✅':'🔴')
+      + '</div>'
+      + '<div class="sa-box"><div class="sa-box-title">📝 Meta & İçerik</div>'
+      + _tech('Dil', d.dil||'—', '🌐')
+      + _tech('Karakter Seti', d.charset||'—', d.charset?'✅':'⚠️')
+      + _tech('Canonical', d.canonical?'Var':'Yok', d.canonical?'✅':'⚠️')
+      + _tech('OG Etiketleri', d.og_tags?'Var':'Yok', d.og_tags?'✅':'⚠️')
+      + _tech('Metin/HTML Oranı', '%'+(d.metin_html_oran||0), (d.metin_html_oran||0)>=20?'✅':'⚠️')
+      + _tech('Favicon', d.favicon?'Var':'Yok', d.favicon?'✅':'⚠️')
+      + '</div>';
   }
-  else if(tab==='oneriler'){
-    var skor=d.skor||0;
-    var onList=d.oneriler||[];
-    var skorRenk2=skor>=80?'#40c9a2':skor>=60?'#f0b429':'#fa3e3e';
-    tc.innerHTML=
-      '<div class="seo-ai-card"><div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px">🤖 AI SEO Değerlendirmesi</div>'
-      +'<div style="font-size:12px;line-height:1.8">'+esc(d.ai_analiz||'—')+'</div></div>'
-      +'<div class="seo-section"><h3>💡 Aksiyon Listesi</h3>'
-      +(onList.length?onList.map(function(o,i){
-        return '<div class="seo-tip"><b>'+(i+1)+'.</b> '+esc(o)+'</div>';
-      }).join(''):'<div style="color:var(--m);font-size:12px">Öneri bulunamadı.</div>')
-      +'</div>'
-      +'<div class="seo-section"><h3>📈 Skor Durumu</h3>'
-      +'<div style="font-size:12px;color:var(--m);margin-bottom:10px">'
-      +(skor<60?'<b style="color:#fa3e3e">Acil müdahale gerekiyor.</b> Önce ciddi hataları çözün.':skor<80?'<b style="color:#f0b429">İyileştirme aşamasında.</b> Uyarıları gidererek 80+ hedefleyin.':'<b style="color:#40c9a2">İyi seviyede.</b> İçerik kalitesi ve backlink stratejisine odaklanın.')
-      +'</div>'
-      +'<div class="seo-prog"><div class="seo-prog-bar" style="width:'+skor+'%;background:'+skorRenk2+'"></div></div>'
-      +'<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--m);margin-top:4px"><span>0</span><span>50</span><span>100</span></div>'
-      +'</div>';
+
+  else if (tab === 'oneriler') {
+    var skor2  = d.skor || 0;
+    var rv2    = ring(skor2, 50, 9);
+    var onList = d.oneriler || [];
+    tc.innerHTML =
+      '<div class="sa-ai"><div style="font-size:12px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:7px">🤖 AI SEO Değerlendirmesi</div>'
+      + '<div style="font-size:12px;line-height:1.8">' + esc(d.ai_analiz||'—') + '</div></div>'
+
+      + '<div class="sa-box"><div class="sa-box-title">💡 Aksiyon Listesi — Öncelik Sırasıyla</div>'
+      + (onList.length
+          ? onList.map(function(o,i){ return '<div class="sa-tip"><b>'+(i+1)+'.</b> '+esc(o)+'</div>'; }).join('')
+          : '<div style="color:var(--m);font-size:12px">Öneri oluşturulamadı.</div>')
+      + '</div>'
+
+      + '<div class="sa-box"><div class="sa-box-title">📈 Skor Durumu</div>'
+      + '<div style="font-size:12px;color:var(--m);margin-bottom:10px">'
+      + (skor2<60 ? '<b style="color:#fa3e3e">Acil müdahale gerekiyor.</b> Ciddi hataları önce çözün.'
+        : skor2<80 ? '<b style="color:#f0b429">İyileştirme aşamasında.</b> Uyarıları gidererek 80+ hedefleyin.'
+        : '<b style="color:#3ecfa0">İyi seviyede.</b> İçerik kalitesi ve backlink stratejisine odaklanın.')
+      + '</div>'
+      + '<div class="sa-prog"><div class="sa-prog-fill" style="width:'+skor2+'%;background:'+rv2.col+'"></div></div>'
+      + '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--m);margin-top:4px"><span>0</span><span>50</span><span>100</span></div>'
+      + '</div>';
+  }
+}
+
+function _chk(ok, lbl, detail, tip) {
+  return '<div class="sa-check">'
+    + '<span class="sa-check-icon">' + (ok?'✅':'⚠️') + '</span>'
+    + '<div><div class="sa-check-label">' + esc(lbl) + (detail?'<span style="margin-left:7px;font-size:10px;color:var(--m);font-weight:400">'+esc(detail)+'</span>':'') + '</div>'
+    + '<div class="sa-check-sub" style="color:'+(ok?'var(--m)':'#f0b429')+'">' + esc(tip) + '</div>'
+    + '</div></div>';
+}
+function _bar(lbl, val, max, col) {
+  var pct = max > 0 ? Math.min(Math.round(val/max*100), 100) : 0;
+  return '<div class="sa-bar-row">'
+    + '<span style="font-size:11px;font-weight:600;min-width:24px">' + lbl + '</span>'
+    + '<div class="sa-prog" style="flex:1;height:9px"><div class="sa-prog-fill" style="width:'+pct+'%;background:'+col+'"></div></div>'
+    + '<span style="font-size:11px;font-family:\'DM Mono\',monospace;min-width:20px;text-align:right">'+val+'</span>'
+    + '</div>';
+}
+function _tech(lbl, val, icon) {
+  return '<div class="sa-tech-row">'
+    + '<span class="sa-tech-label">' + esc(lbl) + '</span>'
+    + '<span class="sa-tech-val">' + esc(val) + ' <span>' + icon + '</span></span>'
+    + '</div>';
+}
+
+/* ──────────────────────────────────────
+   PUBLIC API  (_seo.*)
+──────────────────────────────────────── */
+window._seo = {
+
+  add: async function() {
+    var inp = document.getElementById('seoSearchInput');
+    var url = inp.value.trim();
+    if (!url) { inp.focus(); return; }
+    if (!url.startsWith('http')) url = 'https://' + url;
+    inp.value = '';
+
+    /* Yükleme kartı */
+    var host = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    var tmpId = 'sg_tmp_' + Date.now();
+    var grid  = document.getElementById('seoGrid');
+    document.getElementById('seoEmpty').style.display = 'none';
+    grid.insertAdjacentHTML('afterbegin',
+      '<div id="' + tmpId + '" class="sg-card" style="opacity:.6;pointer-events:none">'
+      + '<div class="sg-spinner"></div>'
+      + '<div class="sg-info"><div class="sg-url">' + esc(host) + '</div><div class="sg-time">Analiz ediliyor...</div></div>'
+      + '<div class="sg-ring" style="width:54px;height:54px;display:flex;align-items:center;justify-content:center"><div class="sg-spinner"></div></div>'
+      + '</div>'
+    );
+
+    try {
+      var data = await fetchAnalysis(url);
+      var tmp  = document.getElementById(tmpId);
+      if (tmp) tmp.remove();
+
+      var ei = _sites.findIndex(function(s){ return s.url === url; });
+      var obj = { url: url, skor: data.skor||0, baslik: data.baslik||host, tarih: new Date().toISOString(), data: data };
+      if (ei >= 0) _sites[ei] = obj; else _sites.unshift(obj);
+      save();
+      showList();
+      _seo.open(0);
+    } catch(e) {
+      var tmp = document.getElementById(tmpId);
+      if (tmp) tmp.remove();
+      renderGrid();
+      alert('Analiz hatası: ' + e.message);
+    }
+  },
+
+  open: function(idx) { showDetail(idx); },
+
+  back: function() { showList(); },
+
+  del: function(idx) {
+    if (!confirm('Bu site silinsin mi?')) return;
+    _sites.splice(idx, 1);
+    save();
+    renderGrid();
+  },
+
+  reanalyze: async function(idx) {
+    var site = _sites[idx];
+    if (!site) return;
+    var det = document.getElementById('seoDetail');
+    det.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px;gap:14px">'
+      + '<div class="sg-spinner" style="width:36px;height:36px;border-width:3px"></div>'
+      + '<div style="font-size:12px;color:var(--m)">Yeniden analiz ediliyor...</div>'
+      + '</div>';
+    try {
+      var data = await fetchAnalysis(site.url);
+      _sites[idx].data  = data;
+      _sites[idx].skor  = data.skor || 0;
+      _sites[idx].tarih = new Date().toISOString();
+      save();
+      renderDetail(idx);
+    } catch(e) {
+      renderDetail(idx);
+      alert('Analiz hatası: ' + e.message);
+    }
+  },
+
+  tab: function(tab, el, idx) {
+    document.querySelectorAll('.sa-tab').forEach(function(t){ t.classList.remove('on'); });
+    el.classList.add('on');
+    _renderTab(tab, idx);
   }
 };
 
-function _statBox(l,v,c){ return '<div class="seo-stat"><div class="seo-stat-n" style="color:'+c+'">'+v+'</div><div class="seo-stat-l">'+l+'</div></div>'; }
-function _checkRow(l,ok,d,t){ var i=ok?'✅':'⚠️'; return '<div style="display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:13px;flex-shrink:0;margin-top:1px">'+i+'</span><div><div style="font-size:12px;font-weight:600">'+esc(l)+(d?'<span style="margin-left:7px;font-size:10px;color:var(--m);font-weight:400">'+esc(d)+'</span>':'')+'</div><div style="font-size:11px;color:'+(ok?'var(--m)':'#f0b429')+'">'+esc(t)+'</div></div></div>'; }
-function _barRow(l,v,max,c){ var p=max>0?Math.min(Math.round((v||0)/max*100),100):0; return '<div style="display:flex;align-items:center;gap:9px;margin-bottom:7px"><span style="font-size:11px;font-weight:600;min-width:22px">'+l+'</span><div class="seo-prog" style="flex:1;height:9px"><div class="seo-prog-bar" style="width:'+p+'%;background:'+c+'"></div></div><span style="font-size:11px;font-family:\'DM Mono\',monospace;min-width:18px;text-align:right">'+v+'</span></div>'; }
-function _techRow(l,v,i){ return '<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px"><span style="color:var(--m)">'+esc(l)+'</span><span style="display:flex;align-items:center;gap:5px;font-family:\'DM Mono\',monospace;font-size:11px">'+esc(v)+'<span>'+i+'</span></span></div>'; }
-
-// Arama filtresi
-document.getElementById('seoSearchInput').addEventListener('input', function(){
-  if(_view==='list') renderList();
+/* ──────────────────────────────────────
+   ARAMA FİLTRESİ
+──────────────────────────────────────── */
+document.getElementById('seoSearchInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') _seo.add();
+});
+document.getElementById('seoSearchInput').addEventListener('input', function() {
+  if (document.getElementById('seoList').style.display !== 'none') renderGrid();
 });
 
-// Init
-loadSites();
-renderList();
+/* ──────────────────────────────────────
+   BAŞLAT
+──────────────────────────────────────── */
+load();
+showList();
+
 })();
 </script>
