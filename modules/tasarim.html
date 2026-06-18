@@ -1,7 +1,11 @@
+<style>
+.canva-panel{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:14px}.canva-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.canva-title{font-size:15px;font-weight:800;color:var(--t)}.canva-sub{font-size:11px;color:var(--m);line-height:1.5;margin-top:3px}.canva-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.canva-field{display:flex;flex-direction:column;gap:5px}.canva-field label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px}.canva-field input,.canva-field select,.canva-field textarea{background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:8px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:7px;outline:none}.canva-field textarea{min-height:70px;font-family:'Inter',sans-serif;resize:vertical}.canva-full{grid-column:1/-1}.canva-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}.canva-history{margin-top:12px;background:var(--bg);border:1px solid var(--b);border-radius:10px;overflow:hidden}.canva-history-head{padding:9px 12px;border-bottom:1px solid var(--b);font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}.canva-item{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;line-height:1.5}.canva-item:last-child{border-bottom:none}.canva-item b{color:var(--t)}.canva-mini{font-family:'DM Mono',monospace;color:var(--m);font-size:10px;margin-top:4px}.canva-output{background:#090a0b;border:1px solid var(--b);border-radius:10px;padding:12px;margin-top:12px;white-space:pre-wrap;font-size:12px;line-height:1.55;color:var(--t);max-height:360px;overflow:auto}.canva-pill{display:inline-flex;border:1px solid rgba(24,119,242,.25);background:rgba(24,119,242,.08);color:#64b4ff;border-radius:999px;padding:2px 7px;font-size:9px;font-family:'DM Mono',monospace}
+</style>
 <div class="ai-panel">
   <div class="ai-panel-title" id="aiModuleTitle">🧠 Strateji <span class="nav-ai">AI</span></div>
   <div class="ai-panel-sub" id="aiModuleSub">Meta ve GA4 verilerine dayalı strateji önerileri</div>
 </div>
+<div id="canvaMount"></div>
 <div class="chat-layout">
   <div class="chat-msgs" id="aiMsgs">
     <div class="msg sys" id="aiWelcome">Bağlan ve veri yükle, ardından soru sor.</div>
@@ -18,7 +22,6 @@
 
 <script>
 (function(){
-  // Hangi modüldeyiz?
   const path = window.location.pathname;
   const moduleName = document.getElementById('aiModuleTitle')?.closest('.ai-panel')?.dataset?.module
     || (currentPage || 'strateji');
@@ -50,8 +53,8 @@
     },
     tasarim: {
       title: '🎨 Tasarım',
-      sub: 'Reklam metni, kreatif öneri ve A/B test fikirleri',
-      welcome: 'Reklam metni, başlık ve kreatif önerileri için yardımcı olabilirim.',
+      sub: 'Canva kreatif brief, reklam metni ve A/B test fikirleri',
+      welcome: 'Canva için kreatif brief, reklam metni ve tasarım yönlendirmesi üretebilirim.',
       sys: () => `Madmext için reklam kreatif uzmanı. Türkçe. Marka: erkek/kadın tekstil e-ticaret. En iyi reklamlar:${JSON.stringify(MX.adStore.slice(0,8).map(r=>({r:r.name?.slice(0,25),ctr:r.ctr,roas:r.roas})))}`,
       questions: [
         ['✍️ Reklam metni','En iyi performanslı reklamların ortak özelliklerini analiz et ve yeni reklam metni önerileri sun.'],
@@ -75,8 +78,6 @@
   };
 
   const cfg = MODULE_CONFIG[currentPage] || MODULE_CONFIG.strateji;
-
-  // Başlık güncelle
   const titleEl = document.getElementById('aiModuleTitle');
   const subEl = document.getElementById('aiModuleSub');
   const welcomeEl = document.getElementById('aiWelcome');
@@ -84,13 +85,35 @@
   if(subEl) subEl.textContent = cfg.sub;
   if(welcomeEl) welcomeEl.textContent = cfg.welcome;
 
-  // Hızlı sorular
   const btnsEl = document.getElementById('aiQuickBtns');
   if(btnsEl) {
     btnsEl.innerHTML = cfg.questions.map(([label, q]) =>
       `<button class="qbtn" onclick="aiModuleSend('${q.replace(/'/g,"\\'")}')">${label}</button>`
     ).join('');
   }
+
+  function canvaHistory(){try{return JSON.parse(localStorage.getItem('mxCanvaBriefs')||'[]')}catch(e){return[]}}
+  function saveCanvaHistory(v){localStorage.setItem('mxCanvaBriefs',JSON.stringify(v.slice(0,50)))}
+  function renderCanvaHistory(){var el=document.getElementById('canvaHistory');if(!el)return;var h=canvaHistory();el.innerHTML='<div class="canva-history-head">Brief Geçmişi</div>'+(h.length?h.map((b,i)=>'<div class="canva-item"><b>'+esc(b.category)+' · '+esc(b.format)+' · '+esc(b.platform)+'</b><div class="canva-mini">'+esc(b.time)+' · '+esc(b.campaignType)+' · '+esc(b.tone)+' · '+esc(b.cta)+'</div><div style="margin-top:6px"><button class="btn sm sec" onclick="loadCanvaBrief('+i+')">Yükle</button> '+(b.canvaUrl?'<a class="btn sm" href="'+esc(b.canvaUrl)+'" target="_blank">Canva’da Aç</a>':'<span class="canva-pill">Canva linki bekliyor</span>')+'</div></div>').join(''):'<div class="canva-item">Henüz brief yok.</div>')}
+  function esc(s){return String(s||'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+  window.loadCanvaBrief=function(i){var b=canvaHistory()[i];if(!b)return;['platform','format','category','campaignType','tone','cta','productInfo','canvaUrl'].forEach(k=>{var el=document.getElementById('cv_'+k);if(el)el.value=b[k]||''});document.getElementById('canvaOutput').textContent=b.output||'';toast('Brief yüklendi')}
+  window.saveCanvaUrl=function(){var url=document.getElementById('cv_canvaUrl').value.trim();if(!url){toast('Canva linki gir');return}var h=canvaHistory();if(h[0]){h[0].canvaUrl=url;saveCanvaHistory(h);renderCanvaHistory();toast('Canva linki son brief’e kaydedildi')}}
+  window.generateCanvaBrief=async function(){
+    var b={platform:cv_platform.value,format:cv_format.value,category:cv_category.value,campaignType:cv_campaignType.value,tone:cv_tone.value,cta:cv_cta.value,productInfo:cv_productInfo.value,canvaUrl:cv_canvaUrl.value,time:new Date().toLocaleString('tr')};
+    var prompt=`Madmext için Canva reklam kreatif brief'i hazırla. Platform:${b.platform}. Format:${b.format}. Kategori:${b.category}. Kampanya tipi:${b.campaignType}. Ton:${b.tone}. CTA:${b.cta}. Ürün/Not:${b.productInfo}. Çıktı formatı: 1) Kreatif yön 2) Görsel kompozisyon 3) Başlık 4) Alt metin 5) CTA 6) Renk/font önerisi 7) Canva tasarım notu 8) Reklama çıkarma paketi.`;
+    var out=document.getElementById('canvaOutput');out.textContent='⏳ Claude brief hazırlıyor...';
+    var reply=await claude([{role:'user',content:prompt}], 'Madmext e-ticaret moda markası için kıdemli creative director gibi Türkçe, net ve uygulanabilir brief yaz.');
+    b.output=reply;out.textContent=reply;var h=canvaHistory();h.unshift(b);saveCanvaHistory(h);renderCanvaHistory();toast('Canva brief oluşturuldu')
+  }
+  window.copyCanvaBrief=function(){var t=document.getElementById('canvaOutput').textContent||'';navigator.clipboard.writeText(t);toast('Brief kopyalandı')}
+
+  function mountCanva(){
+    if(currentPage!=='tasarim')return;
+    var m=document.getElementById('canvaMount');if(!m)return;
+    m.innerHTML='<div class="canva-panel"><div class="canva-head"><div><div class="canva-title">🎨 Canva Kreatif Üretici <span class="canva-pill">Altyapı</span></div><div class="canva-sub">İlk faz: Claude kreatif brief üretir, brief geçmişe kaydedilir, Canva linki manuel eklenir. Sonraki fazda Canva OAuth/test endpoint bağlanacak.</div></div><button class="btn sm sec" onclick="renderCanvaHistory()">↻ Geçmiş</button></div><div class="canva-grid"><div class="canva-field"><label>Platform</label><select id="cv_platform"><option>Meta</option><option>Google</option><option>Trendyol</option></select></div><div class="canva-field"><label>Format</label><select id="cv_format"><option>1:1 Kare</option><option>4:5 Feed</option><option>9:16 Story/Reels</option><option>16:9 Banner</option><option>1920x700 Web Banner</option></select></div><div class="canva-field"><label>Ürün Kategorisi</label><select id="cv_category"><option>Tişört</option><option>Pantolon</option><option>Şort</option><option>Gömlek</option><option>Keten</option><option>Deniz Şortu</option><option>Kadın Koleksiyon</option></select></div><div class="canva-field"><label>Kampanya Tipi</label><select id="cv_campaignType"><option>Yeni Sezon</option><option>İndirim</option><option>Editorial</option><option>Ürün Odaklı</option><option>Remarketing</option></select></div><div class="canva-field"><label>Ton</label><select id="cv_tone"><option>Premium sade</option><option>Zara vibe</option><option>Agresif satış</option><option>Minimal</option><option>Genç ve hızlı</option></select></div><div class="canva-field"><label>CTA</label><select id="cv_cta"><option>Hemen İncele</option><option>Sepete Ekle</option><option>Yeni Sezonu Keşfet</option><option>Fırsatı Kaçırma</option></select></div><div class="canva-field canva-full"><label>Ürün / Not</label><textarea id="cv_productInfo" placeholder="Örn: beyaz keten pantolon, yaz koleksiyonu, sade açık arka plan, model yarım kadraj..."></textarea></div><div class="canva-field canva-full"><label>Canva Linki</label><input id="cv_canvaUrl" placeholder="Canva tasarım linki buraya eklenecek"></div></div><div class="canva-actions"><button class="btn grn" onclick="generateCanvaBrief()">Claude ile Brief Oluştur</button><button class="btn sec" onclick="copyCanvaBrief()">Brief Kopyala</button><button class="btn yel" onclick="saveCanvaUrl()">Canva Linkini Kaydet</button></div><div class="canva-output" id="canvaOutput">Brief çıktısı burada görünecek.</div><div class="canva-history" id="canvaHistory"></div></div>';
+    renderCanvaHistory();
+  }
+  mountCanva();
 
   window.aiModuleSend = async function(msg) {
     if(!msg) msg = document.getElementById('aiInput')?.value;
