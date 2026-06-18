@@ -32,14 +32,28 @@ function injectAiAgencyMenu(){try{var sidebar=document.querySelector('.sidebar')
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',injectAiAgencyMenu);else setTimeout(injectAiAgencyMenu,0);window.injectAiAgencyMenu=injectAiAgencyMenu;
 (function forceAnalitik(){function run(){try{if(window.PAGES){PAGES.analitik={title:'Google Analytics',sub:'GA4 analitik verileri',module:'analitik'}}if(typeof window.urlToPage==='function'&&!window.__mxAnUrl){window.__mxAnUrl=true;var old=window.urlToPage;window.urlToPage=function(path){if(path==='/analitik')return'analitik';return old(path)}}document.querySelectorAll('.nav-item').forEach(function(item){var txt=(item.textContent||'').toLowerCase();var oc=item.getAttribute('onclick')||'';if(txt.indexOf('analytics')>-1||oc.indexOf('analitik')>-1){item.onclick=function(){if(typeof closeSidebar==='function')closeSidebar();window.location.href='/analitik'};item.setAttribute('onclick',"closeSidebar();window.location.href='/analitik'")}});if(location.pathname==='/analitik'&&window.PAGES&&typeof window.nav==='function'&&window.currentPage!=='analitik'){window.nav('analitik',null)}}catch(e){console.warn('Analitik fix',e)}}setTimeout(run,50);setTimeout(run,500);setTimeout(run,1500);setTimeout(run,3000)})();
 
-// ── Admin API Merkezi: sadece admin kullanıcılara menü ve route ekler ──
+// ── Admin API Merkezi: index.html'deki PAGES kapsamına bağlı kalmadan direkt modül yükler ──
 (function injectAdminApiCenter(){
   async function isAdmin(){try{var r=await fetch('/auth/me',{credentials:'include'});if(!r.ok)return false;var d=await r.json();return d&&d.role==='admin'}catch(e){return false}}
-  function patchRoutes(){try{
-    if(window.PAGES){PAGES['admin-api']={title:'Admin API Merkezi',sub:'Bağlantı ve servis sağlık kontrolü',module:'admin-api'}}
-    if(typeof window.urlToPage==='function'&&!window.__mxAdminApiUrl){window.__mxAdminApiUrl=true;var old=window.urlToPage;window.urlToPage=function(path){if(path==='/admin-api')return'admin-api';return old(path)}}
-  }catch(e){console.warn('Admin API route patch',e)}}
-  function inject(){try{var sidebar=document.querySelector('.sidebar');if(!sidebar||document.getElementById('navAdminApi'))return;patchRoutes();var section=document.createElement('div');section.className='sidebar-section';section.textContent='Admin';var item=document.createElement('div');item.className='nav-item';item.id='navAdminApi';item.innerHTML='<span class="nav-icon">🔐</span><span>API Merkezi</span><span class="nav-ai">Admin</span>';item.onclick=function(){if(typeof closeSidebar==='function')closeSidebar();if(typeof nav==='function')nav('admin-api',item);else window.location.href='/admin-api'};sidebar.appendChild(section);sidebar.appendChild(item);if(location.pathname==='/admin-api'&&typeof nav==='function')nav('admin-api',item)}catch(e){console.warn('Admin API menü eklenemedi:',e)}}
+  window.openAdminApiCenter=async function(activeItem){
+    try{
+      document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+      if(activeItem)activeItem.classList.add('active');
+      var title=document.getElementById('pageTitle'), sub=document.getElementById('pageSub'), el=document.getElementById('mainContent');
+      if(title)title.textContent='Admin API Merkezi';
+      if(sub)sub.textContent='Bağlantı ve servis sağlık kontrolü';
+      if(el)el.innerHTML='<div class="module-loading">⏳ Admin API Merkezi yükleniyor...</div>';
+      history.pushState({page:'admin-api'},'','/admin-api');
+      var r=await fetch('/modules/admin-api.html?v=2026.5');
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      var html=await r.text();
+      var tmp=document.createElement('div');tmp.innerHTML=html;
+      var scripts=[];tmp.querySelectorAll('script').forEach(function(s){scripts.push(s.textContent);s.remove()});
+      if(el)el.innerHTML=tmp.innerHTML;
+      scripts.forEach(function(code){var s=document.createElement('script');s.textContent=code;document.body.appendChild(s)});
+    }catch(e){var el=document.getElementById('mainContent');if(el)el.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Admin API Merkezi yüklenemedi: '+e.message+'</div>'}
+  }
+  function inject(){try{var sidebar=document.querySelector('.sidebar');if(!sidebar||document.getElementById('navAdminApi'))return;var section=document.createElement('div');section.className='sidebar-section';section.textContent='Admin';var item=document.createElement('div');item.className='nav-item';item.id='navAdminApi';item.innerHTML='<span class="nav-icon">🔐</span><span>API Merkezi</span><span class="nav-ai">Admin</span>';item.onclick=function(){if(typeof closeSidebar==='function')closeSidebar();window.openAdminApiCenter(item)};sidebar.appendChild(section);sidebar.appendChild(item);if(location.pathname==='/admin-api')window.openAdminApiCenter(item)}catch(e){console.warn('Admin API menü eklenemedi:',e)}}
   function run(){isAdmin().then(function(ok){if(ok)inject()})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else setTimeout(run,200);
   setTimeout(run,1000);setTimeout(run,2500);
