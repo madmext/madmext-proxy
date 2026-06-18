@@ -2,7 +2,7 @@
   <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px">
     <div>
       <h2 style="margin:0 0 6px;font-size:24px">Madmext AI Ajans</h2>
-      <p style="margin:0;color:#9ca3af;font-size:13px;line-height:1.5">Claude motoru aktif. Her ajanın ayrı sohbet geçmişi ve dosyası tarayıcıda saklanır.</p>
+      <p style="margin:0;color:#9ca3af;font-size:13px;line-height:1.5">Claude motoru aktif. Her ajanın ayrı sohbet geçmişi, dosyası ve görev listesi saklanır.</p>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="mxEngine" onchange="mxSetEngine(this.value)" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:10px;padding:10px">
@@ -28,14 +28,21 @@
         <button onclick="mxTask('Bu hafta öncelik verilmesi gereken işleri sırala.')">Öncelik Çıkar</button>
         <button onclick="mxTask('Riskleri, eksikleri ve ölçülecek metrikleri yaz.')">Risk Kontrol</button>
       </div>
-      <pre id="report" style="height:210px;background:#050608;border:1px solid #1f2937;border-radius:12px;padding:14px;color:#d1d5db;white-space:pre-wrap;font-size:12px;line-height:1.6;overflow:auto;margin:0 0 10px">Ajans hazır. Ajan seç ve rapor başlat veya mesaj yaz.</pre>
-      <textarea id="customMsg" placeholder="Seçili ajana mesaj yaz..." style="background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:12px;padding:10px;min-height:68px;margin-bottom:8px;resize:vertical;font-family:Inter,Arial,sans-serif;font-size:12px"></textarea>
+      <pre id="report" style="height:175px;background:#050608;border:1px solid #1f2937;border-radius:12px;padding:14px;color:#d1d5db;white-space:pre-wrap;font-size:12px;line-height:1.6;overflow:auto;margin:0 0 10px">Ajans hazır. Ajan seç ve rapor başlat veya mesaj yaz.</pre>
+      <textarea id="customMsg" placeholder="Seçili ajana mesaj yaz..." style="background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:12px;padding:10px;min-height:58px;margin-bottom:8px;resize:vertical;font-family:Inter,Arial,sans-serif;font-size:12px"></textarea>
       <div style="display:flex;gap:8px;margin-bottom:10px"><button onclick="mxCustomChat()" style="flex:1;background:#1877f2;color:#fff;border:0;border-radius:10px;padding:10px 12px;font-weight:700">Mesaj Gönder</button><button onclick="mxClearHistory()" style="background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:10px 12px">Geçmişi Sil</button></div>
       <div style="border:1px solid #374151;border-radius:12px;padding:10px;background:#111827;margin-top:4px">
         <div style="font-size:12px;font-weight:700;margin-bottom:6px">Ajan Dosyası / Hafıza</div>
-        <pre id="agentFile" style="max-height:110px;overflow:auto;white-space:pre-wrap;color:#d1d5db;font-size:11px;line-height:1.5;margin:0 0 8px">Henüz not yok.</pre>
-        <textarea id="fileNote" placeholder="Bu ajanın dosyasına not ekle..." style="width:100%;background:#090a0c;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:8px;min-height:52px;font-size:12px"></textarea>
+        <pre id="agentFile" style="max-height:78px;overflow:auto;white-space:pre-wrap;color:#d1d5db;font-size:11px;line-height:1.5;margin:0 0 8px">Henüz not yok.</pre>
+        <textarea id="fileNote" placeholder="Bu ajanın dosyasına not ekle..." style="width:100%;background:#090a0c;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:8px;min-height:44px;font-size:12px"></textarea>
         <button onclick="mxSaveFileNote()" style="width:100%;background:#1f2937;color:#fff;border:1px solid #374151;border-radius:10px;padding:8px 10px;margin-top:6px;font-weight:700">Dosyaya Ekle</button>
+      </div>
+      <div style="border:1px solid #374151;border-radius:12px;padding:10px;background:#111827;margin-top:10px">
+        <div style="font-size:12px;font-weight:700;margin-bottom:6px">Görev Ata</div>
+        <textarea id="taskText" placeholder="Görev yaz... Örn: Keten pantolon SEO fırsatlarını araştır." style="width:100%;background:#090a0c;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:8px;min-height:44px;font-size:12px"></textarea>
+        <input id="taskDue" placeholder="Teslim: Bugün / Yarın / Cuma" style="width:100%;background:#090a0c;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:8px;margin-top:6px;font-size:12px">
+        <button onclick="mxAssignTask()" style="width:100%;background:#1f2937;color:#fff;border:1px solid #374151;border-radius:10px;padding:8px 10px;margin-top:6px;font-weight:700">Görev Ata</button>
+        <div id="agentTasks" style="max-height:96px;overflow:auto;margin-top:6px"></div>
       </div>
       <div style="font-size:11px;color:#9ca3af;margin-top:10px">Claude için Railway Variables: ANTHROPIC_KEY</div>
     </aside>
@@ -46,28 +53,34 @@
     #agents button.active,#agents button:hover{border-color:#60a5fa;background:#172033}
     aside button{background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:10px;padding:10px;font-size:12px;text-align:left;cursor:pointer}
     aside button:hover{border-color:#60a5fa}
+    .mx-task-row{background:#090a0c;border:1px solid #374151;border-radius:9px;padding:7px;margin-top:5px;font-size:11px;line-height:1.45;color:#d1d5db}
   </style>
 
   <script>
     const AGENTS={aria:['Aria — Strateji','Reklam stratejisi ve bütçe yönü çıkarır.'],nova:['Nova — Pazar Araştırma','Rakip, trend ve kategori fırsatlarını inceler.'],orion:['Orion — Proje Yönetimi','İşleri öncelik ve takip sırasına koyar.'],luna:['Luna — İçerik','Reklam metni, ürün ve kategori söylemi üretir.'],pixel:['Pixel — Tasarım','Kreatif fikir, banner ve görsel açı önerir.'],rex:['Rex — Video','Reels, TikTok ve UGC video akışı hazırlar.'],sage:['Sage — SEO','Kategori, ürün ve blog SEO fırsatı çıkarır.'],vibe:['Vibe — Sosyal Medya','Sosyal medya takvimi ve paylaşım önerir.'],byte:['Byte — Web & Veri','Trafik, dönüşüm ve site verisini yorumlar.']};
     let current='aria';let engine='claude';
-    const HKEY='mxAgencyChat_';const FKEY='mxAgencyFile_';
+    const HKEY='mxAgencyChat_';const FKEY='mxAgencyFile_';const TKEY='mxAgencyTasks_';
     function getHist(){try{return JSON.parse(localStorage.getItem(HKEY+current)||'[]')}catch(e){return []}}
     function saveHist(h){localStorage.setItem(HKEY+current,JSON.stringify(h.slice(-20)))}
     function getFile(){return localStorage.getItem(FKEY+current)||''}
     function saveFile(v){localStorage.setItem(FKEY+current,v)}
+    function getTasks(){try{return JSON.parse(localStorage.getItem(TKEY+current)||'[]')}catch(e){return []}}
+    function saveTasks(v){localStorage.setItem(TKEY+current,JSON.stringify(v.slice(0,30)))}
     function renderFile(){let f=getFile();agentFile.textContent=f||'Henüz not yok.';}
-    function renderHistory(){let h=getHist();if(!h.length){report.textContent=AGENTS[current][0]+' odası hazır. Rapor başlatabilir veya mesaj yazabilirsin.';renderFile();return;}report.textContent=h.map(m=>(m.role==='user'?'Sen: ':'Ajan: ')+m.text).join('\n\n');report.scrollTop=report.scrollHeight;renderFile();}
+    function renderTasks(){let tasks=getTasks();agentTasks.innerHTML=tasks.length?'':'<div class="mx-task-row">Görev yok.</div>';tasks.forEach((t,i)=>{let d=document.createElement('div');d.className='mx-task-row';d.innerHTML='<b>'+t.status+'</b> · '+t.due+'<br>'+t.text+'<br><button onclick="mxDoneTask('+i+')" style="margin-top:5px;padding:4px 7px;background:#1f2937;color:#fff;border:1px solid #374151;border-radius:7px;font-size:10px">Tamamlandı</button>';agentTasks.appendChild(d);});}
+    function renderHistory(){let h=getHist();if(!h.length){report.textContent=AGENTS[current][0]+' odası hazır. Rapor başlatabilir veya mesaj yazabilirsin.';renderFile();renderTasks();return;}report.textContent=h.map(m=>(m.role==='user'?'Sen: ':'Ajan: ')+m.text).join('\n\n');report.scrollTop=report.scrollHeight;renderFile();renderTasks();}
     function addHist(role,text){let h=getHist();h.push({role:role,text:text,time:new Date().toISOString()});saveHist(h);renderHistory();}
     function renderAgents(){agents.innerHTML='';Object.keys(AGENTS).forEach(k=>{let b=document.createElement('button');b.className=k===current?'active':'';b.onclick=()=>selectAgent(k);b.innerHTML='<b>'+AGENTS[k][0]+'</b><br><span style="color:#9ca3af;font-size:11px">'+AGENTS[k][1]+'</span>';agents.appendChild(b);});}
     function selectAgent(k){current=k;agentName.textContent=AGENTS[k][0];agentDesc.textContent=AGENTS[k][1];renderAgents();renderHistory();}
     function mxSetEngine(v){engine='claude';}
     async function ask(prompt){let payload={model:'claude-sonnet-4-5',max_tokens:1600,messages:[{role:'user',content:prompt}]};let r=await fetch('/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});let d=await r.json();if(!r.ok)throw new Error((d.error&&(d.error.message||d.error))||'AI hatası');if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text;if(d.response)return d.response;return JSON.stringify(d,null,2);}
-    function basePrompt(task){let h=getHist().slice(-6).map(m=>(m.role==='user'?'Kullanıcı: ':'Ajan: ')+m.text).join('\n');let f=getFile();return 'Sen Madmext ADS sanal ajansındaki '+AGENTS[current][0]+' ajanısın. Görevin: '+task+' Marka: madmext.com, moda e-ticaret, Meta Ads, Google Ads, SEO, sosyal medya, kreatif, pazaryeri reklamları. Ajan dosyan: '+f+' Önceki kısa sohbet geçmişi: '+h+' Türkçe yaz. Format: kısa özet, fırsatlar, aksiyonlar, öncelik, metrikler.';}
+    function basePrompt(task){let h=getHist().slice(-6).map(m=>(m.role==='user'?'Kullanıcı: ':'Ajan: ')+m.text).join('\n');let f=getFile();let ts=getTasks().filter(x=>x.status==='Açık').map(x=>x.due+' | '+x.text).join('\n');return 'Sen Madmext ADS sanal ajansındaki '+AGENTS[current][0]+' ajanısın. Görevin: '+task+' Marka: madmext.com, moda e-ticaret, Meta Ads, Google Ads, SEO, sosyal medya, kreatif, pazaryeri reklamları. Ajan dosyan: '+f+' Aktif görevlerin: '+ts+' Önceki kısa sohbet geçmişi: '+h+' Türkçe yaz. Format: kısa özet, fırsatlar, aksiyonlar, öncelik, metrikler.';}
     async function mxTask(task){addHist('user',task);addHist('agent','Claude ile çalışıyor...');try{let ans=await ask(basePrompt(task));let h=getHist();h[h.length-1]={role:'agent',text:ans,time:new Date().toISOString()};saveHist(h);renderHistory()}catch(e){let h=getHist();h[h.length-1]={role:'agent',text:'Hata: '+e.message,time:new Date().toISOString()};saveHist(h);renderHistory()}}
     async function mxCustomChat(){let t=customMsg.value.trim();if(!t)return;customMsg.value='';await mxTask(t)}
     function mxClearHistory(){localStorage.removeItem(HKEY+current);renderHistory()}
     function mxSaveFileNote(){let n=fileNote.value.trim();if(!n)return;let old=getFile();let line='- '+new Date().toLocaleString('tr')+': '+n;saveFile(old?old+'\n'+line:line);fileNote.value='';renderFile();}
+    function mxAssignTask(){let t=taskText.value.trim();if(!t)return;let tasks=getTasks();tasks.unshift({text:t,due:taskDue.value||'Teslim yok',status:'Açık',created:new Date().toISOString()});saveTasks(tasks);taskText.value='';taskDue.value='';renderTasks();addHist('agent','Yeni görev alındı: '+t);}
+    function mxDoneTask(i){let tasks=getTasks();if(tasks[i])tasks[i].status='Tamamlandı';saveTasks(tasks);renderTasks();}
     async function mxDaily(){current='aria';renderAgents();addHist('user','Günlük ajans raporu hazırla');addHist('agent','Claude ile hazırlanıyor...');let p='Madmext ADS için 9 ajanlı günlük ajans raporu hazırla. Ajanlar: Strateji, Pazar Araştırma, Proje Yönetimi, İçerik, Tasarım, Video, SEO, Sosyal Medya, Web & Veri. Türkçe, kısa, aksiyon odaklı yaz.';try{let ans=await ask(p);let h=getHist();h[h.length-1]={role:'agent',text:ans,time:new Date().toISOString()};saveHist(h);renderHistory()}catch(e){let h=getHist();h[h.length-1]={role:'agent',text:'Hata: '+e.message,time:new Date().toISOString()};saveHist(h);renderHistory()}}
     mxEngine.value=engine;renderAgents();renderHistory();
   </script>
