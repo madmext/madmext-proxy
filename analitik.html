@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Google Analytics - Madmext Ads</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/theme.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1011;--s:#1a1b1d;--s2:#242526;--b:#2d2e30;--b2:#3a3b3c;--a:#1877f2;--t:#e4e6eb;--m:#8a8d91;--g:#42b72a;--r:#fa3e3e;--y:#f0b429}
+body{background:var(--bg);color:var(--t);font-family:Inter,Arial,sans-serif;font-size:13px;min-height:100vh}
+.top{height:56px;background:var(--s);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 18px;position:sticky;top:0;z-index:10}
+.logo{font-weight:800;font-size:16px}.logo span{color:var(--a)}
+.title{font-weight:700}.sub{font-size:11px;color:var(--m);margin-top:2px}.wrap{padding:18px;max-width:1500px;margin:0 auto}
+.btn{background:var(--a);color:#fff;border:0;border-radius:7px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;text-decoration:none;display:inline-block}
+.module-loading{display:flex;align-items:center;justify-content:center;height:220px;color:var(--m);font-size:13px}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--b);border-left:3px solid var(--a);padding:12px 18px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .3s;z-index:9999;max-width:360px}
+#toast.show{opacity:1}
+@media(max-width:700px){.top{height:auto;min-height:56px;align-items:flex-start;padding:10px 12px;gap:10px}.wrap{padding:10px}.sub{display:none}.btn{font-size:11px;padding:7px 9px}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div><div class="logo">Madmext <span>Ads</span></div><div class="sub">Google Analytics / GA4 analitik verileri</div></div>
+  <a class="btn" href="/">Panele Dön</a>
+</div>
+<div class="wrap" id="mainContent"><div class="module-loading">⏳ Analitik modülü yükleniyor...</div></div>
+<div id="toast"></div>
+<script src="/modules/shared.js?v=20260618"></script>
+<script>
+async function loadAnalitik(){
+  var el=document.getElementById('mainContent');
+  try{
+    var r=await fetch('/modules/analitik.html?v=20260618');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    var html=await r.text();
+    var tmp=document.createElement('div');
+    tmp.innerHTML=html;
+    var scripts=[];
+    tmp.querySelectorAll('script').forEach(function(s){scripts.push(s.textContent);s.remove();});
+    el.innerHTML=tmp.innerHTML;
+    scripts.forEach(function(code){var s=document.createElement('script');s.textContent=code;document.body.appendChild(s);});
+    window._isConnected=true;
+    window.dispatchEvent(new CustomEvent('mx:connected'));
+  }catch(e){
+    el.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Analitik modülü yüklenemedi: '+e.message+'</div>';
+  }
+}
+loadAnalitik();
+</script>
+</body>
+</html>
