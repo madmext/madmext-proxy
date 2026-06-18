@@ -1,326 +1,53 @@
 <style>
-.df-wrap{padding:0;max-width:900px}
-.df-platform{background:var(--s);border:1px solid var(--b);border-radius:10px;margin-bottom:10px;overflow:hidden}
-.df-platform-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background .15s;user-select:none}
-.df-platform-header:hover{background:var(--s2)}
-.df-platform-header.open{background:var(--s2);border-bottom:1px solid var(--b)}
-.df-platform-icon{font-size:22px;flex-shrink:0}
-.df-platform-name{font-size:14px;font-weight:700;flex:1}
-.df-platform-meta{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
-.df-chevron{font-size:12px;color:var(--m);transition:transform .2s}
-.df-chevron.open{transform:rotate(180deg)}
-.df-platform-body{display:none;padding:16px 18px}
-.df-platform-body.open{display:block}
-.df-subtypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
-.df-subtype{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:12px 14px;cursor:pointer;transition:all .15s;position:relative}
-.df-subtype:hover{border-color:var(--a);background:rgba(24,119,242,.04)}
-.df-subtype.selected{border-color:var(--a);background:rgba(24,119,242,.06)}
-.df-subtype-name{font-size:12px;font-weight:600;margin-bottom:3px}
-.df-subtype-desc{font-size:10px;color:var(--m);line-height:1.5}
-.df-subtype-count{position:absolute;top:8px;right:10px;font-size:9px;background:var(--a);color:#fff;border-radius:10px;padding:1px 7px;font-family:'DM Mono',monospace}
-.df-upload-area{border:2px dashed var(--b);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}
-.df-upload-area:hover,.df-upload-area.drag{border-color:var(--a);background:rgba(24,119,242,.04)}
-.df-file-list{background:var(--bg);border:1px solid var(--b);border-radius:8px;overflow:hidden}
-.df-file-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px}
-.df-file-item:last-child{border-bottom:none}
-.df-file-icon{font-size:16px;flex-shrink:0}
-.df-file-name{flex:1;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.df-file-meta{color:var(--m);font-family:'DM Mono',monospace;font-size:10px;white-space:nowrap}
-.df-file-count{background:rgba(66,183,42,.12);color:var(--g);border:1px solid rgba(66,183,42,.3);border-radius:10px;padding:1px 8px;font-size:9px;font-family:'DM Mono',monospace}
-.df-progress{height:3px;background:var(--b);border-radius:2px;margin-top:8px;overflow:hidden}
-.df-progress-bar{height:100%;background:var(--a);border-radius:2px;transition:width .3s;width:0}
-.df-tip{font-size:10px;color:var(--m);background:var(--s2);border-radius:6px;padding:8px 12px;margin-bottom:12px;line-height:1.6}
+.df-wrap{padding:0;max-width:1100px}.df-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;flex-wrap:wrap}.df-title{font-size:18px;font-weight:800;color:var(--t);letter-spacing:-.3px}.df-sub{font-size:12px;color:var(--m);margin-top:3px;line-height:1.5}
+.df-platform{background:var(--s);border:1px solid var(--b);border-radius:12px;margin-bottom:12px;overflow:hidden}.df-platform-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background .15s;user-select:none}.df-platform-header:hover,.df-platform-header.open{background:var(--s2)}.df-platform-header.open{border-bottom:1px solid var(--b)}.df-platform-icon{font-size:22px;flex-shrink:0}.df-platform-name{font-size:14px;font-weight:800;flex:1}.df-platform-meta{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}.df-chevron{font-size:12px;color:var(--m);transition:transform .2s}.df-chevron.open{transform:rotate(180deg)}.df-platform-body{display:none;padding:16px 18px}.df-platform-body.open{display:block}
+.df-subtypes{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-bottom:14px}.df-subtype{background:var(--bg);border:1px solid var(--b);border-radius:9px;padding:12px 14px;cursor:pointer;transition:all .15s;position:relative}.df-subtype:hover{border-color:var(--a);background:rgba(24,119,242,.04)}.df-subtype.selected{border-color:var(--a);background:rgba(24,119,242,.06)}.df-subtype-name{font-size:12px;font-weight:700;margin-bottom:3px}.df-subtype-desc{font-size:10px;color:var(--m);line-height:1.5}.df-subtype-count{position:absolute;top:8px;right:10px;font-size:9px;background:var(--a);color:#fff;border-radius:10px;padding:1px 7px;font-family:'DM Mono',monospace}
+.df-upload-area{border:2px dashed var(--b);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:12px}.df-upload-area:hover,.df-upload-area.drag{border-color:var(--a);background:rgba(24,119,242,.04)}.df-progress{height:3px;background:var(--b);border-radius:2px;margin-top:8px;overflow:hidden}.df-progress-bar{height:100%;background:var(--a);border-radius:2px;transition:width .3s;width:0}.df-tip{font-size:10px;color:var(--m);background:var(--s2);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.7}.df-log{font-size:11px;color:var(--m);min-height:22px;margin-bottom:12px}
+.df-history{background:var(--bg);border:1px solid var(--b);border-radius:10px;overflow:hidden;margin-top:14px}.df-history-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--b);background:rgba(255,255,255,.02)}.df-history-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--m)}.df-table-wrap{overflow:auto;max-height:340px}table.df-table{width:100%;border-collapse:collapse;font-size:11px}table.df-table th{position:sticky;top:0;background:#090a0b;color:var(--m);font-size:9px;text-transform:uppercase;letter-spacing:.8px;padding:9px 10px;border-bottom:1px solid var(--b);white-space:nowrap;text-align:left}table.df-table td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;font-family:'DM Mono',monospace}table.df-table tr:hover td{background:var(--s2)}.df-pill{display:inline-flex;align-items:center;border-radius:999px;border:1px solid var(--b);padding:2px 7px;font-size:9px;font-family:'DM Mono',monospace;color:var(--m)}.df-pill.ok{color:var(--g);border-color:rgba(66,183,42,.25);background:rgba(66,183,42,.08)}.df-pill.warn{color:var(--y);border-color:rgba(240,180,41,.25);background:rgba(240,180,41,.08)}.df-pill.err{color:var(--r);border-color:rgba(250,62,62,.25);background:rgba(250,62,62,.08)}
+.df-filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.df-filter-row input,.df-filter-row select{background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:7px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:6px}.df-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}.df-kcard{background:var(--bg);border:1px solid var(--b);border-radius:9px;padding:10px}.df-klabel{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px}.df-kval{font-size:18px;font-weight:800;font-family:'DM Mono',monospace;margin-top:4px}.df-empty{padding:18px;color:var(--m);font-size:12px;text-align:center}.df-note{background:rgba(24,119,242,.08);border:1px solid rgba(24,119,242,.22);border-radius:10px;padding:11px 12px;font-size:11px;color:var(--m);line-height:1.6;margin-bottom:12px}
 </style>
 
 <div class="df-wrap">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-    <div>
-      <div style="font-size:11px;color:var(--m);margin-top:2px">Platform bazlı reklam raporlarını yükle — veriler kalıcı olarak saklanır</div>
-    </div>
-    <span id="dfGlobalSt" style="font-size:11px;color:var(--m)"></span>
-  </div>
+  <div class="df-top"><div><div class="df-title">📁 Dosya Yönetimi</div><div class="df-sub">Trendyol dosyaları kalıcı saklanır, checksum ile tekrar yükleme engellenir, tekil veri seti güncellenir.</div></div><div class="u-actions"><button class="btn sm" onclick="dfLoadStats()">↻ Yenile</button><button class="btn sm sec" onclick="dfToggle('trendyol')">Trendyol Aç/Kapat</button></div></div>
 
-  <!-- TRENDYOL -->
   <div class="df-platform" id="plt-trendyol">
     <div class="df-platform-header" onclick="dfToggle('trendyol')">
-      <span class="df-platform-icon">🟠</span>
-      <div>
-        <div class="df-platform-name">Trendyol</div>
-        <div style="font-size:10px;color:var(--m);margin-top:1px">Ürün, Mağaza, Influencer, Meta reklamları</div>
-      </div>
-      <span class="df-platform-meta" id="dfMeta-trendyol">—</span>
-      <span class="df-chevron" id="dfChev-trendyol">▼</span>
+      <span class="df-platform-icon">🟠</span><div style="flex:1"><div class="df-platform-name">Trendyol</div><div style="font-size:10px;color:var(--m);margin-top:1px">Ürün, Mağaza, Influencer, Meta reklam dosyaları</div></div><span class="df-platform-meta" id="dfMeta-trendyol">—</span><span class="df-chevron" id="dfChev-trendyol">▼</span>
     </div>
     <div class="df-platform-body" id="dfBody-trendyol">
-      <div class="df-tip">
-        📌 <b>Ürün Reklamları Raporu</b> → Trendyol Partner → Ürün Reklamları → Excel İndir<br>
-        📌 <b>Ürün Detay Raporu</b> → Reklam Detayı → Ürün Tablosu → Excel İndir<br>
-        📌 <b>Mağaza Reklamları</b> → Mağaza Reklamları → Excel İndir<br>
-        📌 <b>Influencer / Meta</b> → İlgili sekme → Excel İndir<br>
-        Birden fazla dosya aynı anda seçilebilir. Tekrar yüklenen dosyalar güncellenir, mükerrer olmaz.
-      </div>
+      <div class="df-note">Yeni sistem: her dosya için <b>upload_id, dosya adı, tip, yükleme tarihi, satır sayısı, checksum, yükleyen kullanıcı</b> tutulur. Aynı checksum tekrar gelirse veri çoğaltılmaz.</div>
+      <div class="df-kpi"><div class="df-kcard"><div class="df-klabel">Upload</div><div class="df-kval" id="k-upload">0</div></div><div class="df-kcard"><div class="df-klabel">Tekil Kayıt</div><div class="df-kval" id="k-total">0</div></div><div class="df-kcard"><div class="df-klabel">Son Dosya</div><div class="df-kval" id="k-last" style="font-size:12px;word-break:break-all">—</div></div></div>
+      <div class="df-tip">📌 Ürün Reklamları, Ürün Detay, Mağaza Reklamları, Influencer ve Meta Trendyol Excel dosyalarını yükle. Birden fazla dosya aynı anda seçilebilir.</div>
       <div class="df-subtypes">
-        <div class="df-subtype" id="sub-ty-urun">
-          <div class="df-subtype-name">📦 Ürün Reklamları</div>
-          <div class="df-subtype-desc">Kampanya listesi, bütçe, harcama, ROAS</div>
-          <span class="df-subtype-count" id="cnt-ty-urun">0</span>
-        </div>
-        <div class="df-subtype" id="sub-ty-detay">
-          <div class="df-subtype-name">🔍 Ürün Detay</div>
-          <div class="df-subtype-desc">Reklam içi ürün bazlı performans</div>
-          <span class="df-subtype-count" id="cnt-ty-detay">0</span>
-        </div>
-        <div class="df-subtype" id="sub-ty-magaza">
-          <div class="df-subtype-name">🏪 Mağaza Reklamları</div>
-          <div class="df-subtype-desc">Mağaza bazlı reklam performansı</div>
-          <span class="df-subtype-count" id="cnt-ty-magaza">0</span>
-        </div>
-        <div class="df-subtype" id="sub-ty-influencer">
-          <div class="df-subtype-name">👤 Influencer</div>
-          <div class="df-subtype-desc">Komisyonlu influencer kampanyaları</div>
-          <span class="df-subtype-count" id="cnt-ty-influencer">0</span>
-        </div>
-        <div class="df-subtype" id="sub-ty-meta">
-          <div class="df-subtype-name">📘 Meta (Trendyol)</div>
-          <div class="df-subtype-desc">Facebook/Instagram via Trendyol</div>
-          <span class="df-subtype-count" id="cnt-ty-meta">0</span>
-        </div>
+        <div class="df-subtype" id="sub-ty-urun"><div class="df-subtype-name">📦 Ürün Reklamları</div><div class="df-subtype-desc">Kampanya, bütçe, harcama, ROAS</div><span class="df-subtype-count" id="cnt-ty-urun">0</span></div>
+        <div class="df-subtype" id="sub-ty-detay"><div class="df-subtype-name">🔍 Ürün Detay</div><div class="df-subtype-desc">Ürün bazlı performans</div><span class="df-subtype-count" id="cnt-ty-detay">0</span></div>
+        <div class="df-subtype" id="sub-ty-magaza"><div class="df-subtype-name">🏪 Mağaza Reklamları</div><div class="df-subtype-desc">Mağaza reklam performansı</div><span class="df-subtype-count" id="cnt-ty-magaza">0</span></div>
+        <div class="df-subtype" id="sub-ty-influencer"><div class="df-subtype-name">👤 Influencer</div><div class="df-subtype-desc">Influencer kampanyaları</div><span class="df-subtype-count" id="cnt-ty-influencer">0</span></div>
+        <div class="df-subtype" id="sub-ty-meta"><div class="df-subtype-name">📘 Meta Trendyol</div><div class="df-subtype-desc">Trendyol Meta reklamları</div><span class="df-subtype-count" id="cnt-ty-meta">0</span></div>
       </div>
-      <label style="display:block">
-        <div class="df-upload-area" id="dfZone-trendyol"
-          ondragover="event.preventDefault();this.classList.add('drag')"
-          ondragleave="this.classList.remove('drag')"
-          ondrop="event.preventDefault();this.classList.remove('drag');dfHandleDrop(event,'trendyol')">
-          <div style="font-size:32px;margin-bottom:8px">📤</div>
-          <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:var(--t)">Excel dosyalarını buraya sürükle veya tıkla</div>
-          <div style="font-size:11px;color:var(--m)">.xlsx ve .xls desteklenir · Birden fazla dosya seçilebilir</div>
-          <div class="df-progress" id="dfProg-trendyol"><div class="df-progress-bar" id="dfProgBar-trendyol"></div></div>
-        </div>
-        <input type="file" id="dfFile-trendyol" accept=".xlsx,.xls" multiple style="display:none" onchange="dfUpload('trendyol',this)">
-      </label>
-      <div id="dfLog-trendyol" style="font-size:11px;color:var(--m);min-height:20px"></div>
-      <div id="dfFiles-trendyol" class="df-file-list" style="display:none"></div>
+      <label style="display:block"><div class="df-upload-area" id="dfZone-trendyol" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="event.preventDefault();this.classList.remove('drag');dfHandleDrop(event,'trendyol')"><div style="font-size:32px;margin-bottom:8px">📤</div><div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--t)">Excel dosyalarını buraya sürükle veya tıkla</div><div style="font-size:11px;color:var(--m)">.xlsx ve .xls desteklenir · Tekrar yüklenen dosyalar çoğaltılmaz</div><div class="df-progress" id="dfProg-trendyol"><div class="df-progress-bar" id="dfProgBar-trendyol"></div></div></div><input type="file" id="dfFile-trendyol" accept=".xlsx,.xls" multiple style="display:none" onchange="dfUpload('trendyol',this)"></label>
+      <div id="dfLog-trendyol" class="df-log"></div>
+      <div class="df-history"><div class="df-history-head"><div class="df-history-title">Yüklenen Dosyalar Geçmişi</div><div class="df-filter-row" style="margin:0"><input id="dfSearch" placeholder="Dosya / tip ara" oninput="renderUploads()"><select id="dfDupFilter" onchange="renderUploads()"><option value="all">Tümü</option><option value="unique">Tekil yüklemeler</option><option value="dups">Tekrar görülenler</option></select></div></div><div class="df-table-wrap"><table class="df-table"><thead><tr><th>Tarih</th><th>Dosya</th><th>Tip</th><th>Satır</th><th>Tekil</th><th>Checksum</th><th>Yükleyen</th><th>Durum</th></tr></thead><tbody id="dfUploadRows"><tr><td colspan="8"><div class="df-empty">Henüz yüklenen dosya yok</div></td></tr></tbody></table></div></div>
     </div>
   </div>
 
-  <!-- META ADS -->
-  <div class="df-platform" id="plt-meta">
-    <div class="df-platform-header" onclick="dfToggle('meta')">
-      <span class="df-platform-icon">📘</span>
-      <div>
-        <div class="df-platform-name">Meta Ads</div>
-        <div style="font-size:10px;color:var(--m);margin-top:1px">Facebook & Instagram kampanyaları</div>
-      </div>
-      <span class="df-platform-meta" id="dfMeta-meta">API bağlantısı aktif</span>
-      <span class="df-chevron" id="dfChev-meta">▼</span>
-    </div>
-    <div class="df-platform-body" id="dfBody-meta">
-      <div style="background:rgba(66,183,42,.08);border:1px solid rgba(66,183,42,.2);border-radius:8px;padding:14px 16px;font-size:12px">
-        ✅ <b>Meta Ads verisi API üzerinden otomatik çekiliyor.</b><br>
-        <span style="color:var(--m);font-size:11px">Meta Ads sekmesinden görüntüleyebilir, raporlar üzerinden analiz yapabilirsin.</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- GOOGLE ADS -->
-  <div class="df-platform" id="plt-google">
-    <div class="df-platform-header" onclick="dfToggle('google')">
-      <span class="df-platform-icon">🟢</span>
-      <div>
-        <div class="df-platform-name">Google Ads</div>
-        <div style="font-size:10px;color:var(--m);margin-top:1px">Search, Display, Shopping, PMax kampanyaları</div>
-      </div>
-      <span class="df-platform-meta" id="dfMeta-google">API onayı bekleniyor</span>
-      <span class="df-chevron" id="dfChev-google">▼</span>
-    </div>
-    <div class="df-platform-body" id="dfBody-google">
-      <div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:8px;padding:14px 16px;font-size:12px">
-        ⏳ <b>Google Ads API başvurusu değerlendiriliyor.</b><br>
-        <span style="color:var(--m);font-size:11px">Onay gelince Google Ads verileri otomatik API'den çekilecek, manuel dosya yüklemeye gerek kalmayacak.</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- GA4 -->
-  <div class="df-platform" id="plt-ga4">
-    <div class="df-platform-header" onclick="dfToggle('ga4')">
-      <span class="df-platform-icon">📊</span>
-      <div>
-        <div class="df-platform-name">Google Analytics 4</div>
-        <div style="font-size:10px;color:var(--m);margin-top:1px">Site trafiği ve dönüşüm verileri</div>
-      </div>
-      <span class="df-platform-meta" id="dfMeta-ga4">API bağlantısı aktif</span>
-      <span class="df-chevron" id="dfChev-ga4">▼</span>
-    </div>
-    <div class="df-platform-body" id="dfBody-ga4">
-      <div style="background:rgba(66,183,42,.08);border:1px solid rgba(66,183,42,.2);border-radius:8px;padding:14px 16px;font-size:12px">
-        ✅ <b>GA4 verisi API üzerinden otomatik çekiliyor.</b><br>
-        <span style="color:var(--m);font-size:11px">Dashboard ve Raporlar sekmelerinden görüntüleyebilirsin.</span>
-      </div>
-    </div>
-  </div>
-
+  <div class="df-platform" id="plt-meta"><div class="df-platform-header" onclick="dfToggle('meta')"><span class="df-platform-icon">📘</span><div style="flex:1"><div class="df-platform-name">Meta Ads</div><div style="font-size:10px;color:var(--m);margin-top:1px">Facebook & Instagram kampanyaları</div></div><span class="df-platform-meta">API bağlantısı aktif</span><span class="df-chevron" id="dfChev-meta">▼</span></div><div class="df-platform-body" id="dfBody-meta"><div class="df-note">✅ Meta Ads verisi API üzerinden otomatik çekiliyor.</div></div></div>
+  <div class="df-platform" id="plt-google"><div class="df-platform-header" onclick="dfToggle('google')"><span class="df-platform-icon">🟢</span><div style="flex:1"><div class="df-platform-name">Google Ads</div><div style="font-size:10px;color:var(--m);margin-top:1px">Search, Display, Shopping, PMax</div></div><span class="df-platform-meta">API yetkisi bekleniyor</span><span class="df-chevron" id="dfChev-google">▼</span></div><div class="df-platform-body" id="dfBody-google"><div class="df-note">⏳ Google Ads teknik bağlantı hazır, hesap yetkisi çözülünce veriler API’den çekilecek.</div></div></div>
+  <div class="df-platform" id="plt-ga4"><div class="df-platform-header" onclick="dfToggle('ga4')"><span class="df-platform-icon">📊</span><div style="flex:1"><div class="df-platform-name">Google Analytics 4</div><div style="font-size:10px;color:var(--m);margin-top:1px">Site trafiği ve dönüşüm verileri</div></div><span class="df-platform-meta">API bağlantısı aktif</span><span class="df-chevron" id="dfChev-ga4">▼</span></div><div class="df-platform-body" id="dfBody-ga4"><div class="df-note">✅ GA4 verisi API üzerinden otomatik çekiliyor.</div></div></div>
 </div>
 
 <script>
 (function(){
-
-var _open = {};
-var _logs = {};
-
-// ── TOGGLE ────────────────────────────────────────────────
-window.dfToggle = function(platform){
-  _open[platform] = !_open[platform];
-  var body = document.getElementById('dfBody-'+platform);
-  var chev = document.getElementById('dfChev-'+platform);
-  var hdr = document.querySelector('#plt-'+platform+' .df-platform-header');
-  if(_open[platform]){
-    body.classList.add('open');
-    if(chev) chev.classList.add('open');
-    if(hdr) hdr.classList.add('open');
-  } else {
-    body.classList.remove('open');
-    if(chev) chev.classList.remove('open');
-    if(hdr) hdr.classList.remove('open');
-  }
-};
-
-// ── UPLOAD ────────────────────────────────────────────────
-window.dfUpload = async function(platform, input){
-  var files = Array.from(input.files);
-  if(!files.length) return;
-  await _uploadFiles(platform, files);
-  input.value = '';
-};
-
-window.dfHandleDrop = async function(event, platform){
-  var files = Array.from(event.dataTransfer.files).filter(function(f){
-    return f.name.endsWith('.xlsx') || f.name.endsWith('.xls');
-  });
-  if(!files.length){ dfLog(platform,'⚠️ Sadece .xlsx veya .xls dosyaları kabul edilir'); return; }
-  await _uploadFiles(platform, files);
-};
-
-async function _uploadFiles(platform, files){
-  var logEl = document.getElementById('dfLog-'+platform);
-  var progBar = document.getElementById('dfProgBar-'+platform);
-  var results = [];
-
-  for(var i=0;i<files.length;i++){
-    if(progBar) progBar.style.width = Math.round((i/files.length)*100)+'%';
-    if(logEl) logEl.textContent = '⏳ '+(i+1)+'/'+files.length+' yükleniyor: '+files[i].name;
-
-    var fd = new FormData();
-    fd.append('file', files[i]);
-
-    try{
-      var r = await fetch('/trendyol/upload', {method:'POST', body:fd});
-      var res = await r.json();
-      if(res.success){
-        results.push('✓ '+res.type+' ('+res.count+' kayıt)');
-        _addFileLog(platform, files[i].name, res.count, res.type);
-      } else {
-        results.push('⚠️ '+files[i].name+': '+(res.error||'Hata'));
-      }
-    } catch(e){
-      results.push('⚠️ '+files[i].name+': '+e.message);
-    }
-  }
-
-  if(progBar) progBar.style.width='100%';
-  setTimeout(function(){if(progBar) progBar.style.width='0';},1500);
-  if(logEl) logEl.innerHTML = results.map(function(r){
-    return '<span style="display:block;padding:2px 0">'+r+'</span>';
-  }).join('');
-
-  dfLoadStats();
-}
-
-function _addFileLog(platform, filename, count, type){
-  if(!_logs[platform]) _logs[platform] = [];
-  _logs[platform].unshift({
-    name: filename,
-    count: count,
-    type: type,
-    time: new Date().toLocaleString('tr')
-  });
-  // Max 20 log tut
-  _logs[platform] = _logs[platform].slice(0,20);
-  _renderFileLogs(platform);
-}
-
-function _renderFileLogs(platform){
-  var logs = _logs[platform] || [];
-  var el = document.getElementById('dfFiles-'+platform);
-  if(!el) return;
-  if(!logs.length){ el.style.display='none'; return; }
-  el.style.display='block';
-  el.innerHTML = '<div style="padding:8px 14px;font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--b)">Bu Oturumda Yüklenenler</div>'
-    + logs.map(function(l){
-      return '<div class="df-file-item">'
-        +'<span class="df-file-icon">📄</span>'
-        +'<span class="df-file-name">'+esc(l.name)+'</span>'
-        +'<span class="df-file-meta">'+esc(l.time)+'</span>'
-        +'<span class="df-file-count">'+l.count+' kayıt</span>'
-        +'</div>';
-    }).join('');
-}
-
-function dfLog(platform, msg){
-  var el = document.getElementById('dfLog-'+platform);
-  if(el) el.textContent = msg;
-}
-
-// ── İSTATİSTİKLER ────────────────────────────────────────
-async function dfLoadStats(){
-  try{
-    var r = await fetch('/trendyol/data');
-    var res = await r.json();
-
-    var urun = (res.urun||[]).length;
-    var detay = (res.urun_detay||[]).length;
-    var magaza = (res.magaza||[]).length;
-    var influencer = (res.influencer||[]).length;
-    var meta = (res.meta||[]).length;
-    var total = urun + detay + magaza + influencer + meta;
-
-    // Platform meta
-    var metaEl = document.getElementById('dfMeta-trendyol');
-    if(metaEl) metaEl.textContent = total > 0 ? total + ' kayıt' : 'Henüz yüklenmedi';
-
-    // Subtype counts
-    function setCount(id, n){
-      var el = document.getElementById(id);
-      if(el){
-        el.textContent = n;
-        el.style.background = n>0?'rgba(66,183,42,.8)':'var(--b2)';
-      }
-    }
-    setCount('cnt-ty-urun', urun);
-    setCount('cnt-ty-detay', detay);
-    setCount('cnt-ty-magaza', magaza);
-    setCount('cnt-ty-influencer', influencer);
-    setCount('cnt-ty-meta', meta);
-
-    // Subtype highlight
-    function highlightSub(id, n){
-      var el = document.getElementById(id);
-      if(el) el.className = 'df-subtype' + (n>0?' selected':'');
-    }
-    highlightSub('sub-ty-urun', urun);
-    highlightSub('sub-ty-detay', detay);
-    highlightSub('sub-ty-magaza', magaza);
-    highlightSub('sub-ty-influencer', influencer);
-    highlightSub('sub-ty-meta', meta);
-
-  } catch(e){ console.error('dfLoadStats:', e); }
-}
-
-function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// Trendyol'u varsayılan açık yap
-dfToggle('trendyol');
-dfLoadStats();
-
+var _open={}, _uploads=[];
+window.dfToggle=function(platform){_open[platform]=!_open[platform];var body=document.getElementById('dfBody-'+platform),chev=document.getElementById('dfChev-'+platform),hdr=document.querySelector('#plt-'+platform+' .df-platform-header');if(_open[platform]){body&&body.classList.add('open');chev&&chev.classList.add('open');hdr&&hdr.classList.add('open')}else{body&&body.classList.remove('open');chev&&chev.classList.remove('open');hdr&&hdr.classList.remove('open')}};
+window.dfUpload=async function(platform,input){var files=Array.from(input.files);if(!files.length)return;await _uploadFiles(platform,files);input.value=''};
+window.dfHandleDrop=async function(event,platform){var files=Array.from(event.dataTransfer.files).filter(function(f){return f.name.endsWith('.xlsx')||f.name.endsWith('.xls')});if(!files.length){dfLog(platform,'⚠️ Sadece .xlsx veya .xls dosyaları kabul edilir');return}await _uploadFiles(platform,files)};
+async function _uploadFiles(platform,files){var logEl=document.getElementById('dfLog-'+platform), progBar=document.getElementById('dfProgBar-'+platform), results=[];for(var i=0;i<files.length;i++){if(progBar)progBar.style.width=Math.round((i/files.length)*100)+'%';if(logEl)logEl.textContent='⏳ '+(i+1)+'/'+files.length+' yükleniyor: '+files[i].name;var fd=new FormData();fd.append('file',files[i]);try{var r=await fetch('/trendyol/upload',{method:'POST',credentials:'include',body:fd});var res=await r.json();if(res.success){if(res.duplicate)results.push('↪ '+files[i].name+': daha önce yüklenmiş, veri çoğaltılmadı');else results.push('✓ '+files[i].name+' · '+res.type+' · '+res.count+' satır · '+(res.unique_added||res.count)+' tekil');}else results.push('⚠️ '+files[i].name+': '+(res.error||'Hata'))}catch(e){results.push('⚠️ '+files[i].name+': '+e.message)}}if(progBar)progBar.style.width='100%';setTimeout(function(){if(progBar)progBar.style.width='0'},1500);if(logEl)logEl.innerHTML=results.map(function(r){return '<span style="display:block;padding:2px 0">'+esc(r)+'</span>'}).join('');dfLoadStats()}
+function dfLog(platform,msg){var el=document.getElementById('dfLog-'+platform);if(el)el.textContent=msg}
+window.dfLoadStats=async function(){try{var r=await fetch('/trendyol/data',{credentials:'include'});var res=await r.json();var urun=(res.urun||[]).length,detay=(res.urun_detay||[]).length,magaza=(res.magaza||[]).length,influencer=(res.influencer||[]).length,meta=(res.meta||[]).length,total=urun+detay+magaza+influencer+meta;setText('dfMeta-trendyol',total>0?total+' tekil kayıt':'Henüz yüklenmedi');setText('k-total',total);setCount('cnt-ty-urun',urun);setCount('cnt-ty-detay',detay);setCount('cnt-ty-magaza',magaza);setCount('cnt-ty-influencer',influencer);setCount('cnt-ty-meta',meta);highlightSub('sub-ty-urun',urun);highlightSub('sub-ty-detay',detay);highlightSub('sub-ty-magaza',magaza);highlightSub('sub-ty-influencer',influencer);highlightSub('sub-ty-meta',meta);await loadUploads()}catch(e){console.error('dfLoadStats:',e)}};
+async function loadUploads(){try{var r=await fetch('/trendyol/uploads',{credentials:'include'});if(!r.ok){_uploads=[];renderUploads();return}var d=await r.json();_uploads=d.uploads||[];setText('k-upload',_uploads.length);setText('k-last',_uploads[0]?_uploads[0].dosya_adi:'—');renderUploads()}catch(e){_uploads=[];renderUploads()}}
+window.renderUploads=function(){var q=(document.getElementById('dfSearch')?.value||'').toLowerCase(), f=document.getElementById('dfDupFilter')?.value||'all';var rows=_uploads.filter(function(u){var s=((u.dosya_adi||'')+' '+(u.dosya_tipi||'')+' '+(u.yukleyen_kullanici||'')).toLowerCase();if(q&&s.indexOf(q)===-1)return false;var dup=(parseInt(u.duplicate_seen_count||0)>0);if(f==='unique'&&dup)return false;if(f==='dups'&&!dup)return false;return true});var el=document.getElementById('dfUploadRows');if(!el)return;if(!rows.length){el.innerHTML='<tr><td colspan="8"><div class="df-empty">Kayıt yok</div></td></tr>';return}el.innerHTML=rows.map(function(u){var dup=parseInt(u.duplicate_seen_count||0);return '<tr><td>'+fmtDate(u.yukleme_tarihi)+'</td><td title="'+esc(u.dosya_adi)+'">'+esc(short(u.dosya_adi,34))+'</td><td>'+esc(u.dosya_tipi||'—')+'</td><td>'+esc(u.satir_sayisi||0)+'</td><td>'+esc(u.tekil_eklenen||0)+'</td><td title="'+esc(u.checksum||'')+'">'+esc(u.checksum_short||'—')+'</td><td>'+esc(u.yukleyen_kullanici||'—')+'</td><td>'+(dup?'<span class="df-pill warn">'+dup+' tekrar</span>':'<span class="df-pill ok">Tekil</span>')+'</td></tr>'}).join('')}
+function setText(id,v){var el=document.getElementById(id);if(el)el.textContent=v}function setCount(id,n){var el=document.getElementById(id);if(el){el.textContent=n;el.style.background=n>0?'rgba(66,183,42,.8)':'var(--b2)'}}function highlightSub(id,n){var el=document.getElementById(id);if(el)el.className='df-subtype'+(n>0?' selected':'')}function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}function short(s,n){s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s}function fmtDate(s){try{return new Date(s).toLocaleString('tr-TR')}catch(e){return s||'—'}}
+dfToggle('trendyol');dfLoadStats();
 })();
 </script>
