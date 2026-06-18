@@ -124,6 +124,7 @@ function toast(msg) {
 
 // ── Markdown ──────────────────────────────────────────────────────────
 function renderMD(t) {
+  t = String(t || '');
   t = t.replace(/\|(.+)\|\r?\n\|[-| :]+\|\r?\n((?:\|.+\|\r?\n?)*)/g, (m, h, b) => {
     const ths = h.split('|').filter(c => c.trim()).map(c => `<th>${c.trim()}</th>`).join('');
     const trs = b.trim().split('\n').map(r => { const tds = r.split('|').filter(c => c.trim()).map(c => `<td>${c.trim()}</td>`).join(''); return `<tr>${tds}</tr>`; }).join('');
@@ -266,7 +267,6 @@ console.log('✓ Madmext shared.js yüklendi');
     Object.keys(saved).forEach(function(k){
       document.documentElement.style.setProperty(k, saved[k]);
     });
-    // Font varsa Google Fonts'tan yükle
     var font = saved['--font-ui'] || '';
     var fontName = font.replace(/[',\s]+sans-serif/g,'').trim();
     if(fontName && fontName !== 'Inter') {
@@ -277,6 +277,29 @@ console.log('✓ Madmext shared.js yüklendi');
     }
   } catch(e) {}
 })();
+
+// ── AI AJANS MENÜ BUTONU ────────────────────────────────────────────────
+function injectAiAgencyMenu(){
+  try {
+    var sidebar = document.querySelector('.sidebar');
+    if(!sidebar || document.getElementById('navAiAjansMerkezi')) return;
+    var section = document.createElement('div');
+    section.className = 'sidebar-section';
+    section.textContent = 'AI AJANS';
+    var item = document.createElement('div');
+    item.className = 'nav-item';
+    item.id = 'navAiAjansMerkezi';
+    item.innerHTML = '<span class="nav-icon">🤖</span><span>AI Ajans Merkezi</span><span class="nav-ai">Yeni</span>';
+    item.onclick = function(){
+      if(typeof closeSidebar === 'function') closeSidebar();
+      window.location.href = '/modules/ai-ajans-gpt.html';
+    };
+    sidebar.appendChild(section);
+    sidebar.appendChild(item);
+  } catch(e) { console.warn('AI Ajans menü eklenemedi:', e); }
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectAiAgencyMenu);
+else setTimeout(injectAiAgencyMenu, 0);
 
 // ── Window'a expose et (modüller erişebilsin) ────────────────────────
 window.AID = AID;
@@ -300,3 +323,4 @@ window.connect = connect;
 window.updateTaskBadge = updateTaskBadge;
 window.saveServerLogs = saveServerLogs;
 window.loadServerLogs = loadServerLogs;
+window.injectAiAgencyMenu = injectAiAgencyMenu;
