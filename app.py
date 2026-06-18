@@ -42,7 +42,6 @@ GADS_LOGIN_CUSTOMER_ID = os.environ.get('GADS_LOGIN_CUSTOMER_ID', '')
 GADS_CLIENT_ID = os.environ.get('GADS_CLIENT_ID', '') or GA4_CLIENT_ID
 GADS_CLIENT_SECRET = os.environ.get('GADS_CLIENT_SECRET', '') or GA4_CLIENT_SECRET
 GADS_REFRESH_TOKEN = os.environ.get('GADS_REFRESH_TOKEN', '') or GA4_REFRESH_TOKEN
-GADS_API_VERSION = os.environ.get('GADS_API_VERSION', 'v22').strip() or 'v22'
 LOG_FILE = 'madmext_logs.json'
 log_lock = threading.Lock()
 _users_cache = None
@@ -505,10 +504,6 @@ def gads_date_condition(data):
 
 @app.route('/gads/campaigns', methods=['POST'])
 def gads_campaigns():
-    """Google Ads kampanyalarını getirir.
-    Önemli: Önce tüm kampanyaları çeker, sonra seçilen tarih aralığındaki metrikleri ayrıca çekip birleştirir.
-    Böylece son 7 günde harcaması olmayan kampanyalar da panelde görünür.
-    """
     token = gads_get_token()
     if not token:
         return jsonify({
@@ -518,49 +513,15 @@ def gads_campaigns():
 
     data = request.json or {}
     date_cond = gads_date_condition(data)
-    cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search'
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'developer-token': GADS_DEVELOPER_TOKEN,
-        'Content-Type': 'application/json'
-    }
-    if GADS_LOGIN_CUSTOMER_ID:
-        headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
 
-    def _post_gaql(query, timeout=25):
-        r = requests.post(url, headers=headers, json={'query': query}, timeout=timeout)
-        if not r.text or not r.text.strip():
-            return {}, None
-        try:
-            payload = r.json()
-        except Exception:
-            return None, 'Google Ads API yanıtı JSON parse edilemedi: ' + r.text[:500]
-        if 'error' in payload:
-            return None, payload['error'].get('message', 'Google Ads API hatası')
-        return payload, None
-
-    # 1) Harcama/metrik olmasa bile tüm kampanyaları çek.
-    campaign_query = """
+    query = f"""
         SELECT
           campaign.id,
           campaign.name,
           campaign.status,
           campaign.advertising_channel_type,
-          campaign_budget.id,
-          campaign_budget.resource_name,
           campaign_budget.amount_micros,
-          campaign_budget.type
-        FROM campaign
-        WHERE campaign.status != 'REMOVED'
-        ORDER BY campaign.name
-        LIMIT 1000
-    """
-
-    # 2) Seçilen tarih aralığı için performans metriklerini ayrı çek.
-    metrics_query = f"""
-        SELECT
-          campaign.id,
+          campaign_budget.type,
           metrics.cost_micros,
           metrics.conversions,
           metrics.conversions_value,
@@ -573,27 +534,50 @@ def gads_campaigns():
         WHERE {date_cond}
           AND campaign.status != 'REMOVED'
         ORDER BY metrics.cost_micros DESC
-        LIMIT 1000
+        LIMIT 100
     """
 
+    cid = gads_customer_id()
+    url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
+    headers = {
+        'Authorization': f'Bearer {token}',
+        'developer-token': GADS_DEVELOPER_TOKEN,
+        'Content-Type': 'application/json'
+    }
+    if GADS_LOGIN_CUSTOMER_ID:
+        headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
+
     try:
-        camp_payload, camp_err = _post_gaql(campaign_query)
-        if camp_err:
-            print(f'Google Ads campaign list error: {camp_err}')
-            return jsonify({'error': camp_err, 'configured': True, 'stage': 'campaign_list'})
+        r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
+        print(f'Google Ads campaigns URL: {url}')
+        print(f'Google Ads campaigns status: {r.status_code}')
+        print(f'Google Ads campaigns body: {r.text[:500]}')
+        
+        # Boş yanıt kontrolü
+        if not r.text or not r.text.strip():
+            return jsonify({'rows': [], 'configured': True})
+        
+        result = r.json()
+        print(f'Google Ads campaigns result keys: {list(result.keys())}')
 
-        metric_payload, metric_err = _post_gaql(metrics_query)
-        # Metrik sorgusu hata verirse kampanyaları yine de 0 metrikle göster.
-        if metric_err:
-            print(f'Google Ads metrics error: {metric_err}')
-            metric_payload = {'results': []}
+        if 'error' in result:
+            err_msg = result['error'].get('message', 'Google Ads API hatası')
+            details = result['error'].get('details', [])
+            print(f'Google Ads API hatası: {err_msg}, details: {details}')
+            return jsonify({'error': err_msg, 'configured': True})
 
-        perf_by_campaign = {}
-        for row in (metric_payload or {}).get('results', []):
+        rows = []
+        for row in result.get('results', []):
             camp = row.get('campaign', {})
+            budget = row.get('campaignBudget', {})
             metrics = row.get('metrics', {})
-            camp_id = str(camp.get('id', ''))
-            perf_by_campaign[camp_id] = {
+            rows.append({
+                'id': camp.get('id', ''),
+                'name': camp.get('name', ''),
+                'status': camp.get('status', ''),
+                'type': camp.get('advertisingChannelType', ''),
+                'budget_micros': int(budget.get('amountMicros', 0) or 0),
+                'budget_type': budget.get('type', ''),
                 'cost': round(int(metrics.get('costMicros', 0) or 0) / 1_000_000, 2),
                 'conversions': round(float(metrics.get('conversions', 0) or 0), 1),
                 'conversions_value': round(float(metrics.get('conversionsValue', 0) or 0), 2),
@@ -602,39 +586,8 @@ def gads_campaigns():
                 'ctr': round(float(metrics.get('ctr', 0) or 0) * 100, 2),
                 'avg_cpc': round(int(metrics.get('averageCpc', 0) or 0) / 1_000_000, 2),
                 'cpa': round(int(metrics.get('costPerConversion', 0) or 0) / 1_000_000, 2),
-            }
-
-        rows = []
-        for row in (camp_payload or {}).get('results', []):
-            camp = row.get('campaign', {})
-            budget = row.get('campaignBudget', {})
-            camp_id = str(camp.get('id', ''))
-            perf = perf_by_campaign.get(camp_id, {
-                'cost': 0, 'conversions': 0, 'conversions_value': 0,
-                'clicks': 0, 'impressions': 0, 'ctr': 0, 'avg_cpc': 0, 'cpa': 0
             })
-            rows.append({
-                'id': camp_id,
-                'name': camp.get('name', ''),
-                'status': camp.get('status', ''),
-                'type': camp.get('advertisingChannelType', ''),
-                'budget_id': str(budget.get('id', '') or ''),
-                'budget_resource_name': budget.get('resourceName', '') or '',
-                'budget_micros': int(budget.get('amountMicros', 0) or 0),
-                'budget_type': budget.get('type', ''),
-                **perf
-            })
-
-        # Sıralama: harcaması olanlar üstte, sonra aktifler, sonra ad sırası.
-        rows.sort(key=lambda x: (-(x.get('cost') or 0), 0 if x.get('status') == 'ENABLED' else 1, x.get('name') or ''))
-
-        return jsonify({
-            'rows': rows,
-            'configured': True,
-            'campaign_count': len(rows),
-            'metrics_count': len(perf_by_campaign),
-            'metrics_warning': metric_err
-        })
+        return jsonify({'rows': rows, 'configured': True})
     except Exception as e:
         print(f'Google Ads campaigns exception: {e}')
         return jsonify({'error': str(e), 'configured': True})
@@ -665,7 +618,7 @@ def gads_adgroups():
     """
 
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search'
+    url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -709,21 +662,13 @@ def gads_update_budget():
     if not token:
         return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
     data = request.json or {}
-    budget_id = str(data.get('budget_id', '') or '').strip()
-    campaign_id = str(data.get('campaign_id', '') or '').strip()
-    budget_resource_name = str(data.get('budget_resource_name', '') or '').strip()
-    try:
-        new_amount_tl = float(data.get('amount_tl', 0))
-    except (TypeError, ValueError):
-        new_amount_tl = 0
-    if not budget_id and not campaign_id and not budget_resource_name:
-        return jsonify({'error': 'Bütçe ID veya kampanya ID gerekli', 'success': False})
-    if new_amount_tl <= 0:
-        return jsonify({'error': 'Geçersiz tutar', 'success': False})
-
+    budget_id = data.get('budget_id', '')
+    new_amount_tl = float(data.get('amount_tl', 0))
+    if not budget_id or new_amount_tl <= 0:
+        return jsonify({'error': 'Geçersiz parametre', 'success': False})
     cid = gads_customer_id()
     amount_micros = int(new_amount_tl * 1_000_000)
-    patch_url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/campaignBudgets:mutate'
+    patch_url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaignBudgets:mutate'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -731,39 +676,10 @@ def gads_update_budget():
     }
     if GADS_LOGIN_CUSTOMER_ID:
         headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
-
-    # Eski frontend budget_id alanına kampanya id gönderebiliyor.
-    # Önce gerçek campaign_budget.resource_name'i bulmayı deniyoruz.
-    if not budget_resource_name:
-        lookup_campaign_id = campaign_id or budget_id
-        lookup_query = f"""
-            SELECT campaign.id, campaign_budget.id, campaign_budget.resource_name
-            FROM campaign
-            WHERE campaign.id = '{lookup_campaign_id}'
-            LIMIT 1
-        """
-        try:
-            lr = requests.post(
-                f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search',
-                headers=headers,
-                json={'query': lookup_query},
-                timeout=15
-            )
-            ldata = lr.json() if lr.text else {}
-            if 'error' not in ldata and ldata.get('results'):
-                budget_resource_name = ldata['results'][0].get('campaignBudget', {}).get('resourceName', '') or ''
-                budget_id = str(ldata['results'][0].get('campaignBudget', {}).get('id', '') or budget_id)
-        except Exception as e:
-            print('Google Ads budget lookup hata:', e)
-
-    if not budget_resource_name:
-        # Son çare: gönderilen değer gerçekten budget id ise resource name üret.
-        budget_resource_name = f'customers/{cid}/campaignBudgets/{budget_id}'
-
     mutate_body = {
         'operations': [{
             'update': {
-                'resourceName': budget_resource_name,
+                'resourceName': f'customers/{cid}/campaignBudgets/{budget_id}',
                 'amountMicros': str(amount_micros)
             },
             'updateMask': 'amountMicros'
@@ -778,13 +694,12 @@ def gads_update_budget():
             current = read_logs()
             current.setdefault('actionLog', []).insert(0, {
                 'type': 'gads_budget_change', 'budget_id': budget_id,
-                'budget_resource_name': budget_resource_name,
                 'amount_tl': new_amount_tl, 'serverTime': datetime.utcnow().isoformat()
             })
             current['actionLog'] = current['actionLog'][:500]
             write_logs(current)
         except: pass
-        return jsonify({'success': True, 'amount_tl': new_amount_tl, 'budget_id': budget_id, 'budget_resource_name': budget_resource_name})
+        return jsonify({'success': True, 'amount_tl': new_amount_tl})
     except Exception as e:
         return jsonify({'error': str(e), 'success': False})
 
@@ -799,7 +714,7 @@ def gads_toggle_status():
     if new_status not in ('ENABLED', 'PAUSED'):
         return jsonify({'error': 'Geçersiz durum', 'success': False})
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/campaigns:mutate'
+    url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaigns:mutate'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -835,13 +750,12 @@ def gads_toggle_status():
 
 @app.route('/gads/status', methods=['GET'])
 def gads_status():
-    configured = bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID and GADS_CLIENT_ID and GADS_CLIENT_SECRET and GADS_REFRESH_TOKEN)
+    configured = bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID and GADS_CLIENT_ID and GADS_REFRESH_TOKEN)
     if not configured:
         missing = []
         if not GADS_DEVELOPER_TOKEN: missing.append('GADS_DEVELOPER_TOKEN')
         if not GADS_CUSTOMER_ID: missing.append('GADS_CUSTOMER_ID')
         if not GADS_CLIENT_ID: missing.append('GADS_CLIENT_ID')
-        if not GADS_CLIENT_SECRET: missing.append('GADS_CLIENT_SECRET')
         if not GADS_REFRESH_TOKEN: missing.append('GADS_REFRESH_TOKEN')
         return jsonify({'configured': False, 'missing': missing})
     token = gads_get_token()
@@ -850,84 +764,8 @@ def gads_status():
         'token_ok': bool(token),
         'customer_id': GADS_CUSTOMER_ID,
         'login_customer_id': GADS_LOGIN_CUSTOMER_ID,
-        'api_version': GADS_API_VERSION,
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
     })
-
-@app.route('/gads/debug', methods=['GET', 'POST'])
-def gads_debug():
-    """Google Ads bağlantı teşhis ekranı için güvenli özet.
-    Token değerlerini göstermez; sadece durum, sayılar ve hata mesajı döndürür.
-    """
-    token = gads_get_token()
-    base = {
-        'configured': bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID and GADS_CLIENT_ID and GADS_CLIENT_SECRET and GADS_REFRESH_TOKEN),
-        'token_ok': bool(token),
-        'customer_id': GADS_CUSTOMER_ID,
-        'login_customer_id': GADS_LOGIN_CUSTOMER_ID,
-        'api_version': GADS_API_VERSION,
-        'login_ok': bool(GADS_LOGIN_CUSTOMER_ID),
-        'tests': {}
-    }
-    if not token:
-        base['error'] = 'Token alınamadı'
-        return jsonify(base)
-
-    cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search'
-    headers = {
-        'Authorization': f'Bearer {token}',
-        'developer-token': GADS_DEVELOPER_TOKEN,
-        'Content-Type': 'application/json'
-    }
-    if GADS_LOGIN_CUSTOMER_ID:
-        headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
-
-    def run_test(name, query):
-        try:
-            r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
-            txt = r.text[:1000] if r.text else ''
-            try:
-                payload = r.json() if r.text else {}
-            except Exception:
-                base['tests'][name] = {'ok': False, 'status_code': r.status_code, 'error': 'JSON parse edilemedi', 'body': txt}
-                return
-            if 'error' in payload:
-                base['tests'][name] = {
-                    'ok': False,
-                    'status_code': r.status_code,
-                    'error': payload['error'].get('message', 'Google Ads API hatası'),
-                    'details': payload['error'].get('details', [])[:2]
-                }
-                return
-            rows = payload.get('results', [])
-            base['tests'][name] = {
-                'ok': True,
-                'status_code': r.status_code,
-                'count': len(rows),
-                'sample': rows[:3]
-            }
-        except Exception as e:
-            base['tests'][name] = {'ok': False, 'error': str(e)}
-
-    run_test('all_campaigns', """
-        SELECT campaign.id, campaign.name, campaign.status, campaign.advertising_channel_type,
-               campaign_budget.id, campaign_budget.resource_name, campaign_budget.amount_micros
-        FROM campaign
-        WHERE campaign.status != 'REMOVED'
-        ORDER BY campaign.name
-        LIMIT 10
-    """)
-    for preset in ['LAST_7_DAYS', 'LAST_30_DAYS', 'LAST_90_DAYS']:
-        run_test('metrics_' + preset.lower(), f"""
-            SELECT campaign.id, campaign.name, metrics.cost_micros, metrics.impressions, metrics.clicks, metrics.conversions
-            FROM campaign
-            WHERE segments.date DURING {preset}
-              AND campaign.status != 'REMOVED'
-            ORDER BY metrics.cost_micros DESC
-            LIMIT 10
-        """)
-    return jsonify(base)
 
 @app.route('/psi', methods=['GET'])
 def psi_proxy():
