@@ -12,14 +12,16 @@
           return old(path);
         };
       }
-      if(document.querySelector('[onclick*="nav(\'analitik\'"]'))return;
       var rapor=document.querySelector('#navGrupRaporlar .nav-group-items');
-      if(rapor){
+      if(rapor&&!document.querySelector('[onclick*="nav(\'analitik\'"]')){
         var d=document.createElement('div');
         d.className='nav-item nav-sub';
         d.setAttribute('onclick',"closeSidebar();nav('analitik',this)");
         d.innerHTML='<span class="nav-icon" style="font-size:10px">●</span><span>Analytics</span>';
         rapor.appendChild(d);
+      }
+      if(location.pathname==='/analitik'&&typeof nav==='function'&&window.currentPage!=='analitik'){
+        setTimeout(function(){nav('analitik',null)},80);
       }
     }catch(e){console.warn('analitik route patch',e)}
   }
