@@ -1,0 +1,50 @@
+@media (max-width: 900px){
+  html,body{overflow:auto!important;height:auto!important;background:#0f1011!important}
+  .content{padding:0!important;overflow:visible!important}
+  .mxai{height:auto!important;min-height:100vh!important;border-radius:0!important;border-left:0!important;border-right:0!important;display:flex!important;flex-direction:column!important;overflow:visible!important}
+  .mxnav{position:sticky!important;top:0!important;z-index:50!important;display:flex!important;gap:7px!important;overflow-x:auto!important;white-space:nowrap!important;border-right:0!important;border-bottom:1px solid #2d2e30!important;padding:9px 10px!important;background:#111214!important;scrollbar-width:none!important}
+  .mxnav::-webkit-scrollbar{display:none!important}
+  .mxnav>div{display:none!important}
+  .tab{width:auto!important;min-width:max-content!important;background:#181a1d!important;border:1px solid #2d2e30!important;color:#cbd5e1!important;padding:10px 12px!important;border-radius:999px!important;font-size:12px!important;min-height:40px!important}
+  .tab.active{background:#1877f2!important;border-color:#1877f2!important;color:#fff!important}
+  .mxmain{display:flex!important;flex-direction:column!important;min-height:0!important;overflow:visible!important}
+  .mxh{position:sticky!important;top:58px!important;z-index:40!important;background:rgba(15,16,17,.96)!important;backdrop-filter:blur(10px)!important;padding:11px 12px!important;border-bottom:1px solid #2d2e30!important;align-items:flex-start!important}
+  .mxh h2{font-size:16px!important;line-height:1.2!important}
+  .mxh p{font-size:10px!important;max-width:220px!important}
+  .mxh .btn{min-width:88px!important;padding:8px 9px!important;font-size:11px!important}
+  .view{padding:10px!important;overflow:visible!important;min-height:auto!important;flex:none!important}
+  .grid{display:flex!important;flex-direction:column!important;gap:9px!important}
+  .card{border-radius:13px!important;padding:11px!important;margin-bottom:10px!important;background:#17191c!important}
+  .card h3,.card h4{font-size:13px!important;margin-bottom:8px!important}
+  .agent{padding:12px!important;border-radius:13px!important;min-height:auto!important}
+  .agent b{font-size:14px!important}
+  .agent span{font-size:11px!important;line-height:1.35!important}
+  .badges{gap:5px!important;margin-top:8px!important}
+  .badge{font-size:10px!important;padding:4px 7px!important}
+  .row{display:flex!important;flex-direction:column!important;gap:8px!important}
+  input,select,textarea,.btn{font-size:13px!important;min-height:42px!important;border-radius:11px!important}
+  textarea{min-height:76px!important}
+  .chat{height:52vh!important;min-height:320px!important;max-height:520px!important;border-radius:13px!important;padding:10px!important}
+  .msg{max-width:100%!important;font-size:12px!important;line-height:1.5!important;padding:10px!important}
+  .msg.u{margin-left:0!important;background:#1877f2!important}
+  .mxside{border-left:0!important;border-top:1px solid #2d2e30!important;padding:10px!important;background:#090a0c!important;max-height:none!important;overflow:visible!important}
+  .mxside .card:first-child{margin-top:0!important}
+  .mini{font-size:11px!important;line-height:1.45!important;padding:8px!important;max-width:100%!important;overflow-wrap:anywhere!important}
+  .checks{display:flex!important;flex-direction:column!important;gap:6px!important;max-height:260px!important;overflow:auto!important}
+  .checks label{font-size:12px!important;padding:9px!important;min-height:38px!important}
+  .modal{padding:0!important;align-items:stretch!important;justify-content:stretch!important}
+  .modal-box{width:100vw!important;height:100vh!important;border-radius:0!important;border:0!important;grid-template-rows:auto 1fr auto!important}
+  .modal-head{padding:12px!important;align-items:flex-start!important}
+  .modal-head b{font-size:14px!important}
+  .modal-body{padding:10px!important}
+  .talk{font-size:12px!important;line-height:1.5!important;padding:10px!important;border-radius:12px!important}
+  .modal-foot{padding:9px!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+  .modal-foot .btn{width:100%!important;min-height:42px!important;font-size:11px!important;padding:8px!important}
+}
+@media (max-width: 420px){
+  .tab{font-size:11px!important;padding:9px 10px!important}
+  .mxh{top:56px!important}
+  .mxh p{display:none!important}
+  .chat{height:48vh!important;min-height:280px!important}
+  .modal-foot{grid-template-columns:1fr!important}
+}
