@@ -42,6 +42,7 @@ GADS_LOGIN_CUSTOMER_ID = os.environ.get('GADS_LOGIN_CUSTOMER_ID', '')
 GADS_CLIENT_ID = os.environ.get('GADS_CLIENT_ID', '') or GA4_CLIENT_ID
 GADS_CLIENT_SECRET = os.environ.get('GADS_CLIENT_SECRET', '') or GA4_CLIENT_SECRET
 GADS_REFRESH_TOKEN = os.environ.get('GADS_REFRESH_TOKEN', '') or GA4_REFRESH_TOKEN
+GADS_API_VERSION = os.environ.get('GADS_API_VERSION', 'v22').strip() or 'v22'
 LOG_FILE = 'madmext_logs.json'
 log_lock = threading.Lock()
 _users_cache = None
@@ -518,7 +519,7 @@ def gads_campaigns():
     data = request.json or {}
     date_cond = gads_date_condition(data)
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
+    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -664,7 +665,7 @@ def gads_adgroups():
     """
 
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
+    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -722,7 +723,7 @@ def gads_update_budget():
 
     cid = gads_customer_id()
     amount_micros = int(new_amount_tl * 1_000_000)
-    patch_url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaignBudgets:mutate'
+    patch_url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/campaignBudgets:mutate'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -743,7 +744,7 @@ def gads_update_budget():
         """
         try:
             lr = requests.post(
-                f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search',
+                f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search',
                 headers=headers,
                 json={'query': lookup_query},
                 timeout=15
@@ -798,7 +799,7 @@ def gads_toggle_status():
     if new_status not in ('ENABLED', 'PAUSED'):
         return jsonify({'error': 'Geçersiz durum', 'success': False})
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaigns:mutate'
+    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/campaigns:mutate'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
@@ -849,6 +850,7 @@ def gads_status():
         'token_ok': bool(token),
         'customer_id': GADS_CUSTOMER_ID,
         'login_customer_id': GADS_LOGIN_CUSTOMER_ID,
+        'api_version': GADS_API_VERSION,
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID)
     })
 
@@ -863,6 +865,7 @@ def gads_debug():
         'token_ok': bool(token),
         'customer_id': GADS_CUSTOMER_ID,
         'login_customer_id': GADS_LOGIN_CUSTOMER_ID,
+        'api_version': GADS_API_VERSION,
         'login_ok': bool(GADS_LOGIN_CUSTOMER_ID),
         'tests': {}
     }
@@ -871,7 +874,7 @@ def gads_debug():
         return jsonify(base)
 
     cid = gads_customer_id()
-    url = f'https://googleads.googleapis.com/v19/customers/{cid}/googleAds:search'
+    url = f'https://googleads.googleapis.com/{GADS_API_VERSION}/customers/{cid}/googleAds:search'
     headers = {
         'Authorization': f'Bearer {token}',
         'developer-token': GADS_DEVELOPER_TOKEN,
