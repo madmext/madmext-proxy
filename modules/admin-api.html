@@ -1,0 +1,91 @@
+<style>
+.api-wrap{display:flex;flex-direction:column;gap:14px;min-height:calc(100vh - 100px)}
+.api-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.api-title{font-size:18px;font-weight:800;color:var(--t);letter-spacing:-.3px}
+.api-sub{font-size:12px;color:var(--m);margin-top:3px;line-height:1.5}
+.api-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.api-card{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;min-height:132px}
+.api-card::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:var(--m)}
+.api-card.ok::before{background:var(--g)}.api-card.warn::before{background:var(--y)}.api-card.err::before{background:var(--r)}.api-card.info::before{background:var(--a)}
+.api-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.api-name{font-size:14px;font-weight:700;color:var(--t);display:flex;align-items:center;gap:8px}
+.api-pill{font-size:10px;font-family:'DM Mono',monospace;border-radius:999px;padding:3px 8px;border:1px solid var(--b);color:var(--m);background:var(--s2);white-space:nowrap}
+.api-pill.ok{color:var(--g);border-color:rgba(66,183,42,.3);background:rgba(66,183,42,.08)}
+.api-pill.err{color:var(--r);border-color:rgba(250,62,62,.3);background:rgba(250,62,62,.08)}
+.api-pill.warn{color:var(--y);border-color:rgba(240,180,41,.3);background:rgba(240,180,41,.08)}
+.api-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.045);font-size:12px}
+.api-row:last-child{border-bottom:none}.api-row span:first-child{color:var(--m)}.api-row span:last-child{font-family:'DM Mono',monospace;color:var(--t);text-align:right;word-break:break-word}
+.api-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.api-actions .btn{font-size:11px}
+.api-panel{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px 16px}
+.api-json{background:#090a0b;border:1px solid var(--b);border-radius:8px;padding:12px;max-height:360px;overflow:auto;color:#b7f7d0;font-family:'DM Mono',monospace;font-size:11px;line-height:1.6;white-space:pre-wrap}
+.api-alert{padding:12px 14px;border-radius:10px;border:1px solid rgba(240,180,41,.25);background:rgba(240,180,41,.08);color:var(--y);font-size:12px;line-height:1.6}
+.api-denied{background:rgba(250,62,62,.08);border:1px solid rgba(250,62,62,.25);border-radius:12px;padding:24px;color:var(--r);font-size:14px;font-weight:700;text-align:center}
+</style>
+
+<div class="api-wrap" id="apiRoot">
+  <div class="api-top">
+    <div>
+      <div class="api-title">🔐 Admin API Merkezi</div>
+      <div class="api-sub">Sadece admin kullanıcılar için bağlantı sağlık kontrolü. Token değerleri gösterilmez; yalnızca var/yok, bağlantı durumu ve son hata görünür.</div>
+    </div>
+    <div class="api-actions">
+      <button class="btn sm" onclick="apiAdminLoad()">🔄 Yenile</button>
+      <button class="btn sm sec" onclick="apiAdminCopy()">📋 JSON Kopyala</button>
+    </div>
+  </div>
+  <div id="apiAdminStatus" class="api-alert">Kontroller yükleniyor...</div>
+  <div class="api-grid" id="apiCards"></div>
+  <div class="api-panel">
+    <div class="stl">Ham Kontrol Çıktısı</div>
+    <div class="api-json" id="apiRaw">—</div>
+  </div>
+</div>
+
+<script>
+(function(){
+var lastPayload=null;
+function esc(x){return String(x==null?'—':x).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+function yes(v){return !!v}
+function pill(ok,warn){return '<span class="api-pill '+(ok?'ok':warn?'warn':'err')+'">'+(ok?'Aktif':warn?'Uyarı':'Hatalı')+'</span>'}
+function row(k,v){return '<div class="api-row"><span>'+esc(k)+'</span><span>'+esc(v)+'</span></div>'}
+function card(title,icon,state,rows){return '<div class="api-card '+state+'"><div class="api-head"><div class="api-name"><span>'+icon+'</span><span>'+esc(title)+'</span></div>'+(state==='ok'?pill(true):state==='warn'?pill(false,true):pill(false))+'</div>'+rows.join('')+'</div>'}
+async function getJson(url, opt){try{var r=await fetch(url, opt||{credentials:'include'});var t=await r.text();try{return {ok:r.ok,status:r.status,json:JSON.parse(t)}}catch(e){return {ok:r.ok,status:r.status,text:t}}}catch(e){return {ok:false,error:e.message}}}
+async function postJson(url, body){return getJson(url,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})})}
+window.apiAdminLoad=async function(){
+  var status=document.getElementById('apiAdminStatus'), cards=document.getElementById('apiCards'), raw=document.getElementById('apiRaw');
+  status.textContent='⏳ API kontrolleri çalışıyor...'; cards.innerHTML=''; raw.textContent='—';
+  var me=await getJson('/auth/me');
+  if(!me.ok || !me.json || me.json.role!=='admin'){
+    status.outerHTML='<div class="api-denied">Bu bölüm sadece admin kullanıcılar içindir.</div>'; return;
+  }
+  var results={user:me.json, checked_at:new Date().toISOString()};
+  var gadsStatus=await getJson('/gads/status'); results.google_ads_status=gadsStatus.json||gadsStatus;
+  var gadsDebug=await getJson('/gads/debug'); results.google_ads_debug=gadsDebug.json||gadsDebug;
+  var claude=await getJson('/claude/test'); results.claude=claude.json||claude;
+  var tyStats=await getJson('/trendyol/stats'); results.trendyol_stats=tyStats.json||tyStats;
+  var logs=await getJson('/logs'); results.logs=logs.json?{budgetLog:(logs.json.budgetLog||[]).length,taskLog:(logs.json.taskLog||[]).length,actionLog:(logs.json.actionLog||[]).length}:logs;
+  var ga4=await postJson('/ga4',{type:'runReport',body:{dateRanges:[{startDate:'7daysAgo',endDate:'today'}],metrics:[{name:'sessions'}],limit:1}}); results.ga4_test=ga4.json||ga4;
+  var meta=await postJson('/api',{endpoint:'me',params:{fields:'name'},method:'GET'}); results.meta_test=meta.json||meta;
+  lastPayload=results; raw.textContent=JSON.stringify(results,null,2);
+  var g=results.google_ads_status||{}, gd=results.google_ads_debug||{};
+  var gErr=(gd.tests&&gd.tests.all_campaigns&&gd.tests.all_campaigns.error)||'';
+  var gOk=!!(g.configured&&g.token_ok&&!gErr);
+  var c=results.claude||{};
+  var ty=results.trendyol_stats||{};
+  var ga=results.ga4_test||{};
+  var mt=results.meta_test||{};
+  var html='';
+  html+=card('Google Ads','🟢',gOk?'ok':(g.token_ok?'warn':'err'),[
+    row('Configured',g.configured),row('Token OK',g.token_ok),row('API Version',g.api_version||'—'),row('Customer ID',g.customer_id||'—'),row('Login Customer ID',g.login_customer_id||'—'),row('Son hata',gErr||'—')]);
+  html+=card('Meta Ads','📘',mt&&mt.error?'err':'ok',[row('API Test',mt&&mt.error?'Hatalı':'OK'),row('Yanıt',mt&&mt.name?mt.name:(mt&&mt.error&&mt.error.message)||'OK')]);
+  html+=card('GA4 Analytics','📊',ga&&ga.error?'err':'ok',[row('API Test',ga&&ga.error?'Hatalı':'OK'),row('Sessions Test',ga&&ga.rows?((ga.rows[0]&&ga.rows[0].metricValues&&ga.rows[0].metricValues[0].value)||'0'):'—')]);
+  html+=card('Claude / AI','🤖',c.key_set?'ok':'err',[row('Key Var',c.key_set),row('Key Length',c.key_length||0),row('Prefix',c.key_prefix||'—')]);
+  html+=card('Trendyol Verisi','🟠',(ty.urun||ty.magaza||ty.influencer||ty.meta)?'ok':'warn',[row('Ürün',ty.urun||0),row('Mağaza',ty.magaza||0),row('Influencer',ty.influencer||0),row('Meta',ty.meta||0)]);
+  html+=card('Log / Görev Verisi','🧾','info',[row('Budget Log',results.logs.budgetLog||0),row('Task Log',results.logs.taskLog||0),row('Action Log',results.logs.actionLog||0)]);
+  cards.innerHTML=html;
+  status.innerHTML='✅ Kontroller tamamlandı. Kritik hatalar kırmızı, yetki/hesap uyarıları sarı görünür.';
+}
+window.apiAdminCopy=function(){if(!lastPayload){toast('Önce yenile');return}navigator.clipboard.writeText(JSON.stringify(lastPayload,null,2));toast('API kontrol çıktısı kopyalandı')}
+setTimeout(apiAdminLoad,100);
+})();
+</script>
