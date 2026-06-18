@@ -2,7 +2,7 @@
   <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px">
     <div>
       <h2 style="margin:0 0 6px;font-size:24px">Madmext AI Ajans</h2>
-      <p style="margin:0;color:#9ca3af;font-size:13px;line-height:1.5">Claude motoru aktif. Her ajanın ayrı sohbet geçmişi, dosyası, görev listesi ve İK alanı saklanır.</p>
+      <p style="margin:0;color:#9ca3af;font-size:13px;line-height:1.5">Claude motoru aktif. Her ajanın ayrı sohbet geçmişi, dosyası, görev listesi, İK alanı ve işe alma akışı saklanır.</p>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="mxEngine" onchange="mxSetEngine(this.value)" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:10px;padding:10px">
@@ -66,7 +66,7 @@
   <script>
     const AGENTS={aria:['Aria — Strateji','Reklam stratejisi ve bütçe yönü çıkarır.'],nova:['Nova — Pazar Araştırma','Rakip, trend ve kategori fırsatlarını inceler.'],orion:['Orion — Proje Yönetimi','İşleri öncelik ve takip sırasına koyar.'],luna:['Luna — İçerik','Reklam metni, ürün ve kategori söylemi üretir.'],pixel:['Pixel — Tasarım','Kreatif fikir, banner ve görsel açı önerir.'],rex:['Rex — Video','Reels, TikTok ve UGC video akışı hazırlar.'],sage:['Sage — SEO','Kategori, ürün ve blog SEO fırsatı çıkarır.'],vibe:['Vibe — Sosyal Medya','Sosyal medya takvimi ve paylaşım önerir.'],byte:['Byte — Web & Veri','Trafik, dönüşüm ve site verisini yorumlar.'],hera:['Hera — İK','Yeni ajan adaylarını ve görev uyumunu değerlendirir.']};
     let current='aria';let engine='claude';
-    const HKEY='mxAgencyChat_';const FKEY='mxAgencyFile_';const TKEY='mxAgencyTasks_';const HRKEY='mxAgencyHR';
+    const HKEY='mxAgencyChat_';const FKEY='mxAgencyFile_';const TKEY='mxAgencyTasks_';const HRKEY='mxAgencyHR';const CKEY='mxAgencyCustomAgents';
     function getHist(){try{return JSON.parse(localStorage.getItem(HKEY+current)||'[]')}catch(e){return []}}
     function saveHist(h){localStorage.setItem(HKEY+current,JSON.stringify(h.slice(-20)))}
     function getFile(){return localStorage.getItem(FKEY+current)||''}
@@ -75,9 +75,12 @@
     function saveTasks(v){localStorage.setItem(TKEY+current,JSON.stringify(v.slice(0,30)))}
     function getHR(){try{return JSON.parse(localStorage.getItem(HRKEY)||'[]')}catch(e){return []}}
     function saveHR(v){localStorage.setItem(HRKEY,JSON.stringify(v.slice(0,20)))}
+    function getCustomAgents(){try{return JSON.parse(localStorage.getItem(CKEY)||'[]')}catch(e){return []}}
+    function saveCustomAgents(v){localStorage.setItem(CKEY,JSON.stringify(v.slice(0,30)))}
+    function loadCustomAgents(){getCustomAgents().forEach(a=>{AGENTS[a.id]=[a.name,a.desc||'Yeni işe alınan AI ajan'];});}
     function renderFile(){let f=getFile();agentFile.textContent=f||'Henüz not yok.';}
     function renderTasks(){let tasks=getTasks();agentTasks.innerHTML=tasks.length?'':'<div class="mx-task-row">Görev yok.</div>';tasks.forEach((t,i)=>{let d=document.createElement('div');d.className='mx-task-row';d.innerHTML='<b>'+t.status+'</b> · '+t.due+'<br>'+t.text+'<br><button onclick="mxDoneTask('+i+')" style="margin-top:5px;padding:4px 7px;background:#1f2937;color:#fff;border:1px solid #374151;border-radius:7px;font-size:10px">Tamamlandı</button>';agentTasks.appendChild(d);});}
-    function renderHR(){let h=getHR();hrResults.innerHTML=h.length?'':'<div class="mx-hr-row">Aday değerlendirmesi yok.</div>';h.forEach(x=>{let d=document.createElement('div');d.className='mx-hr-row';d.innerHTML='<b>'+x.name+'</b><br>'+x.summary;hrResults.appendChild(d);});}
+    function renderHR(){let h=getHR();hrResults.innerHTML=h.length?'':'<div class="mx-hr-row">Aday değerlendirmesi yok.</div>';h.forEach((x,i)=>{let d=document.createElement('div');d.className='mx-hr-row';let btn=x.hired?'<div style="margin-top:5px;color:#86efac">İşe alındı</div>':'<button onclick="mxHireCandidate('+i+')" style="margin-top:5px;padding:5px 8px;background:#1877f2;color:#fff;border:0;border-radius:7px;font-size:10px">İşe Al</button>';d.innerHTML='<b>'+x.name+'</b><br>'+x.summary+btn;hrResults.appendChild(d);});}
     function renderHistory(){let h=getHist();if(!h.length){report.textContent=AGENTS[current][0]+' odası hazır. Rapor başlatabilir veya mesaj yazabilirsin.';renderFile();renderTasks();renderHR();return;}report.textContent=h.map(m=>(m.role==='user'?'Sen: ':'Ajan: ')+m.text).join('\n\n');report.scrollTop=report.scrollHeight;renderFile();renderTasks();renderHR();}
     function addHist(role,text){let h=getHist();h.push({role:role,text:text,time:new Date().toISOString()});saveHist(h);renderHistory();}
     function renderAgents(){agents.innerHTML='';Object.keys(AGENTS).forEach(k=>{let b=document.createElement('button');b.className=k===current?'active':'';b.onclick=()=>selectAgent(k);b.innerHTML='<b>'+AGENTS[k][0]+'</b><br><span style="color:#9ca3af;font-size:11px">'+AGENTS[k][1]+'</span>';agents.appendChild(b);});}
@@ -91,8 +94,9 @@
     function mxSaveFileNote(){let n=fileNote.value.trim();if(!n)return;let old=getFile();let line='- '+new Date().toLocaleString('tr')+': '+n;saveFile(old?old+'\n'+line:line);fileNote.value='';renderFile();}
     function mxAssignTask(){let t=taskText.value.trim();if(!t)return;let tasks=getTasks();tasks.unshift({text:t,due:taskDue.value||'Teslim yok',status:'Açık',created:new Date().toISOString()});saveTasks(tasks);taskText.value='';taskDue.value='';renderTasks();addHist('agent','Yeni görev alındı: '+t);}
     function mxDoneTask(i){let tasks=getTasks();if(tasks[i])tasks[i].status='Tamamlandı';saveTasks(tasks);renderTasks();}
-    async function mxEvaluateCandidate(){let name=candidateName.value.trim();let need=candidateNeed.value.trim();if(!name||!need)return;let arr=getHR();arr.unshift({name:name,summary:'Hera değerlendiriyor...',time:new Date().toISOString()});saveHR(arr);renderHR();try{let ans=await ask('Sen Hera isimli İK ajanısın. Madmext AI Ajans için yeni ajan adayını değerlendir. Aday: '+name+'. İhtiyaç: '+need+'. Uygunluk, ana görevler, riskler, işe alım kararı ve ilk 5 görev şeklinde Türkçe kısa rapor ver.');arr=getHR();arr[0]={name:name,summary:ans,time:new Date().toISOString()};saveHR(arr);candidateName.value='';candidateNeed.value='';renderHR();}catch(e){arr=getHR();arr[0]={name:name,summary:'Hata: '+e.message,time:new Date().toISOString()};saveHR(arr);renderHR();}}
+    async function mxEvaluateCandidate(){let name=candidateName.value.trim();let need=candidateNeed.value.trim();if(!name||!need)return;let arr=getHR();arr.unshift({name:name,need:need,summary:'Hera değerlendiriyor...',hired:false,time:new Date().toISOString()});saveHR(arr);renderHR();try{let ans=await ask('Sen Hera isimli İK ajanısın. Madmext AI Ajans için yeni ajan adayını değerlendir. Aday: '+name+'. İhtiyaç: '+need+'. Uygunluk, ana görevler, riskler, işe alım kararı ve ilk 5 görev şeklinde Türkçe kısa rapor ver.');arr=getHR();arr[0]={name:name,need:need,summary:ans,hired:false,time:new Date().toISOString()};saveHR(arr);candidateName.value='';candidateNeed.value='';renderHR();}catch(e){arr=getHR();arr[0]={name:name,need:need,summary:'Hata: '+e.message,hired:false,time:new Date().toISOString()};saveHR(arr);renderHR();}}
+    function mxHireCandidate(i){let hr=getHR();let c=hr[i];if(!c||c.hired)return;let id='custom_'+Date.now();let custom=getCustomAgents();custom.unshift({id:id,name:c.name,desc:c.need||'Yeni işe alınan AI ajan'});saveCustomAgents(custom);AGENTS[id]=[c.name,c.need||'Yeni işe alınan AI ajan'];hr[i].hired=true;saveHR(hr);saveFile('İşe alındı: '+c.name+'\nAna görev: '+(c.need||'Belirtilmedi')+'\nİK notu: '+c.summary);renderAgents();renderHR();selectAgent(id);}
     async function mxDaily(){current='aria';renderAgents();addHist('user','Günlük ajans raporu hazırla');addHist('agent','Claude ile hazırlanıyor...');let p='Madmext ADS için 10 ajanlı günlük ajans raporu hazırla. Ajanlar: Strateji, Pazar Araştırma, Proje Yönetimi, İçerik, Tasarım, Video, SEO, Sosyal Medya, Web & Veri, İK. Türkçe, kısa, aksiyon odaklı yaz.';try{let ans=await ask(p);let h=getHist();h[h.length-1]={role:'agent',text:ans,time:new Date().toISOString()};saveHist(h);renderHistory()}catch(e){let h=getHist();h[h.length-1]={role:'agent',text:'Hata: '+e.message,time:new Date().toISOString()};saveHist(h);renderHistory()}}
-    mxEngine.value=engine;renderAgents();renderHistory();
+    loadCustomAgents();mxEngine.value=engine;renderAgents();renderHistory();
   </script>
 </section>
