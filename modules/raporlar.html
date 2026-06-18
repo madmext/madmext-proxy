@@ -21,35 +21,37 @@
 .rp-channel-row:last-child{border-bottom:none}
 .rp-channel-row span:first-child{color:var(--m)}
 .rp-channel-row span:last-child{font-family:'DM Mono',monospace;color:var(--t)}
+.ga4-section{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;margin-bottom:12px}
+.ga4-bar{height:6px;border-radius:3px;background:var(--b2);overflow:hidden;margin-top:4px}
+.ga4-bar-fill{height:100%;border-radius:3px;background:var(--a)}
 </style>
 
 <div class="raporlar-wrap">
-  <!-- Platform Seçici -->
   <div class="platform-tabs" id="rpPlatformTabs">
-    <button class="platform-tab active" onclick="rpSetPlatform('meta',this)">📘 Meta Raporlar</button>
-    <button class="platform-tab" onclick="rpSetPlatform('google',this)">🟢 Google Raporlar</button>
-    <button class="platform-tab" onclick="rpSetPlatform('genel',this)">📊 Genel Özet</button>
+    <button class="platform-tab active" onclick="rpSetPlatform('meta',this)">📘 Meta</button>
+    <button class="platform-tab" onclick="rpSetPlatform('google',this)">🟢 Google Ads</button>
+    <button class="platform-tab" onclick="rpSetPlatform('ga4',this)">📈 Analytics</button>
+    <button class="platform-tab" onclick="rpSetPlatform('genel',this)">📊 Genel</button>
   </div>
 
-  <!-- Tarih Seçici -->
   <div class="date-picker-row">
     <button class="btn sm sec" onclick="rpLoad()">🔄 Yenile</button>
-    <button class="dp-btn" id="rpDpTrigger" onclick="rpDpToggle()">
-      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" style="flex-shrink:0;opacity:.8"><g clip-path="url(#rdpc)"><path d="M12.517 2.047h-.564v-.762a.764.764 0 0 0-1.524 0v.762H5.858v-.762a.764.764 0 0 0-1.524 0v.762h-.549a2.263 2.263 0 0 0-2.27 2.035 43.35 43.35 0 0 0 0 8.891 2.268 2.268 0 0 0 2.27 2.034h8.709a2.277 2.277 0 0 0 2.278-2.05c.305-3.146.312-6.133.015-8.89-.122-1.151-1.097-2.012-2.27-2.012v-.008zM3.03 4.234a.758.758 0 0 1 .754-.663h8.732c.38 0 .716.29.754.655.053.534.091 1.082.13 1.63H2.908c.03-.54.068-1.081.122-1.622zm2.064 9.242h-1.31a.753.753 0 0 1-.754-.663 38.75 38.75 0 0 1-.122-1.623h2.194v2.286h-.008zm0-3.81H2.84a38.099 38.099 0 0 1 0-2.285h2.256v2.285zm4.572 3.81H6.62V11.19h3.048v2.286zm0-3.81H6.62V7.381h3.048v2.285zm3.581 3.14a.767.767 0 0 1-.762.67h-1.303V11.19h2.18c-.039.533-.07 1.067-.123 1.615h.008zm.19-3.14h-2.247V7.381h2.263c.015.746.015 1.508-.016 2.285z"></path></g><defs><clipPath id="rdpc"><path d="M0 0H16V16H0z"></path></clipPath></defs></svg>
-      <span id="rpDpLabel">Son 7 gün</span>
-      <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12" style="flex-shrink:0;opacity:.7"><path d="M12 6a.667.667 0 0 1 .49 1.12l-4 4.332a.667.667 0 0 1-.98 0l-4-4.333A.667.667 0 0 1 4 6h8z"></path></svg>
-    </button>
-    <input type="hidden" id="rpPreset" value="last_7d">
-    <input type="hidden" id="rpFrom">
-    <input type="hidden" id="rpTo">
-    <button class="btn sm" onclick="rpExport('pdf')" style="background:var(--r)">📄 PDF</button>
-    <button class="btn sm" onclick="rpExport('excel')" style="background:var(--g);color:#000">🟢 Excel</button>
+    <select id="rpPreset" onchange="rpLoad()" style="background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 10px;font-size:12px;border-radius:5px;cursor:pointer">
+      <option value="today">Bugün</option>
+      <option value="yesterday">Dün</option>
+      <option value="last_7d" selected>Son 7 gün</option>
+      <option value="last_14d">Son 14 gün</option>
+      <option value="last_30d">Son 30 gün</option>
+      <option value="this_month">Bu ay</option>
+      <option value="last_month">Geçen ay</option>
+      <option value="maximum">Maksimum</option>
+    </select>
     <span id="rpStatus" style="font-size:11px;color:var(--m)"></span>
   </div>
 
-  <!-- Meta Paneli -->
+  <!-- META PANELİ -->
   <div id="rpMetaPanel">
-    <div class="rapor-metric-grid" id="rpMetaMetrics">
+    <div class="rapor-metric-grid">
       <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-spend">—</div><div class="rapor-metric-lbl">Harcama</div></div>
       <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-revenue" style="color:var(--g)">—</div><div class="rapor-metric-lbl">Gelir</div></div>
       <div class="rapor-metric"><div class="rapor-metric-val" id="rpm-roas">—</div><div class="rapor-metric-lbl">ROAS</div></div>
@@ -65,15 +67,14 @@
         </tr></thead><tbody id="rpMetaTable"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody></table>
       </div>
     </div>
-    <!-- AI Rapor Bölümü -->
     <div class="rapor-ai-section">
       <div class="rapor-kart-title">🤖 AI Rapor Özeti</div>
-      <div id="rpMetaAI" style="color:var(--m);font-size:12px">Yenile butonuna bas veya veri yüklenince otomatik oluşturulur.</div>
+      <div id="rpMetaAI" style="color:var(--m);font-size:12px">Veri yüklenince AI rapor oluşturabilirsiniz.</div>
       <button class="btn sm" style="margin-top:10px" onclick="rpGenerateAI('meta')">✨ AI Rapor Oluştur</button>
     </div>
   </div>
 
-  <!-- Google Paneli -->
+  <!-- GOOGLE ADS PANELİ -->
   <div id="rpGooglePanel" style="display:none">
     <div class="rapor-metric-grid">
       <div class="rapor-metric"><div class="rapor-metric-val" id="rpg-spend">—</div><div class="rapor-metric-lbl">Harcama</div></div>
@@ -88,7 +89,7 @@
       <div class="rapor-tab-wrap">
         <table class="rapor-tablo"><thead><tr>
           <th>Kampanya</th><th>Harcama</th><th>Dönüşüm</th><th>EBM</th><th>Tıklama</th><th>CTR</th><th>Gösterim</th>
-        </tr></thead><tbody id="rpGoogleTable"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--m)">Google Ads verisi bulunamadı. Entegrasyon ekle.</td></tr></tbody></table>
+        </tr></thead><tbody id="rpGoogleTable"><tr><td colspan="7" style="text-align:center;padding:20px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody></table>
       </div>
     </div>
     <div class="rapor-ai-section">
@@ -98,16 +99,73 @@
     </div>
   </div>
 
-  <!-- Genel Özet Paneli -->
+  <!-- GA4 ANALYTİCS PANELİ -->
+  <div id="rpGA4Panel" style="display:none">
+    <div class="rapor-metric-grid">
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-sessions" style="color:var(--bl)">—</div><div class="rapor-metric-lbl">Oturum</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-users">—</div><div class="rapor-metric-lbl">Kullanıcı</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-newusers" style="color:var(--g)">—</div><div class="rapor-metric-lbl">Yeni Kullanıcı</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-revenue" style="color:var(--g)">—</div><div class="rapor-metric-lbl">Gelir</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-conversions">—</div><div class="rapor-metric-lbl">Dönüşüm</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-cvr">—</div><div class="rapor-metric-lbl">CVR</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-bounce">—</div><div class="rapor-metric-lbl">Hemen Çıkma</div></div>
+      <div class="rapor-metric"><div class="rapor-metric-val" id="ga4-duration">—</div><div class="rapor-metric-lbl">Ort. Süre</div></div>
+    </div>
+
+    <!-- Trafik Kaynakları -->
+    <div class="ga4-section">
+      <div class="rapor-kart-title">🌐 Trafik Kaynakları</div>
+      <div class="rapor-tab-wrap">
+        <table class="rapor-tablo"><thead><tr>
+          <th>Kaynak / Mecra</th><th>Oturum</th><th>Kullanıcı</th><th>Gelir</th><th>Dönüşüm</th><th>CVR</th>
+        </tr></thead><tbody id="ga4-channels"><tr><td colspan="6" style="text-align:center;padding:20px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- En İyi Sayfalar -->
+    <div class="ga4-section">
+      <div class="rapor-kart-title">📄 En Çok Ziyaret Edilen Sayfalar</div>
+      <div class="rapor-tab-wrap">
+        <table class="rapor-tablo"><thead><tr>
+          <th>Sayfa</th><th>Görüntülenme</th><th>Kullanıcı</th><th>Hemen Çıkma</th><th>Ort. Süre</th>
+        </tr></thead><tbody id="ga4-pages"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <!-- Cihaz Dağılımı -->
+    <div class="ga4-section">
+      <div class="rapor-kart-title">📱 Cihaz Dağılımı</div>
+      <div id="ga4-devices" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
+    <!-- Ülke Dağılımı -->
+    <div class="ga4-section">
+      <div class="rapor-kart-title">🌍 Ülke Dağılımı</div>
+      <div class="rapor-tab-wrap">
+        <table class="rapor-tablo"><thead><tr>
+          <th>Ülke</th><th>Oturum</th><th>Kullanıcı</th><th>Gelir</th>
+        </tr></thead><tbody id="ga4-countries"><tr><td colspan="4" style="text-align:center;padding:20px;color:var(--m)">⏳ Yükleniyor...</td></tr></tbody></table>
+      </div>
+    </div>
+
+    <div class="rapor-ai-section">
+      <div class="rapor-kart-title">🤖 Analytics AI Analiz</div>
+      <div id="rpGA4AI" style="color:var(--m);font-size:12px">GA4 verileri yüklenince kapsamlı analiz oluşturabilirsiniz.</div>
+      <button class="btn sm" style="margin-top:10px" onclick="rpGenerateAI('ga4')">✨ AI Analiz Oluştur</button>
+    </div>
+  </div>
+
+  <!-- GENEL ÖZET PANELİ -->
   <div id="rpGenelPanel" style="display:none">
     <div class="rapor-kart">
       <div class="rapor-kart-title">📊 Kanal Karşılaştırması</div>
       <div class="rp-channel-row"><span>Meta Ads — Toplam Harcama</span><span id="rpg-meta-spend">—</span></div>
       <div class="rp-channel-row"><span>Meta Ads — Toplam Gelir</span><span id="rpg-meta-rev" style="color:var(--g)">—</span></div>
       <div class="rp-channel-row"><span>Meta Ads — Ort. ROAS</span><span id="rpg-meta-roas">—</span></div>
-      <div class="rp-channel-row"><span>Google Ads — Toplam Harcama</span><span style="color:var(--m)">Veri yok</span></div>
       <div class="rp-channel-row"><span>GA4 — Toplam Gelir</span><span id="rpg-ga4-rev" style="color:var(--g)">—</span></div>
       <div class="rp-channel-row"><span>GA4 — Toplam Oturum</span><span id="rpg-ga4-sess">—</span></div>
+      <div class="rp-channel-row"><span>GA4 — Toplam Kullanıcı</span><span id="rpg-ga4-users">—</span></div>
+      <div class="rp-channel-row"><span>GA4 — Dönüşüm</span><span id="rpg-ga4-conv">—</span></div>
     </div>
     <div class="rapor-ai-section">
       <div class="rapor-kart-title">🤖 Genel Kanal Analizi</div>
@@ -120,6 +178,44 @@
 <script>
 (function(){
 var rpPlatform = 'meta';
+var _ga4Cache = null;
+var _metaCache = null;
+
+// Tarih aralığı hesapla
+function getDateRange(){
+  var preset = document.getElementById('rpPreset').value || 'last_7d';
+  var today = new Date();
+  var fmt = function(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+  var end = fmt(today);
+  var start;
+  if(preset==='today') { start=end; }
+  else if(preset==='yesterday') { var d=new Date(today); d.setDate(d.getDate()-1); start=fmt(d); end=fmt(d); }
+  else if(preset==='last_7d') { var d=new Date(today); d.setDate(d.getDate()-6); start=fmt(d); }
+  else if(preset==='last_14d') { var d=new Date(today); d.setDate(d.getDate()-13); start=fmt(d); }
+  else if(preset==='last_30d') { var d=new Date(today); d.setDate(d.getDate()-29); start=fmt(d); }
+  else if(preset==='this_month') { start=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-01'; }
+  else if(preset==='last_month') { var d=new Date(today.getFullYear(),today.getMonth(),0); end=fmt(d); var d2=new Date(today.getFullYear(),today.getMonth()-1,1); start=fmt(d2); }
+  else if(preset==='maximum') { start='2020-01-01'; }
+  else { var d=new Date(today); d.setDate(d.getDate()-6); start=fmt(d); }
+  return {startDate:start, endDate:end};
+}
+
+// GA4 Preset → API format
+function getGA4Preset(){
+  var preset = document.getElementById('rpPreset').value || 'last_7d';
+  var map = {
+    'today':'today', 'yesterday':'yesterday',
+    'last_7d':'7daysAgo', 'last_14d':'14daysAgo',
+    'last_30d':'30daysAgo', 'this_month':'30daysAgo',
+    'last_month':'60daysAgo', 'maximum':'365daysAgo'
+  };
+  return map[preset] || '7daysAgo';
+}
+
+function fmt(n){ return parseInt(n||0).toLocaleString('tr'); }
+function fmtTL(n){ return parseFloat(n||0).toFixed(0)+'₺'; }
+function fmtPct(n){ return parseFloat(n||0).toFixed(1)+'%'; }
+function fmtDur(s){ var sec=parseInt(s||0); var m=Math.floor(sec/60); var sc=sec%60; return m+'dk '+sc+'sn'; }
 
 window.rpSetPlatform = function(p, el){
   rpPlatform = p;
@@ -127,27 +223,41 @@ window.rpSetPlatform = function(p, el){
   el.classList.add('active');
   document.getElementById('rpMetaPanel').style.display = p==='meta'?'':'none';
   document.getElementById('rpGooglePanel').style.display = p==='google'?'':'none';
+  document.getElementById('rpGA4Panel').style.display = p==='ga4'?'':'none';
   document.getElementById('rpGenelPanel').style.display = p==='genel'?'':'none';
-  if(p==='meta') rpLoad();
-  else if(p==='genel') rpLoadGenel();
+  rpLoad();
 };
 
 window.rpLoad = async function(){
-  if(rpPlatform!=='meta') return;
-  var preset = document.getElementById('rpPreset').value || 'last_7d';
   var st = document.getElementById('rpStatus');
   if(st) st.textContent = '⏳ Yükleniyor...';
-  var AID = window.AID || 'act_1346348685568168';
-  var api = window.api;
-  if(!api){if(st)st.textContent='⚠️ Bağlantı yok';return;}
-  try{
-    var INSF='spend,purchase_roas,actions,action_values,impressions,reach,clicks,ctr,cpm';
-    var ins = await api(AID+'/insights',{fields:INSF+',campaign_id,campaign_name',level:'campaign',limit:500,date_preset:preset,action_attribution_windows:'["7d_click","1d_view"]'});
-    var rows = (ins&&ins.data)||[];
-    var groas=window.groas||function(r){if(!r)return 0;var x=(r.purchase_roas||[]);return Array.isArray(x)&&x[0]?parseFloat(x[0].value||0):0;};
-    var gav=window.gav||function(a,t){if(!a)return 0;var x=a.find(function(v){return v.action_type===t;});return x?parseInt(x.value||0):0;};
+  if(rpPlatform==='meta') await rpLoadMeta();
+  else if(rpPlatform==='google') await rpLoadGoogle();
+  else if(rpPlatform==='ga4') await rpLoadGA4();
+  else if(rpPlatform==='genel') await rpLoadGenel();
+  if(st) st.textContent = '✓ ' + new Date().toLocaleTimeString('tr');
+};
 
-    var totSpend=0,totRev=0,totPurchase=0,totClicks=0,totImpr=0;
+// ── META ─────────────────────────────────────────────────
+async function rpLoadMeta(){
+  var api = window.api;
+  if(!api) return;
+  var preset = document.getElementById('rpPreset').value || 'last_7d';
+  var AID = window.AID || 'act_1346348685568168';
+  var groas = window.groas || function(r){ var x=(r.purchase_roas||[]); return Array.isArray(x)&&x[0]?parseFloat(x[0].value||0):0; };
+  var gav = window.gav || function(a,t){ if(!a)return 0; var x=a.find(function(v){return v.action_type===t;}); return x?parseInt(x.value||0):0; };
+  var roasColor = window.roasColor || function(v){ return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)'; };
+
+  try {
+    var ins = await api(AID+'/insights',{
+      fields:'spend,purchase_roas,actions,action_values,impressions,reach,clicks,ctr,cpm,campaign_id,campaign_name',
+      level:'campaign', limit:500, date_preset:preset,
+      action_attribution_windows:'["7d_click","1d_view"]'
+    });
+    var rows = (ins&&ins.data)||[];
+    _metaCache = rows;
+
+    var totSpend=0, totRev=0, totPurchase=0, totClicks=0, totImpr=0;
     rows.forEach(function(r){
       totSpend+=parseFloat(r.spend||0);
       var rv=(r.action_values||[]).find(function(a){return a.action_type==='purchase';});
@@ -156,190 +266,283 @@ window.rpLoad = async function(){
       totClicks+=parseInt(r.clicks||0);
       totImpr+=parseInt(r.impressions||0);
     });
-    var totROAS=totSpend>0?(totRev/totSpend):0;
-    var avgCTR=totImpr>0?(totClicks/totImpr*100):0;
-    var avgCPM=totImpr>0?(totSpend/(totImpr/1000)):0;
+    var totROAS = totSpend>0?(totRev/totSpend):0;
+    var avgCTR = totImpr>0?(totClicks/totImpr*100):0;
+    var avgCPM = totImpr>0?(totSpend/(totImpr/1000)):0;
 
-    document.getElementById('rpm-spend').textContent=totSpend.toFixed(0)+'₺';
-    document.getElementById('rpm-revenue').textContent=totRev.toFixed(0)+'₺';
-    document.getElementById('rpm-roas').textContent=totROAS.toFixed(2)+'x';
-    document.getElementById('rpm-purchase').textContent=totPurchase;
-    document.getElementById('rpm-ctr').textContent=avgCTR.toFixed(2)+'%';
-    document.getElementById('rpm-cpm').textContent=avgCPM.toFixed(2)+'₺';
+    document.getElementById('rpm-spend').textContent = totSpend.toFixed(0)+'₺';
+    document.getElementById('rpm-revenue').textContent = totRev.toFixed(0)+'₺';
+    document.getElementById('rpm-roas').textContent = totROAS.toFixed(2)+'x';
+    document.getElementById('rpm-purchase').textContent = totPurchase;
+    document.getElementById('rpm-ctr').textContent = avgCTR.toFixed(2)+'%';
+    document.getElementById('rpm-cpm').textContent = avgCPM.toFixed(2)+'₺';
 
-    // Meta genel panel için de güncelle
-    var el1=document.getElementById('rpg-meta-spend');if(el1)el1.textContent=totSpend.toFixed(0)+'₺';
-    var el2=document.getElementById('rpg-meta-rev');if(el2)el2.textContent=totRev.toFixed(0)+'₺';
-    var el3=document.getElementById('rpg-meta-roas');if(el3)el3.textContent=totROAS.toFixed(2)+'x';
+    var el1=document.getElementById('rpg-meta-spend'); if(el1) el1.textContent=totSpend.toFixed(0)+'₺';
+    var el2=document.getElementById('rpg-meta-rev'); if(el2) el2.textContent=totRev.toFixed(0)+'₺';
+    var el3=document.getElementById('rpg-meta-roas'); if(el3) el3.textContent=totROAS.toFixed(2)+'x';
 
-    var roasColor=window.roasColor||function(v){return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)';};
-    var sorted=rows.slice().sort(function(a,b){return parseFloat(b.spend||0)-parseFloat(a.spend||0);});
+    var sorted = rows.slice().sort(function(a,b){ return parseFloat(b.spend||0)-parseFloat(a.spend||0); });
     document.getElementById('rpMetaTable').innerHTML = sorted.slice(0,30).map(function(r){
       var roas=groas(r);
       var rv=(r.action_values||[]).find(function(a){return a.action_type==='purchase';});
       var rev=rv?parseFloat(rv.value||0):0;
       var pur=gav(r.actions,'purchase');
-      return `<tr>
-        <td style="font-family:'Inter',sans-serif;min-width:200px;max-width:280px;overflow:hidden;text-overflow:ellipsis">${(r.campaign_name||'—').slice(0,40)}</td>
-        <td>${parseFloat(r.spend||0).toFixed(0)}₺</td>
-        <td style="color:var(--g)">${rev.toFixed(0)}₺</td>
-        <td style="color:${roasColor(roas)}">${roas.toFixed(2)}x</td>
-        <td>${pur||'—'}</td>
-        <td>${parseFloat(r.ctr||0).toFixed(2)}%</td>
-        <td>${parseFloat(r.cpm||0).toFixed(2)}₺</td>
-      </tr>`;
+      return '<tr><td style="font-family:\'Inter\',sans-serif;min-width:200px">'+(r.campaign_name||'—').slice(0,40)+'</td>'
+        +'<td>'+parseFloat(r.spend||0).toFixed(0)+'₺</td>'
+        +'<td style="color:var(--g)">'+rev.toFixed(0)+'₺</td>'
+        +'<td style="color:'+roasColor(roas)+'">'+roas.toFixed(2)+'x</td>'
+        +'<td>'+(pur||'—')+'</td>'
+        +'<td>'+parseFloat(r.ctr||0).toFixed(2)+'%</td>'
+        +'<td>'+parseFloat(r.cpm||0).toFixed(2)+'₺</td></tr>';
     }).join('');
-    if(st)st.textContent='✓ '+(rows.length)+' kampanya · '+new Date().toLocaleTimeString('tr');
-  }catch(e){if(st)st.textContent='Hata: '+e.message;}
-};
-
-function rpLoadGenel(){
-  // GA4 verilerini güncelle
-  var ga4=window.ga4;
-  if(!ga4) return;
-  ga4('/reports/runReport',{
-    property:'properties/'+((window.GA4_PROPERTY_ID)||''),
-    dateRanges:[{startDate:'7daysAgo',endDate:'today'}],
-    metrics:[{name:'sessions'},{name:'purchaseRevenue'}]
-  }).then(function(r){
-    if(!r||!r.rows||!r.rows[0]) return;
-    var ga4val=window.ga4val||function(res,i){return res&&res.rows&&res.rows[0]?res.rows[0].metricValues[i||0].value:'0';};
-    var sessEl=document.getElementById('rpg-ga4-sess');if(sessEl)sessEl.textContent=parseInt(ga4val(r,0)).toLocaleString('tr');
-    var revEl=document.getElementById('rpg-ga4-rev');if(revEl)revEl.textContent=parseFloat(ga4val(r,1)).toFixed(0)+'₺';
-  }).catch(function(){});
+  } catch(e) { console.error('Meta rapor:', e); }
 }
 
-window.rpExport = function(type){
-  toast('📤 '+type.toUpperCase()+' dışa aktarılıyor...');
-  // Gerçek export mantığı burada
-};
+// ── GOOGLE ADS ────────────────────────────────────────────
+async function rpLoadGoogle(){
+  try {
+    var r = await fetch((window.px?window.px():localStorage.getItem('proxyUrl')||'')+'/gads/campaigns', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      credentials:'include',
+      body: JSON.stringify({date_range:'LAST_7_DAYS'})
+    });
+    var d = await r.json();
+    var rows = d.rows || [];
 
+    var totSpend=0, totConv=0, totClicks=0, totImpr=0;
+    rows.forEach(function(r){ totSpend+=r.cost||0; totConv+=r.conversions||0; totClicks+=r.clicks||0; totImpr+=r.impressions||0; });
+    var avgCPA = totConv>0?(totSpend/totConv):0;
+    var avgCTR = totImpr>0?(totClicks/totImpr*100):0;
+
+    document.getElementById('rpg-spend').textContent = totSpend.toFixed(0)+'₺';
+    document.getElementById('rpg-conv').textContent = totConv.toFixed(1);
+    document.getElementById('rpg-cpa').textContent = avgCPA.toFixed(0)+'₺';
+    document.getElementById('rpg-clicks').textContent = fmt(totClicks);
+    document.getElementById('rpg-ctr').textContent = avgCTR.toFixed(2)+'%';
+    document.getElementById('rpg-impr').textContent = fmt(totImpr);
+
+    document.getElementById('rpGoogleTable').innerHTML = rows.slice(0,30).map(function(r){
+      return '<tr><td style="font-family:\'Inter\',sans-serif">'+r.name.slice(0,40)+'</td>'
+        +'<td>'+r.cost.toFixed(0)+'₺</td>'
+        +'<td>'+r.conversions.toFixed(1)+'</td>'
+        +'<td>'+r.cpa.toFixed(0)+'₺</td>'
+        +'<td>'+fmt(r.clicks)+'</td>'
+        +'<td>'+r.ctr.toFixed(2)+'%</td>'
+        +'<td>'+fmt(r.impressions)+'</td></tr>';
+    }).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--m)">Veri bulunamadı</td></tr>';
+  } catch(e) {
+    document.getElementById('rpGoogleTable').innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--m)">Google Ads entegrasyonu gerekli</td></tr>';
+  }
+}
+
+// ── GA4 ANALYTİCS ─────────────────────────────────────────
+async function rpLoadGA4(){
+  var ga4fn = window.ga4;
+  if(!ga4fn){ document.getElementById('ga4-channels').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--m)">GA4 entegrasyonu gerekli</td></tr>'; return; }
+  var startDate = getGA4Prefix();
+
+  try {
+    // Ana metrikler
+    var main = await ga4fn({
+      dateRanges:[{startDate:startDate, endDate:'today'}],
+      metrics:[
+        {name:'sessions'},{name:'totalUsers'},{name:'newUsers'},
+        {name:'purchaseRevenue'},{name:'conversions'},
+        {name:'bounceRate'},{name:'averageSessionDuration'}
+      ]
+    });
+    if(main && main.rows && main.rows[0]){
+      var mv = main.rows[0].metricValues;
+      var sessions = parseInt(mv[0]?.value||0);
+      var users = parseInt(mv[1]?.value||0);
+      var newUsers = parseInt(mv[2]?.value||0);
+      var revenue = parseFloat(mv[3]?.value||0);
+      var conversions = parseInt(mv[4]?.value||0);
+      var bounce = parseFloat(mv[5]?.value||0)*100;
+      var duration = parseFloat(mv[6]?.value||0);
+      var cvr = sessions>0?(conversions/sessions*100):0;
+
+      document.getElementById('ga4-sessions').textContent = fmt(sessions);
+      document.getElementById('ga4-users').textContent = fmt(users);
+      document.getElementById('ga4-newusers').textContent = fmt(newUsers);
+      document.getElementById('ga4-revenue').textContent = revenue.toFixed(0)+'₺';
+      document.getElementById('ga4-conversions').textContent = fmt(conversions);
+      document.getElementById('ga4-cvr').textContent = cvr.toFixed(2)+'%';
+      document.getElementById('ga4-bounce').textContent = bounce.toFixed(1)+'%';
+      document.getElementById('ga4-duration').textContent = fmtDur(duration);
+
+      // Genel panel için
+      var el1=document.getElementById('rpg-ga4-rev'); if(el1) el1.textContent=revenue.toFixed(0)+'₺';
+      var el2=document.getElementById('rpg-ga4-sess'); if(el2) el2.textContent=fmt(sessions);
+      var el3=document.getElementById('rpg-ga4-users'); if(el3) el3.textContent=fmt(users);
+      var el4=document.getElementById('rpg-ga4-conv'); if(el4) el4.textContent=fmt(conversions);
+
+      _ga4Cache = {sessions,users,revenue,conversions,bounce,duration};
+    }
+
+    // Trafik kaynakları
+    var channels = await ga4fn({
+      dateRanges:[{startDate:startDate, endDate:'today'}],
+      dimensions:[{name:'sessionDefaultChannelGroup'}],
+      metrics:[{name:'sessions'},{name:'totalUsers'},{name:'purchaseRevenue'},{name:'conversions'}],
+      orderBys:[{metric:{metricName:'sessions'},desc:true}],
+      limit:10
+    });
+    if(channels && channels.rows){
+      var maxSess = Math.max.apply(null, channels.rows.map(function(r){ return parseInt(r.metricValues[0]?.value||0); }));
+      document.getElementById('ga4-channels').innerHTML = channels.rows.map(function(r){
+        var sess = parseInt(r.metricValues[0]?.value||0);
+        var usr = parseInt(r.metricValues[1]?.value||0);
+        var rev = parseFloat(r.metricValues[2]?.value||0);
+        var conv = parseInt(r.metricValues[3]?.value||0);
+        var cvr = sess>0?(conv/sess*100):0;
+        var ch = r.dimensionValues[0]?.value||'—';
+        return '<tr><td style="font-family:\'Inter\',sans-serif">'+ch+'</td>'
+          +'<td>'+fmt(sess)+'</td><td>'+fmt(usr)+'</td>'
+          +'<td style="color:var(--g)">'+rev.toFixed(0)+'₺</td>'
+          +'<td>'+fmt(conv)+'</td>'
+          +'<td>'+cvr.toFixed(2)+'%</td></tr>';
+      }).join('');
+    } else {
+      document.getElementById('ga4-channels').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--m)">Veri bulunamadı</td></tr>';
+    }
+
+    // En iyi sayfalar
+    var pages = await ga4fn({
+      dateRanges:[{startDate:startDate, endDate:'today'}],
+      dimensions:[{name:'pagePath'}],
+      metrics:[{name:'screenPageViews'},{name:'totalUsers'},{name:'bounceRate'},{name:'averageSessionDuration'}],
+      orderBys:[{metric:{metricName:'screenPageViews'},desc:true}],
+      limit:15
+    });
+    if(pages && pages.rows){
+      document.getElementById('ga4-pages').innerHTML = pages.rows.map(function(r){
+        var path = r.dimensionValues[0]?.value||'/';
+        var views = parseInt(r.metricValues[0]?.value||0);
+        var usr = parseInt(r.metricValues[1]?.value||0);
+        var bounce = parseFloat(r.metricValues[2]?.value||0)*100;
+        var dur = parseFloat(r.metricValues[3]?.value||0);
+        return '<tr><td style="font-family:\'Inter\',sans-serif;max-width:200px;overflow:hidden;text-overflow:ellipsis">'+path+'</td>'
+          +'<td>'+fmt(views)+'</td><td>'+fmt(usr)+'</td>'
+          +'<td>'+(bounce>50?'<span style="color:var(--r)">':'<span style="color:var(--g)">')+bounce.toFixed(1)+'%</span></td>'
+          +'<td>'+fmtDur(dur)+'</td></tr>';
+      }).join('');
+    }
+
+    // Cihaz dağılımı
+    var devices = await ga4fn({
+      dateRanges:[{startDate:startDate, endDate:'today'}],
+      dimensions:[{name:'deviceCategory'}],
+      metrics:[{name:'sessions'},{name:'purchaseRevenue'}],
+      orderBys:[{metric:{metricName:'sessions'},desc:true}]
+    });
+    if(devices && devices.rows){
+      var totDevSess = devices.rows.reduce(function(s,r){ return s+parseInt(r.metricValues[0]?.value||0); }, 0);
+      var icons = {mobile:'📱',desktop:'💻',tablet:'📟'};
+      document.getElementById('ga4-devices').innerHTML = devices.rows.map(function(r){
+        var cat = r.dimensionValues[0]?.value||'—';
+        var sess = parseInt(r.metricValues[0]?.value||0);
+        var rev = parseFloat(r.metricValues[1]?.value||0);
+        var pct = totDevSess>0?(sess/totDevSess*100):0;
+        return '<div style="display:flex;align-items:center;gap:10px">'
+          +'<span style="font-size:18px">'+(icons[cat]||'🖥️')+'</span>'
+          +'<div style="flex:1">'
+          +'<div style="display:flex;justify-content:space-between;margin-bottom:4px">'
+          +'<span style="font-size:12px;text-transform:capitalize">'+cat+'</span>'
+          +'<span style="font-size:12px;font-family:\'DM Mono\',monospace">'+fmt(sess)+' oturum · '+pct.toFixed(1)+'%</span>'
+          +'</div>'
+          +'<div class="ga4-bar"><div class="ga4-bar-fill" style="width:'+pct+'%"></div></div>'
+          +'</div>'
+          +'<span style="font-size:12px;font-family:\'DM Mono\',monospace;color:var(--g);min-width:60px;text-align:right">'+rev.toFixed(0)+'₺</span>'
+          +'</div>';
+      }).join('');
+    }
+
+    // Ülkeler
+    var countries = await ga4fn({
+      dateRanges:[{startDate:startDate, endDate:'today'}],
+      dimensions:[{name:'country'}],
+      metrics:[{name:'sessions'},{name:'totalUsers'},{name:'purchaseRevenue'}],
+      orderBys:[{metric:{metricName:'sessions'},desc:true}],
+      limit:10
+    });
+    if(countries && countries.rows){
+      document.getElementById('ga4-countries').innerHTML = countries.rows.map(function(r){
+        var country = r.dimensionValues[0]?.value||'—';
+        var sess = parseInt(r.metricValues[0]?.value||0);
+        var usr = parseInt(r.metricValues[1]?.value||0);
+        var rev = parseFloat(r.metricValues[2]?.value||0);
+        return '<tr><td style="font-family:\'Inter\',sans-serif">'+country+'</td>'
+          +'<td>'+fmt(sess)+'</td><td>'+fmt(usr)+'</td>'
+          +'<td style="color:var(--g)">'+rev.toFixed(0)+'₺</td></tr>';
+      }).join('');
+    }
+
+  } catch(e) {
+    console.error('GA4 rapor:', e);
+    document.getElementById('ga4-channels').innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--r)">GA4 bağlantı hatası: '+e.message+'</td></tr>';
+  }
+}
+
+function getGA4Prefix(){
+  var preset = document.getElementById('rpPreset').value || 'last_7d';
+  var map = {
+    'today':'today','yesterday':'yesterday',
+    'last_7d':'7daysAgo','last_14d':'14daysAgo',
+    'last_30d':'30daysAgo','this_month':'30daysAgo',
+    'last_month':'60daysAgo','maximum':'365daysAgo'
+  };
+  return map[preset] || '7daysAgo';
+}
+
+// ── GENEL ÖZET ────────────────────────────────────────────
+async function rpLoadGenel(){
+  await Promise.all([rpLoadMeta(), rpLoadGA4()]);
+}
+
+// ── AI RAPOR ─────────────────────────────────────────────
 window.rpGenerateAI = async function(platform){
-  var elId = platform==='meta'?'rpMetaAI':platform==='google'?'rpGoogleAI':'rpGenelAI';
+  var elId = {meta:'rpMetaAI', google:'rpGoogleAI', ga4:'rpGA4AI', genel:'rpGenelAI'}[platform] || 'rpGenelAI';
   var el = document.getElementById(elId);
   if(!el) return;
-  el.innerHTML='<div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px;color:var(--m);font-size:12px">AI rapor oluşturuluyor...</span></div>';
-  var cfg = {
-    meta:{sys:`Meta Ads rapor uzmanı. Türkçe. Kampanyalar: ${JSON.stringify((MX.campStore||[]).slice(0,8).map(function(r){return{k:(r.name||'').slice(0,25),h:r.spend,roas:r.roas,satis:r.purchase};}))}`},
-    google:{sys:'Google Ads rapor uzmanı. Türkçe. Google kampanya verilerini analiz et.'},
-    genel:{sys:`Çok kanallı dijital pazarlama rapor uzmanı. Türkçe. Meta+GA4 verileri: ${JSON.stringify((MX.campStore||[]).slice(0,6).map(function(r){return{k:(r.name||'').slice(0,20),spend:r.spend,roas:r.roas};}))}`}
+  el.innerHTML = '<div class="thinking"><div class="d"></div><div class="d"></div><div class="d"></div><span style="margin-left:8px;color:var(--m);font-size:12px">AI analiz oluşturuluyor...</span></div>';
+
+  var dataStr = '';
+  if(platform==='meta' && _metaCache){
+    dataStr = JSON.stringify(_metaCache.slice(0,8).map(function(r){
+      var groas=window.groas||function(r){var x=(r.purchase_roas||[]);return Array.isArray(x)&&x[0]?parseFloat(x[0].value||0):0;};
+      var gav=window.gav||function(a,t){if(!a)return 0;var x=a.find(function(v){return v.action_type===t;});return x?parseInt(x.value||0):0;};
+      var rv=(r.action_values||[]).find(function(a){return a.action_type==='purchase';});
+      return {kampanya:(r.campaign_name||'').slice(0,30), harcama:parseFloat(r.spend||0).toFixed(0), roas:groas(r).toFixed(2), satis:gav(r.actions,'purchase'), gelir:rv?parseFloat(rv.value||0).toFixed(0):0};
+    }));
+  } else if(platform==='ga4' && _ga4Cache){
+    dataStr = JSON.stringify(_ga4Cache);
+  }
+
+  var sysMap = {
+    meta: 'Sen bir Meta Ads performans analisti ve dijital pazarlama uzmanısın. Verilen kampanya verilerini Türkçe analiz et.',
+    google: 'Sen bir Google Ads uzmanısın. Kampanya verilerini Türkçe analiz et ve optimizasyon önerileri sun.',
+    ga4: 'Sen bir web analitik uzmanısın. GA4 verilerini Türkçe analiz et. Trafik, dönüşüm ve kullanıcı davranışı hakkında içgörüler sun.',
+    genel: 'Sen çok kanallı dijital pazarlama uzmanısın. Meta Ads ve GA4 verilerini birlikte Türkçe analiz et.'
   };
-  var sysPrompt = (cfg[platform]||cfg.genel).sys;
-  var userMsg = platform==='meta'?'Son dönem Meta Ads performansını analiz et. En iyi ve en kötü kampanyaları belirle, önerilerde bulun.':
-    platform==='google'?'Google Ads kampanya performansını analiz et ve optimizasyon önerileri sun.':
-    'Tüm reklam kanallarımızı karşılaştır. Meta ve Google kanallarının performansını değerlendir.';
-  var reply = await claude([{role:'user',content:userMsg}], sysPrompt);
-  addClaudeMsg(reply, elId);
+  var userMap = {
+    meta: 'Bu Meta Ads kampanya verilerini analiz et: '+dataStr+'. En iyi ve en kötü kampanyaları belirle, ROAS optimizasyonu için öneriler sun.',
+    google: 'Google Ads performansını analiz et ve optimize etme önerileri sun.',
+    ga4: 'Bu GA4 analitik verilerini analiz et: '+dataStr+'. Trafik kaynakları, dönüşüm oranları ve kullanıcı davranışı hakkında içgörüler ve öneriler sun.',
+    genel: 'Tüm dijital pazarlama kanallarımı karşılaştır ve genel bir performans değerlendirmesi yap. Meta ve GA4 verileri: '+dataStr
+  };
+
+  var reply = await claude([{role:'user',content:userMap[platform]||userMap.genel}], sysMap[platform]||sysMap.genel);
+  if(window.addClaudeMsg) addClaudeMsg(reply, elId);
+  else el.innerHTML = reply;
 };
 
 // İlk yükleme
-if(window._isConnected) rpLoad();
-else window.addEventListener('mx:connected', function _rp(){
-  window.removeEventListener('mx:connected', _rp);
+function _init(){
   rpLoad();
-});
+}
+if(window._isConnected) _init();
+else window.addEventListener('mx:connected', function _rp(){ window.removeEventListener('mx:connected',_rp); _init(); });
+
 })();
-
-// ── Raporlar Date Picker ──────────────────────────────────
-var _rpDpOpen = false;
-var RP_PRESETS = [
-  {v:'today',l:'Bugün'},{v:'yesterday',l:'Dün'},
-  {v:'last_7d',l:'Son 7 gün'},{v:'last_14d',l:'Son 14 gün'},
-  {v:'last_30d',l:'Son 30 gün'},{v:'this_month',l:'Bu ay'},
-  {v:'last_month',l:'Geçen ay'},{v:'maximum',l:'Maksimum'}
-];
-function _rpDpToday(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function _rpDpOffset(n){var d=new Date();d.setDate(d.getDate()-n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function _rpDpFmt(iso){if(!iso)return'';var p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]).toLocaleDateString('tr',{day:'numeric',month:'short',year:'numeric'});}
-
-window.rpDpToggle = function(){
-  var pop=document.getElementById('rpDpPopup');
-  if(!pop)return;
-  if(_rpDpOpen){rpDpClose();return;}
-  var presetsEl=document.getElementById('rpDpPresets');
-  if(presetsEl&&!presetsEl.children.length){
-    RP_PRESETS.forEach(function(p){
-      var row=document.createElement('div');row.className='dp-preset-item';
-      var dot=document.createElement('span');dot.className='dp-preset-dot';dot.id='rpDpDot_'+p.v;
-      var txt=document.createElement('span');txt.textContent=p.l;
-      row.appendChild(dot);row.appendChild(txt);
-      row.onclick=function(){_rpDpPick(p.v,p.l);};
-      presetsEl.appendChild(row);
-    });
-  }
-  var fi=document.getElementById('rpDpFrom'),ti=document.getElementById('rpDpTo');
-  if(fi)fi.value=_rpDpOffset(6);if(ti)ti.value=_rpDpToday();
-  _rpDpDots('last_7d');
-  var btn=document.getElementById('rpDpTrigger'),rect=btn.getBoundingClientRect();
-  var pw=330,left=Math.min(rect.right-pw,window.innerWidth-pw-8);if(left<8)left=8;
-  if(window.innerWidth<=700){pop.style.cssText='display:block;position:fixed;bottom:0;left:0;width:100%;z-index:99999';}
-  else{pop.style.cssText='display:block;position:fixed;top:'+(rect.bottom+6)+'px;left:'+left+'px;width:'+pw+'px;z-index:99999';}
-  _rpDpOpen=true;
-  setTimeout(function(){document.addEventListener('mousedown',_rpDpOut);},10);
-};
-function _rpDpDots(active){
-  RP_PRESETS.forEach(function(p){
-    var d=document.getElementById('rpDpDot_'+p.v);
-    if(d){d.style.background=p.v===active?'#1877f2':'transparent';d.style.borderColor=p.v===active?'#1877f2':'transparent';}
-  });
-}
-function _rpDpPick(val,label){
-  var from='',to=_rpDpToday();
-  if(val==='today'){from=to;}
-  else if(val==='yesterday'){from=_rpDpOffset(1);to=_rpDpOffset(1);}
-  else if(val==='last_7d'){from=_rpDpOffset(6);}
-  else if(val==='last_14d'){from=_rpDpOffset(13);}
-  else if(val==='last_30d'){from=_rpDpOffset(29);}
-  else if(val==='this_month'){var n=new Date();from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
-  else if(val==='last_month'){var n=new Date();n.setDate(0);to=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');n.setDate(1);from=n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-01';}
-  else if(val==='maximum'){from='2020-01-01';}
-  var pre=document.getElementById('rpPreset'),mFr=document.getElementById('rpFrom'),mTo=document.getElementById('rpTo');
-  if(pre)pre.value=val;if(mFr)mFr.value='';if(mTo)mTo.value='';
-  var lbl=document.getElementById('rpDpLabel');if(lbl)lbl.textContent=label;
-  rpDpClose();
-  setTimeout(rpLoad,50);
-}
-window.rpDpClose = function(){
-  var pop=document.getElementById('rpDpPopup');if(pop)pop.style.display='none';
-  _rpDpOpen=false;document.removeEventListener('mousedown',_rpDpOut);
-};
-function _rpDpOut(e){
-  var pop=document.getElementById('rpDpPopup'),btn=document.getElementById('rpDpTrigger');
-  if(pop&&!pop.contains(e.target)&&btn&&!btn.contains(e.target))rpDpClose();
-}
-window.rpDpApply = function(){
-  var fi=document.getElementById('rpDpFrom'),ti=document.getElementById('rpDpTo');
-  if(!fi||!ti||!fi.value||!ti.value){toast('Tarih seçin');return;}
-  if(fi.value>ti.value){toast('Bitiş tarihi başlangıçtan önce olamaz');return;}
-  var pre=document.getElementById('rpPreset'),mFr=document.getElementById('rpFrom'),mTo=document.getElementById('rpTo');
-  if(pre)pre.value='custom';if(mFr)mFr.value=fi.value;if(mTo)mTo.value=ti.value;
-  var lbl=document.getElementById('rpDpLabel');if(lbl)lbl.textContent=_rpDpFmt(fi.value)+' - '+_rpDpFmt(ti.value);
-  rpDpClose();
-  setTimeout(rpLoad,50);
-};
 </script>
-
-<!-- Raporlar Date Picker Popup -->
-<div id="rpDpPopup" style="display:none;position:fixed;z-index:99999">
-  <div class="dp-popup-wrap">
-    <div class="dp-preset-section">
-      <div class="dp-preset-lbl">Hızlı Seçim</div>
-      <div id="rpDpPresets"></div>
-    </div>
-    <div class="dp-custom-section">
-      <div class="dp-custom-lbl">Özel Aralık</div>
-      <div class="dp-inputs-row">
-        <div class="dp-input-group"><label>Başlangıç</label><input type="date" id="rpDpFrom"></div>
-        <div class="dp-arrow">→</div>
-        <div class="dp-input-group"><label>Bitiş</label><input type="date" id="rpDpTo"></div>
-      </div>
-    </div>
-    <div class="dp-footer-row">
-      <div class="dp-range-info" id="rpDpRangeInfo"></div>
-      <div style="display:flex;gap:8px;flex-shrink:0">
-        <button class="dp-btn-cancel" onclick="rpDpClose()">İptal</button>
-        <button class="dp-btn-apply" onclick="rpDpApply()">Güncelle</button>
-      </div>
-    </div>
-  </div>
-</div>
