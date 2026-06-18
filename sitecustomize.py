@@ -86,3 +86,39 @@ try:
     _requests.post = _mx_post
 except Exception:
     pass
+
+
+# Analitik SPA route ve index.html script enjeksiyonu
+try:
+    import flask as _flask
+    from flask import Response as _Response
+
+    _mx_original_send_from_directory = _flask.send_from_directory
+
+    def _mx_send_from_directory(directory, path, *args, **kwargs):
+        try:
+            if str(path) == 'index.html':
+                full_path = os.path.join(str(directory), str(path))
+                if os.path.exists(full_path):
+                    with open(full_path, 'r', encoding='utf-8') as f:
+                        html = f.read()
+                    tag = '<script src="/modules/analitik-route.js?v=20260618"></script>'
+                    if 'analitik-route.js' not in html:
+                        html = html.replace('</body>', tag + '</body>')
+                    return _Response(html, mimetype='text/html')
+        except Exception:
+            pass
+        return _mx_original_send_from_directory(directory, path, *args, **kwargs)
+
+    _flask.send_from_directory = _mx_send_from_directory
+
+    _mx_original_wsgi_app = _flask.Flask.wsgi_app
+
+    def _mx_wsgi_app(self, environ, start_response):
+        if environ.get('PATH_INFO') == '/analitik':
+            environ['PATH_INFO'] = '/'
+        return _mx_original_wsgi_app(self, environ, start_response)
+
+    _flask.Flask.wsgi_app = _mx_wsgi_app
+except Exception:
+    pass
