@@ -21,11 +21,16 @@ def CORS(app, *args, **kwargs):
                 return send_from_directory('.', 'analitik.html')
             return send_from_directory('.', 'index.html')
 
-        # Do not crash if Railway hot reload imports twice.
         if 'madmext_analitik_page' not in app.view_functions:
             app.add_url_rule('/analitik', 'madmext_analitik_page', _serve_analitik)
     except Exception as e:
         print('Analitik route shim error:', e)
+
+    try:
+        from trendyol_fallback import install as _install_trendyol_fallback
+        _install_trendyol_fallback(app)
+    except Exception as e:
+        print('Trendyol fallback shim error:', e)
 
     try:
         @app.after_request
