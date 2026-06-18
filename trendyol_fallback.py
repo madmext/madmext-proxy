@@ -1,7 +1,19 @@
-import os, json, io
+import os, json, io, hashlib
 from datetime import datetime
 
 LOG_FILE='madmext_logs.json'
+
+DATA_KEYS=['urun','magaza','influencer','meta','urun_detay','influencer_detay']
+
+TYPE_LABELS={
+    'urun':'Ürün Reklamları',
+    'urun_detay':'Ürün Detay',
+    'magaza':'Mağaza Reklamları',
+    'influencer':'Influencer Reklamları',
+    'influencer_detay':'Influencer Detay',
+    'meta':'Meta Trendyol',
+    'influencer_user_summary':'Influencer Özet'
+}
 
 def _read():
     try:
@@ -25,6 +37,8 @@ def _num(v):
         return float(s.replace('.','').replace(',','.'))
     except Exception:return 0
 
+def _checksum(data): return hashlib.sha256(data or b'').hexdigest()
+
 def _score(r):
     return _num(r.get('harcama'))+_num(r.get('toplam_ciro') or r.get('ciro'))+_num(r.get('toplam_satis') or r.get('satis'))+_num(r.get('tiklanma'))+_num(r.get('ziyaret'))+_num(r.get('goruntulenme'))+_num(r.get('roas'))
 
@@ -39,9 +53,10 @@ def _dedupe(t,rows):
         k=_key(t,r)
         if not k or k.count('|')==len(k): continue
         old=m.get(k)
-        if old is None:m[k]=r
+        if old is None:
+            n=dict(r); n['_dedupe_key']=k; m[k]=n
         elif _score(r)>=_score(old):
-            n=dict(old); n.update(r); m[k]=n
+            n=dict(old); n.update(r); n['_dedupe_key']=k; m[k]=n
     return list(m.values())
 
 def _headers(ws): return [_safe(c.value) for c in ws[1]]
@@ -123,35 +138,75 @@ def _parse_wb(wb):
             parsed.setdefault(key,[]); parsed[key].extend(_rows(ws,t))
     return parsed,detected
 
+def _counts(d):
+    return {k:len(_dedupe(k,(d or {}).get(k,[]))) for k in DATA_KEYS}
+
 def install(app):
-    from flask import request,jsonify
+    from flask import request,jsonify,session
     @app.before_request
     def ty_no_db_fallback():
         if os.environ.get('DATABASE_URL'):return None
-        keys=['urun','magaza','influencer','meta','urun_detay','influencer_detay']
         if request.path=='/trendyol/data' and request.method=='GET':
             logs=_read(); d=(logs.get('trendyol_fallback') or {})
-            cleaned={k:_dedupe(k,d.get(k,[])) for k in keys}
+            cleaned={k:_dedupe(k,d.get(k,[])) for k in DATA_KEYS}
             if cleaned!=d: logs['trendyol_fallback']=cleaned; _write(logs)
             return jsonify(cleaned)
         if request.path=='/trendyol/stats' and request.method=='GET':
             d=(_read().get('trendyol_fallback') or {})
-            return jsonify({k:len(_dedupe(k,d.get(k,[]))) for k in keys})
+            stats=_counts(d)
+            uploads=_read().get('trendyol_uploads',[])
+            stats['uploads']=len(uploads)
+            stats['last_upload']=uploads[0] if uploads else None
+            return jsonify(stats)
+        if request.path=='/trendyol/uploads' and request.method=='GET':
+            logs=_read(); uploads=logs.get('trendyol_uploads',[])
+            return jsonify({'uploads':uploads[:200], 'stats':_counts(logs.get('trendyol_fallback') or {})})
         if request.path=='/trendyol/upload' and request.method=='POST':
             f=request.files.get('file')
             if not f:return jsonify({'error':'Dosya bulunamadi','success':False})
             try:
                 import openpyxl
-                wb=openpyxl.load_workbook(io.BytesIO(f.read()))
+                raw=f.read(); ch=_checksum(raw); filename=getattr(f,'filename','') or 'trendyol.xlsx'
+                logs=_read(); uploads=logs.setdefault('trendyol_uploads',[])
+                existing=next((u for u in uploads if u.get('checksum')==ch),None)
+                if existing:
+                    existing['last_seen_at']=datetime.utcnow().isoformat()
+                    existing['duplicate_seen_count']=int(existing.get('duplicate_seen_count') or 0)+1
+                    logs.setdefault('actionLog',[]).insert(0,{'type':'trendyol_duplicate_upload','file':filename,'checksum':ch[:12],'serverTime':datetime.utcnow().isoformat()})
+                    logs['actionLog']=logs.get('actionLog',[])[:500]; _write(logs)
+                    return jsonify({'success':True,'duplicate':True,'count':0,'type':existing.get('dosya_tipi','Tekrar Yüklenen Dosya'),'tab':existing.get('tab','urun'),'message':'Bu dosya daha önce yüklenmiş. Veri çoğaltılmadı.','upload':existing})
+                wb=openpyxl.load_workbook(io.BytesIO(raw))
                 parsed,detected=_parse_wb(wb)
                 if not any(parsed[k] for k in parsed):return jsonify({'error':'Taninmayan Trendyol Excel raporu','success':False,'detected':detected})
-                logs=_read(); store=logs.setdefault('trendyol_fallback',{'urun':[],'magaza':[],'influencer':[],'meta':[],'urun_detay':[],'influencer_detay':[]})
-                total=0
+                store=logs.setdefault('trendyol_fallback',{'urun':[],'magaza':[],'influencer':[],'meta':[],'urun_detay':[],'influencer_detay':[]})
+                before=_counts(store); incoming=0; after_counts={}
                 for k,rows in parsed.items():
                     if not rows:continue
-                    store.setdefault(k,[]); store[k]=_dedupe(k,store[k]+rows)[-5000:]; total+=len(rows)
-                logs.setdefault('actionLog',[]).insert(0,{'type':'trendyol_upload_fallback','detected':detected,'incoming':total,'file':getattr(f,'filename',''),'serverTime':datetime.utcnow().isoformat()})
+                    incoming+=len(rows)
+                    store.setdefault(k,[])
+                    store[k]=_dedupe(k,store[k]+rows)[-5000:]
+                after=_counts(store)
+                for k in DATA_KEYS: after_counts[k]=after.get(k,0)-before.get(k,0)
+                main_type=next((x for x in detected if x!='unknown'), 'unknown')
+                label='Influencer Reklamlari' if any(x in detected for x in ['influencer','influencer_detay','influencer_user_summary']) else ','.join([TYPE_LABELS.get(x,x) for x in detected if x!='unknown'])
+                upload={
+                    'upload_id': ch[:16],
+                    'dosya_adi': filename,
+                    'dosya_tipi': label or TYPE_LABELS.get(main_type,main_type),
+                    'tab': 'influencer' if any(x in detected for x in ['influencer','influencer_detay','influencer_user_summary']) else main_type,
+                    'yukleme_tarihi': datetime.utcnow().isoformat(),
+                    'satir_sayisi': incoming,
+                    'tekil_eklenen': sum(v for v in after_counts.values() if v>0),
+                    'checksum': ch,
+                    'checksum_short': ch[:12],
+                    'yukleyen_kullanici': session.get('user_email',''),
+                    'detected': detected,
+                    'changes': after_counts,
+                    'duplicate_seen_count': 0
+                }
+                uploads.insert(0,upload); logs['trendyol_uploads']=uploads[:300]
+                logs.setdefault('actionLog',[]).insert(0,{'type':'trendyol_upload_fallback','detected':detected,'incoming':incoming,'unique_added':upload['tekil_eklenen'],'file':filename,'checksum':ch[:12],'serverTime':datetime.utcnow().isoformat()})
                 logs['actionLog']=logs.get('actionLog',[])[:500]; _write(logs)
-                return jsonify({'success':True,'count':total,'type':'Influencer Reklamlari' if ('influencer' in detected or 'influencer_detay' in detected or 'influencer_user_summary' in detected) else ','.join(detected),'tab':'influencer' if any(x in detected for x in ['influencer','influencer_detay','influencer_user_summary']) else detected[0],'fallback':True})
+                return jsonify({'success':True,'count':incoming,'unique_added':upload['tekil_eklenen'],'type':upload['dosya_tipi'],'tab':upload['tab'],'fallback':True,'upload':upload})
             except Exception as e:return jsonify({'error':str(e),'success':False})
         return None
