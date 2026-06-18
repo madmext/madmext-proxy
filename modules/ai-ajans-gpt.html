@@ -2,7 +2,7 @@
   <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px">
     <div>
       <h2 style="margin:0 0 6px;font-size:24px">Madmext AI Ajans</h2>
-      <p style="margin:0;color:#9ca3af;font-size:13px;line-height:1.5">Şu an güvenli Claude motoru aktif. GPT bağlantısı için ayrı /openai endpoint’i eklenecek.</p>
+      <p style="margin:0;color:#9ca3af;font-size:13px;line-height:1.5">Claude motoru aktif. Ajan seçip rapor alabilir veya seçili ajanla yazışabilirsin.</p>
     </div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
       <select id="mxEngine" onchange="mxSetEngine(this.value)" style="background:#111827;color:#fff;border:1px solid #374151;border-radius:10px;padding:10px">
@@ -28,7 +28,9 @@
         <button onclick="mxTask('Bu hafta öncelik verilmesi gereken işleri sırala.')">Öncelik Çıkar</button>
         <button onclick="mxTask('Riskleri, eksikleri ve ölçülecek metrikleri yaz.')">Risk Kontrol</button>
       </div>
-      <pre id="report" style="flex:1;background:#050608;border:1px solid #1f2937;border-radius:12px;padding:14px;color:#d1d5db;white-space:pre-wrap;font-size:12px;line-height:1.6;overflow:auto">Ajans hazır. Ajan seç ve rapor başlat.</pre>
+      <textarea id="customMsg" placeholder="Seçili ajana mesaj yaz... Örn: Bugün Madmext için keten pantolon SEO fırsatlarını çıkar." style="background:#111827;color:#e5e7eb;border:1px solid #374151;border-radius:12px;padding:10px;min-height:78px;margin-bottom:8px;resize:vertical;font-family:Inter,Arial,sans-serif;font-size:12px"></textarea>
+      <button onclick="mxCustomChat()" style="background:#1877f2;color:#fff;border:0;border-radius:10px;padding:10px 12px;font-weight:700;margin-bottom:12px">Mesaj Gönder</button>
+      <pre id="report" style="flex:1;background:#050608;border:1px solid #1f2937;border-radius:12px;padding:14px;color:#d1d5db;white-space:pre-wrap;font-size:12px;line-height:1.6;overflow:auto">Ajans hazır. Ajan seç ve rapor başlat veya mesaj yaz.</pre>
       <div style="font-size:11px;color:#9ca3af;margin-top:10px">Claude için Railway Variables: ANTHROPIC_KEY</div>
     </aside>
   </div>
@@ -44,10 +46,12 @@
     const AGENTS={aria:['Aria — Strateji','Reklam stratejisi ve bütçe yönü çıkarır.'],nova:['Nova — Pazar Araştırma','Rakip, trend ve kategori fırsatlarını inceler.'],orion:['Orion — Proje Yönetimi','İşleri öncelik ve takip sırasına koyar.'],luna:['Luna — İçerik','Reklam metni, ürün ve kategori söylemi üretir.'],pixel:['Pixel — Tasarım','Kreatif fikir, banner ve görsel açı önerir.'],rex:['Rex — Video','Reels, TikTok ve UGC video akışı hazırlar.'],sage:['Sage — SEO','Kategori, ürün ve blog SEO fırsatı çıkarır.'],vibe:['Vibe — Sosyal Medya','Sosyal medya takvimi ve paylaşım önerir.'],byte:['Byte — Web & Veri','Trafik, dönüşüm ve site verisini yorumlar.']};
     let current='aria';let engine='claude';
     function renderAgents(){agents.innerHTML='';Object.keys(AGENTS).forEach(k=>{let b=document.createElement('button');b.className=k===current?'active':'';b.onclick=()=>selectAgent(k);b.innerHTML='<b>'+AGENTS[k][0]+'</b><br><span style="color:#9ca3af;font-size:11px">'+AGENTS[k][1]+'</span>';agents.appendChild(b);});}
-    function selectAgent(k){current=k;agentName.textContent=AGENTS[k][0];agentDesc.textContent=AGENTS[k][1];report.textContent=AGENTS[k][0]+' seçildi.';renderAgents();}
+    function selectAgent(k){current=k;agentName.textContent=AGENTS[k][0];agentDesc.textContent=AGENTS[k][1];report.textContent=AGENTS[k][0]+' seçildi. Rapor başlatabilir veya mesaj yazabilirsin.';renderAgents();}
     function mxSetEngine(v){engine='claude';}
     async function ask(prompt){let payload={model:'claude-sonnet-4-5',max_tokens:1600,messages:[{role:'user',content:prompt}]};let r=await fetch('/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});let d=await r.json();if(!r.ok)throw new Error((d.error&&(d.error.message||d.error))||'AI hatası');if(d.content&&d.content[0]&&d.content[0].text)return d.content[0].text;if(d.response)return d.response;return JSON.stringify(d,null,2);}
-    async function mxTask(task){report.textContent=AGENTS[current][0]+' Claude ile çalışıyor...';let p='Sen Madmext ADS sanal ajansındaki '+AGENTS[current][0]+' ajanısın. Görevin: '+task+' Marka: madmext.com, moda e-ticaret, Meta Ads, Google Ads, SEO, sosyal medya, kreatif, pazaryeri reklamları. Türkçe yaz. Format: kısa özet, fırsatlar, aksiyonlar, öncelik, metrikler.';try{report.textContent=await ask(p)}catch(e){report.textContent='Hata: '+e.message}}
+    function basePrompt(task){return 'Sen Madmext ADS sanal ajansındaki '+AGENTS[current][0]+' ajanısın. Görevin: '+task+' Marka: madmext.com, moda e-ticaret, Meta Ads, Google Ads, SEO, sosyal medya, kreatif, pazaryeri reklamları. Türkçe yaz. Format: kısa özet, fırsatlar, aksiyonlar, öncelik, metrikler.';}
+    async function mxTask(task){report.textContent=AGENTS[current][0]+' Claude ile çalışıyor...';try{report.textContent=await ask(basePrompt(task))}catch(e){report.textContent='Hata: '+e.message}}
+    async function mxCustomChat(){let t=customMsg.value.trim();if(!t)return;report.textContent=AGENTS[current][0]+' yanıt hazırlıyor...';try{report.textContent=await ask(basePrompt(t));customMsg.value=''}catch(e){report.textContent='Hata: '+e.message}}
     async function mxDaily(){report.textContent='Günlük ajans raporu Claude ile hazırlanıyor...';let p='Madmext ADS için 9 ajanlı günlük ajans raporu hazırla. Ajanlar: Strateji, Pazar Araştırma, Proje Yönetimi, İçerik, Tasarım, Video, SEO, Sosyal Medya, Web & Veri. Türkçe, kısa, aksiyon odaklı yaz.';try{report.textContent=await ask(p)}catch(e){report.textContent='Hata: '+e.message}}
     mxEngine.value=engine;renderAgents();
   </script>
