@@ -21,9 +21,12 @@ try:
 
     _mx_original_wsgi_app = _flask.Flask.wsgi_app
 
+    def _mx_file_html(filename):
+        with open(filename, 'r', encoding='utf-8') as f:
+            return f.read()
+
     def _mx_index_html():
-        with open('index.html', 'r', encoding='utf-8') as f:
-            html = f.read()
+        html = _mx_file_html('index.html')
         tag = '<script src="/modules/analitik-route.js?v=20260618-5"></script>'
         if 'analitik-route.js' not in html:
             html = html.replace('</body>', tag + '</body>')
@@ -31,7 +34,9 @@ try:
 
     def _mx_wsgi_app(self, environ, start_response):
         path = environ.get('PATH_INFO') or '/'
-        if path in ('/', '/analitik'):
+        if path == '/analitik' and os.path.exists('analitik.html'):
+            return _Response(_mx_file_html('analitik.html'), mimetype='text/html')(environ, start_response)
+        if path == '/':
             return _Response(_mx_index_html(), mimetype='text/html')(environ, start_response)
         return _mx_original_wsgi_app(self, environ, start_response)
 
