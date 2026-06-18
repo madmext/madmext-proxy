@@ -1,281 +1,75 @@
 <style>
-.u-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
-.u-avatar{width:38px;height:38px;border-radius:50%;background:var(--a);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
-.u-info{flex:1;min-width:0}
-.u-name{font-size:13px;font-weight:600;color:var(--t)}
-.u-email{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
-.u-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.role-select{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:4px 8px;font-size:11px;border-radius:4px;cursor:pointer;font-family:'DM Mono',monospace}
-.role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:600;font-family:'DM Mono',monospace}
-.rb-admin{background:rgba(24,119,242,.15);color:#64b4ff;border:1px solid rgba(24,119,242,.3)}
-.rb-editor{background:rgba(240,180,41,.12);color:var(--y);border:1px solid rgba(240,180,41,.3)}
-.rb-viewer{background:rgba(138,141,145,.1);color:var(--m);border:1px solid rgba(138,141,145,.2)}
-.perm-list{font-size:10px;color:var(--m);margin-top:3px}
-.role-info-box{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px;margin-bottom:16px}
-.ri-row{display:flex;gap:10px;margin-bottom:8px;align-items:flex-start}
-.ri-badge{width:80px;flex-shrink:0}
-.ri-desc{font-size:11px;color:var(--m);line-height:1.6}
+.u2-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.u2-title{font-size:18px;font-weight:800;color:var(--t);letter-spacing:-.3px}.u2-sub{font-size:12px;color:var(--m);margin-top:3px;line-height:1.5}
+.u2-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}.u2-tab{background:transparent;border:1px solid var(--b);color:var(--m);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700}.u2-tab.on{background:var(--a);border-color:var(--a);color:#fff}
+.u2-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}.u2-panel{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px;min-height:120px}.u2-panel-title{font-size:13px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.u2-users{display:flex;flex-direction:column;gap:9px}.u-card{background:var(--bg);border:1px solid var(--b);border-radius:10px;padding:13px;display:flex;align-items:center;gap:12px}.u-avatar{width:38px;height:38px;border-radius:50%;background:var(--a);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0}.u-info{flex:1;min-width:0}.u-name{font-size:13px;font-weight:700;color:var(--t)}.u-email{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}.u-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}.role-select{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 8px;font-size:11px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace}
+.role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700;font-family:'DM Mono',monospace;border:1px solid var(--b)}.rb-admin{background:rgba(24,119,242,.15);color:#64b4ff;border-color:rgba(24,119,242,.3)}.rb-editor{background:rgba(240,180,41,.12);color:var(--y);border-color:rgba(240,180,41,.3)}.rb-viewer{background:rgba(138,141,145,.1);color:var(--m);border-color:rgba(138,141,145,.2)}.rb-custom{background:rgba(62,207,160,.1);color:#3ecfa0;border-color:rgba(62,207,160,.3)}
+.role-card{background:var(--bg);border:1px solid var(--b);border-radius:10px;padding:12px;margin-bottom:9px}.role-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}.role-name{font-size:13px;font-weight:800}.role-key{font-size:10px;color:var(--m);font-family:'DM Mono',monospace}.perm-chips{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}.perm-chip{font-size:10px;color:var(--m);background:var(--s2);border:1px solid var(--b);border-radius:999px;padding:2px 7px}.perm-chip.on{color:var(--g);border-color:rgba(66,183,42,.25);background:rgba(66,183,42,.08)}
+.perm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px}.perm-item{background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:8px 10px;font-size:12px;display:flex;gap:8px;align-items:flex-start;cursor:pointer}.perm-item input{accent-color:var(--a);margin-top:2px}.perm-label{font-weight:700;color:var(--t)}.perm-desc{font-size:10px;color:var(--m);margin-top:2px;line-height:1.4}
+.cform{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.fg{display:flex;flex-direction:column;gap:6px}.fg.full{grid-column:1/-1}.fg label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}.fg input,.fg select{background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:6px;outline:none}.hint-box{background:rgba(24,119,242,.08);border:1px solid rgba(24,119,242,.22);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--m);line-height:1.6}.warn-box{background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.22);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--y);line-height:1.6}
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:10000}.modal{background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:22px;max-width:680px;width:92%;max-height:86vh;overflow:auto}.modal h3{font-size:16px;font-weight:800;margin-bottom:12px}.mbtns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+#usersJsonHint{display:none}.copy-val{font-family:'DM Mono',monospace;font-size:10px;color:#8dd3f7;word-break:break-all;background:rgba(0,0,0,.3);padding:8px;border-radius:4px;max-height:80px;overflow:auto;margin-top:8px}
+@media(max-width:900px){.u2-grid{grid-template-columns:1fr}.cform{grid-template-columns:1fr}}
 </style>
 
-<div class="arow" style="margin-bottom:16px">
-  <button class="btn sm" onclick="loadUsers()">↻ Yenile</button>
-  <button class="btn sm grn" onclick="showAddUser()">+ Kullanıcı Ekle</button>
+<div class="u2-top">
+  <div><div class="u2-title">👥 Kullanıcılar & Yetki Rolleri</div><div class="u2-sub">Admin, kullanıcının göreceği bölümleri seçebilir ve yeni kullanıcı tipi oluşturabilir.</div></div>
+  <div class="u-actions"><button class="btn sm" onclick="loadUsers()">↻ Yenile</button><button class="btn sm grn" onclick="showAddUser()">+ Kullanıcı Ekle</button><button class="btn sm yel" onclick="showRoleModal()">+ Kullanıcı Tipi</button></div>
 </div>
 
-<!-- Rol Açıklamaları -->
-<!-- USERS_JSON Hint Kutusu -->
-<div id="usersJsonHint" style="display:none;background:#1a2332;border:1px solid #1877f2;border-radius:8px;padding:12px 14px;margin-bottom:14px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-    <span style="font-size:12px;font-weight:600;color:#1877f2">⚠️ Kullanıcıları Kalıcı Kaydet</span>
-    <button onclick="copyUsersJson()" class="btn sm" style="font-size:10px">Kopyala</button>
-  </div>
-  <div style="font-size:11px;color:var(--m);margin-bottom:6px">
-    Railway → Variables → <strong>USERS_JSON</strong> adında yeni variable ekle, değer olarak aşağıdakini yapıştır:
-  </div>
-  <div id="usersJsonValue" style="font-family:monospace;font-size:10px;color:#8dd3f7;word-break:break-all;background:rgba(0,0,0,.3);padding:8px;border-radius:4px;max-height:60px;overflow:hidden"></div>
+<div class="warn-box">⚠️ Bu fazda görünürlük ve rol seçimi panel tarafında hazırlanmıştır. API değerleri ve kritik işlemler için backend admin kontrolü ayrı korunur. Kullanıcı tiplerini kalıcı yapmak için aşağıdaki USERS_JSON çıktısını Railway değişkenine eklemek gerekebilir.</div>
+
+<div class="u2-tabs"><button class="u2-tab on" onclick="uTab('users',this)">Kullanıcılar</button><button class="u2-tab" onclick="uTab('roles',this)">Kullanıcı Tipleri</button><button class="u2-tab" onclick="uTab('security',this)">Güvenlik</button></div>
+
+<div id="usersTab">
+  <div id="usersJsonHint" class="hint-box"><b>Kalıcı Kaydetme:</b> Kullanıcı değişikliği local fallback kullanıyorsa Railway → Variables → <b>USERS_JSON</b> değerini aşağıdaki çıktı ile güncelle.<button onclick="copyUsersJson()" class="btn sm" style="float:right">Kopyala</button><div id="usersJsonValue" class="copy-val"></div></div>
+  <div class="u2-grid"><div class="u2-panel"><div class="u2-panel-title">👤 Kullanıcı Listesi</div><div id="userList" class="u2-users"><div class="module-loading">Yükleniyor...</div></div></div><div class="u2-panel"><div class="u2-panel-title">🔑 Hızlı Kurulum</div><div class="hint-box"><b>Fatih ikinci admin</b><br>fatihmadmext@gmail.com için Admin rolü verilebilir. Aşağıdaki hızlı buton kullanıcı ekleme penceresini ön doldurur.</div><button class="btn sm grn" onclick="quickFatihAdmin()">Fatih'i Admin Olarak Ekle</button><div style="height:12px"></div><div class="u2-panel-title">Bekleyen Şifre Talepleri</div><div id="resetRequestsList" style="font-size:12px;color:var(--m)">Yükleniyor...</div></div></div>
 </div>
 
-<div class="role-info-box" style="margin-bottom:16px">
-  <div class="stl" style="margin-bottom:10px">Rol Yetkileri</div>
-  <div class="ri-row">
-    <div class="ri-badge"><span class="role-badge rb-admin">👑 Admin</span></div>
-    <div class="ri-desc">Tüm sayfalara tam erişim. Kullanıcı yönetimi, ayarlar, bütçe değişikliği, kampanya oluşturma.</div>
-  </div>
-  <div class="ri-row">
-    <div class="ri-badge"><span class="role-badge rb-editor">✏️ Editör</span></div>
-    <div class="ri-desc">Dashboard, Meta Ads, AI araçlar, raporlar, görevler. Kullanıcı yönetimi ve ayarlara erişemez.</div>
-  </div>
-  <div class="ri-row" style="margin-bottom:0">
-    <div class="ri-badge"><span class="role-badge rb-viewer">👁 Görüntüleyici</span></div>
-    <div class="ri-desc">Sadece Dashboard, Meta Ads ve Raporlar. Değişiklik yapamaz, sadece görüntüleyebilir.</div>
-  </div>
-</div>
+<div id="rolesTab" style="display:none"><div class="u2-grid"><div class="u2-panel"><div class="u2-panel-title">🧩 Kullanıcı Tipleri</div><div id="roleList"></div></div><div class="u2-panel"><div class="u2-panel-title">👁 Görünürlük Mantığı</div><div class="hint-box">Her kullanıcı tipi için hangi panel bölümlerinin görüneceği seçilir. Admin her şeyi görür. Custom roller kullanıcıya atandığında sol menü görünürlüğü bu yetkilere göre şekillendirilir.</div><button class="btn sm yel" onclick="showRoleModal()">Yeni Kullanıcı Tipi Oluştur</button></div></div></div>
 
-<!-- Şifre Talepleri -->
-<div id="resetRequestsWrap" style="display:none;margin-bottom:16px">
-  <div class="stl">⚠ Bekleyen Şifre Sıfırlama Talepleri</div>
-  <div id="resetRequestsList"></div>
-</div>
+<div id="securityTab" style="display:none"><div class="u2-panel"><div class="u2-panel-title">🛡 Güvenlik Notları</div><div class="hint-box">API key görme işlemleri için sonraki fazda OTP eklenecek. Önerilen akış: göz ikonuna bas → OTP maili → doğru kod → kısa süreli gösterim.</div><div class="perm-chips"><span class="perm-chip on">Admin API Merkezi</span><span class="perm-chip on">OTP Planlandı</span><span class="perm-chip on">API Key Maskeli</span><span class="perm-chip">Backend Role Enforcement Faz 2</span></div></div></div>
 
-<!-- Kullanıcılar -->
-<div class="stl">Kullanıcılar</div>
-<div id="userList"><div class="module-loading">Yükleniyor...</div></div>
+<div class="moverlay" id="addUserModal" style="display:none"><div class="modal" style="max-width:520px"><h3>+ Yeni Kullanıcı</h3><div class="cform" style="background:none;border:none;padding:0"><div class="fg"><label>Ad Soyad</label><input type="text" id="newUserName" placeholder="Ad Soyad"></div><div class="fg"><label>Email</label><input type="email" id="newUserEmail" placeholder="email@domain.com"></div><div class="fg"><label>Şifre</label><input type="password" id="newUserPass" placeholder="En az 6 karakter"></div><div class="fg"><label>Kullanıcı Tipi</label><select id="newUserRole"></select></div><div class="fg full"><label>Göreceği Bölümler</label><div id="newUserPermPreview" class="perm-chips"></div></div></div><div id="addUserErr" style="color:var(--r);font-size:12px;margin-top:8px;display:none"></div><div class="mbtns"><button class="btn sec" onclick="closeAddUser()">İptal</button><button class="btn grn" onclick="doAddUser()">Ekle</button></div></div></div>
 
-<!-- Kullanıcı Ekle Modal -->
-<div class="moverlay" id="addUserModal" style="display:none">
-  <div class="modal" style="max-width:420px">
-    <h3>+ Yeni Kullanıcı</h3>
-    <div class="cform" style="grid-template-columns:1fr;gap:12px;padding:0;background:none;border:none">
-      <div class="fg"><label>Ad Soyad</label><input type="text" id="newUserName" placeholder="Ad Soyad"></div>
-      <div class="fg"><label>Email</label><input type="email" id="newUserEmail" placeholder="email@domain.com"></div>
-      <div class="fg"><label>Şifre</label><input type="password" id="newUserPass" placeholder="En az 6 karakter"></div>
-      <div class="fg"><label>Rol</label>
-        <select id="newUserRole">
-          <option value="viewer">👁 Görüntüleyici — Sadece görüntüleme</option>
-          <option value="editor">✏️ Editör — Meta Ads + AI araçlar</option>
-          <option value="admin">👑 Admin — Tam yetki</option>
-        </select>
-      </div>
-      <div class="fg" id="permPreview" style="background:var(--bg);border-radius:6px;padding:10px">
-        <div class="stl" style="margin-bottom:6px">Erişim İzinleri</div>
-        <div id="permPreviewList" style="font-size:11px;color:var(--m);line-height:1.8"></div>
-      </div>
-    </div>
-    <div id="addUserErr" style="color:var(--r);font-size:12px;margin-top:8px;display:none"></div>
-    <div class="mbtns" style="margin-top:16px">
-      <button class="btn sec" onclick="closeAddUser()">İptal</button>
-      <button class="btn grn" onclick="doAddUser()">Ekle</button>
-    </div>
-  </div>
-</div>
+<div class="moverlay" id="roleModal" style="display:none"><div class="modal"><h3 id="roleModalTitle">Kullanıcı Tipi</h3><div class="cform" style="background:none;border:none;padding:0"><div class="fg"><label>Tip Adı</label><input id="roleName" placeholder="Örn: Depo Yetkilisi"></div><div class="fg"><label>Tip Kodu</label><input id="roleKey" placeholder="depo"></div><div class="fg full"><label>Görebileceği Bölümler</label><div id="permGrid" class="perm-grid"></div></div></div><div class="mbtns"><button class="btn sec" onclick="closeRoleModal()">İptal</button><button class="btn grn" onclick="saveRoleDef()">Kaydet</button></div></div></div>
 
-<!-- Şifre Sıfırla Modal -->
-<div class="moverlay" id="resetPassModal" style="display:none">
-  <div class="modal" style="max-width:360px">
-    <h3>🔑 Şifre Sıfırla</h3>
-    <div id="resetPassTarget" style="font-size:12px;color:var(--m);margin-bottom:12px"></div>
-    <div class="fg"><label>Yeni Şifre</label><input type="password" id="newPassInput" placeholder="Yeni şifre (en az 6 karakter)"></div>
-    <div class="mbtns" style="margin-top:16px">
-      <button class="btn sec" onclick="document.getElementById('resetPassModal').style.display='none'">İptal</button>
-      <button class="btn yel" onclick="doResetPass()">Kaydet</button>
-    </div>
-  </div>
-</div>
+<div class="moverlay" id="resetPassModal" style="display:none"><div class="modal" style="max-width:360px"><h3>🔑 Şifre Sıfırla</h3><div id="resetPassTarget" style="font-size:12px;color:var(--m);margin-bottom:12px"></div><div class="fg"><label>Yeni Şifre</label><input type="password" id="newPassInput" placeholder="Yeni şifre"></div><div class="mbtns"><button class="btn sec" onclick="document.getElementById('resetPassModal').style.display='none'">İptal</button><button class="btn yel" onclick="doResetPass()">Kaydet</button></div></div></div>
 
 <script>
-var _resetTarget = null;
-
-var ROLE_PERMS = {
-  admin:  ['Dashboard','Meta Ads','AI Araçlar (Strateji/Optimizasyon/Hedef Kitle/Tasarım)','Raporlar','Görevler','Kampanya Oluştur','Ayarlar','Kullanıcı Yönetimi'],
-  editor: ['Dashboard','Meta Ads','AI Araçlar (Strateji/Optimizasyon/Hedef Kitle/Tasarım)','Raporlar','Görevler'],
-  viewer: ['Dashboard','Meta Ads (Sadece Görüntüleme)','Raporlar (Sadece Görüntüleme)']
-};
-
-var ROLE_LABELS = {
-  admin:  {label:'👑 Admin',  cls:'rb-admin'},
-  editor: {label:'✏️ Editör', cls:'rb-editor'},
-  viewer: {label:'👁 Görüntüleyici', cls:'rb-viewer'}
-};
-
-function updatePermPreview(){
-  var role = document.getElementById('newUserRole').value;
-  var perms = ROLE_PERMS[role] || [];
-  document.getElementById('permPreviewList').innerHTML = perms.map(function(p){
-    return '✓ '+p;
-  }).join('<br>');
-}
-
-async function loadUsers(){
-  try{
-    var r = await fetch('/admin/users',{credentials:'include'});
-    if(r.status===403){
-      document.getElementById('userList').innerHTML='<div style="color:var(--r);padding:20px;text-align:center"><b>Oturum süresi dolmuş.</b><br><br><button class="btn" onclick="window.location.reload()">Sayfayı Yenile</button> &nbsp; <button class="btn sec" onclick="window.location.href='/login'">Giriş Yap</button></div>';
-      return;
-    }
-    var data = await r.json();
-    // API {users:[...], users_json_hint:"..."} veya direkt array döndürebilir
-    var users = Array.isArray(data) ? data : (data.users || []);
-    var usersJsonHint = Array.isArray(data) ? null : data.users_json_hint;
-    var me = (window._currentUser && window._currentUser.email)||'';
-    
-    // USERS_JSON hint'i göster (Railway env var için)
-    var hintEl = document.getElementById('usersJsonHint');
-    if(hintEl && usersJsonHint){
-      hintEl.style.display = '';
-      document.getElementById('usersJsonValue').textContent = usersJsonHint;
-    } else if(hintEl){
-      hintEl.style.display = 'none';
-    }
-    
-    if(!users.length){
-      document.getElementById('userList').innerHTML='<div style="color:var(--m);padding:20px;text-align:center">Henüz kullanıcı yok</div>';
-      return;
-    }
-    
-    document.getElementById('userList').innerHTML = users.map(function(u){
-      var isMe = u.email.toLowerCase()===me.toLowerCase();
-      var rl = ROLE_LABELS[u.role] || {label:u.role, cls:'rb-viewer'};
-      var initials = (u.name||u.email).split(' ').map(function(w){return w[0];}).join('').slice(0,2).toUpperCase();
-      var avatarColors = {admin:'#1877f2',editor:'#f0b429',viewer:'#8a8d91'};
-      var avatarColor = avatarColors[u.role]||'#8a8d91';
-      
-      var actions = isMe 
-        ? '<span style="font-size:11px;color:var(--m);padding:4px 8px;background:var(--s2);border-radius:4px">— Siz</span>'
-        : '<div class="u-actions">'
-          +'<select class="role-select" onchange="changeRole(\''+u.email+'\',this.value)" title="Rol değiştir">'
-          +'<option value="viewer"'+(u.role==='viewer'?' selected':'')+'>👁 Görüntüleyici</option>'
-          +'<option value="editor"'+(u.role==='editor'?' selected':'')+'>✏️ Editör</option>'
-          +'<option value="admin"'+(u.role==='admin'?' selected':'')+'>👑 Admin</option>'
-          +'</select>'
-          +'<button class="btn sm yel" onclick="showResetPass(\''+u.email+'\')" title="Şifre sıfırla">🔑</button>'
-          +'<button class="btn sm dng" onclick="deleteUser(\''+u.email+'\')" title="Sil">🗑</button>'
-          +'</div>';
-      
-      return '<div class="u-card">'
-        +'<div class="u-avatar" style="background:'+avatarColor+'">'+initials+'</div>'
-        +'<div class="u-info">'
-        +'<div class="u-name">'+(u.name||'—')+'</div>'
-        +'<div class="u-email">'+u.email+'</div>'
-        +'<div style="margin-top:4px"><span class="role-badge '+rl.cls+'">'+rl.label+'</span></div>'
-        +'</div>'
-        +actions
-        +'</div>';
-    }).join('');
-  }catch(e){ toast('Hata: '+e.message); }
-  loadResetRequests();
-  return Promise.resolve();
-}
-
-async function loadResetRequests(){
-  try{
-    var r = await fetch('/admin/reset-requests',{credentials:'include'});
-    if(!r.ok) return;
-    var reqs = await r.json();
-    var pending = reqs.filter(function(x){return x.status==='pending';});
-    var wrap = document.getElementById('resetRequestsWrap');
-    if(!pending.length){ wrap.style.display='none'; return; }
-    wrap.style.display='';
-    document.getElementById('resetRequestsList').innerHTML = pending.map(function(req,i){
-      return '<div class="lcard neu">'
-        +'<div style="flex:1"><div class="lname">'+req.email+'</div>'
-        +'<div class="lmeta">'+new Date(req.time).toLocaleString('tr')+' · '+(req.message||'Şifremi unuttum')+'</div></div>'
-        +'<button class="btn sm grn" onclick="resolveRequest('+i+',\''+req.email+'\')">Çözüldü</button>'
-        +'</div>';
-    }).join('');
-  }catch(e){}
-}
-
-async function resolveRequest(idx, email){
-  await fetch('/admin/reset-requests/'+idx+'/resolve',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:'{}'});
-  toast(email+' talebi çözüldü ✓');
-  loadResetRequests();
-}
-
-async function changeRole(email, newRole){
-  var r = await fetch('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:newRole})});
-  var d = await r.json();
-  if(d.ok){
-    if(d.users_json) updateUsersJsonBox(d.users_json);
-    toast('Rol guncellendi! USERS_JSON kutusunu Railway'e kaydet.');
-    loadUsers();
-  }
-  else toast('Hata: '+(d.error||'?'));
-}
-
-function showAddUser(){
-  document.getElementById('addUserModal').style.display='flex';
-  document.getElementById('addUserErr').style.display='none';
-  updatePermPreview();
-  document.getElementById('newUserRole').addEventListener('change', updatePermPreview);
-}
-function closeAddUser(){
-  document.getElementById('addUserModal').style.display='none';
-  ['newUserName','newUserEmail','newUserPass'].forEach(function(id){document.getElementById(id).value='';});
-}
-
-async function doAddUser(){
-  var name = document.getElementById('newUserName').value.trim();
-  var email = document.getElementById('newUserEmail').value.trim();
-  var pass = document.getElementById('newUserPass').value;
-  var role = document.getElementById('newUserRole').value;
-  var err = document.getElementById('addUserErr');
-  err.style.display='none';
-  if(!email||!pass){err.style.display='';err.textContent='Email ve şifre zorunlu';return;}
-  if(pass.length<6){err.style.display='';err.textContent='Şifre en az 6 karakter olmalı';return;}
-  var r = await fetch('/admin/users',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,email:email,password:pass,role:role})});
-  var d = await r.json();
-  if(d.ok){ toast('Kullanıcı eklendi ✓'); closeAddUser(); loadUsers(); }
-  else{ err.style.display=''; err.textContent=d.error||'Hata'; }
-}
-
-function showResetPass(email){
-  _resetTarget = email;
-  document.getElementById('resetPassTarget').textContent = email;
-  document.getElementById('newPassInput').value='';
-  document.getElementById('resetPassModal').style.display='flex';
-}
-
-async function doResetPass(){
-  var pass = document.getElementById('newPassInput').value;
-  if(!pass||pass.length<6){toast('En az 6 karakter');return;}
-  var r = await fetch('/admin/users/'+encodeURIComponent(_resetTarget)+'/reset',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
-  var d = await r.json();
-  if(d.ok){ toast('Şifre güncellendi ✓'); document.getElementById('resetPassModal').style.display='none'; }
-  else toast('Hata: '+(d.error||'?'));
-}
-
-async function deleteUser(email){
-  if(!confirm(email+' silinsin mi? Bu işlem geri alınamaz.')) return;
-  var r = await fetch('/admin/users/'+encodeURIComponent(email),{method:'DELETE',credentials:'include'});
-  var d = await r.json();
-  if(d.ok){
-    if(d.users_json) updateUsersJsonBox(d.users_json);
-    toast('Kullanici silindi! USERS_JSON kutusunu Railway'e kaydet.');
-    loadUsers();
-  }
-  else toast('Hata: '+(d.error||'?'));
-}
-
+var _resetTarget=null,_editingRole=null,_lastUsersJson='';
+var PAGES_DEF=[
+ {k:'dashboard',l:'Dashboard',d:'Genel bakış'}, {k:'meta-ads',l:'Meta Ads',d:'Meta reklam verileri'}, {k:'google-ads',l:'Google Ads',d:'Google reklam verileri'},
+ {k:'trendyol',l:'Trendyol',d:'Pazaryeri reklam dosyaları'}, {k:'dosyalar',l:'Dosya Yönetimi',d:'Dosya yükleme ve yönetim'}, {k:'analitik',l:'Analytics',d:'GA4 analitik'},
+ {k:'seo',l:'SEO',d:'PageSpeed / SEO analiz'}, {k:'raporlar',l:'Raporlar',d:'Rapor ekranları'}, {k:'gorevler',l:'Görevler',d:'Takip görevleri'},
+ {k:'strateji',l:'Strateji',d:'AI strateji'}, {k:'optimizasyon',l:'Optimizasyon',d:'AI optimizasyon'}, {k:'hedef-kitle',l:'Hedef Kitle',d:'Kitle analiz'}, {k:'tasarim',l:'Tasarım',d:'Kreatif üretim'},
+ {k:'create',l:'Oluştur',d:'Kampanya oluştur'}, {k:'claude-chat',l:'Claude AI',d:'AI sohbet'}, {k:'kullanicilar',l:'Kullanıcılar',d:'Kullanıcı yönetimi'}, {k:'ayarlar',l:'Ayarlar',d:'Panel ayarları'}, {k:'admin-api',l:'API Merkezi',d:'Admin API kontrol'}
+];
+function defaultRoles(){return{admin:{key:'admin',name:'Admin',perms:PAGES_DEF.map(p=>p.k),system:true},editor:{key:'editor',name:'Editör',perms:['dashboard','meta-ads','google-ads','trendyol','dosyalar','analitik','seo','raporlar','gorevler','strateji','optimizasyon','hedef-kitle','tasarim','claude-chat'],system:true},viewer:{key:'viewer',name:'Görüntüleyici',perms:['dashboard','meta-ads','google-ads','trendyol','analitik','seo','raporlar'],system:true}}}
+function getRoleDefs(){try{return Object.assign(defaultRoles(),JSON.parse(localStorage.getItem('mxRoleDefs')||'{}'))}catch(e){return defaultRoles()}}
+function saveRoleDefs(d){localStorage.setItem('mxRoleDefs',JSON.stringify(d));renderRoles();fillRoleSelects();try{if(window.applyRoleVisibility)window.applyRoleVisibility()}catch(e){}}
+function roleLabel(k){var r=getRoleDefs()[k];return r?r.name:k}
+function roleClass(k){return k==='admin'?'rb-admin':k==='editor'?'rb-editor':k==='viewer'?'rb-viewer':'rb-custom'}
+function uTab(id,btn){['users','roles','security'].forEach(x=>document.getElementById(x+'Tab').style.display=x===id?'':'none');document.querySelectorAll('.u2-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(id==='roles')renderRoles()}
+function fillRoleSelects(){var opts=Object.values(getRoleDefs()).map(r=>'<option value="'+r.key+'">'+r.name+'</option>').join('');['newUserRole'].forEach(id=>{var el=document.getElementById(id);if(el)el.innerHTML=opts})}
+function permChips(perms){return PAGES_DEF.map(p=>'<span class="perm-chip '+(perms&&perms.indexOf(p.k)>-1?'on':'')+'">'+p.l+'</span>').join('')}
+function renderRoles(){var defs=getRoleDefs(), html='';Object.values(defs).forEach(r=>{html+='<div class="role-card"><div class="role-head"><div><div class="role-name">'+r.name+'</div><div class="role-key">'+r.key+'</div></div><div class="u-actions">'+(!r.system?'<button class="btn sm sec" onclick="showRoleModal(\''+r.key+'\')">Düzenle</button><button class="btn sm dng" onclick="deleteRoleDef(\''+r.key+'\')">Sil</button>':'<button class="btn sm sec" onclick="showRoleModal(\''+r.key+'\')">Düzenle</button>')+'</div></div><div class="perm-chips">'+permChips(r.perms)+'</div></div>'});document.getElementById('roleList').innerHTML=html}
+function showRoleModal(key){_editingRole=key||null;var defs=getRoleDefs(), r=key?defs[key]:{key:'',name:'',perms:['dashboard']};document.getElementById('roleModalTitle').textContent=key?'Kullanıcı Tipini Düzenle':'Yeni Kullanıcı Tipi';document.getElementById('roleName').value=r.name||'';document.getElementById('roleKey').value=r.key||'';document.getElementById('roleKey').disabled=!!key;document.getElementById('permGrid').innerHTML=PAGES_DEF.map(p=>'<label class="perm-item"><input type="checkbox" value="'+p.k+'" '+((r.perms||[]).indexOf(p.k)>-1?'checked':'')+'><div><div class="perm-label">'+p.l+'</div><div class="perm-desc">'+p.d+'</div></div></label>').join('');document.getElementById('roleModal').style.display='flex'}
+function closeRoleModal(){document.getElementById('roleModal').style.display='none'}
+function saveRoleDef(){var name=document.getElementById('roleName').value.trim(), key=document.getElementById('roleKey').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'');var perms=[...document.querySelectorAll('#permGrid input:checked')].map(x=>x.value);if(!name||!key||!perms.length){toast('Tip adı, kod ve en az 1 bölüm gerekli');return}var defs=getRoleDefs();defs[key]={key,name,perms,system:!!(defs[key]&&defs[key].system)};saveRoleDefs(defs);closeRoleModal();toast('Kullanıcı tipi kaydedildi')}
+function deleteRoleDef(key){var defs=getRoleDefs();if(defs[key]&&defs[key].system){toast('Sistem rolü silinemez');return}if(!confirm(roleLabel(key)+' silinsin mi?'))return;delete defs[key];saveRoleDefs(defs)}
+function updateNewUserPermPreview(){var role=document.getElementById('newUserRole').value, r=getRoleDefs()[role];document.getElementById('newUserPermPreview').innerHTML=permChips((r&&r.perms)||[])}
+async function loadUsers(){fillRoleSelects();renderRoles();try{var r=await fetch('/admin/users',{credentials:'include'});if(r.status===403){document.getElementById('userList').innerHTML='<div style="color:var(--r);padding:20px;text-align:center"><b>Yetki yok veya oturum süresi dolmuş.</b></div>';return}var data=await r.json();var users=Array.isArray(data)?data:(data.users||[]);var hint=Array.isArray(data)?null:data.users_json_hint;var me=(window._currentUser&&window._currentUser.email)||'';if(hint){_lastUsersJson=hint;document.getElementById('usersJsonHint').style.display='';document.getElementById('usersJsonValue').textContent=hint}else document.getElementById('usersJsonHint').style.display='none';document.getElementById('userList').innerHTML=users.map(u=>{var isMe=u.email.toLowerCase()===me.toLowerCase();var initials=(u.name||u.email).split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();var role=u.role||'viewer';return '<div class="u-card"><div class="u-avatar">'+initials+'</div><div class="u-info"><div class="u-name">'+(u.name||'—')+'</div><div class="u-email">'+u.email+'</div><div style="margin-top:5px"><span class="role-badge '+roleClass(role)+'">'+roleLabel(role)+'</span></div><div class="perm-chips">'+permChips((getRoleDefs()[role]||{}).perms||[])+'</div></div><div class="u-actions">'+(isMe?'<span style="font-size:11px;color:var(--m)">— Siz</span>':'<select class="role-select" onchange="changeRole(\''+u.email+'\',this.value)">'+Object.values(getRoleDefs()).map(rr=>'<option value="'+rr.key+'" '+(role===rr.key?'selected':'')+'>'+rr.name+'</option>').join('')+'</select><button class="btn sm yel" onclick="showResetPass(\''+u.email+'\')">🔑</button><button class="btn sm dng" onclick="deleteUser(\''+u.email+'\')">🗑</button>')+'</div></div>'}).join('')||'<div style="color:var(--m);padding:20px">Kullanıcı yok</div>'}catch(e){toast('Hata: '+e.message)}loadResetRequests();updateNewUserPermPreview()}
+function showAddUser(){fillRoleSelects();document.getElementById('newUserName').value='';document.getElementById('newUserEmail').value='';document.getElementById('newUserPass').value='';document.getElementById('newUserRole').value='viewer';document.getElementById('addUserErr').style.display='none';document.getElementById('addUserModal').style.display='flex';updateNewUserPermPreview()}function closeAddUser(){document.getElementById('addUserModal').style.display='none'}function quickFatihAdmin(){showAddUser();document.getElementById('newUserName').value='Fatih Madmext';document.getElementById('newUserEmail').value='fatihmadmext@gmail.com';document.getElementById('newUserRole').value='admin';updateNewUserPermPreview()}
+async function doAddUser(){var name=document.getElementById('newUserName').value.trim(),email=document.getElementById('newUserEmail').value.trim(),password=document.getElementById('newUserPass').value,role=document.getElementById('newUserRole').value,err=document.getElementById('addUserErr');if(!email||!password||password.length<6){err.textContent='Email ve en az 6 karakter şifre gerekli';err.style.display='block';return}var r=await fetch('/admin/users',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,name,password,role})});var d=await r.json();if(!r.ok||d.error){err.textContent=d.error||'Hata';err.style.display='block';return}if(d.users_json){_lastUsersJson=d.users_json;document.getElementById('usersJsonHint').style.display='';document.getElementById('usersJsonValue').textContent=d.users_json}closeAddUser();toast('Kullanıcı eklendi');loadUsers()}
+async function changeRole(email,role){var r=await fetch('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({role})});var d=await r.json();if(d.users_json){_lastUsersJson=d.users_json;document.getElementById('usersJsonHint').style.display='';document.getElementById('usersJsonValue').textContent=d.users_json}toast(d.error?d.error:'Rol güncellendi');loadUsers()}
+async function deleteUser(email){if(!confirm(email+' silinsin mi?'))return;var r=await fetch('/admin/users/'+encodeURIComponent(email),{method:'DELETE',credentials:'include'});var d=await r.json();if(d.users_json){_lastUsersJson=d.users_json;document.getElementById('usersJsonHint').style.display='';document.getElementById('usersJsonValue').textContent=d.users_json}toast(d.error?d.error:'Kullanıcı silindi');loadUsers()}
+function showResetPass(email){_resetTarget=email;document.getElementById('resetPassTarget').textContent=email;document.getElementById('newPassInput').value='';document.getElementById('resetPassModal').style.display='flex'}
+async function doResetPass(){var p=document.getElementById('newPassInput').value;if(!p||p.length<6){toast('En az 6 karakter');return}var r=await fetch('/admin/users/'+encodeURIComponent(_resetTarget)+'/reset',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:p})});var d=await r.json();if(d.users_json){_lastUsersJson=d.users_json;document.getElementById('usersJsonHint').style.display='';document.getElementById('usersJsonValue').textContent=d.users_json}document.getElementById('resetPassModal').style.display='none';toast(d.error?d.error:'Şifre güncellendi')}
+async function loadResetRequests(){try{var r=await fetch('/admin/reset-requests',{credentials:'include'});if(!r.ok)return;var reqs=await r.json();var pending=reqs.filter(x=>x.status==='pending');document.getElementById('resetRequestsList').innerHTML=pending.length?pending.map((req,i)=>'<div class="u-card" style="padding:8px"><div class="u-info"><div class="u-email">'+req.email+'</div><div style="font-size:10px;color:var(--m)">'+new Date(req.time).toLocaleString('tr')+'</div></div><button class="btn sm grn" onclick="resolveRequest('+i+')">Çözüldü</button></div>').join(''):'Bekleyen talep yok'}catch(e){}}
+async function resolveRequest(idx){await fetch('/admin/reset-requests/'+idx+'/resolve',{method:'POST',credentials:'include'});loadResetRequests()}
+function copyUsersJson(){var val=_lastUsersJson||document.getElementById('usersJsonValue').textContent;navigator.clipboard.writeText(val);toast('USERS_JSON kopyalandı')}
+document.getElementById('newUserRole').addEventListener('change',updateNewUserPermPreview);
 loadUsers();
 </script>
-
