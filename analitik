@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="refresh" content="0; url=/analitik.html">
+<title>Google Analytics</title>
+<script>window.location.replace('/analitik.html');</script>
+</head>
+<body style="background:#0f1011;color:#e4e6eb;font-family:Arial,sans-serif;padding:24px">
+Google Analytics açılıyor... <a href="/analitik.html" style="color:#1877f2">Buraya tıkla</a>
+</body>
+</html>
