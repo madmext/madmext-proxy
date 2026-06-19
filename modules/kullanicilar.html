@@ -1,98 +1,68 @@
 <style>
-.kx-wrap{background:#fff;border:1px solid #cfd6df;color:#555;font-family:Arial,Helvetica,sans-serif;margin-top:12px}
-.kx-head{height:40px;background:#f5f5f5;border-bottom:1px solid #d6d6d6;display:flex;align-items:center;gap:10px;padding:0 12px;color:#666}
-.kx-head .hamb{font-size:20px;color:#777}.kx-head b{font-size:13px}
-.kx-toolbar{padding:14px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;flex-wrap:wrap}
-.kx-search{width:360px;max-width:100%;height:32px;border:1px solid #c8c8c8;background:#fff;color:#333;padding:0 10px;font-size:12px;outline:none}
-.kx-btn{border:0;color:#fff;height:30px;padding:0 12px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px}
-.kx-green{background:#5cb85c}.kx-red{background:#d9534f}.kx-dark{background:#333}.kx-gray{background:#777}.kx-yellow{background:#f0ad4e}.kx-blue{background:#337ab7}
-.kx-table-wrap{padding:0 12px 14px;overflow:auto;background:#fff}
-.kx-table{width:100%;border-collapse:collapse;min-width:1120px;border:1px solid #cfcfcf}
-.kx-table th{background:#ddd;color:#555;font-weight:700;font-size:12px;text-align:center;padding:10px;border:1px solid #c7c7c7}
-.kx-table td{height:34px;color:#666;font-size:12px;padding:0 8px;border:1px solid #d5d5d5;background:#fff;vertical-align:middle}
-.kx-table tr:nth-child(even) td{background:#f7f7f7}.kx-table tr:hover td{background:#e9e9e9}.kx-table tr.selected td{background:#d1d1d1!important}
-.kx-no{width:70px;text-align:center}.kx-name{min-width:210px}.kx-email{min-width:230px}.kx-phone{min-width:150px}.kx-date{width:150px;text-align:center}.kx-count{width:90px;text-align:center}.kx-actions{width:220px;text-align:center;white-space:nowrap}
-.kx-ico{border:0;width:30px;height:30px;color:#fff;margin:0 2px;cursor:pointer;font-size:15px;vertical-align:middle}.kx-ico.check{background:#d9d9d9;color:#222}.kx-ico.eye{background:#5cb85c}.kx-ico.edit{background:#333}.kx-ico.lock{background:#f0ad4e}.kx-ico.trash{background:#d9534f}.kx-ico.key{background:#337ab7}
-.kx-pill{display:inline-block;padding:2px 6px;font-size:10px;border-radius:2px;margin-left:5px;color:#fff}.kx-pill.on{background:#5cb85c}.kx-pill.off{background:#d9534f}
-.kx-tabs{display:flex;gap:4px;margin:12px 0}.kx-tab{background:#f5f5f5;border:1px solid #ccc;color:#555;padding:8px 13px;cursor:pointer;font-size:12px}.kx-tab.on{background:#337ab7;color:#fff;border-color:#337ab7}
-.kx-reset{padding:0 12px 14px;color:#666;font-size:12px}
-.kx-modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding-top:55px}
-.kx-modal{width:min(1120px,94vw);background:#fff;border:1px solid #c8c8c8;color:#555;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-.kx-modal-title{height:40px;background:#f5f5f5;border-bottom:1px solid #cfcfcf;display:flex;align-items:center;gap:10px;padding:0 12px;color:#666}
-.kx-form{padding:18px 20px 22px;display:grid;grid-template-columns:170px 260px 1fr;gap:16px 10px;align-items:center}
-.kx-form label{font-size:12px;font-weight:700}.kx-form .colon{text-align:center}.kx-form input,.kx-form select{width:250px;height:32px;border:1px solid #c7c7c7;background:#fff;color:#555;padding:0 8px;font-size:12px}.kx-form input[type=checkbox]{width:14px;height:14px}.kx-form small{color:#777}.kx-modal-actions{padding:0 20px 20px;display:flex;gap:8px}
-.kx-help{display:inline-flex;width:18px;height:18px;border-radius:50%;border:1px solid #183764;color:#183764;font-weight:700;align-items:center;justify-content:center;font-size:12px;margin-left:8px}
-@media(max-width:800px){.kx-form{grid-template-columns:120px 20px 1fr}.kx-form input,.kx-form select{width:100%}}
+.mxu-page{color:var(--t);font-family:Inter,Arial,sans-serif}.mxu-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.mxu-title{font-size:18px;font-weight:900}.mxu-sub{font-size:12px;color:var(--m);margin-top:4px}.mxu-actions{display:flex;gap:7px;flex-wrap:wrap}.mxu-btn{border:0;border-radius:6px;height:32px;padding:0 12px;color:#fff;font-size:12px;font-weight:800;cursor:pointer}.mxu-blue{background:#2277ee}.mxu-green{background:#42b72a}.mxu-dark{background:#2b2f36}.mxu-red{background:#ef4444}.mxu-yellow{background:#f59e0b;color:#111}.mxu-panel{background:var(--s);border:1px solid var(--b);border-radius:12px;overflow:hidden}.mxu-panel-head{height:42px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 14px}.mxu-panel-head b{font-size:13px}.mxu-filter{display:none;padding:12px 14px;border-bottom:1px solid var(--b);background:rgba(255,255,255,.025)}.mxu-filter input{width:340px;max-width:100%;background:var(--bg);border:1px solid var(--b2);border-radius:8px;color:var(--t);height:34px;padding:0 12px;font-family:'DM Mono',monospace;font-size:12px;outline:none}.mxu-table-wrap{overflow:auto}.mxu-table{width:100%;border-collapse:collapse;min-width:1120px}.mxu-table th{background:#242629;color:#a8abb2;text-align:left;padding:10px;border-bottom:1px solid #34373d;font-size:11px;text-transform:uppercase;letter-spacing:.6px}.mxu-table td{padding:9px 10px;border-bottom:1px solid #25282d;color:#d8dbe1;font-size:12px;vertical-align:middle}.mxu-table tr:hover td{background:#1d2025}.mxu-table tr.selected td{background:#2b2f36}.mxu-id{font-family:'DM Mono',monospace;color:#9ca3af;width:76px}.mxu-muted{color:#9ca3af;font-size:11px}.mxu-mail{font-family:'DM Mono',monospace;color:#b7bdc8}.mxu-center{text-align:center}.mxu-status{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:900;margin-right:4px}.mxu-status.on{background:rgba(66,183,42,.12);color:#58d34c;border:1px solid rgba(66,183,42,.28)}.mxu-status.off{background:rgba(239,68,68,.12);color:#ff7777;border:1px solid rgba(239,68,68,.28)}.mxu-role{background:#111827;border:1px solid #374151;border-radius:6px;color:#fff;height:28px;padding:0 7px;font-size:11px}.mxu-icons{display:flex;gap:4px;justify-content:center;white-space:nowrap}.mxu-ico{width:30px;height:30px;border:0;border-radius:4px;color:#fff;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center}.mxu-ico.allow{background:#6b7280}.mxu-ico.eye{background:#42b72a}.mxu-ico.edit{background:#111827;border:1px solid #3b3f46}.mxu-ico.key{background:#2277ee}.mxu-ico.lock{background:#f59e0b;color:#111}.mxu-ico.del{background:#ef4444}.mxu-empty{padding:18px;color:var(--m)}.mxu-reset{padding:14px;border-top:1px solid var(--b);font-size:12px;color:var(--m)}.mxu-reset-card{background:var(--bg);border:1px solid var(--b);border-radius:9px;padding:10px;margin-top:8px;display:flex;justify-content:space-between;gap:8px;align-items:center}.mxu-modal-back{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding-top:46px}.mxu-modal{width:min(760px,94vw);background:var(--s);border:1px solid var(--b);border-radius:13px;box-shadow:0 25px 80px rgba(0,0,0,.45);overflow:hidden}.mxu-modal-head{height:46px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;padding:0 16px}.mxu-form{padding:18px;display:grid;grid-template-columns:170px 1fr;gap:12px 14px;align-items:center}.mxu-form label{font-size:12px;color:#c7cbd2;font-weight:800}.mxu-form input,.mxu-form select{background:var(--bg);border:1px solid var(--b2);border-radius:7px;color:var(--t);height:34px;padding:0 10px;font-size:12px;outline:none}.mxu-form input[type=checkbox]{height:16px;width:16px;padding:0}.mxu-row-note{font-size:11px;color:var(--m);margin-top:5px}.mxu-modal-actions{padding:0 18px 18px;display:flex;gap:8px;justify-content:flex-end}@media(max-width:800px){.mxu-form{grid-template-columns:1fr}.mxu-top{flex-direction:column}.mxu-actions{width:100%}}
 </style>
 
-<div class="kx-tabs">
-  <button class="kx-tab on" onclick="kxTab('users',this)">Kullanıcılar</button>
-  <button class="kx-tab" onclick="kxTab('roles',this)">Kullanıcı Tipleri</button>
-  <button class="kx-tab" onclick="kxTab('security',this)">Güvenlik</button>
-</div>
-
-<div id="usersTab">
-  <div class="kx-wrap">
-    <div class="kx-head"><span class="hamb">☰</span><b>Kullanıcı Listesi</b></div>
-    <div class="kx-toolbar">
-      <button class="kx-btn kx-green" onclick="showAddUser()">Yeni Ekle</button>
-      <input id="userSearch" class="kx-search" placeholder="Tüm bilgilerde ara..." oninput="renderUsers()">
-      <button class="kx-btn kx-blue" onclick="loadUsers()">Yenile</button>
+<div class="mxu-page">
+  <div class="mxu-top">
+    <div>
+      <div class="mxu-title">👥 Kullanıcılar</div>
+      <div class="mxu-sub">Kullanıcıları listeden yönet. Mail sabit kimliktir; düzenlemede mail değişmez. Arama butonla açılır, otomatik mail alanı yok.</div>
     </div>
-    <div class="kx-table-wrap">
-      <table class="kx-table">
+    <div class="mxu-actions">
+      <button class="mxu-btn mxu-blue" onclick="loadUsers()">↻ Yenile</button>
+      <button class="mxu-btn mxu-dark" onclick="toggleFilter()">🔎 Arama</button>
+      <button class="mxu-btn mxu-green" onclick="showUserModal('add')">+ Yeni Kullanıcı</button>
+    </div>
+  </div>
+
+  <div class="mxu-panel">
+    <div class="mxu-panel-head"><b>Liste</b><span class="mxu-muted" id="userCount">—</span></div>
+    <div class="mxu-filter" id="filterBox">
+      <input id="userSearch" name="mxu_search_no_autofill" type="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="İsim, soyad, e-posta, telefon, rol veya tarih ara..." oninput="renderUsers()">
+    </div>
+    <div class="mxu-table-wrap">
+      <table class="mxu-table">
         <thead>
           <tr>
-            <th class="kx-no">No</th>
-            <th class="kx-name">İsim</th>
-            <th class="kx-email">E-Posta Adresi</th>
-            <th class="kx-phone">Cep Telefonu</th>
-            <th class="kx-date">Üyelik Tarihi</th>
-            <th class="kx-date">Son Giriş Tarihi</th>
-            <th class="kx-count">Toplam Giriş</th>
+            <th class="mxu-id">No</th>
+            <th>Kullanıcı</th>
+            <th>E-Posta</th>
+            <th>Cep Telefonu</th>
+            <th>Rol</th>
+            <th>Üyelik Tarihi</th>
+            <th>Son Giriş</th>
+            <th class="mxu-center">Toplam Giriş</th>
             <th>Durum</th>
-            <th class="kx-actions">Eylemler</th>
+            <th class="mxu-center">Eylemler</th>
           </tr>
         </thead>
-        <tbody id="userRows"><tr><td colspan="9">Yükleniyor...</td></tr></tbody>
+        <tbody id="userRows"><tr><td colspan="10" class="mxu-empty">Yükleniyor...</td></tr></tbody>
       </table>
     </div>
-    <div class="kx-reset">
+    <div class="mxu-reset">
       <b>Bekleyen Şifre Talepleri</b>
       <div id="resetRequestsList" style="margin-top:8px">Yükleniyor...</div>
     </div>
   </div>
 </div>
 
-<div id="rolesTab" style="display:none">
-  <div class="kx-wrap"><div class="kx-head"><span class="hamb">☰</span><b>Kullanıcı Tipleri</b></div><div style="padding:15px" id="roleList"></div></div>
-</div>
-
-<div id="securityTab" style="display:none">
-  <div class="kx-wrap"><div class="kx-head"><span class="hamb">☰</span><b>Güvenlik</b></div><div style="padding:15px">Şifreler açık tutulmaz. Şifre yenileme maili Gmail API ile gönderilir.</div></div>
-</div>
-
-<div class="kx-modal-back" id="userModal" style="display:none">
-  <div class="kx-modal">
-    <div class="kx-modal-title"><span class="hamb">☰</span><b id="modalTitle">Kullanıcı Detayları</b><span style="margin-left:auto;cursor:pointer" onclick="closeUserModal()">▲</span></div>
-    <div class="kx-form">
-      <label>İsim</label><div class="colon">:</div><div><input id="mName"></div>
-      <label>Soyad</label><div class="colon">:</div><div><input id="mSurname"></div>
-      <label>Cep telefonu</label><div class="colon">:</div><div><input id="mPhone" placeholder="+90 5xx xxx xx xx"></div>
-      <label>E-Posta Adresi</label><div class="colon">:</div><div><input id="mEmail"></div>
-      <label>Kullanıcı Tipi</label><div class="colon">:</div><div><select id="mRole"></select></div>
-      <label>Şifre</label><div class="colon">:</div><div><input id="mPassword" type="password"></div>
-      <label></label><div></div><div><input id="mPasswordApply" type="checkbox"> <small>Yeni yazdığım şifre geçerli olsun</small></div>
-      <label>Panel Yardım Mesajlarını Göster</label><div class="colon">:</div><div><input id="mShowHelp" type="checkbox"></div>
-      <label>Yeni Panel</label><div class="colon">:</div><div><input id="mNewPanel" type="checkbox"> <span class="kx-help">?</span></div>
-      <label>Personel</label><div class="colon">:</div><div><input id="mPersonnel" type="checkbox"></div>
-      <label>İzin</label><div class="colon">:</div><div><input id="mAllowed" type="checkbox"></div>
-      <label>Aktif</label><div class="colon">:</div><div><input id="mActive" type="checkbox"></div>
+<div class="mxu-modal-back" id="userModal" style="display:none">
+  <div class="mxu-modal">
+    <div class="mxu-modal-head"><b id="modalTitle">Kullanıcı Detayları</b><button class="mxu-btn mxu-dark" onclick="closeUserModal()">Kapat</button></div>
+    <div class="mxu-form">
+      <label>İsim</label><input id="mName" autocomplete="off">
+      <label>Soyad</label><input id="mSurname" autocomplete="off">
+      <label>Cep telefonu</label><input id="mPhone" autocomplete="off" placeholder="+90 5xx xxx xx xx">
+      <label>E-Posta Adresi</label><div><input id="mEmail" autocomplete="off"><div class="mxu-row-note" id="mailNote">Yeni kullanıcıda girilir; düzenlemede sabittir.</div></div>
+      <label>Kullanıcı Tipi</label><select id="mRole"></select>
+      <label>Şifre</label><div><input id="mPassword" type="password" autocomplete="new-password"><div class="mxu-row-note"><input id="mPasswordApply" type="checkbox"> Yeni yazdığım şifre geçerli olsun</div></div>
+      <label>Panel Yardım Mesajlarını Göster</label><input id="mShowHelp" type="checkbox">
+      <label>Yeni Panel</label><input id="mNewPanel" type="checkbox">
+      <label>Personel</label><input id="mPersonnel" type="checkbox">
+      <label>İzin</label><input id="mAllowed" type="checkbox">
+      <label>Aktif</label><input id="mActive" type="checkbox">
     </div>
-    <div class="kx-modal-actions">
-      <button class="kx-btn kx-red" onclick="closeUserModal()">Vazgeç</button>
-      <button class="kx-btn kx-green" onclick="saveUserModal()">Kaydet</button>
-    </div>
+    <div class="mxu-modal-actions"><button class="mxu-btn mxu-red" onclick="closeUserModal()">Vazgeç</button><button class="mxu-btn mxu-green" onclick="saveUserModal()">Kaydet</button></div>
   </div>
 </div>
 
@@ -100,28 +70,24 @@
 var USERS=[],EDIT_EMAIL=null,MODE='add';
 var ROLES={admin:'Admin',editor:'Editör',viewer:'Görüntüleyici'};
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function fmt(v){if(!v)return '';try{return new Date(v).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).replace(',','')}catch(e){return v}}
-function kxTab(id,btn){['users','roles','security'].forEach(x=>document.getElementById(x+'Tab').style.display=x===id?'':'none');document.querySelectorAll('.kx-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(id==='roles')renderRoles()}
-function roleOptions(val){return Object.keys(ROLES).map(k=>'<option value="'+k+'" '+(val===k?'selected':'')+'>'+ROLES[k]+'</option>').join('')}
+function fmt(v){if(!v)return '—';try{return new Date(v).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).replace(',','')}catch(e){return v}}
+function roleOptions(v){return Object.keys(ROLES).map(k=>'<option value="'+k+'" '+(v===k?'selected':'')+'>'+ROLES[k]+'</option>').join('')}
+function toggleFilter(){var b=document.getElementById('filterBox');b.style.display=b.style.display==='block'?'none':'block';setTimeout(()=>{var s=document.getElementById('userSearch');s.value='';s.focus();renderUsers()},60)}
 async function api(url,opt){var r=await fetch(url,Object.assign({credentials:'include',headers:{'Content-Type':'application/json'}},opt||{}));var d=await r.json().catch(()=>({error:'JSON okunamadı'}));if(!r.ok||d.error)throw new Error(d.error||'İşlem hatası');return d}
-async function loadUsers(){try{USERS=await api('/admin/users');renderUsers();loadResetRequests()}catch(e){document.getElementById('userRows').innerHTML='<tr><td colspan="9" style="color:#d9534f">Hata: '+esc(e.message)+'</td></tr>'}}
-function renderUsers(){var q=(document.getElementById('userSearch')?.value||'').toLowerCase();var list=USERS.filter(u=>Object.values(u).join(' ').toLowerCase().includes(q));document.getElementById('userRows').innerHTML=list.length?list.map(u=>{var e=esc(u.email);var full=((u.name||'')+' '+(u.surname||'')).trim()||u.name||u.email;return '<tr onclick="selectRow(this)"><td class="kx-no">'+esc(u.user_no||'')+'</td><td>'+esc(full)+'</td><td>'+e+'</td><td>'+esc(u.phone||'')+'</td><td class="kx-date">'+fmt(u.created_at)+'</td><td class="kx-date">'+fmt(u.last_login)+'</td><td class="kx-count">'+esc(u.login_count||0)+'</td><td>'+pill(u.is_allowed!==false,'İzin')+' '+pill(u.is_active!==false,'Aktif')+'</td><td class="kx-actions"><button class="kx-ico check" title="İzin Ver" onclick="event.stopPropagation();toggleAllow(\\''+e+'\\','+(u.is_allowed===false?'true':'false')+')">✓</button><button class="kx-ico eye" title="Onay / Aktif" onclick="event.stopPropagation();toggleActive(\\''+e+'\\','+(u.is_active===false?'true':'false')+')">👁</button><button class="kx-ico edit" title="Düzenle" onclick="event.stopPropagation();showEditUser(\\''+e+'\\')">✎</button><button class="kx-ico key" title="Şifre Sıfırla" onclick="event.stopPropagation();showPasswordOnly(\\''+e+'\\')">🔑</button><button class="kx-ico lock" title="2FA Sıfırla" onclick="event.stopPropagation();reset2FA(\\''+e+'\\')">🔒</button><button class="kx-ico trash" title="Sil" onclick="event.stopPropagation();deleteUser(\\''+e+'\\')">🗑</button></td></tr>'}).join(''):'<tr><td colspan="9">Kullanıcı bulunamadı</td></tr>'}
-function pill(ok,t){return '<span class="kx-pill '+(ok?'on':'off')+'">'+t+'</span>'}
-function selectRow(tr){document.querySelectorAll('.kx-table tr').forEach(x=>x.classList.remove('selected'));tr.classList.add('selected')}
-function fillRoles(val){document.getElementById('mRole').innerHTML=roleOptions(val||'viewer')}
-function showAddUser(){MODE='add';EDIT_EMAIL=null;document.getElementById('modalTitle').textContent='Yeni Kullanıcı';['mName','mSurname','mPhone','mEmail','mPassword'].forEach(id=>document.getElementById(id).value='');fillRoles('viewer');document.getElementById('mEmail').disabled=false;document.getElementById('mPasswordApply').checked=true;['mShowHelp','mNewPanel','mPersonnel'].forEach(id=>document.getElementById(id).checked=false);document.getElementById('mAllowed').checked=true;document.getElementById('mActive').checked=true;document.getElementById('userModal').style.display='flex'}
-function showEditUser(email){MODE='edit';var u=USERS.find(x=>(x.email||'').toLowerCase()===email.toLowerCase());if(!u)return;EDIT_EMAIL=u.email;document.getElementById('modalTitle').textContent='Kullanıcı Detayları';document.getElementById('mName').value=u.name||'';document.getElementById('mSurname').value=u.surname||'';document.getElementById('mPhone').value=u.phone||'';document.getElementById('mEmail').value=u.email||'';document.getElementById('mEmail').disabled=true;document.getElementById('mPassword').value='';document.getElementById('mPasswordApply').checked=false;fillRoles(u.role||'viewer');document.getElementById('mShowHelp').checked=!!u.show_panel_help;document.getElementById('mNewPanel').checked=!!u.new_panel;document.getElementById('mPersonnel').checked=!!u.personnel;document.getElementById('mAllowed').checked=u.is_allowed!==false;document.getElementById('mActive').checked=u.is_active!==false;document.getElementById('userModal').style.display='flex'}
+async function loadUsers(){try{USERS=await api('/admin/users');renderUsers();loadResetRequests()}catch(e){document.getElementById('userRows').innerHTML='<tr><td colspan="10" class="mxu-empty" style="color:#ff7777">Hata: '+esc(e.message)+'</td></tr>'}}
+function status(ok,t){return '<span class="mxu-status '+(ok?'on':'off')+'">● '+t+'</span>'}
+function renderUsers(){var q=(document.getElementById('userSearch')?.value||'').toLowerCase();var list=USERS.filter(u=>Object.values(u).join(' ').toLowerCase().includes(q));document.getElementById('userCount').textContent=list.length+' kullanıcı';document.getElementById('userRows').innerHTML=list.length?list.map(u=>{var email=esc(u.email);var full=((u.name||'')+' '+(u.surname||'')).trim()||u.name||u.email;return '<tr onclick="selectRow(this)"><td class="mxu-id">'+esc(u.user_no||'')+'</td><td><b>'+esc(full)+'</b><div class="mxu-muted">'+esc(u.role||'viewer')+'</div></td><td class="mxu-mail">'+email+'</td><td>'+esc(u.phone||'—')+'</td><td><select class="mxu-role" onchange="event.stopPropagation();changeRole(\''+email+'\',this.value)">'+roleOptions(u.role||'viewer')+'</select></td><td>'+fmt(u.created_at)+'</td><td>'+fmt(u.last_login)+'</td><td class="mxu-center">'+esc(u.login_count||0)+'</td><td>'+status(u.is_allowed!==false,'İzin')+status(u.is_active!==false,'Aktif')+'</td><td><div class="mxu-icons"><button class="mxu-ico allow" title="İzin Ver / Kapat" onclick="event.stopPropagation();toggleAllow(\''+email+'\','+(u.is_allowed===false?'true':'false')+')">✓</button><button class="mxu-ico eye" title="Onay / Aktif" onclick="event.stopPropagation();toggleActive(\''+email+'\','+(u.is_active===false?'true':'false')+')">👁</button><button class="mxu-ico edit" title="Düzenle" onclick="event.stopPropagation();showUserModal(\'edit\',\''+email+'\')">✎</button><button class="mxu-ico key" title="Şifre Sıfırla" onclick="event.stopPropagation();showUserModal(\'password\',\''+email+'\')">🔑</button><button class="mxu-ico lock" title="2FA Sıfırla" onclick="event.stopPropagation();reset2FA(\''+email+'\')">🔒</button><button class="mxu-ico del" title="Sil" onclick="event.stopPropagation();deleteUser(\''+email+'\')">🗑</button></div></td></tr>'}).join(''):'<tr><td colspan="10" class="mxu-empty">Kullanıcı bulunamadı</td></tr>'}
+function selectRow(tr){document.querySelectorAll('.mxu-table tr').forEach(x=>x.classList.remove('selected'));tr.classList.add('selected')}
+function showUserModal(mode,email){MODE=mode;EDIT_EMAIL=email||null;document.getElementById('modalTitle').textContent=mode==='add'?'Yeni Kullanıcı':'Kullanıcı Detayları';var u=email?USERS.find(x=>(x.email||'').toLowerCase()===email.toLowerCase()):{};mName.value=u?.name||'';mSurname.value=u?.surname||'';mPhone.value=u?.phone||'';mEmail.value=u?.email||'';mEmail.disabled=mode!=='add';mPassword.value='';mPasswordApply.checked=mode==='add'||mode==='password';mRole.innerHTML=roleOptions(u?.role||'viewer');mShowHelp.checked=!!u?.show_panel_help;mNewPanel.checked=!!u?.new_panel;mPersonnel.checked=!!u?.personnel;mAllowed.checked=u?.is_allowed!==false;mActive.checked=u?.is_active!==false;document.getElementById('userModal').style.display='flex';setTimeout(()=>{if(mode==='password')mPassword.focus();else mName.focus()},80)}
 function closeUserModal(){document.getElementById('userModal').style.display='none'}
-async function saveUserModal(){var data={name:mName.value,surname:mSurname.value,phone:mPhone.value,email:mEmail.value,role:mRole.value,password:mPassword.value,password_apply:mPasswordApply.checked,show_panel_help:mShowHelp.checked,new_panel:mNewPanel.checked,personnel:mPersonnel.checked,is_allowed:mAllowed.checked,is_active:mActive.checked};try{if(MODE==='add'){await api('/admin/users',{method:'POST',body:JSON.stringify(data)})}else{await api('/admin/users/'+encodeURIComponent(EDIT_EMAIL),{method:'PUT',body:JSON.stringify(data)})}closeUserModal();if(window.toast)toast('Kullanıcı kaydedildi');loadUsers()}catch(e){alert(e.message)}}
-function showPasswordOnly(email){showEditUser(email);document.getElementById('mPasswordApply').checked=true;document.getElementById('mPassword').focus()}
-async function changeRole(email,role){try{await api('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',body:JSON.stringify({role})});loadUsers()}catch(e){alert(e.message)}}
-async function toggleAllow(email,value){try{await api('/admin/users/'+encodeURIComponent(email)+'/allow',{method:'POST',body:JSON.stringify({value})});loadUsers()}catch(e){alert(e.message)}}
-async function toggleActive(email,value){try{await api('/admin/users/'+encodeURIComponent(email)+'/active',{method:'POST',body:JSON.stringify({value})});loadUsers()}catch(e){alert(e.message)}}
-async function reset2FA(email){if(!confirm(email+' için iki faktörlü doğrulama sıfırlansın mı?'))return;try{await api('/admin/users/'+encodeURIComponent(email)+'/2fa-reset',{method:'POST'});if(window.toast)toast('2FA sıfırlama işlendi');loadUsers()}catch(e){alert(e.message)}}
-async function deleteUser(email){if(!confirm(email+' silinsin mi?'))return;try{await api('/admin/users/'+encodeURIComponent(email),{method:'DELETE'});loadUsers()}catch(e){alert(e.message)}}
-function renderRoles(){document.getElementById('roleList').innerHTML=Object.keys(ROLES).map(k=>'<div style="padding:8px;border-bottom:1px solid #ddd"><b>'+ROLES[k]+'</b> <span style="color:#999">('+k+')</span></div>').join('')}
-async function loadResetRequests(){try{var reqs=await api('/admin/reset-requests');var pending=reqs.filter(x=>(x.status||'pending')==='pending');document.getElementById('resetRequestsList').innerHTML=pending.length?pending.map(req=>'<div style="padding:8px;border:1px solid #ddd;margin-top:5px"><b>'+esc(req.email)+'</b> '+esc(req.message||'')+' <button class="kx-btn kx-green" onclick="approveResetRequest('+req.id+')">Onayla ve Mail Gönder</button> <button class="kx-btn kx-red" onclick="declineResetRequest('+req.id+')">Reddet</button></div>').join(''):'Bekleyen talep yok'}catch(e){document.getElementById('resetRequestsList').innerHTML='Talep alınamadı: '+esc(e.message)}}
+async function saveUserModal(){var data={name:mName.value,surname:mSurname.value,phone:mPhone.value,email:mEmail.value,role:mRole.value,password:mPassword.value,password_apply:mPasswordApply.checked,show_panel_help:mShowHelp.checked,new_panel:mNewPanel.checked,personnel:mPersonnel.checked,is_allowed:mAllowed.checked,is_active:mActive.checked};try{if(MODE==='add')await api('/admin/users',{method:'POST',body:JSON.stringify(data)});else await api('/admin/users/'+encodeURIComponent(EDIT_EMAIL),{method:'PUT',body:JSON.stringify(data)});closeUserModal();if(window.toast)toast('Kullanıcı kaydedildi');loadUsers()}catch(e){alert(e.message)}}
+async function changeRole(e,r){try{await api('/admin/users/'+encodeURIComponent(e)+'/role',{method:'POST',body:JSON.stringify({role:r})});loadUsers()}catch(x){alert(x.message)}}
+async function toggleAllow(e,v){try{await api('/admin/users/'+encodeURIComponent(e)+'/allow',{method:'POST',body:JSON.stringify({value:v})});loadUsers()}catch(x){alert(x.message)}}
+async function toggleActive(e,v){try{await api('/admin/users/'+encodeURIComponent(e)+'/active',{method:'POST',body:JSON.stringify({value:v})});loadUsers()}catch(x){alert(x.message)}}
+async function reset2FA(e){if(!confirm(e+' için iki faktörlü doğrulama sıfırlansın mı?'))return;try{await api('/admin/users/'+encodeURIComponent(e)+'/2fa-reset',{method:'POST'});if(window.toast)toast('2FA sıfırlama işlendi');loadUsers()}catch(x){alert(x.message)}}
+async function deleteUser(e){if(!confirm(e+' silinsin mi?'))return;try{await api('/admin/users/'+encodeURIComponent(e),{method:'DELETE'});loadUsers()}catch(x){alert(x.message)}}
+async function loadResetRequests(){try{var reqs=await api('/admin/reset-requests');var pending=reqs.filter(x=>(x.status||'pending')==='pending');document.getElementById('resetRequestsList').innerHTML=pending.length?pending.map(r=>'<div class="mxu-reset-card"><div><b>'+esc(r.email)+'</b><div>'+esc(r.message||'Şifremi unuttum')+'</div></div><div class="mxu-actions"><button class="mxu-btn mxu-green" onclick="approveResetRequest('+r.id+')">Onayla ve Mail Gönder</button><button class="mxu-btn mxu-red" onclick="declineResetRequest('+r.id+')">Reddet</button></div></div>').join(''):'Bekleyen talep yok'}catch(e){document.getElementById('resetRequestsList').innerHTML='Talep alınamadı: '+esc(e.message)}}
 async function approveResetRequest(id){try{var d=await api('/admin/reset-requests/'+id+'/approve',{method:'POST'});alert(d.mail_sent?'Şifre yenileme maili gönderildi':'Onaylandı ama mail gönderilemedi');loadResetRequests()}catch(e){alert(e.message)}}
 async function declineResetRequest(id){try{await api('/admin/reset-requests/'+id+'/decline',{method:'POST'});loadResetRequests()}catch(e){alert(e.message)}}
-loadUsers();
+setTimeout(()=>{var s=document.getElementById('userSearch');if(s)s.value=''},100);loadUsers();
 </script>
