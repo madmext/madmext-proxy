@@ -33,17 +33,29 @@ def _send_mail(to_email, subject, body):
     user = os.environ.get('SMTP_USER') or os.environ.get('OTP_SMTP_USER')
     password = os.environ.get('SMTP_PASSWORD') or os.environ.get('OTP_SMTP_PASSWORD')
     from_email = os.environ.get('SMTP_FROM_EMAIL') or os.environ.get('OTP_FROM_EMAIL') or user
+    smtp_ssl = str(os.environ.get('SMTP_SSL') or os.environ.get('OTP_SMTP_SSL') or '').strip().lower() in ('1', 'true', 'yes', 'on')
+    use_ssl = smtp_ssl or port == 465
+
     if not (host and user and password and from_email):
         return {'sent': False, 'error': 'SMTP değişkenleri eksik'}
+
     msg = MIMEText(body, 'plain', 'utf-8')
     msg['Subject'] = subject
     msg['From'] = from_email
     msg['To'] = to_email
+
     try:
-        with smtplib.SMTP(host, port, timeout=20) as s:
-            s.starttls()
-            s.login(user, password)
-            s.sendmail(from_email, [to_email], msg.as_string())
+        if use_ssl:
+            with smtplib.SMTP_SSL(host, port, timeout=25) as s:
+                s.login(user, password)
+                s.sendmail(from_email, [to_email], msg.as_string())
+        else:
+            with smtplib.SMTP(host, port, timeout=25) as s:
+                s.ehlo()
+                s.starttls()
+                s.ehlo()
+                s.login(user, password)
+                s.sendmail(from_email, [to_email], msg.as_string())
         return {'sent': True}
     except Exception as e:
         return {'sent': False, 'error': str(e)}
