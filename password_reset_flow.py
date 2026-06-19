@@ -3,6 +3,7 @@ import json
 import secrets
 import hashlib
 import smtplib
+import socket
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
@@ -27,6 +28,31 @@ def _mail_configured():
     return bool((os.environ.get('SMTP_HOST') or os.environ.get('OTP_SMTP_HOST')) and (os.environ.get('SMTP_USER') or os.environ.get('OTP_SMTP_USER')) and (os.environ.get('SMTP_PASSWORD') or os.environ.get('OTP_SMTP_PASSWORD')))
 
 
+def _resolve_ipv4(host):
+    try:
+        infos = socket.getaddrinfo(host, None, socket.AF_INET, socket.SOCK_STREAM)
+        for info in infos:
+            ip = info[4][0]
+            if ip:
+                return ip
+    except Exception:
+        pass
+    return host
+
+
+class _IPv4SMTP(smtplib.SMTP):
+    def _get_socket(self, host, port, timeout):
+        ip = _resolve_ipv4(host)
+        return socket.create_connection((ip, port), timeout, self.source_address)
+
+
+class _IPv4SMTP_SSL(smtplib.SMTP_SSL):
+    def _get_socket(self, host, port, timeout):
+        ip = _resolve_ipv4(host)
+        new_socket = socket.create_connection((ip, port), timeout, self.source_address)
+        return self.context.wrap_socket(new_socket, server_hostname=host)
+
+
 def _send_mail(to_email, subject, body):
     host = os.environ.get('SMTP_HOST') or os.environ.get('OTP_SMTP_HOST')
     port = int(os.environ.get('SMTP_PORT') or os.environ.get('OTP_SMTP_PORT') or 587)
@@ -34,6 +60,7 @@ def _send_mail(to_email, subject, body):
     password = os.environ.get('SMTP_PASSWORD') or os.environ.get('OTP_SMTP_PASSWORD')
     from_email = os.environ.get('SMTP_FROM_EMAIL') or os.environ.get('OTP_FROM_EMAIL') or user
     smtp_ssl = str(os.environ.get('SMTP_SSL') or os.environ.get('OTP_SMTP_SSL') or '').strip().lower() in ('1', 'true', 'yes', 'on')
+    force_ipv4 = str(os.environ.get('SMTP_FORCE_IPV4') or 'true').strip().lower() not in ('0', 'false', 'no', 'off')
     use_ssl = smtp_ssl or port == 465
 
     if not (host and user and password and from_email):
@@ -44,13 +71,16 @@ def _send_mail(to_email, subject, body):
     msg['From'] = from_email
     msg['To'] = to_email
 
+    smtp_cls = _IPv4SMTP if force_ipv4 else smtplib.SMTP
+    smtp_ssl_cls = _IPv4SMTP_SSL if force_ipv4 else smtplib.SMTP_SSL
+
     try:
         if use_ssl:
-            with smtplib.SMTP_SSL(host, port, timeout=25) as s:
+            with smtp_ssl_cls(host, port, timeout=25) as s:
                 s.login(user, password)
                 s.sendmail(from_email, [to_email], msg.as_string())
         else:
-            with smtplib.SMTP(host, port, timeout=25) as s:
+            with smtp_cls(host, port, timeout=25) as s:
                 s.ehlo()
                 s.starttls()
                 s.ehlo()
