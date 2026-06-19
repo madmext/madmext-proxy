@@ -58,3 +58,44 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else setTimeout(run,200);
   setTimeout(run,1000);setTimeout(run,2500);
 })();
+
+// ── Meta bütçe kalemi: güvenli, sınırlı, tabloyu kilitlemez ──────────────
+(function metaBudgetPencilSafe(){
+  function css(){
+    if(document.getElementById('mxMetaBudgetSafeCss'))return;
+    var s=document.createElement('style');
+    s.id='mxMetaBudgetSafeCss';
+    s.textContent='.mx-budget-pencil-safe{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:6px;border-radius:5px;border:1px solid rgba(240,180,41,.45);background:rgba(240,180,41,.12);color:#f0b429;cursor:pointer;font-size:12px;vertical-align:middle}.mx-budget-pencil-safe:hover{background:#f0b429;color:#111}.ma-tbl-wrap button[title="Bütçe değiştir"]{font-size:0!important;min-width:28px}.ma-tbl-wrap button[title="Bütçe değiştir"]:after{content:"✎";font-size:13px}';
+    document.head.appendChild(s);
+  }
+  function patchOnce(){
+    try{
+      var tbl=document.getElementById('mTbl');
+      if(!tbl)return false;
+      css();
+      var headers=[].slice.call(tbl.querySelectorAll('thead th'));
+      var budgetIndex=headers.findIndex(function(th){return (th.textContent||'').toLowerCase().indexOf('bütçe')>-1});
+      if(budgetIndex<0)return false;
+      var rows=[].slice.call(tbl.querySelectorAll('tbody tr'));
+      if(!rows.length)return false;
+      rows.forEach(function(tr){
+        var actionBtn=tr.querySelector('button[title="Bütçe değiştir"]');
+        if(!actionBtn)return;
+        var cell=tr.children[budgetIndex];
+        if(!cell||cell.querySelector('.mx-budget-pencil-safe'))return;
+        var p=document.createElement('button');
+        p.type='button';p.className='mx-budget-pencil-safe';p.title='Bütçe değiştir';p.textContent='✎';
+        p.onclick=function(ev){ev.preventDefault();ev.stopPropagation();actionBtn.click();};
+        cell.appendChild(p);
+      });
+      return true;
+    }catch(e){return false;}
+  }
+  function schedule(){
+    var count=0;
+    var timer=setInterval(function(){count++;patchOnce();if(count>=25)clearInterval(timer)},600);
+  }
+  window.addEventListener('mx:connected',schedule);
+  window.addEventListener('popstate',schedule);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else setTimeout(schedule,500);
+})();
