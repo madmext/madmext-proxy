@@ -37,3 +37,172 @@
   --sp-2xl: 26px;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   META ADS — MOBİL / RESPONSIVE ÜST ARAÇ ÇUBUĞU
+   Amaç: mobilde Dışa Aktar takvimle aynı hizada, filtreler düzenli.
+   Desktop görünüm korunur.
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .ma-wrap{
+    height:auto!important;
+    min-height:calc(100vh - 52px)!important;
+    overflow:visible!important;
+    position:relative!important;
+    padding-bottom:22px!important;
+  }
+
+  .ma-row1{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    align-items:center!important;
+    justify-content:space-between!important;
+    gap:8px!important;
+    padding:8px 0 8px!important;
+  }
+
+  .ma-row1 .meta-tabs{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+
+  .ma-row1 .meta-tab{
+    width:100%!important;
+    justify-content:center!important;
+    min-height:34px!important;
+    padding:8px 4px!important;
+    border-radius:7px!important;
+    font-size:11px!important;
+    line-height:1.15!important;
+  }
+
+  .ma-row1 #dpTrigger{
+    flex:1 1 auto!important;
+    width:calc(100% - 132px)!important;
+    min-width:0!important;
+    height:36px!important;
+    justify-content:center!important;
+    border-radius:8px!important;
+    font-size:12px!important;
+  }
+
+  /* Mevcut Dışa Aktar butonunu mobilde takvim satırının sağına al */
+  .ma-row2 > .cpicker-wrap{
+    position:absolute!important;
+    top:50px!important;
+    right:0!important;
+    z-index:9!important;
+    margin:0!important;
+  }
+
+  .ma-row2 > .cpicker-wrap .cpicker-btn{
+    height:36px!important;
+    min-width:118px!important;
+    padding:0 12px!important;
+    border-radius:8px!important;
+    background:var(--g)!important;
+    color:#071007!important;
+    font-size:12px!important;
+    font-weight:800!important;
+    box-shadow:0 0 0 1px rgba(66,183,42,.18)!important;
+  }
+
+  .ma-row2 > .cpicker-wrap .cpicker-dropdown{
+    right:0!important;
+    left:auto!important;
+    min-width:170px!important;
+  }
+
+  .ma-row2{
+    display:flex!important;
+    flex-wrap:wrap!important;
+    gap:7px!important;
+    align-items:center!important;
+    padding:0 0 10px!important;
+  }
+
+  .ma-row2 .mstatus-grp{
+    width:100%!important;
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:2px!important;
+    order:1!important;
+  }
+
+  .ma-row2 .mstatus-btn{
+    padding:7px 2px!important;
+    font-size:10px!important;
+    text-align:center!important;
+    white-space:nowrap!important;
+  }
+
+  .ma-row2 #mCampFlt{
+    order:2!important;
+    flex:1 1 100%!important;
+    max-width:100%!important;
+    height:34px!important;
+  }
+
+  .ma-row2 #mCmp{
+    order:3!important;
+    flex:1 1 calc(50% - 4px)!important;
+    min-width:0!important;
+    height:34px!important;
+  }
+
+  .ma-row2 button[onclick="showAllLogs()"]{
+    order:4!important;
+    flex:1 1 calc(50% - 4px)!important;
+    min-width:0!important;
+    height:34px!important;
+    justify-content:center!important;
+  }
+
+  .ma-row2 > .ma-sep{
+    display:none!important;
+  }
+
+  .ma-row2 > #mStatus{
+    order:5!important;
+    width:100%!important;
+    display:block!important;
+    margin-top:-2px!important;
+  }
+
+  .ma-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+
+  .ms-card{
+    min-height:88px!important;
+    padding:10px!important;
+  }
+
+  .ma-tbl-wrap{
+    overflow:auto!important;
+    border-radius:9px!important;
+    min-height:360px!important;
+  }
+
+  .ma-tbl-wrap table{
+    min-width:980px!important;
+    font-size:11px!important;
+  }
+
+  .ma-pagination{
+    position:sticky!important;
+    bottom:0!important;
+    background:var(--s)!important;
+    z-index:4!important;
+  }
+}
+
+@media (min-width: 701px) {
+  .ma-row2 > .cpicker-wrap{
+    position:relative!important;
+    top:auto!important;
+    right:auto!important;
+  }
+}
