@@ -4,6 +4,8 @@ import secrets
 import hashlib
 import smtplib
 import socket
+import base64
+import requests
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 
@@ -25,6 +27,9 @@ def _base_url():
 
 
 def _mail_configured():
+    mode = (os.environ.get('MAIL_MODE') or '').strip().lower()
+    if mode == 'gmail_api':
+        return bool(os.environ.get('GMAIL_CLIENT_ID') and os.environ.get('GMAIL_CLIENT_SECRET') and os.environ.get('GMAIL_REFRESH_TOKEN'))
     return bool((os.environ.get('SMTP_HOST') or os.environ.get('OTP_SMTP_HOST')) and (os.environ.get('SMTP_USER') or os.environ.get('OTP_SMTP_USER')) and (os.environ.get('SMTP_PASSWORD') or os.environ.get('OTP_SMTP_PASSWORD')))
 
 
@@ -53,7 +58,49 @@ class _IPv4SMTP_SSL(smtplib.SMTP_SSL):
         return self.context.wrap_socket(new_socket, server_hostname=host)
 
 
-def _send_mail(to_email, subject, body):
+def _send_gmail_api(to_email, subject, body):
+    client_id = os.environ.get('GMAIL_CLIENT_ID')
+    client_secret = os.environ.get('GMAIL_CLIENT_SECRET')
+    refresh_token = os.environ.get('GMAIL_REFRESH_TOKEN')
+    sender = os.environ.get('GMAIL_SENDER') or os.environ.get('SMTP_FROM_EMAIL') or os.environ.get('SMTP_USER')
+    if not (client_id and client_secret and refresh_token and sender):
+        return {'sent': False, 'error': 'Gmail API değişkenleri eksik'}
+    try:
+        token_res = requests.post(
+            'https://oauth2.googleapis.com/token',
+            data={
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'refresh_token': refresh_token,
+                'grant_type': 'refresh_token'
+            },
+            timeout=25
+        )
+        if token_res.status_code >= 400:
+            return {'sent': False, 'error': 'Gmail token hatası: ' + token_res.text[:500]}
+        access_token = token_res.json().get('access_token')
+        if not access_token:
+            return {'sent': False, 'error': 'Gmail access_token alınamadı'}
+
+        msg = MIMEText(body, 'plain', 'utf-8')
+        msg['To'] = to_email
+        msg['From'] = sender
+        msg['Subject'] = subject
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode('utf-8')
+        send_res = requests.post(
+            'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+            headers={'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json'},
+            json={'raw': raw},
+            timeout=25
+        )
+        if send_res.status_code >= 400:
+            return {'sent': False, 'error': 'Gmail gönderim hatası: ' + send_res.text[:500]}
+        return {'sent': True}
+    except Exception as e:
+        return {'sent': False, 'error': 'Gmail API exception: ' + str(e)}
+
+
+def _send_smtp(to_email, subject, body):
     host = os.environ.get('SMTP_HOST') or os.environ.get('OTP_SMTP_HOST')
     port = int(os.environ.get('SMTP_PORT') or os.environ.get('OTP_SMTP_PORT') or 587)
     user = os.environ.get('SMTP_USER') or os.environ.get('OTP_SMTP_USER')
@@ -62,18 +109,14 @@ def _send_mail(to_email, subject, body):
     smtp_ssl = str(os.environ.get('SMTP_SSL') or os.environ.get('OTP_SMTP_SSL') or '').strip().lower() in ('1', 'true', 'yes', 'on')
     force_ipv4 = str(os.environ.get('SMTP_FORCE_IPV4') or 'true').strip().lower() not in ('0', 'false', 'no', 'off')
     use_ssl = smtp_ssl or port == 465
-
     if not (host and user and password and from_email):
         return {'sent': False, 'error': 'SMTP değişkenleri eksik'}
-
     msg = MIMEText(body, 'plain', 'utf-8')
     msg['Subject'] = subject
     msg['From'] = from_email
     msg['To'] = to_email
-
     smtp_cls = _IPv4SMTP if force_ipv4 else smtplib.SMTP
     smtp_ssl_cls = _IPv4SMTP_SSL if force_ipv4 else smtplib.SMTP_SSL
-
     try:
         if use_ssl:
             with smtp_ssl_cls(host, port, timeout=25) as s:
@@ -81,14 +124,27 @@ def _send_mail(to_email, subject, body):
                 s.sendmail(from_email, [to_email], msg.as_string())
         else:
             with smtp_cls(host, port, timeout=25) as s:
-                s.ehlo()
-                s.starttls()
-                s.ehlo()
+                s.ehlo(); s.starttls(); s.ehlo()
                 s.login(user, password)
                 s.sendmail(from_email, [to_email], msg.as_string())
         return {'sent': True}
     except Exception as e:
         return {'sent': False, 'error': str(e)}
+
+
+def _send_mail(to_email, subject, body):
+    mode = (os.environ.get('MAIL_MODE') or '').strip().lower()
+    if mode == 'gmail_api':
+        res = _send_gmail_api(to_email, subject, body)
+        if res.get('sent'):
+            return res
+        if str(os.environ.get('MAIL_FALLBACK_SMTP') or '').strip().lower() in ('1', 'true', 'yes', 'on'):
+            smtp_res = _send_smtp(to_email, subject, body)
+            if smtp_res.get('sent'):
+                return smtp_res
+            return {'sent': False, 'error': res.get('error') + ' | SMTP fallback: ' + smtp_res.get('error', '')}
+        return res
+    return _send_smtp(to_email, subject, body)
 
 
 def install(app, get_db, hash_pw, read_logs=None, write_logs=None):
