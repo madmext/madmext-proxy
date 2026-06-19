@@ -14,14 +14,27 @@ def _admin_required():
     return None
 
 
+def _bool(v, default=False):
+    if isinstance(v, bool):
+        return v
+    if v is None:
+        return default
+    return str(v).strip().lower() in ('1', 'true', 'yes', 'on', 'evet')
+
+
 def _db_init_user_meta():
     conn = get_db()
     if not conn:
         return False
     try:
         cur = conn.cursor()
+        cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS surname TEXT")
+        cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS phone TEXT")
         cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE")
         cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS is_allowed BOOLEAN DEFAULT TRUE")
+        cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS show_panel_help BOOLEAN DEFAULT FALSE")
+        cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS new_panel BOOLEAN DEFAULT FALSE")
+        cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS personnel BOOLEAN DEFAULT FALSE")
         cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()")
         cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS last_login TIMESTAMP")
         cur.execute("ALTER TABLE mx_users ADD COLUMN IF NOT EXISTS login_count INTEGER DEFAULT 0")
@@ -39,7 +52,7 @@ def _db_init_user_meta():
         return False
 
 
-def _db_users():
+def _db_users(private=False):
     conn = get_db()
     if not conn:
         return None
@@ -47,11 +60,14 @@ def _db_users():
     try:
         import psycopg2.extras
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute("""
+        select_pw = ", password_hash" if private else ""
+        cur.execute(f"""
             SELECT
               row_number() OVER (ORDER BY created_at, email) AS user_no,
               email,
               name,
+              surname,
+              phone,
               role,
               created_at,
               updated_at,
@@ -59,7 +75,11 @@ def _db_users():
               login_count,
               COALESCE(is_active, TRUE) AS is_active,
               COALESCE(is_allowed, TRUE) AS is_allowed,
+              COALESCE(show_panel_help, FALSE) AS show_panel_help,
+              COALESCE(new_panel, FALSE) AS new_panel,
+              COALESCE(personnel, FALSE) AS personnel,
               two_factor_reset_at
+              {select_pw}
             FROM mx_users
             ORDER BY created_at, email
         """)
@@ -82,7 +102,14 @@ def _db_users():
         return None
 
 
-def _db_add_user(email, name, pw_hash, role):
+def _db_user_private(email):
+    users = _db_users(private=True)
+    if users is None:
+        return None
+    return next((u for u in users if (u.get('email') or '').lower() == email.lower()), None)
+
+
+def _db_add_user(payload):
     conn = get_db()
     if not conn:
         return False
@@ -90,9 +117,18 @@ def _db_add_user(email, name, pw_hash, role):
     try:
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO mx_users(email,name,password_hash,role,is_active,is_allowed,updated_at)
-            VALUES(%s,%s,%s,%s,TRUE,TRUE,NOW())
-        """, (email, name, pw_hash, role))
+            INSERT INTO mx_users(
+                email,name,surname,phone,password_hash,role,is_active,is_allowed,
+                show_panel_help,new_panel,personnel,updated_at
+            )
+            VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+        """, (
+            payload['email'], payload.get('name'), payload.get('surname'), payload.get('phone'),
+            payload['password_hash'], payload.get('role', 'viewer'),
+            payload.get('is_active', True), payload.get('is_allowed', True),
+            payload.get('show_panel_help', False), payload.get('new_panel', False),
+            payload.get('personnel', False)
+        ))
         conn.commit()
         cur.close()
         conn.close()
@@ -133,10 +169,15 @@ def _db_patch_user(email, **fields):
     _db_init_user_meta()
     allowed = {
         'name': 'name',
+        'surname': 'surname',
+        'phone': 'phone',
         'role': 'role',
         'password_hash': 'password_hash',
         'is_active': 'is_active',
-        'is_allowed': 'is_allowed'
+        'is_allowed': 'is_allowed',
+        'show_panel_help': 'show_panel_help',
+        'new_panel': 'new_panel',
+        'personnel': 'personnel'
     }
     sets = []
     vals = []
@@ -157,6 +198,27 @@ def _db_patch_user(email, **fields):
         return True
     except Exception as e:
         print('db_patch_user:', e)
+        try:
+            conn.close()
+        except Exception:
+            pass
+        return False
+
+
+def _db_record_login(email):
+    conn = get_db()
+    if not conn:
+        return False
+    _db_init_user_meta()
+    try:
+        cur = conn.cursor()
+        cur.execute('UPDATE mx_users SET last_login=NOW(), login_count=COALESCE(login_count,0)+1 WHERE lower(email)=lower(%s)', (email,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print('db_record_login:', e)
         try:
             conn.close()
         except Exception:
@@ -203,6 +265,8 @@ def _fallback_public(users):
             'user_no': i,
             'email': u.get('email'),
             'name': u.get('name'),
+            'surname': u.get('surname') or '',
+            'phone': u.get('phone') or '',
             'role': u.get('role', 'viewer'),
             'created_at': u.get('created_at') or '',
             'updated_at': u.get('updated_at') or '',
@@ -210,6 +274,9 @@ def _fallback_public(users):
             'login_count': u.get('login_count') or 0,
             'is_active': u.get('is_active', True),
             'is_allowed': u.get('is_allowed', True),
+            'show_panel_help': u.get('show_panel_help', False),
+            'new_panel': u.get('new_panel', False),
+            'personnel': u.get('personnel', False),
             'two_factor_reset_at': u.get('two_factor_reset_at') or ''
         })
     return out
@@ -223,8 +290,30 @@ def _get_all_users_public():
 
 
 @app.before_request
-def _fresh_admin_users_override():
+def _auth_and_admin_users_override():
     path = request.path.rstrip('/') or '/'
+
+    if path == '/auth/login' and request.method == 'POST':
+        data = request.get_json(silent=True) or {}
+        email = (data.get('email') or '').strip().lower()
+        password = data.get('password') or ''
+        user = _db_user_private(email)
+        if user is None:
+            fallback = _fallback_users()
+            user = next((u for u in fallback if (u.get('email') or '').lower() == email.lower()), None)
+        if not user or user.get('password_hash') != hash_pw(password):
+            return jsonify({'error': 'Email veya şifre hatalı'}), 401
+        if user.get('is_allowed', True) is False:
+            return jsonify({'error': 'Kullanıcı için giriş izni kapalı'}), 403
+        if user.get('is_active', True) is False:
+            return jsonify({'error': 'Kullanıcı pasif durumda'}), 403
+        session['user_email'] = user.get('email')
+        session['user_name'] = ((user.get('name') or '') + ' ' + (user.get('surname') or '')).strip() or user.get('email')
+        session['user_role'] = user.get('role') or 'viewer'
+        session.permanent = True
+        _db_record_login(email)
+        return jsonify({'ok': True, 'user': {'email': user.get('email'), 'name': session['user_name'], 'role': session['user_role']}})
+
     if not path.startswith('/admin/users'):
         return None
 
@@ -238,22 +327,33 @@ def _fresh_admin_users_override():
     if path == '/admin/users' and request.method == 'POST':
         data = request.get_json(silent=True) or {}
         email = (data.get('email') or '').strip().lower()
-        name = (data.get('name') or email).strip()
+        name = (data.get('name') or '').strip()
+        surname = (data.get('surname') or '').strip()
+        phone = (data.get('phone') or '').strip()
         password = data.get('password') or ''
         role = data.get('role') or 'viewer'
         if not email:
-            return jsonify({'error': 'Email zorunlu'}), 400
+            return jsonify({'error': 'E-posta zorunlu'}), 400
         if not password or len(password) < 6:
             return jsonify({'error': 'Şifre en az 6 karakter olmalı'}), 400
         users = _get_all_users_public()
         if any((u.get('email') or '').lower() == email for u in users):
             return jsonify({'error': 'Email zaten kayıtlı'}), 409
+        payload = {
+            'email': email, 'name': name, 'surname': surname, 'phone': phone,
+            'password_hash': hash_pw(password), 'role': role,
+            'is_active': _bool(data.get('is_active'), True),
+            'is_allowed': _bool(data.get('is_allowed'), True),
+            'show_panel_help': _bool(data.get('show_panel_help'), False),
+            'new_panel': _bool(data.get('new_panel'), False),
+            'personnel': _bool(data.get('personnel'), False)
+        }
         if get_db():
-            if not _db_add_user(email, name, hash_pw(password), role):
+            if not _db_add_user(payload):
                 return jsonify({'error': 'Kullanıcı DB kaydı yapılamadı'}), 500
             return jsonify({'ok': True, 'users': _get_all_users_public()})
         fallback = _fallback_users()
-        fallback.append({'email': email, 'name': name, 'password_hash': hash_pw(password), 'role': role, 'is_active': True, 'is_allowed': True})
+        fallback.append(payload)
         _save_fallback_users(fallback)
         return jsonify({'ok': True, 'users': _get_all_users_public()})
 
@@ -272,14 +372,16 @@ def _fresh_admin_users_override():
         if len(parts) == 4 and request.method in ('PUT', 'PATCH'):
             data = request.get_json(silent=True) or {}
             fields = {}
-            if 'name' in data:
-                fields['name'] = data.get('name') or email
-            if 'role' in data:
-                fields['role'] = data.get('role') or 'viewer'
-            if 'is_active' in data:
-                fields['is_active'] = bool(data.get('is_active'))
-            if 'is_allowed' in data:
-                fields['is_allowed'] = bool(data.get('is_allowed'))
+            for k in ('name', 'surname', 'phone', 'role'):
+                if k in data:
+                    fields[k] = data.get(k) or ''
+            for k in ('is_active', 'is_allowed', 'show_panel_help', 'new_panel', 'personnel'):
+                if k in data:
+                    fields[k] = _bool(data.get(k), False)
+            if data.get('password_apply') and data.get('password'):
+                if len(data.get('password')) < 6:
+                    return jsonify({'error': 'Şifre en az 6 karakter olmalı'}), 400
+                fields['password_hash'] = hash_pw(data.get('password'))
             if get_db():
                 _db_patch_user(email, **fields)
                 return jsonify({'ok': True, 'users': _get_all_users_public()})
@@ -320,7 +422,7 @@ def _fresh_admin_users_override():
 
         if len(parts) == 5 and parts[4] in ('active', 'allow') and request.method == 'POST':
             data = request.get_json(silent=True) or {}
-            value = bool(data.get('value'))
+            value = _bool(data.get('value'), True)
             key = 'is_active' if parts[4] == 'active' else 'is_allowed'
             if get_db():
                 _db_patch_user(email, **{key: value})
@@ -354,4 +456,3 @@ password_reset_flow.install(
     read_logs=read_logs,
     write_logs=write_logs
 )
- 
