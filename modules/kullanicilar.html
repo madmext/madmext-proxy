@@ -1,79 +1,127 @@
 <style>
-.u2-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.u2-title{font-size:18px;font-weight:800;color:var(--t);letter-spacing:-.3px}.u2-sub{font-size:12px;color:var(--m);margin-top:3px;line-height:1.5}
-.u2-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}.u2-tab{background:transparent;border:1px solid var(--b);color:var(--m);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700}.u2-tab.on{background:var(--a);border-color:var(--a);color:#fff}
-.u2-panel{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:14px;min-height:120px}.u2-panel-title{font-size:13px;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:8px}
-.warn-box{background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.22);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--y);line-height:1.6}.hint-box{background:rgba(24,119,242,.08);border:1px solid rgba(24,119,242,.22);border-radius:10px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--m);line-height:1.6}
-.user-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:10px 0 14px}
-.user-search{background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:8px;outline:none;min-width:260px}
-.users-table-wrap{overflow:auto;border:1px solid var(--b);border-radius:12px;background:var(--bg)}.users-table{width:100%;border-collapse:collapse;min-width:1120px}
-.users-table th{position:sticky;top:0;background:var(--s2);color:var(--m);font-size:10px;text-transform:uppercase;letter-spacing:.7px;text-align:left;padding:11px 10px;border-bottom:1px solid var(--b);z-index:2}
-.users-table td{padding:10px;border-bottom:1px solid var(--b);font-size:12px;color:var(--t);vertical-align:middle}.users-table tr:hover td{background:rgba(255,255,255,.025)}
-.uid{font-family:'DM Mono',monospace;color:var(--m);font-size:11px}.u-name{font-weight:800;color:var(--t)}.u-email{font-family:'DM Mono',monospace;font-size:11px;color:var(--m);margin-top:3px}
-.role-select{background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:6px 8px;font-size:11px;border-radius:6px;cursor:pointer;font-family:'DM Mono',monospace}
-.status-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800;border:1px solid var(--b)}
-.status-pill.on{color:var(--g);background:rgba(66,183,42,.08);border-color:rgba(66,183,42,.25)}.status-pill.off{color:var(--r);background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25)}
-.btn-group{display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}.ico-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--b);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;background:var(--s2);font-size:13px}
-.ico-btn.allow{background:#64748b}.ico-btn.active{background:#22c55e}.ico-btn.edit{background:#111827}.ico-btn.warn{background:#f59e0b}.ico-btn.del{background:#ef4444}.ico-btn:hover{filter:brightness(1.12)}
-.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:10000}.modal{background:var(--s2);border:1px solid var(--b);border-radius:12px;padding:22px;max-width:680px;width:92%;max-height:86vh;overflow:auto}.modal h3{font-size:16px;font-weight:800;margin-bottom:12px}.mbtns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
-.cform{display:grid;grid-template-columns:1fr 1fr;gap:12px}.fg{display:flex;flex-direction:column;gap:6px}.fg.full{grid-column:1/-1}.fg label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:1px}.fg input,.fg select{background:var(--bg);border:1px solid var(--b2);color:var(--t);padding:9px 12px;font-family:'DM Mono',monospace;font-size:12px;border-radius:6px;outline:none}
-@media(max-width:900px){.cform{grid-template-columns:1fr}.user-search{min-width:100%}}
+.kx-wrap{background:#fff;border:1px solid #cfd6df;color:#555;font-family:Arial,Helvetica,sans-serif;margin-top:12px}
+.kx-head{height:40px;background:#f5f5f5;border-bottom:1px solid #d6d6d6;display:flex;align-items:center;gap:10px;padding:0 12px;color:#666}
+.kx-head .hamb{font-size:20px;color:#777}.kx-head b{font-size:13px}
+.kx-toolbar{padding:14px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff;flex-wrap:wrap}
+.kx-search{width:360px;max-width:100%;height:32px;border:1px solid #c8c8c8;background:#fff;color:#333;padding:0 10px;font-size:12px;outline:none}
+.kx-btn{border:0;color:#fff;height:30px;padding:0 12px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+.kx-green{background:#5cb85c}.kx-red{background:#d9534f}.kx-dark{background:#333}.kx-gray{background:#777}.kx-yellow{background:#f0ad4e}.kx-blue{background:#337ab7}
+.kx-table-wrap{padding:0 12px 14px;overflow:auto;background:#fff}
+.kx-table{width:100%;border-collapse:collapse;min-width:1120px;border:1px solid #cfcfcf}
+.kx-table th{background:#ddd;color:#555;font-weight:700;font-size:12px;text-align:center;padding:10px;border:1px solid #c7c7c7}
+.kx-table td{height:34px;color:#666;font-size:12px;padding:0 8px;border:1px solid #d5d5d5;background:#fff;vertical-align:middle}
+.kx-table tr:nth-child(even) td{background:#f7f7f7}.kx-table tr:hover td{background:#e9e9e9}.kx-table tr.selected td{background:#d1d1d1!important}
+.kx-no{width:70px;text-align:center}.kx-name{min-width:210px}.kx-email{min-width:230px}.kx-phone{min-width:150px}.kx-date{width:150px;text-align:center}.kx-count{width:90px;text-align:center}.kx-actions{width:220px;text-align:center;white-space:nowrap}
+.kx-ico{border:0;width:30px;height:30px;color:#fff;margin:0 2px;cursor:pointer;font-size:15px;vertical-align:middle}.kx-ico.check{background:#d9d9d9;color:#222}.kx-ico.eye{background:#5cb85c}.kx-ico.edit{background:#333}.kx-ico.lock{background:#f0ad4e}.kx-ico.trash{background:#d9534f}.kx-ico.key{background:#337ab7}
+.kx-pill{display:inline-block;padding:2px 6px;font-size:10px;border-radius:2px;margin-left:5px;color:#fff}.kx-pill.on{background:#5cb85c}.kx-pill.off{background:#d9534f}
+.kx-tabs{display:flex;gap:4px;margin:12px 0}.kx-tab{background:#f5f5f5;border:1px solid #ccc;color:#555;padding:8px 13px;cursor:pointer;font-size:12px}.kx-tab.on{background:#337ab7;color:#fff;border-color:#337ab7}
+.kx-reset{padding:0 12px 14px;color:#666;font-size:12px}
+.kx-modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding-top:55px}
+.kx-modal{width:min(1120px,94vw);background:#fff;border:1px solid #c8c8c8;color:#555;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.kx-modal-title{height:40px;background:#f5f5f5;border-bottom:1px solid #cfcfcf;display:flex;align-items:center;gap:10px;padding:0 12px;color:#666}
+.kx-form{padding:18px 20px 22px;display:grid;grid-template-columns:170px 260px 1fr;gap:16px 10px;align-items:center}
+.kx-form label{font-size:12px;font-weight:700}.kx-form .colon{text-align:center}.kx-form input,.kx-form select{width:250px;height:32px;border:1px solid #c7c7c7;background:#fff;color:#555;padding:0 8px;font-size:12px}.kx-form input[type=checkbox]{width:14px;height:14px}.kx-form small{color:#777}.kx-modal-actions{padding:0 20px 20px;display:flex;gap:8px}
+.kx-help{display:inline-flex;width:18px;height:18px;border-radius:50%;border:1px solid #183764;color:#183764;font-weight:700;align-items:center;justify-content:center;font-size:12px;margin-left:8px}
+@media(max-width:800px){.kx-form{grid-template-columns:120px 20px 1fr}.kx-form input,.kx-form select{width:100%}}
 </style>
 
-<div class="u2-top">
-  <div><div class="u2-title">👥 Kullanıcılar & Yetki Rolleri</div><div class="u2-sub">Ticimax tarzı liste görünümü: izin, onay/aktiflik, düzenleme, 2FA sıfırlama, şifre sıfırlama ve silme.</div></div>
-  <div class="btn-group"><button class="btn sm" onclick="loadUsers()">↻ Yenile</button><button class="btn sm grn" onclick="showAddUser()">+ Kullanıcı Ekle</button><button class="btn sm yel" onclick="showRoleModal()">+ Kullanıcı Tipi</button></div>
+<div class="kx-tabs">
+  <button class="kx-tab on" onclick="kxTab('users',this)">Kullanıcılar</button>
+  <button class="kx-tab" onclick="kxTab('roles',this)">Kullanıcı Tipleri</button>
+  <button class="kx-tab" onclick="kxTab('security',this)">Güvenlik</button>
 </div>
-<div class="warn-box">⚠️ Kullanıcı şifreleri açık tutulmaz. Şifre sıfırlamada hash güncellenir. Yeni şifre talepleri admin onayından sonra Gmail API ile mail gönderir.</div>
-<div class="u2-tabs"><button class="u2-tab on" onclick="uTab('users',this)">Kullanıcılar</button><button class="u2-tab" onclick="uTab('roles',this)">Kullanıcı Tipleri</button><button class="u2-tab" onclick="uTab('security',this)">Güvenlik</button></div>
+
 <div id="usersTab">
-  <div class="u2-panel">
-    <div class="u2-panel-title">👤 Kullanıcı Listesi</div>
-    <div class="user-toolbar"><input id="userSearch" class="user-search" placeholder="Kullanıcı ara: ad, mail, rol..." oninput="renderUsers()"><div class="btn-group"><button class="btn sm sec" onclick="loadResetRequests()">Şifre Talepleri</button><button class="btn sm grn" onclick="quickFatihAdmin()">Fatih'i Admin Olarak Ekle</button></div></div>
-    <div class="users-table-wrap"><table class="users-table"><thead><tr><th>ID</th><th>Kullanıcı</th><th>Rol</th><th>Kayıt Tarihi</th><th>Son Güncelleme</th><th style="text-align:center">Giriş</th><th>Durum</th><th style="text-align:center">İşlemler</th></tr></thead><tbody id="userRows"><tr><td colspan="8">Yükleniyor...</td></tr></tbody></table></div>
-    <div style="height:16px"></div><div class="u2-panel-title">Bekleyen Şifre Talepleri</div><div id="resetRequestsList" style="font-size:12px;color:var(--m)">Yükleniyor...</div>
+  <div class="kx-wrap">
+    <div class="kx-head"><span class="hamb">☰</span><b>Kullanıcı Listesi</b></div>
+    <div class="kx-toolbar">
+      <button class="kx-btn kx-green" onclick="showAddUser()">Yeni Ekle</button>
+      <input id="userSearch" class="kx-search" placeholder="Tüm bilgilerde ara..." oninput="renderUsers()">
+      <button class="kx-btn kx-blue" onclick="loadUsers()">Yenile</button>
+    </div>
+    <div class="kx-table-wrap">
+      <table class="kx-table">
+        <thead>
+          <tr>
+            <th class="kx-no">No</th>
+            <th class="kx-name">İsim</th>
+            <th class="kx-email">E-Posta Adresi</th>
+            <th class="kx-phone">Cep Telefonu</th>
+            <th class="kx-date">Üyelik Tarihi</th>
+            <th class="kx-date">Son Giriş Tarihi</th>
+            <th class="kx-count">Toplam Giriş</th>
+            <th>Durum</th>
+            <th class="kx-actions">Eylemler</th>
+          </tr>
+        </thead>
+        <tbody id="userRows"><tr><td colspan="9">Yükleniyor...</td></tr></tbody>
+      </table>
+    </div>
+    <div class="kx-reset">
+      <b>Bekleyen Şifre Talepleri</b>
+      <div id="resetRequestsList" style="margin-top:8px">Yükleniyor...</div>
+    </div>
   </div>
 </div>
-<div id="rolesTab" style="display:none"><div class="u2-panel"><div class="u2-panel-title">🧩 Kullanıcı Tipleri</div><div id="roleList"></div></div></div>
-<div id="securityTab" style="display:none"><div class="u2-panel"><div class="u2-panel-title">🛡 Güvenlik</div><div class="hint-box">Mail gönderimi Gmail API ile yapılır. 2FA sıfırlama butonu kullanıcı kaydına sıfırlama zamanı işler. Şifreler açık tutulmaz.</div></div></div>
 
-<div class="moverlay" id="addUserModal" style="display:none"><div class="modal" style="max-width:560px"><h3>+ Yeni Kullanıcı</h3><div class="cform"><div class="fg"><label>Ad Soyad</label><input type="text" id="newUserName" placeholder="Ad Soyad"></div><div class="fg"><label>Email</label><input type="email" id="newUserEmail" placeholder="email@domain.com"></div><div class="fg"><label>Şifre</label><input type="password" id="newUserPass" placeholder="En az 6 karakter"></div><div class="fg"><label>Kullanıcı Tipi</label><select id="newUserRole"></select></div></div><div id="addUserErr" style="color:var(--r);font-size:12px;margin-top:8px;display:none"></div><div class="mbtns"><button class="btn sec" onclick="closeAddUser()">İptal</button><button class="btn grn" onclick="doAddUser()">Ekle</button></div></div></div>
-<div class="moverlay" id="editUserModal" style="display:none"><div class="modal" style="max-width:560px"><h3>✏️ Kullanıcı Düzenle</h3><div class="cform"><div class="fg"><label>Email</label><input type="email" id="editUserEmail" disabled></div><div class="fg"><label>Ad Soyad</label><input type="text" id="editUserName"></div><div class="fg"><label>Rol</label><select id="editUserRole"></select></div><div class="fg"><label>Durum</label><select id="editUserActive"><option value="true">Aktif</option><option value="false">Pasif</option></select></div><div class="fg full"><label>İzin</label><select id="editUserAllowed"><option value="true">İzinli</option><option value="false">İzinsiz</option></select></div></div><div class="mbtns"><button class="btn sec" onclick="closeEditUser()">İptal</button><button class="btn grn" onclick="saveEditUser()">Kaydet</button></div></div></div>
-<div class="moverlay" id="resetPassModal" style="display:none"><div class="modal" style="max-width:380px"><h3>🔑 Şifre Sıfırla</h3><div id="resetPassTarget" style="font-size:12px;color:var(--m);margin-bottom:12px"></div><div class="fg"><label>Yeni Şifre</label><input type="password" id="newPassInput" placeholder="Yeni şifre"></div><div class="mbtns"><button class="btn sec" onclick="document.getElementById('resetPassModal').style.display='none'">İptal</button><button class="btn yel" onclick="doResetPass()">Kaydet</button></div></div></div>
-<div class="moverlay" id="roleModal" style="display:none"><div class="modal"><h3>Kullanıcı Tipi</h3><div class="hint-box">Roller şimdilik panel tarafında tutulur. Kullanıcıya atanan rol DB’ye kaydedilir.</div><div class="cform"><div class="fg"><label>Tip Adı</label><input id="roleName" placeholder="Örn: Depo Yetkilisi"></div><div class="fg"><label>Tip Kodu</label><input id="roleKey" placeholder="depo"></div></div><div class="mbtns"><button class="btn sec" onclick="closeRoleModal()">İptal</button><button class="btn grn" onclick="saveRoleDef()">Kaydet</button></div></div></div>
+<div id="rolesTab" style="display:none">
+  <div class="kx-wrap"><div class="kx-head"><span class="hamb">☰</span><b>Kullanıcı Tipleri</b></div><div style="padding:15px" id="roleList"></div></div>
+</div>
+
+<div id="securityTab" style="display:none">
+  <div class="kx-wrap"><div class="kx-head"><span class="hamb">☰</span><b>Güvenlik</b></div><div style="padding:15px">Şifreler açık tutulmaz. Şifre yenileme maili Gmail API ile gönderilir.</div></div>
+</div>
+
+<div class="kx-modal-back" id="userModal" style="display:none">
+  <div class="kx-modal">
+    <div class="kx-modal-title"><span class="hamb">☰</span><b id="modalTitle">Kullanıcı Detayları</b><span style="margin-left:auto;cursor:pointer" onclick="closeUserModal()">▲</span></div>
+    <div class="kx-form">
+      <label>İsim</label><div class="colon">:</div><div><input id="mName"></div>
+      <label>Soyad</label><div class="colon">:</div><div><input id="mSurname"></div>
+      <label>Cep telefonu</label><div class="colon">:</div><div><input id="mPhone" placeholder="+90 5xx xxx xx xx"></div>
+      <label>E-Posta Adresi</label><div class="colon">:</div><div><input id="mEmail"></div>
+      <label>Kullanıcı Tipi</label><div class="colon">:</div><div><select id="mRole"></select></div>
+      <label>Şifre</label><div class="colon">:</div><div><input id="mPassword" type="password"></div>
+      <label></label><div></div><div><input id="mPasswordApply" type="checkbox"> <small>Yeni yazdığım şifre geçerli olsun</small></div>
+      <label>Panel Yardım Mesajlarını Göster</label><div class="colon">:</div><div><input id="mShowHelp" type="checkbox"></div>
+      <label>Yeni Panel</label><div class="colon">:</div><div><input id="mNewPanel" type="checkbox"> <span class="kx-help">?</span></div>
+      <label>Personel</label><div class="colon">:</div><div><input id="mPersonnel" type="checkbox"></div>
+      <label>İzin</label><div class="colon">:</div><div><input id="mAllowed" type="checkbox"></div>
+      <label>Aktif</label><div class="colon">:</div><div><input id="mActive" type="checkbox"></div>
+    </div>
+    <div class="kx-modal-actions">
+      <button class="kx-btn kx-red" onclick="closeUserModal()">Vazgeç</button>
+      <button class="kx-btn kx-green" onclick="saveUserModal()">Kaydet</button>
+    </div>
+  </div>
+</div>
 
 <script>
-var USERS=[],_resetTarget=null,_editingEmail=null;
-var BUILTIN_ROLES={admin:{key:'admin',name:'Admin'},editor:{key:'editor',name:'Editör'},viewer:{key:'viewer',name:'Görüntüleyici'}};
+var USERS=[],EDIT_EMAIL=null,MODE='add';
+var ROLES={admin:'Admin',editor:'Editör',viewer:'Görüntüleyici'};
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function fmtDate(v){if(!v)return '—';try{return new Date(v).toLocaleString('tr-TR')}catch(e){return v}}
-function getRoleDefs(){try{return Object.assign({},BUILTIN_ROLES,JSON.parse(localStorage.getItem('mxRoleDefs')||'{}'))}catch(e){return BUILTIN_ROLES}}
-function fillRoleSelect(id,val){var el=document.getElementById(id); if(!el)return; el.innerHTML=Object.values(getRoleDefs()).map(r=>'<option value="'+r.key+'" '+(val===r.key?'selected':'')+'>'+r.name+'</option>').join('')}
-function uTab(id,btn){['users','roles','security'].forEach(x=>document.getElementById(x+'Tab').style.display=x===id?'':'none');document.querySelectorAll('.u2-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(id==='roles')renderRoles()}
-function statusPill(ok,txt){return '<span class="status-pill '+(ok?'on':'off')+'">● '+txt+'</span>'}
+function fmt(v){if(!v)return '';try{return new Date(v).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}).replace(',','')}catch(e){return v}}
+function kxTab(id,btn){['users','roles','security'].forEach(x=>document.getElementById(x+'Tab').style.display=x===id?'':'none');document.querySelectorAll('.kx-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(id==='roles')renderRoles()}
+function roleOptions(val){return Object.keys(ROLES).map(k=>'<option value="'+k+'" '+(val===k?'selected':'')+'>'+ROLES[k]+'</option>').join('')}
 async function api(url,opt){var r=await fetch(url,Object.assign({credentials:'include',headers:{'Content-Type':'application/json'}},opt||{}));var d=await r.json().catch(()=>({error:'JSON okunamadı'}));if(!r.ok||d.error)throw new Error(d.error||'İşlem hatası');return d}
-async function loadUsers(){try{USERS=await api('/admin/users');renderUsers();fillRoleSelect('newUserRole','viewer');loadResetRequests()}catch(e){document.getElementById('userRows').innerHTML='<tr><td colspan="8" style="color:var(--r)">Hata: '+esc(e.message)+'</td></tr>'}}
-function renderUsers(){var q=(document.getElementById('userSearch')?.value||'').toLowerCase();var list=USERS.filter(u=>((u.email||'')+' '+(u.name||'')+' '+(u.role||'')).toLowerCase().includes(q));document.getElementById('userRows').innerHTML=list.length?list.map(u=>{var email=esc(u.email);return '<tr><td><span class="uid">'+esc(u.user_no||'—')+'</span></td><td><div class="u-name">'+esc(u.name||'—')+'</div><div class="u-email">'+email+'</div></td><td><select class="role-select" onchange="changeRole(\\''+email+'\\',this.value)">'+Object.values(getRoleDefs()).map(r=>'<option value="'+r.key+'" '+((u.role||'viewer')===r.key?'selected':'')+'>'+r.name+'</option>').join('')+'</select></td><td>'+fmtDate(u.created_at)+'</td><td>'+fmtDate(u.updated_at)+'</td><td style="text-align:center">'+esc(u.login_count||0)+'</td><td>'+statusPill(u.is_allowed!==false,'İzin')+' '+statusPill(u.is_active!==false,'Aktif')+'</td><td class="center"><div class="btn-group"><button class="ico-btn allow" title="İzin Ver / Kapat" onclick="toggleAllow(\\''+email+'\\','+(u.is_allowed===false?'true':'false')+')">✓</button><button class="ico-btn active" title="Onay / Aktif" onclick="toggleActive(\\''+email+'\\','+(u.is_active===false?'true':'false')+')">👁</button><button class="ico-btn edit" title="Düzenle" onclick="showEditUser(\\''+email+'\\')">✎</button><button class="ico-btn warn" title="Şifre Sıfırla" onclick="showResetPass(\\''+email+'\\')">🔑</button><button class="ico-btn warn" title="İki faktörlü doğrulama sıfırlama" onclick="reset2FA(\\''+email+'\\')">🔒</button><button class="ico-btn del" title="Sil" onclick="deleteUser(\\''+email+'\\')">×</button></div></td></tr>'}).join(''):'<tr><td colspan="8">Kullanıcı yok</td></tr>'}
-function showAddUser(){fillRoleSelect('newUserRole','viewer');document.getElementById('newUserName').value='';document.getElementById('newUserEmail').value='';document.getElementById('newUserPass').value='';document.getElementById('addUserErr').style.display='none';document.getElementById('addUserModal').style.display='flex'}
-function closeAddUser(){document.getElementById('addUserModal').style.display='none'}
-function quickFatihAdmin(){showAddUser();document.getElementById('newUserName').value='Fatih Kılıç';document.getElementById('newUserEmail').value='fatihmadmext@gmail.com';document.getElementById('newUserRole').value='admin'}
-async function doAddUser(){var err=document.getElementById('addUserErr');try{await api('/admin/users',{method:'POST',body:JSON.stringify({name:document.getElementById('newUserName').value,email:document.getElementById('newUserEmail').value,password:document.getElementById('newUserPass').value,role:document.getElementById('newUserRole').value})});closeAddUser();toast('Kullanıcı eklendi');loadUsers()}catch(e){err.textContent=e.message;err.style.display='block'}}
-function showEditUser(email){var u=USERS.find(x=>(x.email||'').toLowerCase()===email.toLowerCase());if(!u)return;_editingEmail=u.email;document.getElementById('editUserEmail').value=u.email;document.getElementById('editUserName').value=u.name||'';fillRoleSelect('editUserRole',u.role||'viewer');document.getElementById('editUserActive').value=String(u.is_active!==false);document.getElementById('editUserAllowed').value=String(u.is_allowed!==false);document.getElementById('editUserModal').style.display='flex'}
-function closeEditUser(){document.getElementById('editUserModal').style.display='none'}
-async function saveEditUser(){try{await api('/admin/users/'+encodeURIComponent(_editingEmail),{method:'PUT',body:JSON.stringify({name:document.getElementById('editUserName').value,role:document.getElementById('editUserRole').value,is_active:document.getElementById('editUserActive').value==='true',is_allowed:document.getElementById('editUserAllowed').value==='true'})});closeEditUser();toast('Kullanıcı güncellendi');loadUsers()}catch(e){toast(e.message)}}
-async function changeRole(email,role){try{await api('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',body:JSON.stringify({role})});toast('Rol güncellendi');loadUsers()}catch(e){toast(e.message)}}
-async function toggleAllow(email,value){try{await api('/admin/users/'+encodeURIComponent(email)+'/allow',{method:'POST',body:JSON.stringify({value})});toast('İzin güncellendi');loadUsers()}catch(e){toast(e.message)}}
-async function toggleActive(email,value){try{await api('/admin/users/'+encodeURIComponent(email)+'/active',{method:'POST',body:JSON.stringify({value})});toast('Aktiflik güncellendi');loadUsers()}catch(e){toast(e.message)}}
-async function reset2FA(email){if(!confirm(email+' için iki faktörlü doğrulama sıfırlansın mı?'))return;try{await api('/admin/users/'+encodeURIComponent(email)+'/2fa-reset',{method:'POST'});toast('2FA sıfırlama işlendi');loadUsers()}catch(e){toast(e.message)}}
-async function deleteUser(email){if(!confirm(email+' silinsin mi?'))return;try{await api('/admin/users/'+encodeURIComponent(email),{method:'DELETE'});toast('Kullanıcı silindi');loadUsers()}catch(e){toast(e.message)}}
-function showResetPass(email){_resetTarget=email;document.getElementById('resetPassTarget').textContent=email;document.getElementById('newPassInput').value='';document.getElementById('resetPassModal').style.display='flex'}
-async function doResetPass(){var p=document.getElementById('newPassInput').value;if(!p||p.length<6){toast('En az 6 karakter');return}try{await api('/admin/users/'+encodeURIComponent(_resetTarget)+'/reset',{method:'POST',body:JSON.stringify({password:p})});document.getElementById('resetPassModal').style.display='none';toast('Şifre güncellendi')}catch(e){toast(e.message)}}
-async function loadResetRequests(){try{var reqs=await api('/admin/reset-requests');var pending=reqs.filter(x=>(x.status||'pending')==='pending');document.getElementById('resetRequestsList').innerHTML=pending.length?pending.map(req=>'<div class="hint-box"><b>'+esc(req.email)+'</b><br>'+esc(req.message||'Şifremi unuttum')+'<div class="btn-group" style="margin-top:8px"><button class="btn sm grn" onclick="approveResetRequest('+req.id+')">Onayla ve Mail Gönder</button><button class="btn sm dng" onclick="declineResetRequest('+req.id+')">Reddet</button></div></div>').join(''):'Bekleyen talep yok'}catch(e){document.getElementById('resetRequestsList').innerHTML='Talep alınamadı: '+esc(e.message)}}
-async function approveResetRequest(id){try{var d=await api('/admin/reset-requests/'+id+'/approve',{method:'POST'});toast(d.mail_sent?'Şifre yenileme maili gönderildi':'Onaylandı ama mail gönderilemedi');loadResetRequests()}catch(e){toast(e.message)}}
-async function declineResetRequest(id){try{await api('/admin/reset-requests/'+id+'/decline',{method:'POST'});toast('Talep reddedildi');loadResetRequests()}catch(e){toast(e.message)}}
-function renderRoles(){var defs=getRoleDefs();document.getElementById('roleList').innerHTML=Object.values(defs).map(r=>'<div class="hint-box"><b>'+esc(r.name)+'</b><br><span class="uid">'+esc(r.key)+'</span></div>').join('')}
-function showRoleModal(){document.getElementById('roleName').value='';document.getElementById('roleKey').value='';document.getElementById('roleModal').style.display='flex'}
-function closeRoleModal(){document.getElementById('roleModal').style.display='none'}
-function saveRoleDef(){var name=document.getElementById('roleName').value.trim(),key=document.getElementById('roleKey').value.trim().toLowerCase().replace(/[^a-z0-9_-]/g,'');if(!name||!key){toast('Tip adı ve kod gerekli');return}var defs=JSON.parse(localStorage.getItem('mxRoleDefs')||'{}');defs[key]={key,name};localStorage.setItem('mxRoleDefs',JSON.stringify(defs));closeRoleModal();renderRoles();fillRoleSelect('newUserRole','viewer');toast('Kullanıcı tipi eklendi')}
+async function loadUsers(){try{USERS=await api('/admin/users');renderUsers();loadResetRequests()}catch(e){document.getElementById('userRows').innerHTML='<tr><td colspan="9" style="color:#d9534f">Hata: '+esc(e.message)+'</td></tr>'}}
+function renderUsers(){var q=(document.getElementById('userSearch')?.value||'').toLowerCase();var list=USERS.filter(u=>Object.values(u).join(' ').toLowerCase().includes(q));document.getElementById('userRows').innerHTML=list.length?list.map(u=>{var e=esc(u.email);var full=((u.name||'')+' '+(u.surname||'')).trim()||u.name||u.email;return '<tr onclick="selectRow(this)"><td class="kx-no">'+esc(u.user_no||'')+'</td><td>'+esc(full)+'</td><td>'+e+'</td><td>'+esc(u.phone||'')+'</td><td class="kx-date">'+fmt(u.created_at)+'</td><td class="kx-date">'+fmt(u.last_login)+'</td><td class="kx-count">'+esc(u.login_count||0)+'</td><td>'+pill(u.is_allowed!==false,'İzin')+' '+pill(u.is_active!==false,'Aktif')+'</td><td class="kx-actions"><button class="kx-ico check" title="İzin Ver" onclick="event.stopPropagation();toggleAllow(\\''+e+'\\','+(u.is_allowed===false?'true':'false')+')">✓</button><button class="kx-ico eye" title="Onay / Aktif" onclick="event.stopPropagation();toggleActive(\\''+e+'\\','+(u.is_active===false?'true':'false')+')">👁</button><button class="kx-ico edit" title="Düzenle" onclick="event.stopPropagation();showEditUser(\\''+e+'\\')">✎</button><button class="kx-ico key" title="Şifre Sıfırla" onclick="event.stopPropagation();showPasswordOnly(\\''+e+'\\')">🔑</button><button class="kx-ico lock" title="2FA Sıfırla" onclick="event.stopPropagation();reset2FA(\\''+e+'\\')">🔒</button><button class="kx-ico trash" title="Sil" onclick="event.stopPropagation();deleteUser(\\''+e+'\\')">🗑</button></td></tr>'}).join(''):'<tr><td colspan="9">Kullanıcı bulunamadı</td></tr>'}
+function pill(ok,t){return '<span class="kx-pill '+(ok?'on':'off')+'">'+t+'</span>'}
+function selectRow(tr){document.querySelectorAll('.kx-table tr').forEach(x=>x.classList.remove('selected'));tr.classList.add('selected')}
+function fillRoles(val){document.getElementById('mRole').innerHTML=roleOptions(val||'viewer')}
+function showAddUser(){MODE='add';EDIT_EMAIL=null;document.getElementById('modalTitle').textContent='Yeni Kullanıcı';['mName','mSurname','mPhone','mEmail','mPassword'].forEach(id=>document.getElementById(id).value='');fillRoles('viewer');document.getElementById('mEmail').disabled=false;document.getElementById('mPasswordApply').checked=true;['mShowHelp','mNewPanel','mPersonnel'].forEach(id=>document.getElementById(id).checked=false);document.getElementById('mAllowed').checked=true;document.getElementById('mActive').checked=true;document.getElementById('userModal').style.display='flex'}
+function showEditUser(email){MODE='edit';var u=USERS.find(x=>(x.email||'').toLowerCase()===email.toLowerCase());if(!u)return;EDIT_EMAIL=u.email;document.getElementById('modalTitle').textContent='Kullanıcı Detayları';document.getElementById('mName').value=u.name||'';document.getElementById('mSurname').value=u.surname||'';document.getElementById('mPhone').value=u.phone||'';document.getElementById('mEmail').value=u.email||'';document.getElementById('mEmail').disabled=true;document.getElementById('mPassword').value='';document.getElementById('mPasswordApply').checked=false;fillRoles(u.role||'viewer');document.getElementById('mShowHelp').checked=!!u.show_panel_help;document.getElementById('mNewPanel').checked=!!u.new_panel;document.getElementById('mPersonnel').checked=!!u.personnel;document.getElementById('mAllowed').checked=u.is_allowed!==false;document.getElementById('mActive').checked=u.is_active!==false;document.getElementById('userModal').style.display='flex'}
+function closeUserModal(){document.getElementById('userModal').style.display='none'}
+async function saveUserModal(){var data={name:mName.value,surname:mSurname.value,phone:mPhone.value,email:mEmail.value,role:mRole.value,password:mPassword.value,password_apply:mPasswordApply.checked,show_panel_help:mShowHelp.checked,new_panel:mNewPanel.checked,personnel:mPersonnel.checked,is_allowed:mAllowed.checked,is_active:mActive.checked};try{if(MODE==='add'){await api('/admin/users',{method:'POST',body:JSON.stringify(data)})}else{await api('/admin/users/'+encodeURIComponent(EDIT_EMAIL),{method:'PUT',body:JSON.stringify(data)})}closeUserModal();if(window.toast)toast('Kullanıcı kaydedildi');loadUsers()}catch(e){alert(e.message)}}
+function showPasswordOnly(email){showEditUser(email);document.getElementById('mPasswordApply').checked=true;document.getElementById('mPassword').focus()}
+async function changeRole(email,role){try{await api('/admin/users/'+encodeURIComponent(email)+'/role',{method:'POST',body:JSON.stringify({role})});loadUsers()}catch(e){alert(e.message)}}
+async function toggleAllow(email,value){try{await api('/admin/users/'+encodeURIComponent(email)+'/allow',{method:'POST',body:JSON.stringify({value})});loadUsers()}catch(e){alert(e.message)}}
+async function toggleActive(email,value){try{await api('/admin/users/'+encodeURIComponent(email)+'/active',{method:'POST',body:JSON.stringify({value})});loadUsers()}catch(e){alert(e.message)}}
+async function reset2FA(email){if(!confirm(email+' için iki faktörlü doğrulama sıfırlansın mı?'))return;try{await api('/admin/users/'+encodeURIComponent(email)+'/2fa-reset',{method:'POST'});if(window.toast)toast('2FA sıfırlama işlendi');loadUsers()}catch(e){alert(e.message)}}
+async function deleteUser(email){if(!confirm(email+' silinsin mi?'))return;try{await api('/admin/users/'+encodeURIComponent(email),{method:'DELETE'});loadUsers()}catch(e){alert(e.message)}}
+function renderRoles(){document.getElementById('roleList').innerHTML=Object.keys(ROLES).map(k=>'<div style="padding:8px;border-bottom:1px solid #ddd"><b>'+ROLES[k]+'</b> <span style="color:#999">('+k+')</span></div>').join('')}
+async function loadResetRequests(){try{var reqs=await api('/admin/reset-requests');var pending=reqs.filter(x=>(x.status||'pending')==='pending');document.getElementById('resetRequestsList').innerHTML=pending.length?pending.map(req=>'<div style="padding:8px;border:1px solid #ddd;margin-top:5px"><b>'+esc(req.email)+'</b> '+esc(req.message||'')+' <button class="kx-btn kx-green" onclick="approveResetRequest('+req.id+')">Onayla ve Mail Gönder</button> <button class="kx-btn kx-red" onclick="declineResetRequest('+req.id+')">Reddet</button></div>').join(''):'Bekleyen talep yok'}catch(e){document.getElementById('resetRequestsList').innerHTML='Talep alınamadı: '+esc(e.message)}}
+async function approveResetRequest(id){try{var d=await api('/admin/reset-requests/'+id+'/approve',{method:'POST'});alert(d.mail_sent?'Şifre yenileme maili gönderildi':'Onaylandı ama mail gönderilemedi');loadResetRequests()}catch(e){alert(e.message)}}
+async function declineResetRequest(id){try{await api('/admin/reset-requests/'+id+'/decline',{method:'POST'});loadResetRequests()}catch(e){alert(e.message)}}
 loadUsers();
 </script>
