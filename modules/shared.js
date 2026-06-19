@@ -14,7 +14,7 @@ async function saveServerLogs(){try{await fetch(`${px()}/logs/save`,{method:'POS
 async function logAction(action){try{await fetch(`${px()}/logs/action`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(action)})}catch(e){}}
 function gav(a,t){if(!a)return 0;const x=a.find(v=>v.action_type===t);return x?parseInt(x.value||0):0}
 function groas(r){return r.purchase_roas?.[0]?.value?parseFloat(r.purchase_roas[0].value):0}
-function grev(r){const av=r.action_values;if(!av)return 0;const x=av.find(v=>v.action_type==='purchase');return x?parseFloat(x.value||0):0}
+function grev(r){const av=r.action_values;if(!av)return 0;const x=av.find(v=>v.action_type==='purchase');return x?parseFloat(x.value):0}
 function roasColor(v){return v>=3?'var(--g)':v>=1.5?'var(--y)':'var(--r)'}
 function ga4val(resp,metricIdx=0,rowIdx=0){return resp?.rows?.[rowIdx]?.metricValues?.[metricIdx]?.value||'0'}
 function getBi(c,isAdset){if(!c)return{type:'ABO',badge:'<span class="bge abo">ABO</span>',amt:'—'};if(c.daily_budget){var amt=(parseInt(c.daily_budget)/100).toFixed(0)+'₺/gün';return{type:isAdset?'ABO':'CBO',badge:isAdset?'<span class="bge abo">ABO</span>':'<span class="bge cbo">CBO</span>',amt}}if(c.lifetime_budget){var amt2=(parseInt(c.lifetime_budget)/100).toFixed(0)+'₺ toplam';return{type:isAdset?'ABO':'CBO',badge:isAdset?'<span class="bge abo">ABO</span>':'<span class="bge cbo">CBO</span>',amt:amt2}}return{type:'ABO',badge:'<span class="bge abo">ABO</span>',amt:'—'}}
@@ -57,4 +57,40 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   function run(){isAdmin().then(function(ok){if(ok)inject()})}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else setTimeout(run,200);
   setTimeout(run,1000);setTimeout(run,2500);
+})();
+
+// ── Meta bütçe kalem ikonlarını geri getir ───────────────────────────────
+(function restoreMetaBudgetPencils(){
+  function css(){
+    if(document.getElementById('mxMetaBudgetPencilCss'))return;
+    var s=document.createElement('style');
+    s.id='mxMetaBudgetPencilCss';
+    s.textContent='.mx-budget-pencil{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:6px;border-radius:5px;border:1px solid rgba(240,180,41,.45);background:rgba(240,180,41,.12);color:#f0b429;cursor:pointer;font-size:12px;vertical-align:middle}.mx-budget-pencil:hover{background:#f0b429;color:#111}.ma-tbl-wrap button[title="Bütçe değiştir"]{font-size:0!important;min-width:28px}.ma-tbl-wrap button[title="Bütçe değiştir"]:after{content:"✎";font-size:13px}';
+    document.head.appendChild(s);
+  }
+  function patch(){
+    try{
+      var tbl=document.getElementById('mTbl');
+      if(!tbl)return;
+      css();
+      var headers=[].slice.call(tbl.querySelectorAll('thead th'));
+      var bIdx=headers.findIndex(function(th){return (th.textContent||'').toLowerCase().indexOf('bütçe')>-1});
+      if(bIdx<0)return;
+      [].slice.call(tbl.querySelectorAll('tbody tr')).forEach(function(tr){
+        var actionBtn=tr.querySelector('button[title="Bütçe değiştir"]');
+        if(!actionBtn)return;
+        actionBtn.innerHTML='✎';
+        actionBtn.setAttribute('aria-label','Bütçe değiştir');
+        var cell=tr.children[bIdx];
+        if(!cell||cell.querySelector('.mx-budget-pencil'))return;
+        var clone=actionBtn.cloneNode(true);
+        clone.className='mx-budget-pencil';
+        clone.title='Bütçe değiştir';
+        cell.appendChild(clone);
+      });
+    }catch(e){}
+  }
+  var obs=new MutationObserver(function(){patch()});
+  function start(){try{obs.observe(document.body,{childList:true,subtree:true});patch();setInterval(patch,1500)}catch(e){}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
