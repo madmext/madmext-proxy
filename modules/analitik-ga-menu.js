@@ -22,7 +22,7 @@
     }catch(e){el.innerHTML='<div class="anx-err">⚠ '+esc(e.message)+'</div>'}
   }
   function inject(){var root=q('ANX');if(!root||q('anxRealtimeOverview'))return;var html=''
-    +'<div class="anx-two">'+card('anxRealtimeOverview','🟢 Gerçek zamanlı genel bakış','active users + events')+card('anxRealtimePages','📍 Gerçek zamanlı sayfalar','son 30 dk sayfalar')+'</div>'
+    +'<div class="anx-two">'+card('anxRealtimeOverview','🟢 Gerçek zamanlı genel bakış','active users + events')+card('anxRealtimePages','📍 Gerçek zamanlı sayfalar','son 30 dk ekran/sayfa')+'</div>'
     +'<div class="anx-two">'+card('anxDemographics','👤 Demografik grup ayrıntıları','yaş + cinsiyet')+card('anxAudiencesList','🎯 Kitleler','audienceName')+'</div>'
     +'<div class="anx-two">'+card('anxTechnology','💻 Teknoloji ayrıntıları','OS + browser + device')+card('anxOrganicTraffic','🔎 Google organik arama trafiği','organic landing pages')+'</div>'
     +card('anxSearchQueries','🔍 Search Console / Sorgular','GA4 içinde mevcut arama terimi veya sorgu verisi varsa')
@@ -30,7 +30,7 @@
     var after=q('anxFunnel');var ref=after&&after.closest('.anx-card');if(ref)ref.insertAdjacentHTML('afterend',html);else root.insertAdjacentHTML('beforeend',html)}
   async function load(){inject();
     report('anxRealtimeOverview',{type:'runRealtimeReport',dimensions:['deviceCategory'],metrics:['activeUsers','eventCount'],limit:20},function(rows){return table(rows,[{h:'Cihaz',f:r=>dim(r,0)},{h:'Aktif Kullanıcı',f:r=>fmt(val(r,0))},{h:'Event',f:r=>fmt(val(r,1))}])});
-    report('anxRealtimePages',{type:'runRealtimeReport',dimensions:['unifiedPagePathScreen'],metrics:['activeUsers','screenPageViews'],orderMetric:'activeUsers',limit:30},function(rows){return table(rows,[{h:'Sayfa',f:r=>dim(r,0)},{h:'Aktif Kullanıcı',f:r=>fmt(val(r,0))},{h:'Görüntüleme',f:r=>fmt(val(r,1))}])});
+    report('anxRealtimePages',{type:'runRealtimeReport',dimensions:['unifiedScreenName'],metrics:['activeUsers','screenPageViews'],orderMetric:'activeUsers',limit:30},function(rows){return table(rows,[{h:'Ekran / Sayfa',f:r=>dim(r,0)},{h:'Aktif Kullanıcı',f:r=>fmt(val(r,0))},{h:'Görüntüleme',f:r=>fmt(val(r,1))}])});
     report('anxDemographics',{dimensions:['userAgeBracket','userGender'],metrics:['sessions','totalUsers','purchaseRevenue','transactions'],orderMetric:'sessions',limit:50},function(rows){return table(rows,[{h:'Yaş',f:r=>dim(r,0)},{h:'Cinsiyet',f:r=>dim(r,1)},{h:'Oturum',f:r=>fmt(val(r,0))},{h:'Kullanıcı',f:r=>fmt(val(r,1))},{h:'Gelir',f:r=>money(val(r,2))},{h:'Transaction',f:r=>fmt(val(r,3))}])});
     report('anxAudiencesList',{dimensions:['audienceName'],metrics:['sessions','totalUsers','purchaseRevenue','transactions'],orderMetric:'sessions',limit:50},function(rows){return table(rows,[{h:'Kitle',f:r=>dim(r,0)},{h:'Oturum',f:r=>fmt(val(r,0))},{h:'Kullanıcı',f:r=>fmt(val(r,1))},{h:'Gelir',f:r=>money(val(r,2))},{h:'Transaction',f:r=>fmt(val(r,3))}])});
     report('anxTechnology',{dimensions:['operatingSystem','browser','deviceCategory'],metrics:['sessions','totalUsers','purchaseRevenue','transactions','engagementRate'],orderMetric:'sessions',limit:60},function(rows){return table(rows,[{h:'OS',f:r=>dim(r,0)},{h:'Browser',f:r=>dim(r,1)},{h:'Cihaz',f:r=>dim(r,2)},{h:'Oturum',f:r=>fmt(val(r,0))},{h:'Kullanıcı',f:r=>fmt(val(r,1))},{h:'Gelir',f:r=>money(val(r,2))},{h:'Transaction',f:r=>fmt(val(r,3))},{h:'Eng.',f:r=>pct(val(r,4))}])});
