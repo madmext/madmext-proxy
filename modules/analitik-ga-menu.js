@@ -11,7 +11,16 @@
   async function ga(body,type){if(!window.ga4)throw new Error('GA4 proxy yok');var r=await window.ga4(body,type);if(r&&r.error)throw new Error(typeof r.error==='string'?r.error:(r.error.message||JSON.stringify(r.error)));return r||{};}
   function table(rows,cols){if(!rows||!rows.length)return '<div class="anx-load">Veri yok</div>';return '<div class="anx-wrap"><table class="anx-table"><thead><tr>'+cols.map(function(c){return '<th>'+c.h+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td title="'+esc(c.f(r))+'">'+esc(c.f(r))+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>'}
   function card(id,title,note){return '<div class="anx-card"><h3>'+title+(note?'<span class="anx-note">'+note+'</span>':'')+'</h3><div id="'+id+'"><div class="anx-load"><div class="anx-spin"></div>Yükleniyor...</div></div></div>'}
-  async function report(id,cfg,renderer){var el=q(id);if(!el)return;try{var body={dateRanges:[{startDate:startDate(),endDate:'today'}],dimensions:(cfg.dimensions||[]).map(function(n){return {name:n}}),metrics:(cfg.metrics||[]).map(function(n){return {name:n}}),limit:cfg.limit||30};if(cfg.orderMetric)body.orderBys=[{metric:{metricName:cfg.orderMetric},desc:true}];var res=await ga(body,cfg.type);el.innerHTML=renderer(res.rows||[])}catch(e){el.innerHTML='<div class="anx-err">⚠ '+esc(e.message)+'</div>'}}
+  async function report(id,cfg,renderer){
+    var el=q(id);if(!el)return;
+    try{
+      var body={dimensions:(cfg.dimensions||[]).map(function(n){return {name:n}}),metrics:(cfg.metrics||[]).map(function(n){return {name:n}}),limit:cfg.limit||30};
+      if(cfg.type!=='runRealtimeReport')body.dateRanges=[{startDate:startDate(),endDate:'today'}];
+      if(cfg.orderMetric)body.orderBys=[{metric:{metricName:cfg.orderMetric},desc:true}];
+      var res=await ga(body,cfg.type);
+      el.innerHTML=renderer(res.rows||[])
+    }catch(e){el.innerHTML='<div class="anx-err">⚠ '+esc(e.message)+'</div>'}
+  }
   function inject(){var root=q('ANX');if(!root||q('anxRealtimeOverview'))return;var html=''
     +'<div class="anx-two">'+card('anxRealtimeOverview','🟢 Gerçek zamanlı genel bakış','active users + events')+card('anxRealtimePages','📍 Gerçek zamanlı sayfalar','son 30 dk sayfalar')+'</div>'
     +'<div class="anx-two">'+card('anxDemographics','👤 Demografik grup ayrıntıları','yaş + cinsiyet')+card('anxAudiencesList','🎯 Kitleler','audienceName')+'</div>'
