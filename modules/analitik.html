@@ -17,8 +17,10 @@
   }
   window.__mxFullAnalyticsLoaded = false;
   window.__mxUtmAnalytics = false;
-  loadScript('/modules/analitik-full.js?v=20260622-3', function(){
-    loadScript('/modules/analitik-utm.js?v=20260622-3');
+  loadScript('/modules/analitik-ga4-fix.js?v=20260622-1', function(){
+    loadScript('/modules/analitik-full.js?v=20260622-4', function(){
+      loadScript('/modules/analitik-utm.js?v=20260622-4');
+    });
   });
 })();
 </script>
