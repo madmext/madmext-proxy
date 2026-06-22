@@ -55,15 +55,21 @@
     controls.appendChild(from);controls.appendChild(to);controls.appendChild(btn);controls.appendChild(clear);
   }
 
-  var sectionMap=[['anxChannelBars','Satış kanalları grafiği'],['anxDeviceBars','Cihaz / platform grafiği'],['anxChannels','Kanal tablosu'],['anxSources','Source / Medium'],['anxCampaigns','Kampanya / UTM'],['anxUtmAds','UTM reklam satış analizi'],['anxLanding','Landing page satış'],['anxProducts','Ürün performansı'],['anxCategories','Kategori performansı'],['anxPages','Sayfa performansı'],['anxEvents','Event listesi'],['anxGeo','Ülke / şehir'],['anxAudience','Yeni / geri dönen'],['anxFunnel','E-ticaret funnel']];
+  var sectionMap=[
+    ['anxChannelBars','Satış kanalları grafiği'],['anxDeviceBars','Cihaz / platform grafiği'],['anxChannels','Kanal tablosu'],['anxSources','Source / Medium'],['anxCampaigns','Kampanya / UTM'],['anxUtmAds','UTM reklam satış analizi'],['anxLanding','Landing page satış'],['anxProducts','Ürün performansı'],['anxCategories','Kategori performansı'],['anxPages','Sayfa performansı'],['anxEvents','Event listesi'],['anxGeo','Ülke / şehir'],['anxAudience','Yeni / geri dönen'],['anxFunnel','E-ticaret funnel'],
+    ['anxRealtimeOverview','Gerçek zamanlı genel bakış'],['anxRealtimePages','Gerçek zamanlı sayfalar'],['anxDemographics','Demografik grup ayrıntıları'],['anxAudiencesList','Kitleler'],['anxTechnology','Teknoloji ayrıntıları'],['anxOrganicTraffic','Google organik arama trafiği'],['anxSearchQueries','Search Console / Sorgular'],['anxFirebase','Firebase / Uygulama geliştirici']
+  ];
   function allSections(){return sectionMap.map(function(x){return x[0]})}
   function tryRead(store){try{return JSON.parse(store.getItem('anxVisibleSections')||'null')}catch(e){return null}}
-  function loadVisible(){return memVisible||tryRead(sessionStorage)||tryRead(localStorage)||allSections()}
+  function loadVisible(){var v=memVisible||tryRead(sessionStorage)||tryRead(localStorage)||allSections();var all=allSections();all.forEach(function(id){if(v.indexOf(id)<0)v.push(id)});return v}
   function tryWrite(store,v){try{store.setItem('anxVisibleSections',JSON.stringify(v));return true}catch(e){return false}}
   function saveVisible(v){memVisible=v;if(!tryWrite(sessionStorage,v))tryWrite(localStorage,v)}
   function applyVisible(){var visible=loadVisible();sectionMap.forEach(function(s){var el=q(s[0]);var card=el&&el.closest('.anx-card');if(card)card.classList.toggle('anx-hidden-section',visible.indexOf(s[0])<0)});}
   function addSectionFilter(){
-    var root=q('ANX');if(!root||q('anxSectionFilter'))return;
+    var root=q('ANX');if(!root)return;
+    var existing=q('anxSectionFilter');
+    if(existing && existing.querySelectorAll('input').length<sectionMap.length)existing.remove();
+    if(q('anxSectionFilter'))return;
     var visible=loadVisible();
     var div=document.createElement('div');div.className='anx-filter-card';div.id='anxSectionFilter';
     div.innerHTML='<div class="anx-filter-row"><b>Gösterilecek grafik/listeler</b><button class="btn sm sec" id="anxAll">Tümünü Seç</button><button class="btn sm sec" id="anxNone">Temizle</button><button class="btn sm" id="anxApply">Göster</button></div><div class="anx-checks">'+sectionMap.map(function(s){return '<label><input type="checkbox" value="'+s[0]+'" '+(visible.indexOf(s[0])>-1?'checked':'')+'> '+esc(s[1])+'</label>'}).join('')+'</div>';
