@@ -11,6 +11,23 @@
   async function ga(body,type){if(!window.ga4)throw new Error('GA4 proxy yok');var r=await window.ga4(body,type);if(r&&r.error)throw new Error(typeof r.error==='string'?r.error:(r.error.message||JSON.stringify(r.error)));return r||{};}
   function table(rows,cols){if(!rows||!rows.length)return '<div class="anx-load">Veri yok</div>';return '<div class="anx-wrap"><table class="anx-table"><thead><tr>'+cols.map(function(c){return '<th>'+c.h+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr>'+cols.map(function(c){return '<td title="'+esc(c.f(r))+'">'+esc(c.f(r))+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>'}
   function card(id,title,note){return '<div class="anx-card"><h3>'+title+(note?'<span class="anx-note">'+note+'</span>':'')+'</h3><div id="'+id+'"><div class="anx-load"><div class="anx-spin"></div>Yükleniyor...</div></div></div>'}
+  function patchFilter(){
+    var box=q('anxSectionFilter'); if(!box)return;
+    var checks=box.querySelector('.anx-checks'); if(!checks)return;
+    var sections=[['anxRealtimeOverview','Gerçek zamanlı genel bakış'],['anxRealtimePages','Gerçek zamanlı sayfalar'],['anxDemographics','Demografik grup ayrıntıları'],['anxAudiencesList','Kitleler'],['anxTechnology','Teknoloji ayrıntıları'],['anxOrganicTraffic','Google organik arama trafiği'],['anxSearchQueries','Search Console / Sorgular'],['anxFirebase','Firebase / Uygulama geliştirici']];
+    sections.forEach(function(s){
+      if(checks.querySelector('input[value="'+s[0]+'"]'))return;
+      var label=document.createElement('label');
+      label.innerHTML='<input type="checkbox" value="'+s[0]+'" checked> '+esc(s[1]);
+      checks.appendChild(label);
+    });
+    var apply=q('anxApply');
+    if(apply&&!apply.__gaMenuPatched){
+      apply.__gaMenuPatched=true;
+      var old=apply.onclick;
+      apply.onclick=function(){ if(old)old.call(this); setTimeout(function(){sections.forEach(function(s){var el=q(s[0]);var card=el&&el.closest('.anx-card');var input=checks.querySelector('input[value="'+s[0]+'"]');if(card&&input)card.classList.toggle('anx-hidden-section',!input.checked);});},50); };
+    }
+  }
   async function report(id,cfg,renderer){
     var el=q(id);if(!el)return;
     try{
@@ -21,13 +38,13 @@
       el.innerHTML=renderer(res.rows||[])
     }catch(e){el.innerHTML='<div class="anx-err">⚠ '+esc(e.message)+'</div>'}
   }
-  function inject(){var root=q('ANX');if(!root||q('anxRealtimeOverview'))return;var html=''
+  function inject(){var root=q('ANX');if(!root||q('anxRealtimeOverview')){patchFilter();return;}var html=''
     +'<div class="anx-two">'+card('anxRealtimeOverview','🟢 Gerçek zamanlı genel bakış','active users + events')+card('anxRealtimePages','📍 Gerçek zamanlı sayfalar','son 30 dk ekran/sayfa')+'</div>'
     +'<div class="anx-two">'+card('anxDemographics','👤 Demografik grup ayrıntıları','yaş + cinsiyet')+card('anxAudiencesList','🎯 Kitleler','audienceName')+'</div>'
     +'<div class="anx-two">'+card('anxTechnology','💻 Teknoloji ayrıntıları','OS + browser + device')+card('anxOrganicTraffic','🔎 Google organik arama trafiği','organic landing pages')+'</div>'
     +card('anxSearchQueries','🔍 Search Console / Sorgular','GA4 içinde mevcut arama terimi veya sorgu verisi varsa')
     +card('anxFirebase','🔥 Firebase / Uygulama geliştirici','platform + app version varsa');
-    var after=q('anxFunnel');var ref=after&&after.closest('.anx-card');if(ref)ref.insertAdjacentHTML('afterend',html);else root.insertAdjacentHTML('beforeend',html)}
+    var after=q('anxFunnel');var ref=after&&after.closest('.anx-card');if(ref)ref.insertAdjacentHTML('afterend',html);else root.insertAdjacentHTML('beforeend',html);patchFilter()}
   async function load(){inject();
     report('anxRealtimeOverview',{type:'runRealtimeReport',dimensions:['deviceCategory'],metrics:['activeUsers','eventCount'],limit:20},function(rows){return table(rows,[{h:'Cihaz',f:r=>dim(r,0)},{h:'Aktif Kullanıcı',f:r=>fmt(val(r,0))},{h:'Event',f:r=>fmt(val(r,1))}])});
     report('anxRealtimePages',{type:'runRealtimeReport',dimensions:['unifiedScreenName'],metrics:['activeUsers','screenPageViews'],orderMetric:'activeUsers',limit:30},function(rows){return table(rows,[{h:'Ekran / Sayfa',f:r=>dim(r,0)},{h:'Aktif Kullanıcı',f:r=>fmt(val(r,0))},{h:'Görüntüleme',f:r=>fmt(val(r,1))}])});
