@@ -58,4 +58,51 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else setTimeout(run,200);
   setTimeout(run,1000);setTimeout(run,2500);
 })();
+
+// ── Kampanya Merkezi: Raporlama ve Analiz altında kampanya planlama + görev/fiyat takip modülü ──
+(function injectCampaignCenter(){
+  function loadIntoMain(html){
+    var el=document.getElementById('mainContent'); if(!el)return;
+    var tmp=document.createElement('div');tmp.innerHTML=html;
+    var scripts=[];tmp.querySelectorAll('script').forEach(function(s){scripts.push(s.textContent);s.remove()});
+    el.innerHTML=tmp.innerHTML;
+    scripts.forEach(function(code){var s=document.createElement('script');s.textContent=code;document.body.appendChild(s)});
+  }
+  window.openCampaignCenter=async function(activeItem){
+    try{
+      document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+      if(activeItem)activeItem.classList.add('active');
+      if(typeof closeSidebar==='function')closeSidebar();
+      var title=document.getElementById('pageTitle'), sub=document.getElementById('pageSub'), el=document.getElementById('mainContent');
+      if(title)title.textContent='Kampanya Merkezi';
+      if(sub)sub.textContent='Ticimax, pazaryeri ve reklam kampanyaları takip paneli';
+      if(el)el.innerHTML='<div class="module-loading">⏳ Kampanya Merkezi yükleniyor...</div>';
+      history.pushState({page:'kampanyalar'},'','/kampanyalar');
+      var r=await fetch('/modules/kampanyalar.html?v=20260622-1');
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      loadIntoMain(await r.text());
+    }catch(e){var box=document.getElementById('mainContent');if(box)box.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Kampanya Merkezi yüklenemedi: '+e.message+'</div>'}
+  };
+  function makeItem(){var item=document.createElement('div');item.className='nav-item';item.id='navCampaignCenter';item.innerHTML='<span class="nav-icon">📅</span><span>Kampanya Merkezi</span><span class="nav-ai">Yeni</span>';item.onclick=function(){window.openCampaignCenter(item)};return item}
+  function inject(){
+    try{
+      var sidebar=document.querySelector('.sidebar'); if(!sidebar||document.getElementById('navCampaignCenter'))return;
+      if(window.PAGES){PAGES.kampanyalar={title:'Kampanya Merkezi',sub:'Kampanya planlama ve analiz',module:'kampanyalar'}}
+      if(typeof window.urlToPage==='function'&&!window.__mxCampUrl){window.__mxCampUrl=true;var old=window.urlToPage;window.urlToPage=function(path){if(path==='/kampanyalar'||path==='/kampanya-merkezi')return'kampanyalar';return old(path)}}
+      var item=makeItem();
+      var navs=Array.prototype.slice.call(sidebar.querySelectorAll('.nav-item'));
+      var analytics=navs.find(function(n){var t=(n.textContent||'').toLowerCase();var oc=n.getAttribute('onclick')||'';return t.indexOf('analytics')>-1||t.indexOf('analitik')>-1||oc.indexOf('analitik')>-1});
+      if(analytics)analytics.insertAdjacentElement('afterend',item);
+      else{
+        var sections=Array.prototype.slice.call(sidebar.querySelectorAll('.sidebar-section'));
+        var report=sections.find(function(s){var t=(s.textContent||'').toLowerCase();return t.indexOf('rapor')>-1||t.indexOf('analiz')>-1||t.indexOf('analytics')>-1});
+        if(report)report.insertAdjacentElement('afterend',item);else{var section=document.createElement('div');section.className='sidebar-section';section.textContent='Raporlama ve Analiz';sidebar.appendChild(section);sidebar.appendChild(item)}
+      }
+      if(location.pathname==='/kampanyalar'||location.pathname==='/kampanya-merkezi')window.openCampaignCenter(item);
+    }catch(e){console.warn('Kampanya Merkezi menü eklenemedi:',e)}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject);else setTimeout(inject,100);
+  setTimeout(inject,700);setTimeout(inject,1800);setTimeout(inject,3200);
+})();
+
 (function loadMetaBudgetFix(){try{if(document.getElementById('mxMetaBudgetFix'))return;var s=document.createElement('script');s.id='mxMetaBudgetFix';s.src='/modules/meta-budget-fix.js?v=20260618-1';document.head.appendChild(s)}catch(e){console.warn('Meta budget fix yüklenemedi',e)}})();
