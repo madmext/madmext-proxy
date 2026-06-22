@@ -1,816 +1,101 @@
-<!-- SEO Modülü v6 — Google PSI Benzeri Görünüm, CrUX + Lab Data, Fırsat/Teşhis Ayrımı -->
+<!-- SEO Modülü v7 — PageSpeed benzeri Mobil + Masaüstü analiz -->
 <style>
-#SE{display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden;font-family:inherit}
-#SE-top{flex-shrink:0;display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--b)}
-#SE-body{flex:1;overflow-y:auto;padding:16px 0}
-#SE-sw{flex:1;position:relative}
-#SE-sw::before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none;z-index:1}
-#SE-inp{width:100%;box-sizing:border-box;background:var(--bg);border:1.5px solid var(--b2);color:var(--t);padding:9px 14px 9px 38px;font-size:13px;border-radius:9px;outline:none;font-family:inherit;transition:border-color .18s}
-#SE-inp:focus{border-color:#3ecfa0}
-.se-btn{flex-shrink:0;border:1.5px solid var(--b);color:var(--t);padding:8px 14px;font-size:12px;font-weight:600;border-radius:9px;cursor:pointer;background:var(--s2);white-space:nowrap;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
-.se-btn:hover{border-color:#3ecfa0;color:#3ecfa0}
-.se-btn.g{background:#3ecfa0;border-color:#3ecfa0;color:#fff}
-.se-btn.g:hover{opacity:.88}
-.se-btn:disabled{opacity:.45;cursor:not-allowed;pointer-events:none}
-
-/* Kart grid */
-.sg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px}
-.sg-card{position:relative;background:var(--s);border:1.5px solid var(--b);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .15s}
-.sg-card:hover{border-color:#3ecfa0;box-shadow:0 2px 14px rgba(62,207,160,.1)}
-.sg-fav{width:36px;height:36px;border-radius:8px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;overflow:hidden}
-.sg-fav img{width:100%;height:100%;object-fit:cover;border-radius:8px}
-.sg-info{flex:1;min-width:0}
-.sg-url{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sg-meta{font-size:10px;color:var(--m);margin-top:2px}
-.sg-ring{position:relative;width:46px;height:46px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.sg-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
-.sg-rnum{position:relative;z-index:1;font-size:13px;font-weight:800}
-.sg-del{position:absolute;top:5px;right:7px;background:none;border:none;color:var(--m);font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s;padding:2px 5px;border-radius:4px}
-.sg-card:hover .sg-del{opacity:1}
-.sg-del:hover{background:rgba(250,62,62,.15);color:#fa3e3e}
-.sg-empty{text-align:center;padding:60px 20px;color:var(--m)}
-
-/* Detay */
-#SE-det{display:none}
-.sd-nav{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.sd-nav-info{flex:1;min-width:0}
-.sd-nav-url{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sd-nav-sub{font-size:10px;color:var(--m);margin-top:2px}
-
-/* Device sekmeler */
-.dev-tabs{display:flex;gap:6px;margin-bottom:12px}
-.dev-tab{flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid var(--b);background:var(--s);cursor:pointer;text-align:center;transition:all .15s;font-size:12px;font-weight:600;color:var(--m)}
-.dev-tab.on.mob{border-color:#3ecfa0;color:#3ecfa0;background:rgba(62,207,160,.06)}
-.dev-tab.on.desk{border-color:#1a73e8;color:#1a73e8;background:rgba(26,115,232,.06)}
-.dev-tab:not(.on):hover{border-color:var(--b2)}
-
-/* Büyük skor gauge */
-.score-header{display:flex;align-items:center;gap:20px;background:var(--s);border:1px solid var(--b);border-radius:12px;padding:20px;margin-bottom:10px}
-.big-gauge{position:relative;width:100px;height:100px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.big-gauge svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
-.big-gauge-num{position:relative;z-index:1;font-size:30px;font-weight:800}
-.score-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1}
-.cat-pill{text-align:center;padding:8px 4px;border-radius:8px;border:1px solid var(--b);background:var(--bg)}
-.cat-val{font-size:18px;font-weight:800}
-.cat-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--m);margin-top:2px}
-
-/* Metriks — Google PSI benzeri */
-.metrics-section{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px}
-.metrics-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--m);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.metrics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--b)}
-@media(max-width:520px){.metrics-grid{grid-template-columns:repeat(2,1fr)}}
-.metric-cell{background:var(--s);padding:12px 10px;display:flex;flex-direction:column;gap:3px}
-.metric-val{font-size:20px;font-weight:700;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:5px}
-.metric-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.metric-name{font-size:10px;color:var(--m);font-weight:600}
-.metric-desc{font-size:9px;color:var(--m);line-height:1.4;margin-top:2px}
-
-/* CrUX Alan Verisi */
-.crux-section{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px}
-.crux-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--m);margin-bottom:12px;display:flex;align-items:center;gap:6px;justify-content:space-between}
-.crux-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700;letter-spacing:.3px}
-.crux-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(128,128,128,.06)}
-.crux-row:last-child{border-bottom:none}
-.crux-name{font-size:11px;font-weight:600;width:140px;flex-shrink:0}
-.crux-bar{flex:1;height:8px;border-radius:4px;overflow:hidden;background:var(--b2);display:flex}
-.crux-val{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;width:70px;text-align:right;flex-shrink:0}
-.crux-na{font-size:11px;color:var(--m);font-style:italic}
-
-/* Fırsatlar (Opportunities) */
-.opp-section{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px}
-.opp-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--m);margin-bottom:10px}
-.opp-item{border:1px solid var(--b);border-radius:8px;margin-bottom:6px;overflow:hidden}
-.opp-hdr{display:flex;align-items:center;gap:9px;padding:10px 12px;cursor:pointer;transition:background .15s}
-.opp-hdr:hover{background:rgba(128,128,128,.04)}
-.opp-icon{font-size:14px;flex-shrink:0}
-.opp-info{flex:1;min-width:0}
-.opp-name{font-size:12px;font-weight:700}
-.opp-save{font-size:10px;margin-top:1px}
-.opp-chevron{font-size:10px;color:var(--m);transition:transform .2s}
-.opp-body{display:none;padding:10px 12px 12px;border-top:1px solid var(--b);font-size:11px;color:var(--m);line-height:1.7}
-.opp-fix{margin-top:6px;padding:6px 10px;border-left:2px solid #3ecfa0;background:rgba(62,207,160,.06);border-radius:0 5px 5px 0;font-size:11px;color:var(--t)}
-.opp-item.open .opp-chevron{transform:rotate(180deg)}
-.opp-item.open .opp-body{display:block}
-
-/* Teşhis (Diagnostics) */
-.diag-section{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px}
-.diag-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--m);margin-bottom:10px}
-.diag-item{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid rgba(128,128,128,.06)}
-.diag-item:last-child{border-bottom:none}
-.diag-icon{font-size:13px;flex-shrink:0;margin-top:1px}
-.diag-txt{flex:1;font-size:11px;line-height:1.6}
-.diag-name{font-weight:700;margin-bottom:1px}
-.diag-desc{color:var(--m)}
-
-/* Başarılı */
-.pass-section{background:var(--s);border:1px solid var(--b);border-radius:12px;padding:16px;margin-bottom:10px}
-.pass-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(128,128,128,.04);font-size:11px}
-.pass-item:last-child{border-bottom:none}
-
-/* Loading */
-.dev-loading{display:flex;flex-direction:column;align-items:center;padding:50px 20px;gap:12px;color:var(--m)}
-.dev-error{text-align:center;padding:30px 20px;color:#fa3e3e;font-size:12px}
-.se-progress{background:var(--b2);border-radius:6px;height:4px;overflow:hidden;margin-top:8px;width:200px}
-.se-pfill{height:100%;border-radius:6px;background:#3ecfa0;transition:width .4s ease}
-
-/* Spinner */
-@keyframes se-sp{to{transform:rotate(360deg)}}
-.se-spin{border-radius:50%;border:2.5px solid var(--b);border-top-color:#3ecfa0;animation:se-sp .8s linear infinite;flex-shrink:0}
-
-/* Karşılaştır */
-#SE-cmp{display:none}
-.cmp-tbl{width:100%;border-collapse:collapse;font-size:12px}
-.cmp-tbl th{background:var(--s2);padding:8px 11px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--m);border-bottom:1px solid var(--b)}
-.cmp-tbl td{padding:8px 11px;border-bottom:1px solid rgba(128,128,128,.06)}
-.cw{color:#3ecfa0;font-weight:700}.cl{color:#fa3e3e}.cd{color:var(--m)}
+#SEOX{display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden;font-family:inherit;color:var(--t)}
+#SEOX-top{display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--b);flex-shrink:0;flex-wrap:wrap}
+#SEOX-urlWrap{flex:1;min-width:260px;position:relative}
+#SEOX-urlWrap:before{content:'🔍';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.8}
+#SEOX-url{width:100%;box-sizing:border-box;background:var(--bg);border:1.5px solid var(--b2);color:var(--t);padding:10px 14px 10px 38px;font-size:13px;border-radius:10px;outline:none;font-family:inherit}
+#SEOX-url:focus{border-color:#3ecfa0}
+.seox-btn{border:1.5px solid var(--b);background:var(--s2);color:var(--t);padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap}
+.seox-btn:hover{border-color:#3ecfa0;color:#3ecfa0}.seox-btn.main{background:#3ecfa0;border-color:#3ecfa0;color:#07110e}.seox-btn:disabled{opacity:.5;cursor:not-allowed}
+#SEOX-body{flex:1;overflow:auto;padding:16px 0 30px}
+.seox-empty{text-align:center;color:var(--m);padding:70px 20px;background:var(--s);border:1px dashed var(--b2);border-radius:16px}.seox-empty b{color:var(--t)}
+.seox-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap}.seox-title{font-size:17px;font-weight:800}.seox-sub{font-size:11px;color:var(--m);margin-top:4px;line-height:1.5}.seox-mini{font-size:10px;color:var(--m)}
+.seox-summary{display:grid;grid-template-columns:repeat(2,minmax(260px,1fr));gap:12px;margin-bottom:14px}@media(max-width:820px){.seox-summary{grid-template-columns:1fr}}
+.seox-device-card{background:var(--s);border:1px solid var(--b);border-radius:16px;padding:16px;position:relative;overflow:hidden}.seox-device-card.mob:before{background:#3ecfa0}.seox-device-card.desk:before{background:#1a73e8}.seox-device-card:before{content:'';position:absolute;left:0;right:0;top:0;height:3px}
+.seox-device-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.seox-device-name{font-size:13px;font-weight:800}.seox-device-status{font-size:10px;color:var(--m)}
+.seox-score-row{display:grid;grid-template-columns:110px 1fr;gap:16px;align-items:center}@media(max-width:520px){.seox-score-row{grid-template-columns:1fr}.seox-gauge{margin:auto}}
+.seox-gauge{width:110px;height:110px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;background:conic-gradient(var(--score-color) calc(var(--score)*1%), var(--b2) 0)}.seox-gauge:after{content:'';position:absolute;width:82px;height:82px;background:var(--s);border-radius:50%}.seox-gauge b{position:relative;z-index:1;font-size:31px;color:var(--score-color);font-family:'DM Mono',monospace}.seox-gauge span{position:absolute;z-index:1;bottom:24px;font-size:9px;color:var(--m);font-weight:700}
+.seox-cats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.seox-cat{background:var(--bg);border:1px solid var(--b);border-radius:10px;padding:10px;text-align:center}.seox-cat-val{font-size:22px;font-weight:900;font-family:'DM Mono',monospace}.seox-cat-lbl{font-size:9px;color:var(--m);font-weight:800;text-transform:uppercase;letter-spacing:.4px;margin-top:3px}
+.seox-tabs{display:flex;gap:8px;margin:12px 0}.seox-tab{flex:1;text-align:center;padding:10px 12px;border:1.5px solid var(--b);background:var(--s);border-radius:12px;cursor:pointer;color:var(--m);font-size:12px;font-weight:800}.seox-tab.on.mob{border-color:#3ecfa0;color:#3ecfa0;background:rgba(62,207,160,.08)}.seox-tab.on.desk{border-color:#1a73e8;color:#1a73e8;background:rgba(26,115,232,.08)}
+.seox-section{background:var(--s);border:1px solid var(--b);border-radius:14px;padding:15px;margin-bottom:12px}.seox-section-title{font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:.7px;font-weight:900;margin-bottom:12px;display:flex;justify-content:space-between;gap:8px}.seox-section-title span{color:var(--t);text-transform:none;letter-spacing:0;font-weight:700}
+.seox-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--b);overflow:hidden;border-radius:10px}@media(max-width:720px){.seox-metrics{grid-template-columns:repeat(2,1fr)}}.seox-metric{background:var(--s);padding:13px 12px}.seox-metric-val{font-size:20px;font-weight:900;font-family:'DM Mono',monospace}.seox-metric-name{font-size:10px;color:var(--m);font-weight:700;margin-top:4px}.seox-metric-desc{font-size:9px;color:var(--m);margin-top:3px;line-height:1.4}
+.seox-list{display:flex;flex-direction:column;gap:7px}.seox-item{border:1px solid var(--b);background:var(--bg);border-radius:10px;padding:11px 12px}.seox-item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.seox-item-name{font-size:12px;font-weight:800;line-height:1.45}.seox-save{font-size:10px;font-weight:900;color:#fa3;white-space:nowrap}.seox-item-desc{font-size:10.5px;color:var(--m);line-height:1.65;margin-top:6px}.seox-ok{display:flex;align-items:center;gap:8px;font-size:11px;padding:6px 0;color:var(--m)}
+.seox-loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;min-height:260px;color:var(--m);background:var(--s);border:1px solid var(--b);border-radius:16px}.seox-spin{width:34px;height:34px;border:3px solid var(--b2);border-top-color:#3ecfa0;border-radius:50%;animation:seoxSpin .8s linear infinite}@keyframes seoxSpin{to{transform:rotate(360deg)}}.seox-error{padding:18px;border:1px solid rgba(250,62,62,.35);background:rgba(250,62,62,.08);color:#ff7777;border-radius:14px;font-size:12px;line-height:1.7}
+.seox-url-pill{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b);border-radius:999px;padding:6px 10px;font-size:11px;color:var(--m)}
 </style>
 
-<div id="SE">
-  <div id="SE-top">
-    <div id="SE-sw">
-      <input id="SE-inp" type="text" placeholder="https://www.madmext.com — URL gir, Enter'a bas..." autocomplete="off">
-    </div>
-    <button class="se-btn g" id="SE-abtn" onclick="SE.add()">＋ Analiz Et</button>
-    <button class="se-btn" onclick="SE.showCmp()">⇄ Karşılaştır</button>
+<div id="SEOX">
+  <div id="SEOX-top">
+    <div id="SEOX-urlWrap"><input id="SEOX-url" type="text" placeholder="https://www.madmext.com — URL gir, Enter'a bas" autocomplete="off"></div>
+    <button id="SEOX-run" class="seox-btn main" onclick="SEOX.run()">⚡ Analiz Et</button>
+    <button class="seox-btn" onclick="SEOX.demoMadmext()">Madmext'i Analiz Et</button>
   </div>
-  <div id="SE-body">
-    <div id="SE-list" style="display:none">
-      <div id="SE-grid" class="sg-grid"></div>
-      <div id="SE-empty" class="sg-empty" style="display:none">
-        <div style="font-size:44px;margin-bottom:10px">📊</div>
-        <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:6px">Henüz analiz yok</div>
-        <div style="font-size:12px;line-height:1.9;color:var(--m)">URL gir ve analiz et.<br><b>Mobil</b> ve <b>Masaüstü</b> ayrı ayrı analiz edilir.</div>
-      </div>
-    </div>
-    <div id="SE-det"></div>
-    <div id="SE-cmp"></div>
-  </div>
+  <div id="SEOX-body"></div>
 </div>
 
 <script>
 (function(){
 'use strict';
-
-/* ─── RENK YARDIMCILARI ─── */
-const C = {
-  score(v){ return v>=90?'#0c6':v>=50?'#fa3':'#f33' },
-  scoreLabel(v){ return v>=90?'İyi':v>=50?'Geliştirme Gerekiyor':'Zayıf' },
-  metricColor(v, thresholds){
-    if(v===null||v===undefined) return '#888';
-    if(v<=thresholds[0]) return '#0c6';
-    if(v<=thresholds[1]) return '#fa3';
-    return '#f33';
-  },
-  cruxColor(cat){
-    if(cat==='FAST'||cat==='good') return '#0c6';
-    if(cat==='AVERAGE'||cat==='needsImprovement') return '#fa3';
-    return '#f33';
+const API = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
+const CATS = ['performance','accessibility','best-practices','seo'];
+const TH = {fcp:[1800,3000],lcp:[2500,4000],tbt:[200,600],cls:[0.1,0.25],si:[3400,5800],inp:[200,500],ttfb:[800,1800]};
+const state = {url:'', mobile:null, desktop:null, active:'mobile', loading:false};
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function normalizeUrl(v){v=(v||'').trim(); if(!v) return ''; if(!/^https?:\/\//i.test(v)) v='https://'+v; const u=new URL(v); return u.href}
+function color(score){score=Number(score)||0; return score>=90?'#0c6':score>=50?'#fa3':'#f33'}
+function label(score){score=Number(score)||0; return score>=90?'İyi':score>=50?'Geliştirme Gerekir':'Zayıf'}
+function metricColor(v,t){if(v===null||v===undefined||Number.isNaN(v))return '#888'; return v<=t[0]?'#0c6':v<=t[1]?'#fa3':'#f33'}
+function fmtMs(v){if(v===null||v===undefined||Number.isNaN(v))return '—'; if(v>=1000)return (v/1000).toFixed(1).replace('.0','')+' sn'; return Math.round(v)+' ms'}
+function fmtMetric(k,v,display){if(display)return display; if(k==='cls')return v===null||v===undefined?'—':Number(v).toFixed(3); return fmtMs(v)}
+async function fetchPSI(url,strategy){
+  const qs = new URLSearchParams({url, strategy, locale:'tr'});
+  CATS.forEach(c=>qs.append('category',c));
+  const directUrl = API + '?' + qs.toString();
+  try{
+    const r = await fetch(directUrl, {cache:'no-store'});
+    const data = await r.json();
+    if(!r.ok || data.error) throw new Error(data?.error?.message || ('HTTP '+r.status));
+    return data;
+  }catch(e){
+    const r = await fetch('/psi?' + qs.toString(), {cache:'no-store'});
+    const data = await r.json();
+    if(!r.ok || data.error) throw new Error(data?.error?.message || e.message || ('HTTP '+r.status));
+    return data;
   }
-};
-
-/* ─── METRİK EŞİK DEĞERLERİ (Google PSI ile aynı) ─── */
-const THRESHOLDS = {
-  fcp:  [1800, 3000],
-  lcp:  [2500, 4000],
-  tbt:  [200,  600],
-  cls:  [0.1,  0.25],
-  si:   [3400, 5800],
-  tti:  [3800, 7300],
-  fid:  [100,  300],
-  inp:  [200,  500],
-  ttfb: [800,  1800]
-};
-
-/* ─── VERİ ÇEKME ─── */
-const PROXY = (()=>{
-  try{ return JSON.parse(localStorage.getItem('seoproxy')||'null') || window._proxyUrl || '/psi'; }
-  catch(e){ return '/psi'; }
-})();
-
-async function fetchPSI(url, strategy){
-  const cats = ['performance','seo','accessibility','best-practices'];
-  const qs = new URLSearchParams({ url, strategy, locale:'tr' });
-  cats.forEach(c => qs.append('category', c));
-  const r = await fetch(`${PROXY}?${qs}`, { signal: AbortSignal.timeout(58000) });
-  if(!r.ok) throw new Error(`HTTP ${r.status}`);
-  return r.json();
 }
-
-/* ─── PSI VERİSİNİ PARSE ET ─── */
-function parsePSI(data){
-  const lr = data.lighthouseResult || {};
-  const cats = lr.categories || {};
-  const aud = lr.audits || {};
-  const le  = data.loadingExperience || {};
-  const ole = data.originLoadingExperience || {};
-
-  // Temel skorlar (0-100)
-  const score = k => Math.round((cats[k]?.score ?? 0) * 100);
-
-  // Metrik değeri çek
-  const mval = key => {
-    const a = aud[key];
-    if(!a || a.numericValue===undefined) return null;
-    return a.numericValue;
+function scoreOf(cats,k){const v=cats?.[k]?.score; return typeof v==='number'?Math.round(v*100):null}
+function audit(aud,key){return aud?.[key]||{}}
+function parse(data){
+  const lr=data.lighthouseResult||{}, cats=lr.categories||{}, aud=lr.audits||{};
+  const get=(k)=>{const a=audit(aud,k); return {val:typeof a.numericValue==='number'?a.numericValue:null, disp:a.displayValue||null, title:a.title||''}};
+  const m={
+    fcp:{...get('first-contentful-paint'), name:'FCP', desc:'İlk içerikli boyama', th:TH.fcp},
+    lcp:{...get('largest-contentful-paint'), name:'LCP', desc:'En büyük içerikli boyama', th:TH.lcp},
+    tbt:{...get('total-blocking-time'), name:'TBT', desc:'Toplam engelleme süresi', th:TH.tbt},
+    cls:{...get('cumulative-layout-shift'), name:'CLS', desc:'Sayfa kayması', th:TH.cls},
+    si:{...get('speed-index'), name:'Speed Index', desc:'Hız endeksi', th:TH.si},
+    inp:{...get('interaction-to-next-paint'), name:'INP', desc:'Etkileşim gecikmesi', th:TH.inp},
+    ttfb:{...get('server-response-time'), name:'TTFB', desc:'Sunucu yanıt süresi', th:TH.ttfb}
   };
-
-  // Metrik görüntü değeri
-  const mdisp = key => aud[key]?.displayValue || null;
-
-  // Teşhis metriklerini çek
-  const metrics = {
-    fcp:  { val: mval('first-contentful-paint'),  disp: mdisp('first-contentful-paint'),  name:'FCP', desc:'İlk İçerikli Boyama', thresh: THRESHOLDS.fcp },
-    lcp:  { val: mval('largest-contentful-paint'), disp: mdisp('largest-contentful-paint'), name:'LCP', desc:'En Büyük İçerikli Boyama', thresh: THRESHOLDS.lcp },
-    tbt:  { val: mval('total-blocking-time'),       disp: mdisp('total-blocking-time'),       name:'TBT', desc:'Toplam Engelleme Süresi', thresh: THRESHOLDS.tbt },
-    cls:  { val: mval('cumulative-layout-shift'),   disp: mdisp('cumulative-layout-shift'),   name:'CLS', desc:'Kümülatif Düzen Kayması', thresh: THRESHOLDS.cls },
-    si:   { val: mval('speed-index'),               disp: mdisp('speed-index'),               name:'SI',  desc:'Hız Endeksi', thresh: THRESHOLDS.si },
-    tti:  { val: mval('interactive'),               disp: mdisp('interactive'),               name:'TTI', desc:'Etkileşime Hazır Süre', thresh: THRESHOLDS.tti },
-  };
-
-  // Fırsatlar (savings olan audit'lar)
-  const opps = Object.values(aud).filter(a =>
-    a.score !== null && a.score !== undefined && a.score < 0.9 &&
-    a.details?.type === 'opportunity' &&
-    (a.details?.overallSavingsMs > 0 || a.numericValue > 0)
-  ).map(a => ({
-    id: a.id,
-    name: a.title,
-    desc: a.description?.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1') || '',
-    score: a.score,
-    savings: a.details?.overallSavingsMs ? `${(a.details.overallSavingsMs/1000).toFixed(1)} sn tasarruf` :
-             a.displayValue || '',
-    type: 'opportunity'
-  })).sort((a,b) => a.score - b.score).slice(0, 8);
-
-  // Teşhis (diagnostics — non-opportunity failures)
-  const diags = Object.values(aud).filter(a =>
-    a.score !== null && a.score !== undefined && a.score < 0.9 &&
-    a.details?.type !== 'opportunity' &&
-    a.details?.type !== 'debugdata' &&
-    a.details?.type !== 'screenshot' &&
-    a.details?.type !== 'filmstrip' &&
-    a.weight !== 0
-  ).map(a => ({
-    id: a.id,
-    name: a.title,
-    desc: a.description?.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1') || '',
-    score: a.score,
-    display: a.displayValue || '',
-    type: a.score === 0 ? 'fail' : 'warn'
-  })).sort((a,b) => a.score - b.score).slice(0, 10);
-
-  // Başarılı
-  const passes = Object.values(aud).filter(a =>
-    a.score !== null && a.score !== undefined && a.score >= 0.9
-  ).map(a => ({
-    id: a.id,
-    name: a.title,
-    score: a.score
-  })).slice(0, 15);
-
-  // CrUX (Alan Verisi)
-  const crux = parseCrUX(le, ole);
-
-  return {
-    perf: score('performance'),
-    seo:  score('seo'),
-    a11y: score('accessibility'),
-    bp:   score('best-practices'),
-    metrics,
-    opps,
-    diags,
-    passes,
-    crux,
-    url: data.id || '',
-    ts:  lr.fetchTime || new Date().toISOString()
-  };
+  const opportunities = Object.values(aud).filter(a=>a && a.score!==null && a.score!==undefined && a.score<0.9 && a.details?.type==='opportunity')
+    .map(a=>({title:a.title,desc:String(a.description||'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1'),save:a.details?.overallSavingsMs?fmtMs(a.details.overallSavingsMs)+' tasarruf':(a.displayValue||''),score:a.score}))
+    .sort((a,b)=>a.score-b.score).slice(0,10);
+  const diagnostics = Object.values(aud).filter(a=>a && a.score!==null && a.score!==undefined && a.score<0.9 && a.details?.type!=='opportunity' && !['screenshot','filmstrip','debugdata'].includes(a.details?.type) && a.title)
+    .map(a=>({title:a.title,desc:String(a.description||'').replace(/\[([^\]]+)\]\([^)]+\)/g,'$1'),display:a.displayValue||'',score:a.score})).sort((a,b)=>a.score-b.score).slice(0,10);
+  const passed = Object.values(aud).filter(a=>a && typeof a.score==='number' && a.score>=0.9 && a.title).slice(0,14).map(a=>a.title);
+  return {raw:data, finalUrl:data.id||state.url, fetched:lr.fetchTime||new Date().toISOString(), scores:{performance:scoreOf(cats,'performance'),accessibility:scoreOf(cats,'accessibility'),bestPractices:scoreOf(cats,'best-practices'),seo:scoreOf(cats,'seo')}, metrics:m, opportunities, diagnostics, passed};
 }
-
-function parseCrUX(le, ole){
-  if(!le || !le.metrics) return null;
-  const m = le.metrics;
-
-  const cruxMetric = (key, name, unit, thresh) => {
-    const d = m[key];
-    if(!d) return null;
-    const distros = d.distributions || [];
-    const pcts = distros.map(x => Math.round((x.proportion||0)*100));
-    const p75 = d.percentile ? d.percentile : null;
-    return { name, unit, pcts, p75, thresh };
-  };
-
-  return {
-    overall: le.overall_category || null,
-    metrics: [
-      cruxMetric('FIRST_CONTENTFUL_PAINT_MS', 'İlk İçerikli Boyama (FCP)', 'ms', THRESHOLDS.fcp),
-      cruxMetric('LARGEST_CONTENTFUL_PAINT_MS', 'En Büyük İçerikli Boyama (LCP)', 'ms', THRESHOLDS.lcp),
-      cruxMetric('INTERACTION_TO_NEXT_PAINT', 'Sonraki Boyamaya Etkileşim (INP)', 'ms', THRESHOLDS.inp),
-      cruxMetric('CUMULATIVE_LAYOUT_SHIFT_SCORE', 'Kümülatif Düzen Kayması (CLS)', '', THRESHOLDS.cls),
-      cruxMetric('EXPERIMENTAL_TIME_TO_FIRST_BYTE', 'İlk Bayta Süre (TTFB)', 'ms', THRESHOLDS.ttfb),
-    ].filter(Boolean)
-  };
-}
-
-/* ─── DEPOLAMA ─── */
-const STORE_KEY = 'se_sites_v6';
-let sites = [];
-
-function load(){
-  try{ sites = JSON.parse(localStorage.getItem(STORE_KEY)||'[]'); }
-  catch(e){ sites = []; }
-}
-function save(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify(sites)); }
-  catch(e){}
-}
-
-/* ─── YARDIMCI RENDER FONKSİYONLARI ─── */
-function gaugeHTML(score, size=46, sw=3.5){
-  const r = size/2-sw;
-  const circ = 2*Math.PI*r;
-  const off = circ * (1 - score/100);
-  const clr = C.score(score);
-  return `<svg width="${size}" height="${size}">
-    <circle stroke-width="${sw}" stroke="var(--b2)" fill="none" r="${r}" cx="${size/2}" cy="${size/2}"/>
-    <circle stroke-width="${sw}" stroke-linecap="round" stroke="${clr}" fill="none" r="${r}" cx="${size/2}" cy="${size/2}"
-      stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 ${size/2} ${size/2})"/>
-  </svg>`;
-}
-
-function formatMetricVal(m){
-  if(m.val===null) return '—';
-  const v = m.val;
-  // ms cinsinden
-  if(m.name==='CLS') return v.toFixed(3);
-  if(v>=60000) return (v/60000).toFixed(1)+' dk.';
-  if(v>=1000) return (v/1000).toFixed(1)+'\u00a0sn.';
-  return Math.round(v)+'\u00a0ms.';
-}
-
-function scoreColor(v){ return C.score(v); }
-
-/* ─── GRID KARTI ─── */
-function cardHTML(i, s){
-  const mob = s.mob;
-  const perf = mob ? mob.perf : null;
-  const seoS = mob ? mob.seo : null;
-  const domain = (() => { try{ return new URL(s.url).hostname.replace('www.',''); } catch(e){ return s.url; } })();
-
-  let metaStr = '';
-  if(mob){ metaStr += `<span style="color:${C.score(mob.perf)}">📱${mob.perf}</span> · `; }
-  else    { metaStr += `<span style="color:var(--m)">📱—</span> · `; }
-  if(s.desk){ metaStr += `<span style="color:${C.score(s.desk.perf)}">💻${s.desk.perf}</span>`; }
-  else       { metaStr += `<span style="color:var(--m)">💻—</span>`; }
-  if(seoS!==null) metaStr += ` · SEO:${seoS}`;
-
-  const age = s.ts ? timeAgo(s.ts) : '';
-  const ring = perf!==null ? perf : 0;
-  const ringClr = C.score(ring);
-  const r=20, circ=2*Math.PI*r;
-  const off = circ*(1-ring/100);
-
-  return `<div class="sg-card" onclick="SE.open(${i})">
-    <button class="sg-del" onclick="event.stopPropagation();SE.del(${i})" title="Sil">✕</button>
-    <div class="sg-fav"><img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(s.url)}&sz=64" onerror="this.parentNode.innerHTML='🌐'"></div>
-    <div class="sg-info">
-      <div class="sg-url">${domain}</div>
-      <div class="sg-meta">${metaStr}</div>
-      <div class="sg-meta">${age}</div>
-    </div>
-    <div class="sg-ring">
-      <svg width="47" height="47"><circle stroke-width="3.5" stroke="var(--b2)" fill="none" r="20" cx="23.5" cy="23.5"/><circle stroke-width="3.5" stroke-linecap="round" stroke="${ringClr}" fill="none" r="20" cx="23.5" cy="23.5" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 23.5 23.5)"/></svg>
-      <span class="sg-rnum" style="color:${ringClr}">${ring}</span>
-    </div>
-  </div>`;
-}
-
-/* ─── SKOR BAŞLIĞI ─── */
-function scoreHeaderHTML(d, strategy){
-  const icon = strategy==='mob' ? '📱 Mobil' : '💻 Masaüstü';
-  const clrIcon = strategy==='mob' ? '#3ecfa0' : '#1a73e8';
-  const perfClr = C.score(d.perf);
-  const r=46, sw=7, circ=2*Math.PI*r;
-  const off = circ*(1-d.perf/100);
-
-  const cats = [
-    {k:'seo', label:'SEO'},
-    {k:'a11y', label:'Erişilebilirlik'},
-    {k:'bp', label:'En İyi Uyg.'}
-  ];
-
-  return `<div class="score-header">
-    <div style="text-align:center">
-      <div style="font-size:10px;font-weight:700;color:${clrIcon};margin-bottom:8px">${icon}</div>
-      <div class="big-gauge" style="width:104px;height:104px">
-        <svg width="104" height="104">
-          <circle stroke-width="${sw}" stroke="var(--b2)" fill="none" r="${r}" cx="52" cy="52"/>
-          <circle stroke-width="${sw}" stroke-linecap="round" stroke="${perfClr}" fill="none" r="${r}" cx="52" cy="52"
-            stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 52 52)"/>
-        </svg>
-        <span class="big-gauge-num" style="color:${perfClr}">${d.perf}</span>
-      </div>
-      <div style="font-size:11px;font-weight:700;color:${perfClr};margin-top:5px">${C.scoreLabel(d.perf)}</div>
-      <div style="font-size:9px;color:var(--m);margin-top:2px">Performans</div>
-    </div>
-    <div class="score-cats">
-      ${cats.map(c=>{
-        const v = d[c.k];
-        const clr = C.score(v);
-        return `<div class="cat-pill">
-          <div class="cat-val" style="color:${clr}">${v}</div>
-          <div class="cat-lbl">${c.label}</div>
-          <div style="font-size:8px;color:${clr};margin-top:2px">${C.scoreLabel(v)}</div>
-        </div>`;
-      }).join('')}
-      <div class="cat-pill">
-        <div class="cat-val" style="color:var(--m)">—</div>
-        <div class="cat-lbl">PWA</div>
-        <div style="font-size:8px;color:var(--m);margin-top:2px">Uygulanamaz</div>
-      </div>
-    </div>
-  </div>`;
-}
-
-/* ─── METRİKLER ─── */
-function metricsHTML(d){
-  const items = Object.values(d.metrics);
-  return `<div class="metrics-section">
-    <div class="metrics-title">📊 Performans Metrikleri <span style="font-size:9px;font-weight:400;color:var(--m)">(Lab Verisi)</span></div>
-    <div class="metrics-grid">
-      ${items.map(m=>{
-        const disp = m.disp || formatMetricVal(m);
-        const clr = C.metricColor(m.val, m.thresh);
-        return `<div class="metric-cell">
-          <div class="metric-val" style="color:${clr}">
-            <span class="metric-dot" style="background:${clr}"></span>
-            ${disp}
-          </div>
-          <div class="metric-name">${m.name} — ${m.desc}</div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
-}
-
-/* ─── CrUX ALAN VERİSİ ─── */
-function cruxHTML(crux){
-  if(!crux || !crux.metrics.length){
-    return `<div class="crux-section">
-      <div class="crux-title">🌍 Alan Verisi (CrUX) <span class="crux-badge" style="background:rgba(128,128,128,.15);color:var(--m)">VERİ YOK</span></div>
-      <div style="font-size:11px;color:var(--m);line-height:1.7">Bu URL için yeterli gerçek kullanıcı verisi bulunamadı.<br>Google, bu sayfayı yeterince ziyaret etmemiş kullanıcılardan veri toplamış olabilir.</div>
-    </div>`;
-  }
-
-  const overall = crux.overall;
-  const ovClr = overall==='FAST'?'#0c6':overall==='AVERAGE'?'#fa3':'#f33';
-  const ovLabel = overall==='FAST'?'İyi':overall==='AVERAGE'?'Geliştirme Gerekiyor':'Zayıf';
-
-  return `<div class="crux-section">
-    <div class="crux-title">
-      🌍 Alan Verisi (Gerçek Kullanıcı Deneyimi)
-      ${overall ? `<span class="crux-badge" style="background:${ovClr}22;color:${ovClr}">${ovLabel}</span>` : ''}
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px;font-size:9px;color:var(--m);align-items:center">
-      <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:6px;background:#0c6;border-radius:2px;display:inline-block"></span>İyi</span>
-      <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:6px;background:#fa3;border-radius:2px;display:inline-block"></span>Geliştirme Gerekiyor</span>
-      <span style="display:flex;align-items:center;gap:3px"><span style="width:10px;height:6px;background:#f33;border-radius:2px;display:inline-block"></span>Zayıf</span>
-    </div>
-    ${crux.metrics.map(m => {
-      const [g, n, p] = m.pcts;
-      const p75 = m.p75;
-      let p75disp = p75 !== null ? (m.unit==='ms' ? (p75>=1000?(p75/1000).toFixed(1)+' sn':p75+' ms') : p75.toFixed(3)) : null;
-      const p75clr = p75!==null ? C.metricColor(p75, m.thresh) : '#888';
-      return `<div class="crux-row">
-        <div class="crux-name">${m.name}</div>
-        <div style="flex:1">
-          <div class="crux-bar">
-            <div style="width:${g||0}%;background:#0c6;height:100%"></div>
-            <div style="width:${n||0}%;background:#fa3;height:100%"></div>
-            <div style="width:${p||0}%;background:#f33;height:100%"></div>
-          </div>
-          <div style="display:flex;gap:4px;margin-top:3px;font-size:9px;color:var(--m)">
-            <span style="color:#0c6">${g||0}%</span>
-            <span style="color:#fa3">${n||0}%</span>
-            <span style="color:#f33">${p||0}%</span>
-          </div>
-        </div>
-        <div class="crux-val" style="color:${p75clr}">${p75disp || '—'}</div>
-      </div>`;
-    }).join('')}
-    <div style="font-size:9px;color:var(--m);margin-top:8px">75. yüzdelik dilim · Son 28 gün · Gerçek Chrome kullanıcıları</div>
-  </div>`;
-}
-
-/* ─── FIRSATLAR ─── */
-const FIXES = {
-  'render-blocking-resources': 'Kritik olmayan CSS/JS\'yi erteleyun. <link rel="preload"> veya async/defer kullanın.',
-  'unused-javascript': 'Kod bölme (code splitting) uygulayın. Kullanılmayan paketleri kaldırın.',
-  'unused-css-rules': 'PurgeCSS ile kullanılmayan stilleri temizleyin.',
-  'uses-optimized-images': 'Görselleri WebP/AVIF formatına dönüştürün. Sıkıştırın.',
-  'uses-responsive-images': 'srcset ile cihaza uygun boyut sunun.',
-  'uses-text-compression': 'Sunucuda Gzip/Brotli sıkıştırma etkinleştirin.',
-  'uses-long-cache-ttl': 'Statik kaynaklar için Cache-Control max-age > 1 yıl ayarlayın.',
-  'server-response-time': 'TTFB\'yi azaltın. CDN, cache, hosting optimizasyonu yapın.',
-  'total-byte-weight': 'Toplam sayfa ağırlığını azaltın. Gereksiz kaynakları kaldırın.',
-  'dom-size': 'DOM boyutunu 1500 elemanın altına indirin.',
-  'uses-rel-preconnect': 'Kritik 3. taraf kaynaklara <link rel="preconnect"> ekleyin.',
-  'efficiently-animated-content': 'CSS animasyonlarını JS animasyonları yerine kullanın.',
-  'legacy-javascript': 'Eski tarayıcılar için polyfill göndermeyi bırakın.',
-  'third-party-summary': '3. taraf scriptleri geciktirin. Facade pattern kullanın.',
-};
-
-function oppsHTML(opps){
-  if(!opps.length) return '';
-  return `<div class="opp-section">
-    <div class="opp-title">🚀 Fırsatlar — Bu iyileştirmeler yükleme süresini azaltabilir</div>
-    ${opps.map((o,i) => {
-      const icon = o.score===0?'🔴':o.score<0.5?'🟠':'🟡';
-      const fix = FIXES[o.id] || null;
-      return `<div class="opp-item" id="opp-${i}">
-        <div class="opp-hdr" onclick="SE.toggleOpp('opp-${i}')">
-          <span class="opp-icon">${icon}</span>
-          <div class="opp-info">
-            <div class="opp-name">${o.name}</div>
-            ${o.savings ? `<div class="opp-save" style="color:${o.score<0.5?'#fa3':'#f90'}">${o.savings}</div>` : ''}
-          </div>
-          <span class="opp-chevron">▾</span>
-        </div>
-        ${o.desc||fix ? `<div class="opp-body">
-          ${o.desc ? `<div style="margin-bottom:6px">${o.desc.substring(0,200)}${o.desc.length>200?'…':''}</div>` : ''}
-          ${fix ? `<div class="opp-fix">💡 ${fix}</div>` : ''}
-        </div>` : ''}
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-/* ─── TEŞHİS ─── */
-function diagsHTML(diags){
-  if(!diags.length) return '';
-  return `<div class="diag-section">
-    <div class="diag-title">🔧 Teşhis — Performansı etkileyen ek bilgiler</div>
-    ${diags.map(d => {
-      const icon = d.type==='fail'?'🔴':'🟡';
-      return `<div class="diag-item">
-        <span class="diag-icon">${icon}</span>
-        <div class="diag-txt">
-          <div class="diag-name">${d.name}${d.display?` <span style="color:var(--m);font-weight:400;font-size:10px">— ${d.display}</span>`:''}</div>
-          ${d.desc ? `<div class="diag-desc">${d.desc.substring(0,160)}${d.desc.length>160?'…':''}</div>` : ''}
-        </div>
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
-/* ─── BAŞARILI ─── */
-function passesHTML(passes){
-  if(!passes.length) return '';
-  return `<div class="pass-section">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--m);margin-bottom:8px">✅ Başarılı (${passes.length})</div>
-    ${passes.map(p => `<div class="pass-item"><span style="color:#0c6;font-size:13px">✓</span> <span>${p.name}</span></div>`).join('')}
-  </div>`;
-}
-
-/* ─── DETAY SAYFASI ─── */
-function detailHTML(idx){
-  const s = sites[idx];
-  const domain = (() => { try{ return new URL(s.url).hostname; } catch(e){ return s.url; } })();
-  const age = s.ts ? timeAgo(s.ts) : '';
-
-  let curStrat = 'mob';
-  const mob  = s.mob;
-  const desk = s.desk;
-
-  function panelHTML(d, strat){
-    if(!d){
-      return `<div class="dev-loading"><div>Henüz analiz yapılmadı</div><button class="se-btn g" style="margin-top:10px" onclick="SE.reloadDev(${idx},'${strat}')">▶ ${strat==='mob'?'Mobil':'Masaüstü'} Analiz Et</button></div>`;
-    }
-    return scoreHeaderHTML(d, strat) + metricsHTML(d) + cruxHTML(d.crux) + oppsHTML(d.opps) + diagsHTML(d.diags) + passesHTML(d.passes);
-  }
-
-  return `
-    <div class="sd-nav">
-      <button class="se-btn" onclick="SE.back()">← Geri</button>
-      <div class="sd-nav-info">
-        <div class="sd-nav-url">${s.url}</div>
-        <div class="sd-nav-sub">${age} · Google PageSpeed Insights</div>
-      </div>
-      <button class="se-btn" onclick="SE.reloadDev(${idx},SE._curStrat||'mob')">🔄 Yenile</button>
-    </div>
-
-    <div class="dev-tabs">
-      <div class="dev-tab mob ${mob?'on':''}" id="dtab-mob" onclick="SE.switchTab(${idx},'mob')">
-        📱 Mobil ${mob?`<span style="margin-left:4px;font-size:13px;font-weight:800;color:${C.score(mob.perf)}">${mob.perf}</span>`:'<span style="color:var(--m);font-size:10px">— yükle</span>'}
-      </div>
-      <div class="dev-tab desk ${!mob&&desk?'on':''}" id="dtab-desk" onclick="SE.switchTab(${idx},'desk')">
-        💻 Masaüstü ${desk?`<span style="margin-left:4px;font-size:13px;font-weight:800;color:${C.score(desk.perf)}">${desk.perf}</span>`:'<span style="color:var(--m);font-size:10px">— yükle</span>'}
-      </div>
-    </div>
-
-    <div id="dev-panel-content">
-      ${panelHTML(mob || desk, mob ? 'mob' : 'desk')}
-    </div>
-  `;
-}
-
-/* ─── ZAMANAGı ─── */
-function timeAgo(ts){
-  const diff = Date.now() - new Date(ts).getTime();
-  const m = Math.floor(diff/60000);
-  if(m<1) return 'az önce';
-  if(m<60) return `${m} dk önce`;
-  const h = Math.floor(m/60);
-  if(h<24) return `${h} saat önce`;
-  return `${Math.floor(h/24)} gün önce`;
-}
-
-/* ─── ANA CONTROLLER ─── */
-const SE = window.SE = {
-  _curStrat: 'mob',
-
-  init(){
-    load();
-    this._renderList();
-    document.getElementById('SE-inp').addEventListener('keydown', e => {
-      if(e.key==='Enter'){ e.preventDefault(); this.add(); }
-    });
-  },
-
-  _renderList(){
-    const grid = document.getElementById('SE-grid');
-    const empty = document.getElementById('SE-empty');
-    const list = document.getElementById('SE-list');
-    const det  = document.getElementById('SE-det');
-    const cmp  = document.getElementById('SE-cmp');
-
-    list.style.display=''; det.style.display='none'; cmp.style.display='none';
-
-    if(!sites.length){ grid.innerHTML=''; empty.style.display=''; return; }
-    empty.style.display='none';
-    grid.innerHTML = sites.map((s,i) => cardHTML(i,s)).join('');
-  },
-
-  add(){
-    let url = document.getElementById('SE-inp').value.trim();
-    if(!url) return;
-    if(!/^https?:\/\//i.test(url)) url = 'https://'+url;
-    try{ new URL(url); } catch(e){ alert('Geçersiz URL'); return; }
-
-    const btn = document.getElementById('SE-abtn');
-    btn.disabled = true; btn.textContent = '⏳ Analiz ediliyor...';
-
-    const idx = sites.findIndex(s => s.url === url);
-    if(idx===-1){
-      sites.unshift({ url, ts: new Date().toISOString(), mob: null, desk: null });
-      save();
-    }
-
-    const siteIdx = sites.findIndex(s => s.url === url);
-    this._renderList();
-    this.open(siteIdx);
-
-    this.reloadDev(siteIdx, 'mob').finally(() => {
-      btn.disabled=false; btn.textContent='＋ Analiz Et';
-    });
-  },
-
-  async reloadDev(idx, strat){
-    const s = sites[idx];
-    const content = document.getElementById('dev-panel-content');
-    if(content){
-      content.innerHTML = `<div class="dev-loading">
-        <div class="se-spin" style="width:32px;height:32px"></div>
-        <div style="font-size:12px;font-weight:600">${strat==='mob'?'📱 Mobil':'💻 Masaüstü'} analiz ediliyor...</div>
-        <div style="font-size:10px;color:var(--m)">Google PageSpeed API'ye bağlanılıyor</div>
-        <div class="se-progress"><div class="se-pfill" id="pbar" style="width:5%"></div></div>
-      </div>`;
-      let w = 10; const iv = setInterval(()=>{ w=Math.min(w+8,88); const pb=document.getElementById('pbar'); if(pb) pb.style.width=w+'%'; }, 2000);
-
-      try{
-        const strategy = strat==='mob' ? 'mobile' : 'desktop';
-        const data = await fetchPSI(s.url, strategy);
-        clearInterval(iv);
-
-        if(data.error){
-          const msg = data.error.message || 'API hatası';
-          if(content) content.innerHTML = `<div class="dev-error">⚠ ${msg}<br><button class="se-btn" style="margin-top:10px" onclick="SE.reloadDev(${idx},'${strat}')">Tekrar dene</button></div>`;
-          return;
-        }
-
-        const parsed = parsePSI(data);
-        if(strat==='mob') sites[idx].mob = parsed;
-        else              sites[idx].desk = parsed;
-        sites[idx].ts = new Date().toISOString();
-        save();
-
-        // Tab güncelle
-        const tabEl = document.getElementById(`dtab-${strat}`);
-        if(tabEl){
-          const clrClass = strat==='mob'?'mob':'desk';
-          tabEl.className = `dev-tab ${clrClass} on`;
-          tabEl.innerHTML = `${strat==='mob'?'📱 Mobil':'💻 Masaüstü'} <span style="margin-left:4px;font-size:13px;font-weight:800;color:${C.score(parsed.perf)}">${parsed.perf}</span>`;
-        }
-
-        if(content) content.innerHTML = scoreHeaderHTML(parsed, strat) + metricsHTML(parsed) + cruxHTML(parsed.crux) + oppsHTML(parsed.opps) + diagsHTML(parsed.diags) + passesHTML(parsed.passes);
-
-        this._updateCard(idx);
-      } catch(err){
-        clearInterval(iv);
-        if(content) content.innerHTML = `<div class="dev-error">⚠ ${err.message || 'Bağlantı hatası'}<br><small>URL'yi kontrol edin veya tekrar deneyin</small><br><button class="se-btn" style="margin-top:10px" onclick="SE.reloadDev(${idx},'${strat}')">Tekrar dene</button></div>`;
-      }
-    }
-  },
-
-  switchTab(idx, strat){
-    this._curStrat = strat;
-    const s = sites[idx];
-    const d = strat==='mob' ? s.mob : s.desk;
-    const content = document.getElementById('dev-panel-content');
-
-    ['mob','desk'].forEach(t => {
-      const el = document.getElementById(`dtab-${t}`);
-      if(el){ el.classList.toggle('on', t===strat); }
-    });
-
-    if(!d){
-      if(content) content.innerHTML = `<div class="dev-loading"><button class="se-btn g" onclick="SE.reloadDev(${idx},'${strat}')">▶ ${strat==='mob'?'Mobil':'Masaüstü'} Analiz Et</button></div>`;
-    } else {
-      if(content) content.innerHTML = scoreHeaderHTML(d, strat) + metricsHTML(d) + cruxHTML(d.crux) + oppsHTML(d.opps) + diagsHTML(d.diags) + passesHTML(d.passes);
-    }
-  },
-
-  open(idx){
-    document.getElementById('SE-list').style.display='none';
-    document.getElementById('SE-cmp').style.display='none';
-    const det = document.getElementById('SE-det');
-    det.style.display='';
-    det.innerHTML = detailHTML(idx);
-    this._curStrat = sites[idx].mob ? 'mob' : 'desk';
-
-    // Eğer hem mob hem desk yoksa otomatik mob analiz et
-    const s = sites[idx];
-    if(!s.mob && !s.desk) this.reloadDev(idx, 'mob');
-  },
-
-  back(){
-    document.getElementById('SE-det').style.display='none';
-    document.getElementById('SE-cmp').style.display='none';
-    this._renderList();
-  },
-
-  del(idx){
-    if(!confirm('Bu analizi sil?')) return;
-    sites.splice(idx,1);
-    save();
-    this._renderList();
-  },
-
-  _updateCard(idx){
-    const card = document.querySelector(`#SE-grid .sg-card:nth-child(${idx+1})`);
-    if(card){ card.outerHTML = cardHTML(idx, sites[idx]); }
-    else { this._renderList(); }
-  },
-
-  toggleOpp(id){
-    document.getElementById(id)?.classList.toggle('open');
-  },
-
-  showCmp(){
-    if(sites.length<2){ alert('Karşılaştırmak için en az 2 URL analiz edin.'); return; }
-    document.getElementById('SE-list').style.display='none';
-    document.getElementById('SE-det').style.display='none';
-    const cmp = document.getElementById('SE-cmp');
-    cmp.style.display='';
-
-    const rows = ['Mobil Perf','Masaüstü Perf','SEO','Erişilebilirlik','En İyi Uyg.','FCP (mob)','LCP (mob)','CLS (mob)'];
-    const getVal = (s, row) => {
-      const m = s.mob, d = s.desk;
-      if(row==='Mobil Perf') return m?.perf;
-      if(row==='Masaüstü Perf') return d?.perf;
-      if(row==='SEO') return m?.seo ?? d?.seo;
-      if(row==='Erişilebilirlik') return m?.a11y ?? d?.a11y;
-      if(row==='En İyi Uyg.') return m?.bp ?? d?.bp;
-      if(row==='FCP (mob)') return m ? Math.round((m.metrics.fcp?.val||0)/100)/10 : null;
-      if(row==='LCP (mob)') return m ? Math.round((m.metrics.lcp?.val||0)/100)/10 : null;
-      if(row==='CLS (mob)') return m ? m.metrics.cls?.val?.toFixed(3) : null;
-    };
-
-    cmp.innerHTML = `<button class="se-btn" onclick="SE.back()" style="margin-bottom:12px">← Geri</button>
-    <div style="overflow-x:auto"><table class="cmp-tbl">
-      <thead><tr><th>Metrik</th>${sites.slice(0,4).map(s=>`<th>${(()=>{try{return new URL(s.url).hostname.replace('www.','')}catch(e){return s.url}})()}</th>`).join('')}</tr></thead>
-      <tbody>${rows.map(row=>`<tr><td style="font-weight:600">${row}</td>${sites.slice(0,4).map(s=>{
-        const v = getVal(s,row);
-        if(v===null||v===undefined) return '<td class="cd">—</td>';
-        const numV = parseFloat(v);
-        const isPerf = ['Mobil Perf','Masaüstü Perf','SEO','Erişilebilirlik','En İyi Uyg.'].includes(row);
-        const clsCls = isPerf ? (numV>=90?'cw':numV>=50?'cd':'cl') : 'cd';
-        return `<td class="${clsCls}">${v}</td>`;
-      }).join('')}</tr>`).join('')}
-      </tbody>
-    </table></div>`;
-  }
-};
-
-setTimeout(() => SE.init(), 0);
+function gauge(score){score=score??0; const c=color(score); return `<div class="seox-gauge" style="--score:${score};--score-color:${c}"><b>${score}</b><span>${label(score)}</span></div>`}
+function catCard(name,val){const v=val??0,c=color(v);return `<div class="seox-cat"><div class="seox-cat-val" style="color:${c}">${val??'—'}</div><div class="seox-cat-lbl">${name}</div></div>`}
+function deviceCard(kind,d){const isMob=kind==='mobile', icon=isMob?'📱':'💻', cls=isMob?'mob':'desk', title=isMob?'Mobil':'Masaüstü'; const perf=d?.scores?.performance; return `<div class="seox-device-card ${cls}"><div class="seox-device-top"><div class="seox-device-name">${icon} ${title}</div><div class="seox-device-status">${d?'Tamamlandı':'Bekliyor'}</div></div>${d?`<div class="seox-score-row">${gauge(perf)}<div class="seox-cats">${catCard('Performance',d.scores.performance)}${catCard('SEO',d.scores.seo)}${catCard('Accessibility',d.scores.accessibility)}${catCard('Best Practices',d.scores.bestPractices)}</div></div>`:`<div class="seox-loading" style="min-height:130px"><div class="seox-spin"></div><div>${title} analizi alınıyor...</div></div>`}</div>`}
+function metricsHTML(d){const items=Object.entries(d.metrics);return `<div class="seox-section"><div class="seox-section-title">Core Web Vitals / Lab Verisi <span>${d.raw.lighthouseResult?.configSettings?.formFactor||''}</span></div><div class="seox-metrics">${items.map(([k,m])=>{const val=fmtMetric(k,m.val,m.disp), c=metricColor(m.val,m.th);return `<div class="seox-metric"><div class="seox-metric-val" style="color:${c}">${val}</div><div class="seox-metric-name">${m.name}</div><div class="seox-metric-desc">${m.desc}</div></div>`}).join('')}</div></div>`}
+function listHTML(title,items,type){if(!items||!items.length)return '';return `<div class="seox-section"><div class="seox-section-title">${title}</div><div class="seox-list">${items.map(x=>`<div class="seox-item"><div class="seox-item-top"><div class="seox-item-name">${type==='ok'?'✅ ':''}${esc(type==='ok'?x:x.title)}</div>${x.save?`<div class="seox-save">${esc(x.save)}</div>`:''}</div>${x.desc?`<div class="seox-item-desc">${esc(x.desc).slice(0,260)}${x.desc.length>260?'…':''}</div>`:''}${x.display?`<div class="seox-item-desc">${esc(x.display)}</div>`:''}</div>`).join('')}</div></div>`}
+function detailHTML(){const d=state.active==='mobile'?state.mobile:state.desktop; if(!d)return ''; const title=state.active==='mobile'?'📱 Mobil Detay':'💻 Masaüstü Detay'; return `<div class="seox-section"><div class="seox-section-title">${title}<span>${esc(d.finalUrl)}</span></div><div class="seox-cats" style="grid-template-columns:repeat(4,1fr)">${catCard('Performance',d.scores.performance)}${catCard('SEO',d.scores.seo)}${catCard('Accessibility',d.scores.accessibility)}${catCard('Best Practices',d.scores.bestPractices)}</div></div>${metricsHTML(d)}${listHTML('🚀 Fırsatlar — Hızı artırabilecek öneriler',d.opportunities,'opp')}${listHTML('🔧 Teşhis — Ek iyileştirme alanları',d.diagnostics,'diag')}${listHTML('✅ Başarılı Kontroller',d.passed,'ok')}`}
+function render(){const body=$('SEOX-body'); if(state.loading){body.innerHTML=`<div class="seox-loading"><div class="seox-spin"></div><div style="font-weight:800;color:var(--t)">Mobil ve Masaüstü PageSpeed analizi alınıyor...</div><div style="font-size:11px">Google PageSpeed Insights verileri çekiliyor</div></div>`; return;} if(!state.mobile&&!state.desktop){body.innerHTML=`<div class="seox-empty"><div style="font-size:44px;margin-bottom:10px">📊</div><div style="font-size:16px;font-weight:900;color:var(--t);margin-bottom:8px">SEO / PageSpeed Analiz Paneli</div><div>URL girince aynı anda <b>Mobil</b> ve <b>Masaüstü</b> performans verileri gelir.<br>Performance, SEO, Accessibility ve Best Practices skorları ayrı gösterilir.</div></div>`;return;} body.innerHTML=`<div class="seox-head"><div><div class="seox-title">SEO PageSpeed Analizi</div><div class="seox-sub"><span class="seox-url-pill">🌐 ${esc(state.url)}</span></div></div><div class="seox-mini">Son analiz: ${new Date().toLocaleString('tr-TR')}</div></div><div class="seox-summary">${deviceCard('mobile',state.mobile)}${deviceCard('desktop',state.desktop)}</div><div class="seox-tabs"><div class="seox-tab mob ${state.active==='mobile'?'on':''}" onclick="SEOX.switch('mobile')">📱 Mobil ${state.mobile?state.mobile.scores.performance:''}</div><div class="seox-tab desk ${state.active==='desktop'?'on':''}" onclick="SEOX.switch('desktop')">💻 Masaüstü ${state.desktop?state.desktop.scores.performance:''}</div></div>${detailHTML()}`}
+async function runWithUrl(url){state.url=url;state.mobile=null;state.desktop=null;state.loading=true;render();const btn=$('SEOX-run');btn.disabled=true;btn.textContent='⏳ Analiz ediliyor...';try{const [mob,desk]=await Promise.all([fetchPSI(url,'mobile'),fetchPSI(url,'desktop')]);state.mobile=parse(mob);state.desktop=parse(desk);state.active='mobile';localStorage.setItem('seox_last_url',url);}catch(e){$('SEOX-body').innerHTML=`<div class="seox-error"><b>Analiz alınamadı.</b><br>${esc(e.message||e)}<br><br>URL doğruysa tekrar deneyin. Google PageSpeed API geçici limit veya bağlantı hatası vermiş olabilir.</div>`;state.loading=false;btn.disabled=false;btn.textContent='⚡ Analiz Et';return;}state.loading=false;btn.disabled=false;btn.textContent='⚡ Analiz Et';render();}
+window.SEOX={run(){try{const url=normalizeUrl($('SEOX-url').value); if(!url){alert('URL girin');return;} runWithUrl(url);}catch(e){alert('Geçerli URL girin. Örn: https://www.madmext.com')}},demoMadmext(){ $('SEOX-url').value='https://www.madmext.com'; this.run();},switch(v){state.active=v;render();}};
+setTimeout(()=>{const last=localStorage.getItem('seox_last_url')||'https://www.madmext.com';$('SEOX-url').value=last;$('SEOX-url').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();SEOX.run();}});render();},0);
 })();
 </script>
