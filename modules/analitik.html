@@ -1,3 +1,24 @@
 <div id="AN"><div style="display:flex;align-items:center;justify-content:center;min-height:260px;color:var(--m);gap:8px"><div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--b2);border-top-color:var(--a);animation:spin .8s linear infinite"></div>Google Analytics tam veri merkezi yükleniyor...</div></div>
-<script src="/modules/analitik-full.js?v=20260622-1"></script>
-<script src="/modules/analitik-utm.js?v=20260622-1"></script>
+<script>
+(function(){
+  function loadScript(src, cb){
+    var old = document.querySelector('script[data-an-src="'+src+'"]');
+    if(old){ if(cb) setTimeout(cb, 80); return; }
+    var s = document.createElement('script');
+    s.src = src;
+    s.async = false;
+    s.setAttribute('data-an-src', src);
+    s.onload = function(){ if(cb) cb(); };
+    s.onerror = function(){
+      var el = document.getElementById('AN');
+      if(el) el.innerHTML = '<div style="color:var(--r);padding:30px">❌ Analitik script yüklenemedi: '+src+'</div>';
+    };
+    document.body.appendChild(s);
+  }
+  window.__mxFullAnalyticsLoaded = false;
+  window.__mxUtmAnalytics = false;
+  loadScript('/modules/analitik-full.js?v=20260622-3', function(){
+    loadScript('/modules/analitik-utm.js?v=20260622-3');
+  });
+})();
+</script>
