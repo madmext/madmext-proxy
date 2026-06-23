@@ -149,3 +149,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 
 (function loadMetaBudgetFix(){try{if(document.getElementById('mxMetaBudgetFix'))return;var s=document.createElement('script');s.id='mxMetaBudgetFix';s.src='/modules/meta-budget-fix.js?v=20260623-1';document.head.appendChild(s)}catch(e){console.warn('Meta budget fix yüklenemedi',e)}})();
+(function loadAuditLogBridge(){try{if(document.getElementById('mxAuditLogBridge'))return;var s=document.createElement('script');s.id='mxAuditLogBridge';s.src='/modules/audit-log-bridge.js?v=20260623-1';document.head.appendChild(s)}catch(e){console.warn('Audit log bridge yüklenemedi',e)}})();
