@@ -1,5 +1,5 @@
 // ── MADMEXT SHARED.JS ────────────────────────────────────────────────────
-window.MX = window.MX || {campStore:[],adsetStore:[],adStore:[],campRaw:[],adsetRaw:[],adRaw:[],budgetLog:[],taskLog:[],pending:null,chatH:{},sortSt:{}};
+window.MX = window.MX || {campStore:[],adsetStore:[],adStore:[],campRaw:[],adsetRaw:[],adRaw:[],budgetLog:[],taskLog:[],actionLog:[],systemLogs:[],pending:null,chatH:{},sortSt:{}};
 const AID='act_1346348685568168';
 const ATTR='["7d_click","1d_view"]';
 const CF='campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values';
@@ -9,9 +9,10 @@ function px(){return(localStorage.getItem('proxyUrl')||'https://web-production-e
 async function api(ep,params={},m='GET'){try{const r=await fetch(`${px()}/api`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({endpoint:ep,params,method:m})});return await r.json()}catch(e){toast('API Hata: '+e.message);return null}}
 async function claude(msgs,sys=''){try{const r=await fetch(`${px()}/claude`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:2000,system:sys,messages:msgs})});const d=await r.json();return d.content?.[0]?.text||('Hata: '+JSON.stringify(d.error||d))}catch(e){return'Hata: '+e.message}}
 async function ga4(body,type='runReport'){try{const r=await fetch(`${px()}/ga4`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({type,body})});return await r.json()}catch(e){return null}}
-async function loadServerLogs(){try{const r=await fetch(`${px()}/logs`,{credentials:'include'});const d=await r.json();MX.budgetLog=d.budgetLog||[];MX.taskLog=d.taskLog||[]}catch(e){MX.budgetLog=JSON.parse(localStorage.getItem('bLog')||'[]');MX.taskLog=JSON.parse(localStorage.getItem('tLog')||'[]')}}
+async function loadServerLogs(){try{const r=await fetch(`${px()}/logs`,{credentials:'include'});const d=await r.json();MX.budgetLog=d.budgetLog||[];MX.taskLog=d.taskLog||[];MX.actionLog=d.actionLog||[];MX.systemLogs=d.systemLogs||d.systemLog||[]}catch(e){MX.budgetLog=JSON.parse(localStorage.getItem('bLog')||'[]');MX.taskLog=JSON.parse(localStorage.getItem('tLog')||'[]');MX.actionLog=[];MX.systemLogs=[]}}
 async function saveServerLogs(){try{await fetch(`${px()}/logs/save`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({budgetLog:MX.budgetLog,taskLog:MX.taskLog})})}catch(e){localStorage.setItem('bLog',JSON.stringify(MX.budgetLog));localStorage.setItem('tLog',JSON.stringify(MX.taskLog))}}
-async function logAction(action){try{await fetch(`${px()}/logs/action`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(action)})}catch(e){}}
+async function getCurrentUserForLog(){try{if(MX.currentUser&&MX.currentUser.email)return MX.currentUser;const r=await fetch(`${px()}/auth/me`,{credentials:'include'});if(r.ok){MX.currentUser=await r.json();return MX.currentUser}}catch(e){}return null}
+async function logAction(action){try{const me=await getCurrentUserForLog();const payload={...(action||{}),actorName:(me&&(me.name||me.email))||action?.actorName||'Sistem',actorEmail:(me&&me.email)||action?.actorEmail||'',actorRole:(me&&me.role)||action?.actorRole||'',serverClientTime:new Date().toISOString()};await fetch(`${px()}/logs/action`,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)})}catch(e){}}
 function gav(a,t){if(!a)return 0;const x=a.find(v=>v.action_type===t);return x?parseInt(x.value||0):0}
 function groas(r){return r.purchase_roas?.[0]?.value?parseFloat(r.purchase_roas[0].value):0}
 function grev(r){const av=r.action_values;if(!av)return 0;const x=av.find(v=>v.action_type==='purchase');return x?parseFloat(x.value):0}
@@ -103,6 +104,48 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',inject);else setTimeout(inject,100);
   setTimeout(inject,700);setTimeout(inject,1800);setTimeout(inject,3200);
+})();
+
+// ── Loglar: tüm sistem/görev/kampanya/reklam hareketlerini tek panelde gösterir ──
+(function injectSystemLogsMenu(){
+  function loadIntoMain(html){
+    var el=document.getElementById('mainContent'); if(!el)return;
+    var tmp=document.createElement('div');tmp.innerHTML=html;
+    var scripts=[];tmp.querySelectorAll('script').forEach(function(s){scripts.push(s.textContent);s.remove()});
+    el.innerHTML=tmp.innerHTML;
+    scripts.forEach(function(code){var s=document.createElement('script');s.textContent=code;document.body.appendChild(s)});
+  }
+  async function isAdmin(){try{var r=await fetch('/auth/me',{credentials:'include'});if(!r.ok)return false;var d=await r.json();MX.currentUser=d;return d&&d.role==='admin'}catch(e){return false}}
+  window.openSystemLogs=async function(activeItem){
+    try{
+      document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active')});
+      if(activeItem)activeItem.classList.add('active');
+      if(typeof closeSidebar==='function')closeSidebar();
+      var title=document.getElementById('pageTitle'), sub=document.getElementById('pageSub'), el=document.getElementById('mainContent');
+      if(title)title.textContent='Log Kayıtları';
+      if(sub)sub.textContent='Tüm sistem hareketleri, görev geçmişi ve değişiklik kayıtları';
+      if(el)el.innerHTML='<div class="module-loading">⏳ Log Kayıtları yükleniyor...</div>';
+      history.pushState({page:'loglar'},'','/loglar');
+      var r=await fetch('/modules/loglar.html?v=20260623-1');
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      loadIntoMain(await r.text());
+    }catch(e){var box=document.getElementById('mainContent');if(box)box.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Log Kayıtları yüklenemedi: '+e.message+'</div>'}
+  };
+  function inject(){
+    try{
+      var sidebar=document.querySelector('.sidebar'); if(!sidebar||document.getElementById('navSystemLogs'))return;
+      if(window.PAGES){PAGES.loglar={title:'Log Kayıtları',sub:'Sistem logları ve görev geçmişi',module:'loglar'}}
+      if(typeof window.urlToPage==='function'&&!window.__mxLogsUrl){window.__mxLogsUrl=true;var old=window.urlToPage;window.urlToPage=function(path){if(path==='/loglar'||path==='/log-kayitlari')return'loglar';return old(path)}}
+      var section=document.createElement('div');section.className='sidebar-section';section.textContent='Loglar';
+      var item=document.createElement('div');item.className='nav-item';item.id='navSystemLogs';item.innerHTML='<span class="nav-icon">🧾</span><span>Log Kayıtları</span><span class="nav-ai">Admin</span>';item.onclick=function(){window.openSystemLogs(item)};
+      var adminItem=document.getElementById('navAdminApi');
+      if(adminItem)adminItem.insertAdjacentElement('afterend',section),section.insertAdjacentElement('afterend',item);else sidebar.appendChild(section),sidebar.appendChild(item);
+      if(location.pathname==='/loglar'||location.pathname==='/log-kayitlari')window.openSystemLogs(item);
+    }catch(e){console.warn('Loglar menü eklenemedi:',e)}
+  }
+  function run(){isAdmin().then(function(ok){if(ok)inject()})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else setTimeout(run,250);
+  setTimeout(run,1100);setTimeout(run,2600);
 })();
 
 (function loadMetaBudgetFix(){try{if(document.getElementById('mxMetaBudgetFix'))return;var s=document.createElement('script');s.id='mxMetaBudgetFix';s.src='/modules/meta-budget-fix.js?v=20260623-1';document.head.appendChild(s)}catch(e){console.warn('Meta budget fix yüklenemedi',e)}})();
