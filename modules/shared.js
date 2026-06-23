@@ -105,4 +105,4 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   setTimeout(inject,700);setTimeout(inject,1800);setTimeout(inject,3200);
 })();
 
-(function loadMetaBudgetFix(){try{if(document.getElementById('mxMetaBudgetFix'))return;var s=document.createElement('script');s.id='mxMetaBudgetFix';s.src='/modules/meta-budget-fix.js?v=20260618-1';document.head.appendChild(s)}catch(e){console.warn('Meta budget fix yüklenemedi',e)}})();
+(function loadMetaBudgetFix(){try{if(document.getElementById('mxMetaBudgetFix'))return;var s=document.createElement('script');s.id='mxMetaBudgetFix';s.src='/modules/meta-budget-fix.js?v=20260623-1';document.head.appendChild(s)}catch(e){console.warn('Meta budget fix yüklenemedi',e)}})();
