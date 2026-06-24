@@ -1,6 +1,16 @@
 import os
 from flask import jsonify, send_from_directory, session
 from server import app
+import meta_sync_flow
+from app import get_db, read_logs, write_logs
+
+
+meta_sync_flow.install(
+    app,
+    get_db=get_db,
+    read_logs=read_logs,
+    write_logs=write_logs,
+)
 
 
 _RESERVED_PREFIXES = (
