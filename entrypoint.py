@@ -1,5 +1,5 @@
 import os
-from flask import jsonify, send_from_directory, session
+from flask import jsonify, send_from_directory, session, request, Response
 from server import app
 import meta_sync_flow
 from app import get_db, read_logs, write_logs
@@ -11,6 +11,22 @@ meta_sync_flow.install(
     read_logs=read_logs,
     write_logs=write_logs,
 )
+
+
+@app.before_request
+def mx_meta_module_response():
+    if request.path.rstrip('/') != '/modules/meta-ads.html':
+        return None
+    p = os.path.join('.', 'modules', 'meta-ads.html')
+    if not os.path.isfile(p):
+        return None
+    with open(p, 'r', encoding='utf-8') as f:
+        html = f.read()
+    try:
+        html = meta_sync_flow._inject_meta_module(html)
+    except Exception as e:
+        print('mx meta module:', e)
+    return Response(html, mimetype='text/html; charset=utf-8')
 
 
 _RESERVED_PREFIXES = (
