@@ -5,10 +5,14 @@ on:
     branches: [main]
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Deploy to Railway
         uses: bervProject/railway-deploy@main
         with:

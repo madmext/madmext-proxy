@@ -1,6 +1,6 @@
 from flask import request, jsonify, session
 from urllib.parse import unquote
-from app import app, get_db, hash_pw, verify_pw, read_logs, write_logs
+from app import app, get_db, get_users, hash_pw, password_needs_rehash, verify_pw, read_logs, save_users, write_logs
 import password_reset_flow
 
 
@@ -249,14 +249,11 @@ def _db_2fa_reset(email):
 
 
 def _fallback_users():
-    data = read_logs()
-    return data.get('users') or []
+    return get_users()
 
 
 def _save_fallback_users(users):
-    data = read_logs()
-    data['users'] = users
-    write_logs(data)
+    save_users(users)
 
 
 def _fallback_public(users):
@@ -299,6 +296,7 @@ def _auth_and_admin_users_override():
         email = (data.get('email') or '').strip().lower()
         password = data.get('password') or ''
         user = _db_user_private(email)
+        user_from_db = user is not None
         if user is None:
             fallback = _fallback_users()
             user = next((u for u in fallback if (u.get('email') or '').lower() == email.lower()), None)
@@ -308,6 +306,18 @@ def _auth_and_admin_users_override():
             return jsonify({'error': 'Kullanıcı için giriş izni kapalı'}), 403
         if user.get('is_active', True) is False:
             return jsonify({'error': 'Kullanıcı pasif durumda'}), 403
+        if password_needs_rehash(user.get('password_hash')):
+            upgraded_hash = hash_pw(password)
+            if user_from_db:
+                _db_patch_user(email, password_hash=upgraded_hash)
+            else:
+                fallback = _fallback_users()
+                for fallback_user in fallback:
+                    if (fallback_user.get('email') or '').lower() == email:
+                        fallback_user['password_hash'] = upgraded_hash
+                        break
+                _save_fallback_users(fallback)
+            user['password_hash'] = upgraded_hash
         session['user_email'] = user.get('email')
         session['user_name'] = ((user.get('name') or '') + ' ' + (user.get('surname') or '')).strip() or user.get('email')
         from app import ADMIN_EMAIL

@@ -6,6 +6,10 @@ import json
 import threading
 import hashlib
 import hmac
+import ipaddress
+import re
+import socket
+from urllib.parse import urlsplit
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 try:
@@ -184,6 +188,11 @@ def verify_pw(stored, password):
         except ValueError:
             return False
     return hmac.compare_digest(stored, hashlib.sha256(password.encode()).hexdigest())
+
+
+def password_needs_rehash(stored):
+    stored = stored or ''
+    return not (stored.startswith('pbkdf2:') or stored.startswith('scrypt:'))
 def is_admin():
     return session.get('user_role') in ('admin', 'super_admin') or session.get('user_email','').lower() == ADMIN_EMAIL.lower()
 def require_admin():
@@ -298,19 +307,6 @@ def auth_me():
     if not session.get('user_email'):
         return jsonify({'error':'Giris yapilmamis'}), 401
     return jsonify({'email':session['user_email'],'name':session.get('user_name'),'role':session.get('user_role','admin')})
-@app.route('/auth/login', methods=['POST'])
-def auth_login():
-    data = request.json or {}
-    email = (data.get('email') or '').strip().lower()
-    password = data.get('password') or ''
-    users = get_users()
-    user = next((u for u in users if u['email'].lower()==email and verify_pw(u['password_hash'], password)), None)
-    if not user: return jsonify({'error':'Email veya şifre hatalı'}), 401
-    session['user_email'] = user['email']
-    session['user_name'] = user.get('name', email)
-    session['user_role'] = 'super_admin' if user['email'].lower() == ADMIN_EMAIL.lower() else (user.get('role') or 'viewer')
-    session.permanent = True
-    return jsonify({'ok':True,'user':{'email':user['email'],'name':user.get('name'),'role':user.get('role')}})
 @app.route('/auth/logout', methods=['POST'])
 def auth_logout():
     session.clear()
@@ -325,69 +321,6 @@ def forgot_password():
     })
     write_logs(current)
     return jsonify({'ok':True})
-@app.route('/admin/users', methods=['GET'])
-def admin_get_users():
-    r = require_admin()
-    if r: return r
-    users = get_users()
-    return jsonify([{'email':u['email'],'name':u.get('name'),'role':u.get('role','user')} for u in users])
-@app.route('/admin/users', methods=['POST'])
-def admin_add_user():
-    r = require_admin()
-    if r: return r
-    data = request.json or {}
-    email = (data.get('email') or '').strip().lower()
-    name = data.get('name', email)
-    pw = hash_pw(data.get('password',''))
-    role = data.get('role','viewer')
-    if get_db():
-        users = get_users()
-        if any(u['email'].lower()==email for u in users): return jsonify({'error':'Email zaten kayitli'}), 409
-        db_upsert_user(email, name, pw, role)
-        return jsonify({'ok':True})
-    users = get_users()
-    if any(u['email'].lower()==email for u in users): return jsonify({'error':'Email zaten kayitli'}), 409
-    users.append({'email':email,'password_hash':pw,'name':name,'role':role})
-    uj = save_users(users)
-    return jsonify({'ok':True,'users_json':uj})
-@app.route('/admin/users/<email>', methods=['DELETE'])
-def admin_delete_user(email):
-    r = require_admin()
-    if r: return r
-    if get_db():
-        db_delete(email)
-        return jsonify({'ok':True})
-    users = [u for u in get_users() if u['email'].lower()!=email.lower()]
-    uj = save_users(users)
-    return jsonify({'ok':True,'users_json':uj})
-@app.route('/admin/users/<email>/reset', methods=['POST'])
-def admin_reset_pw(email):
-    r = require_admin()
-    if r: return r
-    data = request.json or {}
-    pw = hash_pw(data.get('password',''))
-    if get_db():
-        db_update_pw(email, pw)
-        return jsonify({'ok':True})
-    users = get_users()
-    for u in users:
-        if u['email'].lower()==email.lower(): u['password_hash']=pw
-    uj = save_users(users)
-    return jsonify({'ok':True,'users_json':uj})
-@app.route('/admin/users/<email>/role', methods=['POST'])
-def admin_change_role(email):
-    r = require_admin()
-    if r: return r
-    data = request.json or {}
-    role = data.get('role','viewer')
-    if get_db():
-        db_update_role(email, role)
-        return jsonify({'ok':True})
-    users = get_users()
-    for u in users:
-        if u['email'].lower()==email.lower(): u['role']=role
-    uj = save_users(users)
-    return jsonify({'ok':True,'users_json':uj})
 @app.route('/admin/reset-requests')
 def admin_reset_requests():
     r = require_admin()
@@ -413,10 +346,24 @@ def proxy_xml():
     url = request.args.get('url','')
     if not url: return 'URL gerekli', 400
     try:
-        r = requests.get(url, timeout=15, headers={'User-Agent':'Mozilla/5.0'})
+        parsed = urlsplit(url)
+        hostname = (parsed.hostname or '').lower().rstrip('.')
+        if parsed.scheme not in ('http', 'https') or not hostname or parsed.username or parsed.password:
+            return jsonify({'error': 'Geçersiz XML adresi'}), 400
+        if parsed.port and parsed.port not in (80, 443):
+            return jsonify({'error': 'XML adresinde yalnızca standart HTTP/HTTPS portlarına izin verilir'}), 403
+        resolved = {info[4][0] for info in socket.getaddrinfo(hostname, parsed.port or (443 if parsed.scheme == 'https' else 80), type=socket.SOCK_STREAM)}
+        if not resolved or any(not ipaddress.ip_address(address).is_global for address in resolved):
+            return jsonify({'error': 'Private, local veya ayrılmış ağ adreslerine erişim engellendi'}), 403
+        r = requests.get(url, timeout=15, headers={'User-Agent':'Madmext XML Proxy/1.0'}, allow_redirects=False)
+        if 300 <= r.status_code < 400:
+            return jsonify({'error': 'XML kaynağı yönlendirmelerine izin verilmez'}), 502
+        r.raise_for_status()
         return r.text, 200, {'Content-Type':'application/xml; charset=utf-8'}
+    except (ValueError, socket.gaierror):
+        return jsonify({'error': 'XML adresi çözümlenemedi'}), 400
     except Exception as e:
-        return str(e), 500
+        return jsonify({'error': 'XML kaynağına erişilemedi'}), 502
 @app.route('/modules/<path:filename>')
 def serve_module(filename):
     return send_from_directory('modules', filename)
@@ -521,6 +468,23 @@ def gads_get_token():
 def gads_customer_id():
     return GADS_CUSTOMER_ID.replace('-', '').replace(' ', '')
 
+
+def gads_numeric_id(value, field_name):
+    normalized = str(value or '').strip()
+    if not re.fullmatch(r'\d+', normalized):
+        raise ValueError(f'{field_name} yalnızca rakamlardan oluşmalı')
+    return normalized
+
+
+def gads_date(value, field_name):
+    normalized = str(value or '').strip()
+    try:
+        datetime.strptime(normalized, '%Y-%m-%d')
+    except (TypeError, ValueError):
+        raise ValueError(f'{field_name} YYYY-MM-DD formatında olmalı')
+    return normalized
+
+
 def gads_date_condition(data):
     """
     date_range veya date_from/date_to'dan GAQL WHERE koşulu üret.
@@ -530,16 +494,26 @@ def gads_date_condition(data):
     """
     date_from = data.get('date_from', '')
     date_to = data.get('date_to', '')
-    if date_from and date_to:
-        # GAQL BETWEEN formatı
+    if date_from or date_to:
+        if not date_from or not date_to:
+            raise ValueError('date_from ve date_to birlikte gönderilmeli')
+        date_from = gads_date(date_from, 'date_from')
+        date_to = gads_date(date_to, 'date_to')
+        if date_from > date_to:
+            raise ValueError('date_from, date_to değerinden sonra olamaz')
         return f"segments.date BETWEEN '{date_from}' AND '{date_to}'"
     
-    date_range = data.get('date_range', 'LAST_7_DAYS')
+    date_range = str(data.get('date_range', 'LAST_7_DAYS') or 'LAST_7_DAYS')
     # BETWEEN_ prefix'li string gelirse parse et
     if date_range.startswith('BETWEEN_'):
         parts = date_range.replace('BETWEEN_', '').split('_')
         if len(parts) == 2:
-            return f"segments.date BETWEEN '{parts[0]}' AND '{parts[1]}'"
+            date_from = gads_date(parts[0], 'date_from')
+            date_to = gads_date(parts[1], 'date_to')
+            if date_from > date_to:
+                raise ValueError('date_from, date_to değerinden sonra olamaz')
+            return f"segments.date BETWEEN '{date_from}' AND '{date_to}'"
+        raise ValueError('BETWEEN tarih aralığı geçersiz')
     
     # Geçerli GAQL preset'leri
     valid_presets = {
@@ -555,15 +529,17 @@ def gads_date_condition(data):
 
 @app.route('/gads/campaigns', methods=['POST'])
 def gads_campaigns():
+    data = request.json or {}
+    try:
+        date_cond = gads_date_condition(data)
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
     token = gads_get_token()
     if not token:
         return jsonify({
             'error': 'Google Ads token alınamadı. GADS_REFRESH_TOKEN, GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_DEVELOPER_TOKEN ve GADS_CUSTOMER_ID değerlerini kontrol edin.',
             'configured': bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID)
         })
-
-    data = request.json or {}
-    date_cond = gads_date_condition(data)
 
     query = f"""
         SELECT
@@ -645,13 +621,18 @@ def gads_campaigns():
 
 @app.route('/gads/adgroups', methods=['POST'])
 def gads_adgroups():
+    data = request.json or {}
+    try:
+        date_cond = gads_date_condition(data)
+        campaign_id = data.get('campaign_id', '')
+        if campaign_id not in ('', None):
+            campaign_id = gads_numeric_id(campaign_id, 'campaign_id')
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
     token = gads_get_token()
     if not token:
         return jsonify({'error': 'Google Ads yapılandırılmamış.', 'configured': False})
 
-    data = request.json or {}
-    date_cond = gads_date_condition(data)
-    campaign_id = data.get('campaign_id', '')
     where_extra = f"AND campaign.id = '{campaign_id}'" if campaign_id else ''
 
     query = f"""
@@ -709,14 +690,17 @@ def gads_adgroups():
 
 @app.route('/gads/budget', methods=['POST'])
 def gads_update_budget():
+    data = request.json or {}
+    try:
+        budget_id = gads_numeric_id(data.get('budget_id'), 'budget_id')
+        new_amount_tl = float(data.get('amount_tl', 0))
+    except (TypeError, ValueError) as exc:
+        return jsonify({'error': str(exc) or 'Geçersiz parametre', 'success': False}), 400
+    if new_amount_tl <= 0:
+        return jsonify({'error': 'Geçersiz parametre', 'success': False}), 400
     token = gads_get_token()
     if not token:
         return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
-    data = request.json or {}
-    budget_id = data.get('budget_id', '')
-    new_amount_tl = float(data.get('amount_tl', 0))
-    if not budget_id or new_amount_tl <= 0:
-        return jsonify({'error': 'Geçersiz parametre', 'success': False})
     cid = gads_customer_id()
     amount_micros = int(new_amount_tl * 1_000_000)
     patch_url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaignBudgets:mutate'
@@ -756,14 +740,17 @@ def gads_update_budget():
 
 @app.route('/gads/toggle', methods=['POST'])
 def gads_toggle_status():
+    data = request.json or {}
+    try:
+        campaign_id = gads_numeric_id(data.get('campaign_id'), 'campaign_id')
+    except ValueError as exc:
+        return jsonify({'error': str(exc), 'success': False}), 400
+    new_status = data.get('status', 'PAUSED')
+    if new_status not in ('ENABLED', 'PAUSED'):
+        return jsonify({'error': 'Geçersiz durum', 'success': False}), 400
     token = gads_get_token()
     if not token:
         return jsonify({'error': 'Google Ads yapılandırılmamış.', 'success': False})
-    data = request.json or {}
-    campaign_id = data.get('campaign_id', '')
-    new_status = data.get('status', 'PAUSED')
-    if new_status not in ('ENABLED', 'PAUSED'):
-        return jsonify({'error': 'Geçersiz durum', 'success': False})
     cid = gads_customer_id()
     url = f'https://googleads.googleapis.com/v19/customers/{cid}/campaigns:mutate'
     headers = {

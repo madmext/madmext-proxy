@@ -4,6 +4,10 @@ All feature modules are installed on the same Flask app before Gunicorn
 starts serving requests. This prevents frontend/backend route drift.
 """
 
+import os
+
+from flask import Response, jsonify, request, send_from_directory, session
+
 from server import app
 from app import get_db, read_logs, write_logs, require_admin
 
@@ -16,8 +20,8 @@ import decision_core
 import operations_core
 
 rbac_core.install(app, get_db=get_db)
-operations_core.install(app)
 security_core.install(app, get_db=get_db)
+operations_core.install(app)
 marketplace_core.install(app, get_db=get_db)
 decision_core.install(app, get_db=get_db)
 
@@ -34,6 +38,47 @@ onesignal_flow.install(
     get_db=get_db,
     require_admin=require_admin,
 )
+
+
+@app.before_request
+def mx_meta_module_response():
+    """Serve the Meta module with the runtime synchronization hooks injected."""
+    if request.path.rstrip('/') != '/modules/meta-ads.html':
+        return None
+    module_path = os.path.join('.', 'modules', 'meta-ads.html')
+    if not os.path.isfile(module_path):
+        return None
+    with open(module_path, 'r', encoding='utf-8') as module_file:
+        html = module_file.read()
+    try:
+        html = meta_sync_flow._inject_meta_module(html)
+    except Exception as exc:
+        print('mx meta module:', exc)
+    return Response(html, mimetype='text/html; charset=utf-8')
+
+
+_RESERVED_PREFIXES = (
+    'api', 'auth', 'admin', 'ga4', 'gads', 'logs', 'psi', 'claude',
+    'proxy-xml', 'trendyol', 'onesignal', 'marketplace', 'runtime',
+)
+
+
+@app.route('/<path:path>')
+def spa_fallback(path):
+    """Serve existing files or the authenticated panel for frontend routes."""
+    clean_path = (path or '').strip('/')
+    first_part = clean_path.split('/', 1)[0]
+    if first_part in _RESERVED_PREFIXES:
+        return jsonify({'error': 'Endpoint bulunamadı'}), 404
+    if clean_path:
+        root_file = os.path.join('.', clean_path)
+        if os.path.isfile(root_file):
+            directory = os.path.dirname(clean_path) or '.'
+            return send_from_directory(directory, os.path.basename(clean_path))
+    if not session.get('user_email'):
+        fallback = 'login.html' if os.path.exists('login.html') else 'index.html'
+        return send_from_directory('.', fallback)
+    return send_from_directory('.', 'index.html')
 
 
 @app.get('/runtime/health')
