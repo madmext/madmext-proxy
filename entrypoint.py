@@ -36,6 +36,25 @@ def mx_meta_module_response():
     return Response(html, mimetype='text/html; charset=utf-8')
 
 
+@app.after_request
+def mx_notification_menu_injection(response):
+    """Inject the OneSignal menu loader without coupling it to index.html releases."""
+    try:
+        content_type = response.headers.get('Content-Type', '')
+        if 'text/html' not in content_type or response.direct_passthrough:
+            return response
+        html = response.get_data(as_text=True)
+        if 'id="mainContent"' not in html or '/modules/bildirim-menu.js' in html:
+            return response
+        tag = '<script src="/modules/bildirim-menu.js?v=20260711-1"></script>'
+        html = html.replace('</body>', tag + '</body>')
+        response.set_data(html)
+        response.headers['Content-Length'] = str(len(response.get_data()))
+    except Exception as e:
+        print('Bildirim menü injection:', e)
+    return response
+
+
 _RESERVED_PREFIXES = (
     'api',
     'auth',
@@ -53,12 +72,7 @@ _RESERVED_PREFIXES = (
 
 @app.route('/<path:path>')
 def spa_fallback(path):
-    """Serve existing files or fall back to the panel shell for frontend routes.
-
-    This prevents Railway/Flask from returning 404 when a React/Vite route such
-    as /dosyalar, /kampanyalar, /analitik or any future panel page is opened
-    directly or refreshed in the browser.
-    """
+    """Serve existing files or fall back to the panel shell for frontend routes."""
     clean_path = (path or '').strip('/')
     first_part = clean_path.split('/', 1)[0]
 
