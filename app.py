@@ -527,19 +527,21 @@ def gads_date_condition(data):
     # Bilinmeyen preset — varsayılan
     return "segments.date DURING LAST_7_DAYS"
 
-@app.route('/gads/campaigns', methods=['POST'])
-def gads_campaigns():
-    data = request.json or {}
-    try:
-        date_cond = gads_date_condition(data)
-    except ValueError as exc:
-        return jsonify({'error': str(exc)}), 400
+def gads_campaign_rows(data, http_post=None):
+    """Google Ads kampanya verisini doğrulanmış GAQL ile salt-okunur getirir."""
+    data = data or {}
+    date_cond = gads_date_condition(data)
+    campaign_id = data.get('campaign_id')
+    campaign_filter = ''
+    if campaign_id not in ('', None):
+        campaign_id = gads_numeric_id(campaign_id, 'campaign_id')
+        campaign_filter = f"AND campaign.id = '{campaign_id}'"
     token = gads_get_token()
     if not token:
-        return jsonify({
+        return {
             'error': 'Google Ads token alınamadı. GADS_REFRESH_TOKEN, GADS_CLIENT_ID, GADS_CLIENT_SECRET, GADS_DEVELOPER_TOKEN ve GADS_CUSTOMER_ID değerlerini kontrol edin.',
             'configured': bool(GADS_DEVELOPER_TOKEN and GADS_CUSTOMER_ID)
-        })
+        }
 
     query = f"""
         SELECT
@@ -560,6 +562,7 @@ def gads_campaigns():
         FROM campaign
         WHERE {date_cond}
           AND campaign.status != 'REMOVED'
+          {campaign_filter}
         ORDER BY metrics.cost_micros DESC
         LIMIT 100
     """
@@ -575,14 +578,14 @@ def gads_campaigns():
         headers['login-customer-id'] = GADS_LOGIN_CUSTOMER_ID.replace('-', '')
 
     try:
-        r = requests.post(url, headers=headers, json={'query': query}, timeout=20)
+        r = (http_post or requests.post)(url, headers=headers, json={'query': query}, timeout=20)
         print(f'Google Ads campaigns URL: {url}')
         print(f'Google Ads campaigns status: {r.status_code}')
         print(f'Google Ads campaigns body: {r.text[:500]}')
         
         # Boş yanıt kontrolü
         if not r.text or not r.text.strip():
-            return jsonify({'rows': [], 'configured': True})
+            return {'rows': [], 'configured': True}
         
         result = r.json()
         print(f'Google Ads campaigns result keys: {list(result.keys())}')
@@ -591,7 +594,7 @@ def gads_campaigns():
             err_msg = result['error'].get('message', 'Google Ads API hatası')
             details = result['error'].get('details', [])
             print(f'Google Ads API hatası: {err_msg}, details: {details}')
-            return jsonify({'error': err_msg, 'configured': True})
+            return {'error': err_msg, 'configured': True}
 
         rows = []
         for row in result.get('results', []):
@@ -614,10 +617,18 @@ def gads_campaigns():
                 'avg_cpc': round(int(metrics.get('averageCpc', 0) or 0) / 1_000_000, 2),
                 'cpa': round(int(metrics.get('costPerConversion', 0) or 0) / 1_000_000, 2),
             })
-        return jsonify({'rows': rows, 'configured': True})
+        return {'rows': rows, 'configured': True}
     except Exception as e:
         print(f'Google Ads campaigns exception: {e}')
-        return jsonify({'error': str(e), 'configured': True})
+        return {'error': str(e), 'configured': True}
+
+
+@app.route('/gads/campaigns', methods=['POST'])
+def gads_campaigns():
+    try:
+        return jsonify(gads_campaign_rows(request.json or {}))
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
 
 @app.route('/gads/adgroups', methods=['POST'])
 def gads_adgroups():
