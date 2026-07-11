@@ -386,6 +386,31 @@ def _upsert_db(conn, account, campaigns, adsets, ads, insights):
     cur.close()
 
 
+
+def _record_sync_failure(get_db, account, error):
+    if not account or not callable(get_db):
+        return
+    conn = get_db()
+    if not conn:
+        return
+    try:
+        _init_tables(conn)
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO meta_sync_logs(meta_account_id,status,error_message,finished_at)
+            VALUES(%s,'failed',%s,NOW())
+        """, (account, str(error)[:2000]))
+        conn.commit()
+        cur.close()
+    except Exception as log_error:
+        try: conn.rollback()
+        except Exception: pass
+        print('meta sync failure log:', log_error)
+    finally:
+        try: conn.close()
+        except Exception: pass
+
+
 def _fallback_log(read_logs, write_logs, account, campaigns, adsets, ads, insights):
     data = read_logs()
     data['metaLatestSync'] = {
@@ -477,9 +502,41 @@ def _inject_meta_module(html):
     return html
 
 
-def install(app, get_db=None, read_logs=None, write_logs=None):
+def install(app, get_db=None, read_logs=None, write_logs=None, require_admin=None):
+    def _admin_guard():
+        return require_admin() if callable(require_admin) else None
+
+    @app.route('/api/meta/sync-status', methods=['GET'])
+    def meta_sync_status():
+        denied = _admin_guard()
+        if denied: return denied
+        conn = get_db() if callable(get_db) else None
+        if not conn:
+            return jsonify({'success': False, 'message': 'PostgreSQL bağlantısı yok.'}), 503
+        try:
+            _init_tables(conn)
+            cur = conn.cursor()
+            counts = {}
+            for key, table in (('campaigns','meta_campaigns'),('adsets','meta_adsets'),('ads','meta_ads'),('insights','meta_ad_insights')):
+                cur.execute('SELECT COUNT(*) FROM ' + table)
+                counts[key] = cur.fetchone()[0]
+            cur.execute("""SELECT status,meta_account_id,campaigns_count,adsets_count,ads_count,insights_count,error_message,started_at,finished_at FROM meta_sync_logs ORDER BY id DESC LIMIT 1""")
+            row = cur.fetchone(); cur.close()
+            latest = None if not row else {'status':row[0],'account':row[1],'campaigns':row[2],'adsets':row[3],'ads':row[4],'insights':row[5],'error':row[6],'startedAt':row[7].isoformat() if row[7] else None,'finishedAt':row[8].isoformat() if row[8] else None}
+            return jsonify({'success': True, 'counts': counts, 'latest': latest})
+        except Exception as exc:
+            try: conn.rollback()
+            except Exception: pass
+            return jsonify({'success': False, 'message': str(exc)}), 500
+        finally:
+            try: conn.close()
+            except Exception: pass
+
     @app.route('/api/meta/sync-latest', methods=['POST'])
     def meta_sync_latest():
+        denied = _admin_guard()
+        if denied: return denied
+        account = ''
         try:
             payload = request.get_json(silent=True) or {}
             account = _account_id(payload.get('adAccountId'))
@@ -518,6 +575,7 @@ def install(app, get_db=None, read_logs=None, write_logs=None):
                 }
             })
         except Exception as e:
+            _record_sync_failure(get_db, account, e)
             return jsonify({'success': False, 'message': str(e)}), 500
 
     @app.after_request
