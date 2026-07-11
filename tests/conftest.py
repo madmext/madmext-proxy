@@ -16,6 +16,7 @@ os.environ.setdefault('GLOBAL_KILL_SWITCH', 'false')
 os.environ.setdefault('PROVIDER_WRITES_ENABLED', 'true')
 os.environ.setdefault('GOOGLE_WRITES_ENABLED', 'true')
 os.environ.setdefault('TELEGRAM_WEBHOOK_SECRET', 'test-telegram-secret')
+os.environ.setdefault('TELEGRAM_TEST_MEMORY_FALLBACK', 'true')
 os.environ.pop('DATABASE_URL', None)
 
 import app as app_module
