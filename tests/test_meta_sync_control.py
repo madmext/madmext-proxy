@@ -61,11 +61,32 @@ def test_meta_insights_falls_back_to_campaign_level_on_volume_error(monkeypatch)
 
     monkeypatch.setattr(meta_sync_flow, '_all_pages', fake_all_pages)
     _, _, _, insights = meta_sync_flow._meta_fetch_all('act_123')
-    assert insight_levels == ['ad', 'campaign']
+    assert insight_levels[0] == 'ad'
+    assert insight_levels[1:] == ['campaign'] * 7
     assert insights[0]['ad_id'] == 'campaign:cmp_1'
-    assert insights[0]['sync_granularity'] == 'campaign'
+    assert insights[0]['sync_granularity'] == 'campaign_daily'
 
 
 def test_meta_insights_uses_smaller_ad_level_pages():
     source = Path('meta_sync_flow.py').read_text(encoding='utf-8')
     assert "'level': 'ad',\n        'limit': 100" in source
+
+
+def test_meta_volume_fallback_slices_custom_range_by_day(monkeypatch):
+    time_ranges = []
+
+    def fake_all_pages(path, params=None, max_pages=20):
+        if not path.endswith('/insights'):
+            return []
+        if params['level'] == 'ad':
+            raise RuntimeError("Please reduce the amount of data you're asking for")
+        time_ranges.append(params['time_range'])
+        return []
+
+    monkeypatch.setattr(meta_sync_flow, '_all_pages', fake_all_pages)
+    meta_sync_flow._meta_fetch_all('act_123', date_range={'since': '2026-07-09', 'until': '2026-07-11'})
+    assert time_ranges == [
+        '{"since": "2026-07-09", "until": "2026-07-09"}',
+        '{"since": "2026-07-10", "until": "2026-07-10"}',
+        '{"since": "2026-07-11", "until": "2026-07-11"}',
+    ]
