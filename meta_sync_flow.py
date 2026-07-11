@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from flask import request, jsonify
@@ -142,12 +142,32 @@ def _meta_fetch_all(ad_account_id, date_range=None, date_preset='last_7d'):
         ])
         fallback_params = dict(insight_params)
         fallback_params.update({'fields': campaign_fields, 'level': 'campaign', 'limit': 100})
-        insights = _all_pages('/{0}/insights'.format(account), fallback_params)
-        for row in insights:
-            campaign_id = str(row.get('campaign_id') or '')
-            row['ad_id'] = 'campaign:' + campaign_id
-            row['ad_name'] = row.get('campaign_name') or 'Campaign aggregate'
-            row['sync_granularity'] = 'campaign'
+        fallback_params.pop('date_preset', None)
+        fallback_params.pop('time_range', None)
+
+        if date_range and date_range.get('since') and date_range.get('until'):
+            start = datetime.strptime(date_range['since'], '%Y-%m-%d').date()
+            end = datetime.strptime(date_range['until'], '%Y-%m-%d').date()
+        else:
+            preset_days = {'last_7d': 7, 'last_14d': 14, 'last_30d': 30}
+            day_count = preset_days.get(date_preset or 'last_7d', 7)
+            end = datetime.utcnow().date()
+            start = end - timedelta(days=day_count - 1)
+
+        insights = []
+        cursor = start
+        while cursor <= end:
+            daily_params = dict(fallback_params)
+            day = cursor.isoformat()
+            daily_params['time_range'] = json.dumps({'since': day, 'until': day})
+            daily_rows = _all_pages('/{0}/insights'.format(account), daily_params)
+            for row in daily_rows:
+                campaign_id = str(row.get('campaign_id') or '')
+                row['ad_id'] = 'campaign:' + campaign_id
+                row['ad_name'] = row.get('campaign_name') or 'Campaign aggregate'
+                row['sync_granularity'] = 'campaign_daily'
+            insights.extend(daily_rows)
+            cursor += timedelta(days=1)
     return campaigns, adsets, ads, insights
 
 
