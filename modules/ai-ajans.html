@@ -97,8 +97,9 @@
       var a = window.mxAgencyAgents[window.mxAgencyCurrent];
       var box = document.getElementById('mxAgencyReport');
       box.textContent = a.name + ' çalışıyor...';
+      if(typeof logAction==='function')logAction({module:'ai_agency',action:'agent_task_started',entityType:'ai_agent',entityId:window.mxAgencyCurrent,entityName:a.name,description:task,actorType:'ai_agent'});
       var prompt = 'Sen Madmext ADS içindeki '+a.name+' isimli yapay zeka ajans çalışanısın. Rolün: '+a.role+'. Marka: Madmext. Site: madmext.com. Alan: e-ticaret moda, erkek/kadın giyim, Meta Ads, Google Ads, SEO, sosyal medya, kreatif, pazaryeri reklamları. Görev: '+task+' Çıktı Türkçe olsun. Format: 1) Kısa durum özeti 2) Fırsatlar 3) Yapılacak aksiyonlar 4) Öncelik sırası 5) Ölçülecek metrikler. Net, uygulanabilir ve kısa yaz.';
-      try{ box.textContent = await window.mxAgencyClaude(prompt); }catch(e){ box.textContent = 'Hata: '+e.message; }
+      try{ box.textContent = await window.mxAgencyClaude(prompt);if(typeof logAction==='function')logAction({module:'ai_agency',action:'agent_task_completed',entityType:'ai_agent',entityId:window.mxAgencyCurrent,entityName:a.name,description:task,status:'success',actorType:'ai_agent'}); }catch(e){ box.textContent = 'Hata: '+e.message;if(typeof logAction==='function')logAction({module:'ai_agency',action:'agent_task_failed',entityType:'ai_agent',entityId:window.mxAgencyCurrent,entityName:a.name,description:task,status:'error',error_message:e.message,actorType:'ai_agent'}); }
     };
     window.mxAgencyRunDaily = async function(){
       var box = document.getElementById('mxAgencyReport');

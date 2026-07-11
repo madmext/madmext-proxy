@@ -9,6 +9,17 @@ from app import get_db, read_logs, write_logs, require_admin
 
 import meta_sync_flow
 import onesignal_flow
+import security_core
+import rbac_core
+import marketplace_core
+import decision_core
+import operations_core
+
+rbac_core.install(app, get_db=get_db)
+operations_core.install(app)
+security_core.install(app, get_db=get_db)
+marketplace_core.install(app, get_db=get_db)
+decision_core.install(app, get_db=get_db)
 
 
 meta_sync_flow.install(

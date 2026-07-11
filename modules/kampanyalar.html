@@ -30,7 +30,7 @@
   <script>
   (function(){
     var root=document.getElementById('MXCampaignCenter');if(!root||root.__ready)return;root.__ready=true;
-    var STORE='mxCampaignCenter.v2', role='admin', selectedId=null, editId=null;
+    var STORE='mxCampaignCenter.v2', role=(window._currentUser&&window._currentUser.role)||'viewer', selectedId=null, editId=null;
     var CHANNELS=['Ticimax','Meta Ads','Google Ads','Trendyol','Hepsiburada','LCW','N11','FLO'];
     var PLACES=[['Ana Sayfa Banner','Web ana sayfa üst banner'],['Mobil Ana Sayfa','Mobil hero / slider alanı'],['Kategori Sayfası','Kategori üst açıklama veya slider'],['Ürün Rozeti','Ürün kartında kampanya etiketi'],['Kampanya Sayfası','Ayrı landing/kampanya sayfası'],['Sepet / Kupon','Sepet indirim veya kupon alanı'],['Pazaryeri Vitrini','Trendyol/HB/LCW kampanya alanı'],['Meta Reklam','Meta kreatif ve reklam setleri'],['Google PMax','Merchant feed / PMax görünürlüğü'],['E-posta / SMS','CRM duyuru alanı']];
     function $(id){return document.getElementById(id)}

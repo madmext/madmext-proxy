@@ -151,7 +151,8 @@ def install(app, get_db, hash_pw, read_logs=None, write_logs=None):
     from flask import request, jsonify, session, send_from_directory
 
     def require_admin():
-        if session.get('user_role') != 'admin':
+        primary = os.environ.get('ADMIN_EMAIL', '').strip().lower()
+        if session.get('user_role') not in ('admin', 'super_admin') and session.get('user_email','').lower() != primary:
             return jsonify({'error': 'Admin gerekli'}), 403
         return None
 

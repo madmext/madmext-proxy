@@ -5,6 +5,8 @@ import os
 import json
 import threading
 import hashlib
+import hmac
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 try:
     import psycopg2
@@ -26,9 +28,17 @@ if not ADMIN_PASSWORD:
     raise RuntimeError('ADMIN_PASSWORD ortam değişkeni zorunlu. Railway Variables içine ADMIN_PASSWORD ekleyin.')
 
 app.secret_key = SECRET_KEY
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=os.environ.get('SESSION_COOKIE_SECURE', 'true').lower() != 'false',
+    SESSION_COOKIE_SAMESITE='Lax',
+)
 from datetime import timedelta
 app.permanent_session_lifetime = timedelta(days=30)
-CORS(app, supports_credentials=True)
+_cors_origins = [x.strip() for x in os.environ.get(
+    'ALLOWED_ORIGINS', 'https://web-production-e5865.up.railway.app'
+).split(',') if x.strip()]
+CORS(app, supports_credentials=True, origins=_cors_origins)
 META_TOKEN = os.environ.get('META_TOKEN', '')
 ANTHROPIC_KEY = os.environ.get('ANTHROPIC_KEY', '')
 PSI_KEY = os.environ.get('PSI_KEY', '')  # Google PageSpeed Insights API key (opsiyonel ama onerilen)
@@ -161,9 +171,21 @@ try:
             'admin'
         )
 except Exception as e: print('DB init error:', e)
-def hash_pw(p): return hashlib.sha256(p.encode()).hexdigest()
+def hash_pw(p):
+    return generate_password_hash(p, method='pbkdf2:sha256:600000')
+
+
+def verify_pw(stored, password):
+    """Accept legacy SHA-256 hashes while new passwords use salted PBKDF2."""
+    stored = stored or ''
+    if stored.startswith('pbkdf2:') or stored.startswith('scrypt:'):
+        try:
+            return check_password_hash(stored, password)
+        except ValueError:
+            return False
+    return hmac.compare_digest(stored, hashlib.sha256(password.encode()).hexdigest())
 def is_admin():
-    return session.get('user_role') == 'admin'
+    return session.get('user_role') in ('admin', 'super_admin') or session.get('user_email','').lower() == ADMIN_EMAIL.lower()
 def require_admin():
     if not is_admin():
         return jsonify({'error':'Admin gerekli'}), 403
@@ -235,6 +257,14 @@ def save_users(users):
 @app.route('/ai')
 @app.route('/google-ads')
 @app.route('/seo')
+@app.route('/analitik')
+@app.route('/kampanyalar')
+@app.route('/ai-ajans')
+@app.route('/pazaryerleri')
+@app.route('/yetki-yonetimi')
+@app.route('/bildirim-merkezi')
+@app.route('/trendyol')
+@app.route('/dosyalar')
 def home():
     if not session.get('user_email'):
         return send_from_directory('.', 'login.html') if os.path.exists('login.html') else send_from_directory('.', 'index.html')
@@ -253,11 +283,11 @@ def auth_login():
     email = (data.get('email') or '').strip().lower()
     password = data.get('password') or ''
     users = get_users()
-    user = next((u for u in users if u['email'].lower()==email and u['password_hash']==hash_pw(password)), None)
+    user = next((u for u in users if u['email'].lower()==email and verify_pw(u['password_hash'], password)), None)
     if not user: return jsonify({'error':'Email veya şifre hatalı'}), 401
     session['user_email'] = user['email']
     session['user_name'] = user.get('name', email)
-    session['user_role'] = user.get('role') or 'admin'
+    session['user_role'] = 'super_admin' if user['email'].lower() == ADMIN_EMAIL.lower() else (user.get('role') or 'viewer')
     session.permanent = True
     return jsonify({'ok':True,'user':{'email':user['email'],'name':user.get('name'),'role':user.get('role')}})
 @app.route('/auth/logout', methods=['POST'])
