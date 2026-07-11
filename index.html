@@ -190,6 +190,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="nav-item" onclick="closeSidebar();nav('tasarim',this)"><span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span></div>
   <div class="sidebar-section">Raporlama & Analiz</div>
   <div class="nav-group" id="navGrupRaporlar">   <div class="nav-group-header" onclick="toggleGroup('navGrupRaporlar')"><span class="nav-icon">📊</span><span style="flex:1">Raporlar</span><span style="font-size:10px">▾</span></div>   <div class="nav-group-items">     <div class="nav-item nav-sub" onclick="closeSidebar();nav('raporlar',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Genel Rapor</span></div>     <div class="nav-item nav-sub" onclick="closeSidebar();nav('analitik',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Analytics</span></div>   </div> </div>
+  <div class="nav-item" onclick="closeSidebar();nav('bildirim-merkezi',this)" id="navNotificationCenter"><span class="nav-icon">🔔</span><span>Bildirim Merkezi</span><span class="nav-ai">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('seo',this)"><span class="nav-icon">🔍</span><span>SEO</span><span class="nav-soon">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Pazaryeri</div>
@@ -245,6 +246,7 @@ const PAGES = {
   'hedef-kitle':{title:'Hedef Kitle',  sub:'Audience analizi',        module:'hedef-kitle'},
   tasarim:      {title:'Tasarım',      sub:'Reklam metni ve kreatif', module:'tasarim'},
   raporlar:     {title:'Raporlar',     sub:'Performans raporları',    module:'raporlar'},
+  'bildirim-merkezi': {title:'Bildirim Merkezi', sub:'OneSignal gönderim, teslimat ve tıklama analizi', module:'bildirim-merkezi'},
   gorevler:     {title:'Görevler',     sub:'Otomatik takip görevleri', module:'gorevler'},
   create:       {title:'Oluştur',      sub:'Yeni kampanya oluştur',   module:'create'},
   ayarlar:      {title:'Ayarlar',      sub:'Bağlantılar ve yapılandırma', module:'ayarlar'},
@@ -279,6 +281,7 @@ async function nav(page, el) {
     'dashboard': '/', 'meta-ads': '/ads', 'strateji': '/strateji',
     'optimizasyon': '/optimizasyon', 'hedef-kitle': '/hedef-kitle',
     'tasarim': '/tasarim', 'raporlar': '/raporlar', 'gorevler': '/gorevler',
+    'bildirim-merkezi': '/bildirim-merkezi',
     'create': '/olustur', 'ayarlar': '/ayarlar', 'kullanicilar': '/kullanicilar',
     'claude-chat': '/ai',
     'google-ads': '/google-ads',
@@ -309,6 +312,7 @@ function urlToPage(path){
     '/': 'dashboard', '/ads': 'meta-ads', '/strateji': 'strateji',
     '/optimizasyon': 'optimizasyon', '/hedef-kitle': 'hedef-kitle',
     '/tasarim': 'tasarim', '/raporlar': 'raporlar', '/gorevler': 'gorevler',
+    '/bildirim-merkezi': 'bildirim-merkezi',
     '/olustur': 'create', '/ayarlar': 'ayarlar', '/kullanicilar': 'kullanicilar',
     '/ai': 'claude-chat',
     '/google-ads': 'google-ads',
