@@ -24,3 +24,38 @@ jobs:
           from pathlib import Path
 
           path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+
+          menu_marker = "  <div class=\"nav-item\" onclick=\"closeSidebar();nav('seo',this)\"><span class=\"nav-icon\">🔍</span><span>SEO</span><span class=\"nav-soon\">Yeni</span></div>"
+          menu_item = "  <div class=\"nav-item\" onclick=\"closeSidebar();nav('bildirim-merkezi',this)\" id=\"navNotificationCenter\"><span class=\"nav-icon\">🔔</span><span>Bildirim Merkezi</span><span class=\"nav-ai\">Yeni</span></div>"
+          if menu_item not in text:
+              text = text.replace(menu_marker, menu_item + "\n" + menu_marker)
+
+          pages_marker = "  raporlar:     {title:'Raporlar',     sub:'Performans raporları',    module:'raporlar'},"
+          pages_item = "  'bildirim-merkezi': {title:'Bildirim Merkezi', sub:'OneSignal gönderim, teslimat ve tıklama analizi', module:'bildirim-merkezi'},"
+          if pages_item not in text:
+              text = text.replace(pages_marker, pages_marker + "\n" + pages_item)
+
+          url_marker = "    'tasarim': '/tasarim', 'raporlar': '/raporlar', 'gorevler': '/gorevler',"
+          url_item = "    'bildirim-merkezi': '/bildirim-merkezi',"
+          if url_item not in text:
+              text = text.replace(url_marker, url_marker + "\n" + url_item)
+
+          map_marker = "    '/tasarim': 'tasarim', '/raporlar': 'raporlar', '/gorevler': 'gorevler',"
+          map_item = "    '/bildirim-merkezi': 'bildirim-merkezi',"
+          if map_item not in text:
+              text = text.replace(map_marker, map_marker + "\n" + map_item)
+
+          path.write_text(text, encoding='utf-8')
+
+      - name: Commit patched index
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Add Bildirim Merkezi directly to index"
+          git push origin main
