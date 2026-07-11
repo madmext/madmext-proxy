@@ -9,11 +9,12 @@ import os
 from flask import Response, jsonify, request, send_from_directory, session
 
 from server import app
-from app import get_db, get_users, hash_pw, read_logs, require_admin, save_users, verify_pw, write_logs
+from app import get_db, get_ga4_token, get_users, hash_pw, read_logs, require_admin, save_users, verify_pw, write_logs
 
 import meta_sync_flow
 import onesignal_flow
 import telegram_flow
+import telegram_ai_engine
 import security_core
 import rbac_core
 import marketplace_core
@@ -40,6 +41,8 @@ onesignal_flow.install(
     require_admin=require_admin,
 )
 
+telegram_engine = telegram_ai_engine.TelegramAIEngine(app, get_db, ga4_token_getter=get_ga4_token)
+
 telegram_flow.install(
     app,
     get_db=get_db,
@@ -47,6 +50,7 @@ telegram_flow.install(
     hash_pw=hash_pw,
     verify_pw=verify_pw,
     save_users=save_users,
+    ai_engine=telegram_engine,
 )
 
 
