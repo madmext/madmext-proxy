@@ -31,3 +31,17 @@ def test_shared_bootstrap_exposes_meta_account_before_dynamic_modules_load():
     aid_declaration = shared.index("const AID='act_1346348685568168';")
     aid_export = shared.index('window.AID = AID;')
     assert aid_declaration < aid_export
+
+
+def test_meta_insights_attribution_windows_are_sent_as_graph_json(monkeypatch):
+    calls = []
+
+    def fake_all_pages(path, params=None, max_pages=20):
+        calls.append((path, dict(params or {})))
+        return []
+
+    monkeypatch.setattr(meta_sync_flow, '_all_pages', fake_all_pages)
+    meta_sync_flow._meta_fetch_all('act_123', date_preset='last_7d')
+
+    insights_params = next(params for path, params in calls if path.endswith('/insights'))
+    assert insights_params['action_attribution_windows'] == '["7d_click", "1d_view"]'
