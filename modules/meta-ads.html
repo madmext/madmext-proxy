@@ -164,6 +164,8 @@
 (function(){
 // Shared değişkenlerini window'dan al — IIFE scope dışına erişim için zorunlu
 var AID  = window.AID  || 'act_1346348685568168';
+// Runtime tarafından eklenen Meta senkron kontrolü aynı hesap kimliğini kullanır.
+window.AID = AID;
 var ATTR = window.ATTR || '["7d_click","1d_view"]';
 var api  = window.api  || function(){ return Promise.resolve({error:{message:'api yok'}}); };
 var MX   = window.MX   || {budgetLog:[],taskLog:[],adsetStore:[],campStore:[],adStore:[]};
@@ -1204,4 +1206,3 @@ window.mToggle = function(cb){
 };
 if(window._isConnected){loadMetaCamp();}else{window.addEventListener('mx:connected',function _mi(){window.removeEventListener('mx:connected',_mi);loadMetaCamp();});}
 })();</script>
-
