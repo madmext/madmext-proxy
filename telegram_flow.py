@@ -1,6 +1,7 @@
 """Telegram Phase 1: secure webhook, viewer invites and account linking."""
 
 import hmac
+import hashlib
 import os
 import secrets
 from datetime import datetime, timedelta, timezone
@@ -11,6 +12,10 @@ from flask import jsonify, request, session
 
 _memory_invites = {}
 _memory_links = {}
+
+
+class TelegramDatabaseUnavailable(RuntimeError):
+    pass
 
 
 def _now():
@@ -57,6 +62,18 @@ def _ensure_schema(conn):
 def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=None):
     webhook_secret = os.environ.get('TELEGRAM_WEBHOOK_SECRET', '').strip()
     bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
+    test_memory_fallback = os.environ.get('TELEGRAM_TEST_MEMORY_FALLBACK', '').lower() == 'true'
+
+    def token_fingerprint(token):
+        return hashlib.sha256(str(token or '').encode()).hexdigest()[:16]
+
+    def require_db():
+        conn = get_db()
+        if conn:
+            return conn
+        if test_memory_fallback:
+            return None
+        raise TelegramDatabaseUnavailable('Telegram için PostgreSQL bağlantısı zorunlu')
 
     conn = get_db()
     if conn:
@@ -70,6 +87,12 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
         if writer:
             details.setdefault('actor_type', 'telegram_bot')
             writer(action, **details)
+
+    @app.errorhandler(TelegramDatabaseUnavailable)
+    def telegram_database_unavailable(exc):
+        audit('telegram.database_unavailable', resource_type='endpoint', resource_id=request.path,
+              result='failure', status_code=503, error_message=str(exc))
+        return jsonify({'error': 'Telegram işlemi için veritabanı bağlantısı gerekli'}), 503
 
     def send_message(chat_id, text):
         if not bot_token:
@@ -93,7 +116,7 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
 
     def find_user(email):
         email = (email or '').strip().lower()
-        conn = get_db()
+        conn = require_db()
         if conn:
             try:
                 cur = conn.cursor()
@@ -106,10 +129,12 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
                     return dict(zip(('email','name','password_hash','role','is_active','is_allowed'), row))
             finally:
                 conn.close()
-        return next((u for u in get_users() if (u.get('email') or '').lower() == email), None)
+        if test_memory_fallback:
+            return next((u for u in get_users() if (u.get('email') or '').lower() == email), None)
+        return None
 
     def create_viewer(email, password, name):
-        conn = get_db()
+        conn = require_db()
         if conn:
             try:
                 cur = conn.cursor()
@@ -123,13 +148,14 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
                 raise
             finally:
                 conn.close()
-        users = list(get_users())
-        users.append({'email': email, 'name': name, 'password_hash': hash_pw(password), 'role': 'viewer',
-                      'is_active': True, 'is_allowed': True})
-        save_users(users)
+        if test_memory_fallback:
+            users = list(get_users())
+            users.append({'email': email, 'name': name, 'password_hash': hash_pw(password), 'role': 'viewer',
+                          'is_active': True, 'is_allowed': True})
+            save_users(users)
 
     def get_link(chat_id):
-        conn = get_db()
+        conn = require_db()
         if not conn:
             link = _memory_links.get(str(chat_id))
             return link if link and link.get('is_active', True) else None
@@ -147,18 +173,26 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
             conn.close()
 
     def get_invite(token, lock=False, conn=None):
-        if conn is None:
+        owns_connection = conn is None
+        if owns_connection:
+            conn = require_db()
+        if conn is None and test_memory_fallback:
             invite = _memory_invites.get(token)
             return dict(invite) if invite else None
-        cur = conn.cursor()
-        sql = '''SELECT invite_token,created_by,role,max_uses,used_count,expires_at,is_active
-                 FROM mx_telegram_invites WHERE invite_token=%s'''
-        if lock:
-            sql += ' FOR UPDATE'
-        cur.execute(sql, (token,))
-        row = cur.fetchone()
-        cur.close()
-        return dict(zip(('invite_token','created_by','role','max_uses','used_count','expires_at','is_active'), row)) if row else None
+        try:
+            _ensure_schema(conn)
+            cur = conn.cursor()
+            sql = '''SELECT invite_token,created_by,role,max_uses,used_count,expires_at,is_active
+                     FROM mx_telegram_invites WHERE invite_token=%s'''
+            if lock:
+                sql += ' FOR UPDATE'
+            cur.execute(sql, (token,))
+            row = cur.fetchone()
+            cur.close()
+            return dict(zip(('invite_token','created_by','role','max_uses','used_count','expires_at','is_active'), row)) if row else None
+        finally:
+            if owns_connection:
+                conn.close()
 
     def invite_error(invite):
         if not invite or not invite.get('is_active'):
@@ -170,7 +204,7 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
         return None
 
     def save_link(chat_id, username, email, role, invite_token):
-        conn = get_db()
+        conn = require_db()
         if not conn:
             invite = _memory_invites.get(invite_token)
             error = invite_error(invite)
@@ -219,7 +253,13 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
         token = secrets.token_urlsafe(32)
         expires_at = _now() + timedelta(hours=hours)
         created_by = session.get('user_email') or ''
-        conn = get_db()
+        try:
+            conn = require_db()
+        except TelegramDatabaseUnavailable as exc:
+            audit('telegram.database_unavailable', actor_type='user', actor_email=created_by,
+                  resource_type='telegram_invite', result='failure', status_code=503,
+                  error_message=str(exc))
+            return jsonify({'error': 'Telegram daveti oluşturmak için veritabanı bağlantısı gerekli'}), 503
         if conn:
             try:
                 _ensure_schema(conn)
@@ -235,7 +275,8 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
                                       'max_uses': max_uses, 'used_count': 0, 'expires_at': expires_at, 'is_active': True}
         audit('telegram.invite_created', resource_type='telegram_invite', resource_id=token[:8],
               actor_type='user', actor_email=created_by, actor_role=session.get('user_role'),
-              metadata={'role': 'viewer', 'max_uses': max_uses, 'expires_at': expires_at.isoformat()})
+              metadata={'role': 'viewer', 'max_uses': max_uses, 'expires_at': expires_at.isoformat(),
+                        'token_fingerprint': token_fingerprint(token)})
         return jsonify({'invite': {'token': token, 'role': 'viewer', 'max_uses': max_uses,
                                    'expires_at': expires_at.isoformat(),
                                    'deep_link': 'https://t.me/%s?start=%s' % (os.environ.get('TELEGRAM_BOT_USERNAME', '<bot_username>'), token)}}), 201
@@ -257,17 +298,30 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
         if chat_id is None or not text:
             return jsonify({'ok': True, 'ignored': True}), 200
 
-        link = get_link(chat_id)
+        try:
+            link = get_link(chat_id)
+        except TelegramDatabaseUnavailable as exc:
+            audit('telegram.database_unavailable', resource_type='telegram_chat', resource_id=str(chat_id),
+                  result='failure', status_code=503, error_message=str(exc))
+            return jsonify({'error': 'Telegram hesap doğrulaması için veritabanı kullanılamıyor'}), 503
         actor_email = link.get('linked_email') if link else None
-        audit('telegram.message_received', resource_type='telegram_chat', resource_id=str(chat_id),
-              actor_email=actor_email, actor_role=(link or {}).get('role_snapshot'),
-              metadata={'command': text.split(' ', 1)[0][:40], 'update_id': update.get('update_id')})
-
         parts = text.split()
         command = parts[0].lower() if parts else ''
+        credential_commands = ('/start', '/login', '/register')
+        fingerprint = token_fingerprint(parts[1]) if command in credential_commands and len(parts) > 1 else None
+        audit('telegram.message_received', resource_type='telegram_chat', resource_id=str(chat_id),
+              actor_email=actor_email, actor_role=(link or {}).get('role_snapshot'),
+              metadata={'command': command[:40], 'update_id': update.get('update_id'),
+                        'token_fingerprint': fingerprint})
+
         if command == '/start':
             token = parts[1] if len(parts) > 1 else ''
-            invite = get_invite(token)
+            try:
+                invite = get_invite(token)
+            except TelegramDatabaseUnavailable as exc:
+                audit('telegram.database_unavailable', resource_type='telegram_invite',
+                      resource_id=fingerprint, result='failure', status_code=503, error_message=str(exc))
+                return jsonify({'error': 'Davet doğrulaması için veritabanı kullanılamıyor'}), 503
             error = invite_error(invite)
             if error:
                 return respond(chat_id, error, linked=False)
@@ -277,7 +331,12 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
 
         if command == '/login' and len(parts) >= 4:
             token, email, password = parts[1], parts[2].lower(), parts[3]
-            invite = get_invite(token)
+            try:
+                invite = get_invite(token)
+            except TelegramDatabaseUnavailable as exc:
+                audit('telegram.database_unavailable', resource_type='telegram_invite',
+                      resource_id=fingerprint, result='failure', status_code=503, error_message=str(exc))
+                return jsonify({'error': 'Davet doğrulaması için veritabanı kullanılamıyor'}), 503
             error = invite_error(invite)
             user = find_user(email)
             if error:
@@ -298,7 +357,12 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=No
         if command == '/register' and len(parts) >= 4:
             token, email, password = parts[1], parts[2].lower(), parts[3]
             name = ' '.join(parts[4:]).strip() or email.split('@', 1)[0]
-            invite = get_invite(token)
+            try:
+                invite = get_invite(token)
+            except TelegramDatabaseUnavailable as exc:
+                audit('telegram.database_unavailable', resource_type='telegram_invite',
+                      resource_id=fingerprint, result='failure', status_code=503, error_message=str(exc))
+                return jsonify({'error': 'Davet doğrulaması için veritabanı kullanılamıyor'}), 503
             error = invite_error(invite)
             if error:
                 return respond(chat_id, error, linked=False)
