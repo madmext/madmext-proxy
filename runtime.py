@@ -9,10 +9,11 @@ import os
 from flask import Response, jsonify, request, send_from_directory, session
 
 from server import app
-from app import get_db, read_logs, write_logs, require_admin
+from app import get_db, get_users, hash_pw, read_logs, require_admin, save_users, verify_pw, write_logs
 
 import meta_sync_flow
 import onesignal_flow
+import telegram_flow
 import security_core
 import rbac_core
 import marketplace_core
@@ -39,6 +40,15 @@ onesignal_flow.install(
     require_admin=require_admin,
 )
 
+telegram_flow.install(
+    app,
+    get_db=get_db,
+    get_users=get_users,
+    hash_pw=hash_pw,
+    verify_pw=verify_pw,
+    save_users=save_users,
+)
+
 
 @app.before_request
 def mx_meta_module_response():
@@ -59,7 +69,7 @@ def mx_meta_module_response():
 
 _RESERVED_PREFIXES = (
     'api', 'auth', 'admin', 'ga4', 'gads', 'logs', 'psi', 'claude',
-    'proxy-xml', 'trendyol', 'onesignal', 'marketplace', 'runtime',
+    'proxy-xml', 'trendyol', 'onesignal', 'marketplace', 'telegram', 'runtime',
 )
 
 
