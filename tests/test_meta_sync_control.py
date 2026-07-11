@@ -90,3 +90,12 @@ def test_meta_volume_fallback_slices_custom_range_by_day(monkeypatch):
         '{"since": "2026-07-10", "until": "2026-07-10"}',
         '{"since": "2026-07-11", "until": "2026-07-11"}',
     ]
+
+
+def test_current_meta_sync_diagnostics_are_admin_only_and_persist_failures():
+    source = Path('meta_sync_flow.py').read_text(encoding='utf-8')
+    runtime = Path('runtime.py').read_text(encoding='utf-8')
+    assert "@app.route('/api/meta/sync-status', methods=['GET'])" in source
+    assert "_record_sync_failure(get_db, account, e)" in source
+    assert "require_admin=require_admin" in runtime
+    assert "sync_granularity'] = 'campaign_daily'" in source
