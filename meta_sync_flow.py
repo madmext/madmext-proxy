@@ -117,7 +117,7 @@ def _meta_fetch_all(ad_account_id, date_range=None, date_preset='last_7d'):
         'fields': META_FIELDS['insights'],
         'level': 'ad',
         'limit': 500,
-        'action_attribution_windows': ['7d_click', '1d_view'],
+        'action_attribution_windows': json.dumps(['7d_click', '1d_view']),
     }
     if date_range and date_range.get('since') and date_range.get('until'):
         insight_params['time_range'] = json.dumps({
