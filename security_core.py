@@ -15,7 +15,7 @@ from flask import g, jsonify, request, session
 
 PUBLIC_PATHS = {'/', '/login', '/auth/login', '/auth/forgot-password', '/reset-password', '/runtime/health', '/theme.css'}
 PUBLIC_PREFIXES = ('/static/',)
-PROTECTED_PREFIXES = ('/api', '/ga4', '/gads', '/logs', '/claude', '/psi', '/trendyol', '/marketplace', '/onesignal', '/admin')
+PROTECTED_PREFIXES = ('/api', '/ga4', '/gads', '/logs', '/claude', '/psi', '/trendyol', '/marketplace', '/onesignal', '/admin', '/proxy-xml')
 MUTATING = {'POST', 'PUT', 'PATCH', 'DELETE'}
 ROLE_PERMISSIONS = {
     'super_admin': {'*'},
