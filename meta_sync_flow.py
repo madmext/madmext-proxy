@@ -116,7 +116,7 @@ def _meta_fetch_all(ad_account_id, date_range=None, date_preset='last_7d'):
     insight_params = {
         'fields': META_FIELDS['insights'],
         'level': 'ad',
-        'limit': 500,
+        'limit': 100,
         'action_attribution_windows': json.dumps(['7d_click', '1d_view']),
     }
     if date_range and date_range.get('since') and date_range.get('until'):
@@ -127,7 +127,27 @@ def _meta_fetch_all(ad_account_id, date_range=None, date_preset='last_7d'):
     else:
         insight_params['date_preset'] = date_preset or 'last_7d'
 
-    insights = _all_pages('/{0}/insights'.format(account), insight_params)
+    try:
+        insights = _all_pages('/{0}/insights'.format(account), insight_params)
+    except RuntimeError as exc:
+        # Meta occasionally rejects detailed ad-level action payloads even for a
+        # short date window. Campaign-level totals are sufficient for the AI
+        # performance summary, so preserve the sync instead of losing all data.
+        if 'reduce the amount of data' not in str(exc).lower():
+            raise RuntimeError('Meta Insights isteği başarısız: ' + str(exc))
+        campaign_fields = ','.join([
+            'campaign_id', 'campaign_name', 'spend', 'impressions', 'reach',
+            'clicks', 'inline_link_clicks', 'ctr', 'cpc', 'cpm', 'actions',
+            'action_values', 'purchase_roas', 'date_start', 'date_stop'
+        ])
+        fallback_params = dict(insight_params)
+        fallback_params.update({'fields': campaign_fields, 'level': 'campaign', 'limit': 100})
+        insights = _all_pages('/{0}/insights'.format(account), fallback_params)
+        for row in insights:
+            campaign_id = str(row.get('campaign_id') or '')
+            row['ad_id'] = 'campaign:' + campaign_id
+            row['ad_name'] = row.get('campaign_name') or 'Campaign aggregate'
+            row['sync_granularity'] = 'campaign'
     return campaigns, adsets, ads, insights
 
 
