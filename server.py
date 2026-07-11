@@ -1,11 +1,12 @@
 from flask import request, jsonify, session
 from urllib.parse import unquote
-from app import app, get_db, hash_pw, read_logs, write_logs
+from app import app, get_db, hash_pw, verify_pw, read_logs, write_logs
 import password_reset_flow
 
 
 def _is_admin():
-    return session.get('user_role') == 'admin'
+    from app import ADMIN_EMAIL
+    return session.get('user_role') in ('admin', 'super_admin') or session.get('user_email','').lower() == ADMIN_EMAIL.lower()
 
 
 def _admin_required():
@@ -301,7 +302,7 @@ def _auth_and_admin_users_override():
         if user is None:
             fallback = _fallback_users()
             user = next((u for u in fallback if (u.get('email') or '').lower() == email.lower()), None)
-        if not user or user.get('password_hash') != hash_pw(password):
+        if not user or not verify_pw(user.get('password_hash'), password):
             return jsonify({'error': 'Email veya şifre hatalı'}), 401
         if user.get('is_allowed', True) is False:
             return jsonify({'error': 'Kullanıcı için giriş izni kapalı'}), 403
@@ -309,7 +310,8 @@ def _auth_and_admin_users_override():
             return jsonify({'error': 'Kullanıcı pasif durumda'}), 403
         session['user_email'] = user.get('email')
         session['user_name'] = ((user.get('name') or '') + ' ' + (user.get('surname') or '')).strip() or user.get('email')
-        session['user_role'] = user.get('role') or 'viewer'
+        from app import ADMIN_EMAIL
+        session['user_role'] = 'super_admin' if (user.get('email') or '').lower() == ADMIN_EMAIL.lower() else (user.get('role') or 'viewer')
         session.permanent = True
         _db_record_login(email)
         return jsonify({'ok': True, 'user': {'email': user.get('email'), 'name': session['user_name'], 'role': session['user_role']}})

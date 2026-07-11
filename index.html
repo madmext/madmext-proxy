@@ -24,9 +24,21 @@ body{background:var(--bg);color:var(--t);font-family:'Inter',sans-serif;font-siz
   #sidebarOverlay.open{display:block}
   .content{padding:12px 10px 80px}
 }
-.sidebar{width:220px;background:var(--s);border-right:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar{display:flex;width:220px;background:var(--s);border-right:1px solid var(--b);flex-direction:column;flex-shrink:0;overflow-y:auto}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{background:var(--s);border-bottom:1px solid var(--b);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.mx-topnav{display:flex;align-items:center;gap:2px;min-width:0;flex:1;margin:0 14px;overflow-x:auto;scrollbar-width:thin}
+.mx-topcat{flex:0 0 auto;background:transparent;border:0;color:var(--m);padding:9px 10px;font:600 10px 'Inter',sans-serif;white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent}
+.mx-topcat:hover,.mx-topcat.active{color:var(--t);background:var(--s2);border-bottom-color:var(--a)}
+#mxContextSidebar{display:flex;flex-direction:column;padding-bottom:18px}
+.sidebar>#mxContextSidebar~*{display:none!important}
+.mx-context-title{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:1.5px;padding:12px 16px 5px}
+.mx-context-item{display:flex;align-items:center;gap:10px;padding:9px 16px;background:transparent;border:0;border-left:2px solid transparent;color:var(--m);font:13px 'Inter',sans-serif;text-align:left;cursor:pointer;width:100%}
+.mx-context-item:hover,.mx-context-item.active{background:var(--s2);color:var(--t);border-left-color:var(--a)}
+.mx-context-item:disabled{opacity:.38;cursor:default}
+.mx-context-item .tag{margin-left:auto;font:9px 'DM Mono',monospace;color:var(--a);border:1px solid rgba(24,119,242,.3);padding:1px 5px;border-radius:3px}
+.mx-context-children{margin:0 0 4px 27px;border-left:1px solid var(--b)}.mx-context-child{display:flex;width:100%;align-items:center;gap:8px;border:0;background:transparent;color:var(--m);padding:7px 10px;font:11px 'Inter',sans-serif;text-align:left;cursor:pointer}.mx-context-child:hover{color:var(--t);background:var(--s2)}
+.mx-mobile-cats{display:none;border-bottom:1px solid var(--b);padding-bottom:7px;margin-bottom:3px}.mx-mobile-cat{display:block;width:100%;border:0;background:transparent;color:var(--m);padding:8px 16px;text-align:left;font:11px 'Inter',sans-serif}.mx-mobile-cat.active{color:var(--t);background:var(--s2)}
 .content{flex:1;overflow-y:auto;padding:20px}
 .sidebar-logo{padding:14px 16px 10px;border-bottom:1px solid var(--b);margin-bottom:6px}
 .logo{font-size:17px;font-weight:800;letter-spacing:-0.5px;color:var(--t)}.logo span{color:#1877f2}
@@ -146,6 +158,8 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   .topbar{ padding:0 10px !important; }
   #pageTitle{ font-size:13px !important; }
   #pageSub{ display:none !important; }
+  .mx-topnav{display:none}
+  .mx-mobile-cats{display:block}
 }
 </style>
 </head>
@@ -154,6 +168,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 <div id="sidebarOverlay" onclick="closeSidebar()"></div>
 <div class="sidebar">
   <div class="sidebar-logo"><div class="logo" onclick="nav('dashboard',null)" style="cursor:pointer">Madmext <span>Ads</span></div></div>
+  <div id="mxContextSidebar"></div>
   <div class="sidebar-section">Ana Menü</div>
   <div class="nav-item active" onclick="closeSidebar();nav('dashboard',this)"><span class="nav-icon">🏠</span><span>Dashboard</span></div>
   <div class="sidebar-section">Reklam</div>
@@ -189,11 +204,19 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   </div>
   <div class="nav-item" onclick="closeSidebar();nav('tasarim',this)"><span class="nav-icon">🎨</span><span>Tasarım</span><span class="nav-ai">AI</span></div>
   <div class="sidebar-section">Raporlama & Analiz</div>
-  <div class="nav-group" id="navGrupRaporlar">   <div class="nav-group-header" onclick="toggleGroup('navGrupRaporlar')"><span class="nav-icon">📊</span><span style="flex:1">Raporlar</span><span style="font-size:10px">▾</span></div>   <div class="nav-group-items">     <div class="nav-item nav-sub" onclick="closeSidebar();nav('raporlar',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Genel Rapor</span></div>     <div class="nav-item nav-sub" onclick="closeSidebar();nav('analitik',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Analytics</span></div>   </div> </div>
+  <div class="nav-group" id="navGrupRaporlar">
+    <div class="nav-group-header" onclick="toggleGroup('navGrupRaporlar')"><span class="nav-icon">📊</span><span style="flex:1">Raporlar</span><span style="font-size:10px">▾</span></div>
+    <div class="nav-group-items">
+      <div class="nav-item nav-sub" onclick="closeSidebar();nav('raporlar',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Genel Rapor</span></div>
+      <div class="nav-item nav-sub" onclick="closeSidebar();nav('analitik',this)"><span class="nav-icon" style="font-size:10px">●</span><span>Analytics</span></div>
+    </div>
+  </div>
+  <div class="nav-item" id="navCampaignCenter" onclick="closeSidebar();nav('kampanyalar',this)"><span class="nav-icon">📅</span><span>Kampanya Merkezi</span><span class="nav-ai">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('bildirim-merkezi',this)" id="navNotificationCenter"><span class="nav-icon">🔔</span><span>Bildirim Merkezi</span><span class="nav-ai">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('seo',this)"><span class="nav-icon">🔍</span><span>SEO</span><span class="nav-soon">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('gorevler',this)" id="navGorevler"><span class="nav-icon">⏰</span><span>Görevler</span><span class="nav-badge" id="taskBadge" style="display:none">0</span></div>
   <div class="sidebar-section">Pazaryeri</div>
+  <div class="nav-item" onclick="closeSidebar();nav('pazaryeri-merkezi',this)"><span class="nav-icon">◉</span><span>Pazaryeri Merkezi</span><span class="nav-ai">Yeni</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('trendyol',this)"><span class="nav-icon">🟠</span><span>Trendyol</span></div>
   <div class="sidebar-section">Veri & Dosyalar</div>
   <div class="nav-item" onclick="closeSidebar();nav('dosyalar',this)"><span class="nav-icon">📁</span><span>Dosya Yönetimi</span></div>
@@ -202,6 +225,8 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
   <div class="nav-item" onclick="closeSidebar();nav('kullanicilar',this)"><span class="nav-icon">👥</span><span>Kullanıcılar</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('claude-chat',this)"><span class="nav-icon">🤖</span><span>Claude AI</span></div>
   <div class="nav-item" onclick="closeSidebar();nav('ayarlar',this)"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
+  <div class="sidebar-section">AI Ajans</div>
+  <div class="nav-item" id="navAiAjansMerkezi" onclick="closeSidebar();nav('ai-ajans',this)"><span class="nav-icon">🤖</span><span>AI Ajans Merkezi</span><span class="nav-ai">Yeni</span></div>
 </div>
 <div class="main">
   <div class="topbar">
@@ -214,6 +239,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
         <div class="page-sub" id="pageSub">Genel bakış</div>
       </div>
     </div>
+    <nav class="mx-topnav" id="mxTopNav" aria-label="Madmext ana kategoriler"></nav>
     <div style="display:flex;align-items:center;gap:6px">
       <div id="connBadge" onclick="toggleConnEdit()" style="display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--s2);border:1px solid var(--b2);border-radius:20px;cursor:pointer" title="Bağlantı ayarları">
         <span class="dot" id="dot"></span>
@@ -262,6 +288,10 @@ const PAGES = {
   seo:           {title:'SEO', sub:'Site SEO analizi', module:'seo'},
   trendyol:      {title:'Trendyol Reklamları', sub:'Ürün reklam performansı', module:'trendyol'},
   dosyalar:      {title:'Dosya Yönetimi', sub:'Platform reklam dosyalarını yükle ve yönet', module:'dosyalar'},
+  kampanyalar:   {title:'Kampanya Merkezi', sub:'Kampanya planlama, kanal ve görev takibi', module:'kampanyalar'},
+  'ai-ajans':    {title:'AI Ajans Merkezi', sub:'Uzman AI ajanları, araştırma ve ortak raporlar', module:'ai-ajans'},
+  'pazaryeri-merkezi': {title:'Pazaryeri Merkezi', sub:'API, dosya ve XML veri kaynakları', module:'pazaryeri-merkezi'},
+  'yetki-yonetimi': {title:'Yetki Yönetimi', sub:'Dinamik roller ve modül yetkileri', module:'yetki-yonetimi'},
 };
 window.currentPage = '';
 window.__moduleListeners = [];
@@ -271,6 +301,12 @@ window.onConnected = function(fn) {
 };
 var _navBusy = false;
 async function nav(page, el) {
+  var role = (window._currentUser && window._currentUser.role) || 'viewer';
+  var adminOnly = ['kullanicilar','yetki-yonetimi','ayarlar','loglar','admin-api'];
+  var writePages = ['create','optimizasyon'];
+  if(adminOnly.indexOf(page)>-1 && ['admin','super_admin'].indexOf(role)===-1){ toast('Bu sayfa yalnızca Admin kullanıcılar içindir'); return; }
+  if(writePages.indexOf(page)>-1 && role==='viewer'){ toast('Görüntüleyici rolü bu sayfada işlem yapamaz'); return; }
+  if(window.MX_PAGE_CATEGORY&&window.MX_PAGE_CATEGORY[page]){window.mxActiveCategory=window.MX_PAGE_CATEGORY[page];if(typeof renderTopNavigation==='function')renderTopNavigation();if(typeof renderContextSidebar==='function')renderContextSidebar()}
   if(page === window.currentPage) return;
   if(_navBusy) return;
   _navBusy = true;
@@ -287,6 +323,10 @@ async function nav(page, el) {
     'google-ads': '/google-ads',
     'trendyol': '/trendyol',
     'dosyalar': '/dosyalar',
+    'kampanyalar': '/kampanyalar',
+    'ai-ajans': '/ai-ajans',
+    'pazaryeri-merkezi': '/pazaryerleri',
+    'yetki-yonetimi': '/yetki-yonetimi',
     seo: '/seo'
   };
   var newUrl = urlMap[page] || ('/' + page);
@@ -318,6 +358,10 @@ function urlToPage(path){
     '/google-ads': 'google-ads',
     '/trendyol': 'trendyol',
     '/dosyalar': 'dosyalar',
+    '/kampanyalar': 'kampanyalar',
+    '/ai-ajans': 'ai-ajans',
+    '/pazaryerleri': 'pazaryeri-merkezi',
+    '/yetki-yonetimi': 'yetki-yonetimi',
     '/seo': 'seo'
   };
   return map[path] || null;
@@ -351,11 +395,41 @@ async function loadModule(page) {
       }
     });
     if(window._isConnected) window.dispatchEvent(new CustomEvent('mx:connected'));
+    injectModuleRefresh(page);
   } catch(e) {
     el.innerHTML = '<div class="module-loading" style="color:var(--r)">❌ ' + (meta.module) + '.html yüklenemedi: ' + e.message + '</div>';
   }
 }
+function injectModuleRefresh(page){
+  var handlers={dashboard:'loadDashboard','meta-ads':'mLoad','google-ads':'gadsLoad',raporlar:'rpLoad',trendyol:'tyLoad','bildirim-merkezi':'nxLoad'};
+  var fn=handlers[page]; if(!fn||typeof window[fn]!=='function')return;
+  var root=document.getElementById('mainContent'); if(!root||root.querySelector('.mx-refresh-bar'))return;
+  var bar=document.createElement('div');bar.className='mx-refresh-bar';
+  bar.innerHTML='<button class="btn sm" type="button">↻ Son Veriyi Çek</button><span>Kaynak sistemden en güncel veriyi getirir</span>';
+  bar.querySelector('button').onclick=async function(){var b=this,old=b.textContent;b.disabled=true;b.textContent='↻ Güncelleniyor…';try{await window[fn]();toast('Veriler güncellendi')}catch(e){toast('Güncelleme hatası: '+e.message)}finally{b.disabled=false;b.textContent=old}};
+  root.insertBefore(bar,root.firstChild);
+}
 function toggleGroup(id){ document.getElementById(id).classList.toggle('open'); }
+var MX_NAVIGATION=[
+ {id:'main',label:'Ana Menü',items:[['🏠','Dashboard','dashboard',null,null,false,[['▦','Genel Bakış','dashboard','overview'],['📣','Kanal Performansı','dashboard','channels'],['⚠️','Uyarılar','dashboard','alerts'],['🏆','En İyi / En Zayıf','dashboard','rankings'],['🕒','Son Güncellemeler','dashboard','updates']]]]},
+ {id:'ads',label:'Reklam',items:[['📘','Meta Ads','meta-ads',null,null,false,[['▦','Kampanyalar','meta-ads','campaigns'],['◉','Reklam Setleri','meta-ads','adsets'],['▣','Reklamlar','meta-ads','ads'],['💰','Bütçe Yönetimi','meta-ads','budgets'],['📈','Performans Analizi','meta-ads','performance']]],['🟢','Google Ads','google-ads',null,null,false,[['▦','Kampanyalar','google-ads','campaigns'],['◉','Reklam Grupları','google-ads','adgroups'],['💰','Bütçe Yönetimi','google-ads','budgets'],['⚡','Durum İşlemleri','google-ads','status'],['📈','Performans Analizi','google-ads','performance']]],['♪','TikTok',null,'Yakında']]},
+ {id:'ai',label:'AI Araçlar',items:[['🧠','Strateji','strateji',null,'meta',false,[['📘','Meta Strateji','strateji','meta'],['🟢','Google Strateji','strateji','google'],['🟠','Pazaryeri Stratejisi','strateji','marketplace']]],['⚙️','Optimizasyon','optimizasyon',null,'meta',false,[['📘','Meta Optimizasyon','optimizasyon','meta'],['🟢','Google Optimizasyon','optimizasyon','google'],['🟠','Pazaryeri Optimizasyonu','optimizasyon','marketplace']]],['🎯','Hedef Kitle','hedef-kitle',null,'meta',false,[['📘','Meta Kitleleri','hedef-kitle','meta'],['🟢','Google Kitleleri','hedef-kitle','google'],['🛍','Müşteri Segmentleri','hedef-kitle','marketplace']]],['🤖','Claude AI','claude-chat',null,null,false,[['💬','Yeni Sohbet','claude-chat','new'],['🕒','Sohbet Geçmişi','claude-chat','history'],['⚔','Model Karşılaştırma','claude-chat','arena'],['📄','AI Raporları','claude-chat','reports']]]]},
+ {id:'reports',label:'Raporlama & Analiz',items:[['📊','Genel Rapor','raporlar',null,null,false,[['◉','Tüm Kanallar','raporlar','all'],['📘','Meta Raporu','raporlar','meta'],['🟢','Google Raporu','raporlar','google'],['🟠','Pazaryeri Raporu','raporlar','marketplace']]],['📈','Analytics','analitik',null,null,false,[['📊','GA4 Genel Bakış','analitik','ga4'],['🎯','UTM & Reklam Satışları','analitik','utm'],['🛒','E-ticaret Analizi','analitik','ecommerce']]]]},
+ {id:'market',label:'Pazaryeri',items:[['◉','Pazaryeri Merkezi','pazaryeri-merkezi',null,null,false,[['▦','Tüm Pazaryerleri','pazaryeri-merkezi','all'],['🔌','Bağlantılar','pazaryeri-merkezi','connections'],['↻','Senkronizasyon','pazaryeri-merkezi','sync'],['⚠️','Veri Kalitesi','pazaryeri-merkezi','quality'],['🕒','Aktarım Geçmişi','pazaryeri-merkezi','history']]],['🟠','Trendyol','trendyol',null,null,false,[['▦','Genel Bakış','trendyol','overview'],['📦','Ürün Reklamları','trendyol','urun'],['🏪','Mağaza Reklamları','trendyol','magaza'],['👤','Influencer','trendyol','influencer'],['📘','Meta Reklamları','trendyol','meta'],['📈','Ürün Detay Analizi','trendyol','urun_detay']]],['🟠','Hepsiburada',null,'Yakında'],['🔴','N11',null,'Yakında'],['📦','Amazon',null,'Yakında'],['🔵','LC Waikiki',null,'Yakında'],['🟡','FLO',null,'Yakında']]},
+ {id:'data',label:'Veri & Dosyalar (DATA)',items:[['📁','Dosya Yönetimi','dosyalar',null,null,false,[['⬆','Dosya Yükle','dosyalar','upload'],['📂','Yüklenen Dosyalar','dosyalar','files'],['✅','İşlenen Dosyalar','dosyalar','processed'],['⚠️','Hatalı Dosyalar','dosyalar','errors'],['🕒','Yükleme Geçmişi','dosyalar','history']]],['🔌','Veri Kaynakları','pazaryeri-merkezi',null,null,false,[['API','API Bağlantıları','pazaryeri-merkezi','api'],['XML','XML Akışları','pazaryeri-merkezi','xml'],['CSV','Excel / CSV Kaynakları','pazaryeri-merkezi','files'],['↻','Senkronizasyon Planı','pazaryeri-merkezi','schedule']]]]},
+ {id:'design',label:'Tasarım',items:[['🎨','Tasarım Modülü','tasarim',null,null,false,[['▣','Kreatif Merkezi','tasarim','creative'],['✎','Reklam Metinleri','tasarim','copy'],['▤','Şablonlar','tasarim','templates'],['🖼','Görsel Çalışmaları','tasarim','images'],['✓','Onay Bekleyenler','tasarim','approvals']]],['➕','Oluştur','create',null,null,false,[['📣','Kampanya Oluştur','create','campaign'],['▦','Reklam Seti Oluştur','create','adset'],['▣','Reklam Oluştur','create','ad'],['📝','Taslaklar','create','drafts']]]]},
+ {id:'marketing',label:'Pazarlama',items:[['📅','Kampanya Merkezi','kampanyalar',null,null,false,[['▦','Tüm Kampanyalar','kampanyalar','all'],['🗓','Kampanya Takvimi','kampanyalar','calendar'],['📦','Ürün & Fiyatlar','kampanyalar','products'],['✓','Operasyon Görevleri','kampanyalar','tasks'],['📈','Kampanya Sonuçları','kampanyalar','results']]],['🔔','Bildirim Merkezi','bildirim-merkezi',null,null,false,[['▦','Genel Bakış','bildirim-merkezi','overview'],['✉','Bildirimler','bildirim-merkezi','messages'],['👤','Kullanıcılar','bildirim-merkezi','users'],['◉','Segmentler','bildirim-merkezi','segments'],['⚡','Canlı Olaylar','bildirim-merkezi','events'],['📈','Dönüşüm Analizi','bildirim-merkezi','conversions'],['⚠️','Hata Merkezi','bildirim-merkezi','errors']]],['🔍','SEO','seo',null,null,false,[['▦','Site Analizleri','seo','sites'],['⚡','Performans','seo','performance'],['🔎','Teknik SEO','seo','technical'],['✎','İçerik Fırsatları','seo','content'],['🕒','Analiz Geçmişi','seo','history']]],['⏰','Görevler','gorevler',null,null,false,[['📥','Tüm Görevler','gorevler','all'],['●','Açık Görevler','gorevler','open'],['⏳','Bekleyenler','gorevler','pending'],['✓','Tamamlananlar','gorevler','completed'],['⚠️','Gecikenler','gorevler','overdue']]]]},
+ {id:'logs',label:'Loglar',items:[['🧾','Log Merkezi','@logs','Admin',null,false,[['👤','Kullanıcı Hareketleri','@logs','users'],['🤖','AI Ajan Hareketleri','@logs','ai'],['🔌','API & Entegrasyon Logları','@logs','api'],['💰','Bütçe & Reklam İşlemleri','@logs','budget'],['⚠️','Hata ve Güvenlik Kayıtları','@logs','security']]]]},
+ {id:'settings',label:'Ayarlar',items:[['⚙️','Ayarlar','ayarlar',null,null,false,[['◉','Genel Ayarlar','ayarlar','general'],['🔌','Entegrasyonlar','ayarlar','integrations'],['🎨','Tema & Görünüm','ayarlar','theme'],['🔔','Bildirim Ayarları','ayarlar','notifications'],['🛡','Güvenlik','ayarlar','security']]],['👥','Kullanıcı Yönetimi','kullanicilar','Admin',null,false,[['👤','Kullanıcı Listesi','kullanicilar','list'],['➕','Yeni Kullanıcı','kullanicilar','create'],['🛍','Pazaryeri Erişimleri','kullanicilar','marketplace-access'],['👥','Ekipler & Çalışma Grupları','kullanicilar','teams'],['✓','Giriş İzinleri','kullanicilar','access'],['📱','OTP / 2FA Yönetimi','kullanicilar','two-factor'],['◉','Aktif Oturumlar','kullanicilar','sessions'],['🕒','Giriş Geçmişi','kullanicilar','login-history'],['↻','Şifre Sıfırlama Talepleri','kullanicilar','password-resets'],['⛔','Pasif / Engelli Kullanıcılar','kullanicilar','disabled']]],['🔑','Yetki Yönetimi','yetki-yonetimi','Admin',null,false,[['▤','Rol Listesi','yetki-yonetimi','roles'],['➕','Yeni Rol Ekle','yetki-yonetimi','create'],['✓','Rol Yetkileri','yetki-yonetimi','permissions']]],['🔐','API Merkezi','@api','Admin',null,false,[['◉','Bağlantı Durumları','@api','status'],['📘','Meta API','@api','meta'],['🟢','Google API','@api','google'],['📊','GA4 API','@api','ga4'],['🤖','AI API','@api','ai']]]]},
+ {id:'agency',label:'AI Ajans Merkezi',items:[['🤖','Ajans Merkezi','ai-ajans',null,null,false,[['👥','Tüm Ajanlar','ai-ajans','agents'],['🏷','Çalışma Grupları','ai-ajans','groups'],['🗣','Toplantılar','ai-ajans','meetings'],['✓','Ajan Görevleri','ai-ajans','tasks'],['📄','Raporlar','ai-ajans','reports'],['🕒','Ajan Hareketleri','@logs','ai']]]]}
+];
+window.MX_PAGE_CATEGORY={dashboard:'main','meta-ads':'ads','google-ads':'ads',strateji:'ai',optimizasyon:'ai','hedef-kitle':'ai','claude-chat':'ai',raporlar:'reports',analitik:'reports','pazaryeri-merkezi':'market',trendyol:'market',dosyalar:'data',tasarim:'design',create:'design',kampanyalar:'marketing','bildirim-merkezi':'marketing',seo:'marketing',gorevler:'marketing',ayarlar:'settings',kullanicilar:'settings','yetki-yonetimi':'settings','ai-ajans':'agency'};
+window.mxActiveCategory='main';
+function selectTopCategory(id){window.mxActiveCategory=id;renderTopNavigation();renderContextSidebar();if(window.innerWidth<=768){var sb=document.querySelector('.sidebar'),ov=document.getElementById('sidebarOverlay');sb.classList.add('open');ov.classList.add('open');document.body.style.overflow='hidden'}}
+function runContextItem(item){if(!item[2])return;if(item[2]==='@logs'){window._logInitialFilter=item[4]||'';if(typeof openSystemLogs==='function')openSystemLogs();return}if(item[2]==='@api'){window._apiInitialSection=item[4]||'';if(typeof openAdminApiCenter==='function')openAdminApiCenter();return}if(item[4]){window._activePlatform=item[4];window._marketplaceSection=item[4];window._reportSection=item[4];window._moduleSection=item[4]}window.dispatchEvent(new CustomEvent('mx:section-change',{detail:{page:item[2],section:item[4]||''}}));nav(item[2],null);if(window.innerWidth<=768)closeSidebar()}
+function renderTopNavigation(){var role=(window._currentUser&&window._currentUser.role)||'viewer',isAdmin=['admin','super_admin'].indexOf(role)>-1,box=document.getElementById('mxTopNav');if(!box)return;box.innerHTML=MX_NAVIGATION.filter(function(g){return !g.admin||isAdmin}).map(function(g){return'<button class="mx-topcat '+(g.id===window.mxActiveCategory?'active':'')+'" onclick="selectTopCategory(\''+g.id+'\')">'+g.label+'</button>'}).join('')}
+function renderContextSidebar(){var role=(window._currentUser&&window._currentUser.role)||'viewer',groups=MX_NAVIGATION.filter(function(x){return !x.admin||role==='admin'}),g=groups.find(function(x){return x.id===window.mxActiveCategory})||groups[0],box=document.getElementById('mxContextSidebar');if(!box)return;var items=g.items.filter(function(x){return !x[5]||role==='admin'});var mobile='<div class="mx-mobile-cats">'+groups.map(function(x){return'<button class="mx-mobile-cat '+(x.id===g.id?'active':'')+'" onclick="selectTopCategory(\''+x.id+'\')">'+x.label+'</button>'}).join('')+'</div>';box.innerHTML=mobile+'<div class="mx-context-title">'+g.label+'</div>'+items.map(function(x){var idx=g.items.indexOf(x),children=x[6]||[];return'<button class="mx-context-item" '+(!x[2]?'disabled':'')+' onclick="runContextItem(MX_NAVIGATION.find(function(g){return g.id===window.mxActiveCategory}).items['+idx+'])"><span>'+x[0]+'</span><span>'+x[1]+'</span>'+(x[3]?'<span class="tag">'+x[3]+'</span>':'')+'</button>'+(children.length?'<div class="mx-context-children">'+children.map(function(c,ci){return'<button class="mx-context-child" onclick="runContextItem(MX_NAVIGATION.find(function(g){return g.id===window.mxActiveCategory}).items['+idx+'][6]['+ci+'])"><span>'+c[0]+'</span><span>'+c[1]+'</span></button>'}).join('')+'</div>':'')}).join('')}
+renderTopNavigation();renderContextSidebar();
 async function createCamp() {
   var name=document.getElementById('cName')?.value;
   var obj=document.getElementById('cObj')?.value;
@@ -392,6 +466,7 @@ window.navWithPlatform = function(page, platform, el){ window._activePlatform = 
 setInterval(updateTaskBadge, 60000);
 </script>
 <style id="dp-global-styles">
+.mx-refresh-bar{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:var(--s);border:1px solid var(--b);border-radius:9px}.mx-refresh-bar span{font-size:11px;color:var(--m)}@media(max-width:600px){.mx-refresh-bar{position:sticky;top:0;z-index:20}.mx-refresh-bar span{display:none}.mx-refresh-bar .btn{width:100%}}
 .dp-popup-wrap{background:#fff;border:1px solid #e0e0e0;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.16);min-width:300px;overflow:hidden;font-family:'Inter',sans-serif}
 .dp-preset-section{padding:8px 0;border-bottom:1px solid #f0f0f0;background:#fafafa}
 .dp-preset-lbl{font-size:9px;color:#aaa;letter-spacing:1px;text-transform:uppercase;padding:8px 14px 4px;font-weight:700}
@@ -498,9 +573,25 @@ window.initUser = async function initUser(){
     var info = document.getElementById('userInfo'); if(info) info.style.display = 'flex';
     var nm = document.getElementById('topUserName'); if(nm) nm.textContent = u.name || u.email;
     var rl = document.getElementById('topUserRole');
-    var labels = {admin:'Admin',editor:'Editor',viewer:'Goruntüleyici'};
+    var labels = {super_admin:'Ana Admin',admin:'Admin',editor:'Editor',viewer:'Goruntüleyici'};
     if(rl) rl.textContent = labels[u.role] || u.role;
+    applyRoleVisibility(u.role);
   } catch(e){ console.log('Auth:', e.message); }
+}
+window.applyRoleVisibility=function applyRoleVisibility(role){
+  var isAdmin=['admin','super_admin'].indexOf(role)>-1;
+  document.querySelectorAll('.nav-item').forEach(function(item){
+    var click=item.getAttribute('onclick')||'';
+    var text=(item.textContent||'').toLowerCase();
+    var adminOnly=click.indexOf("'kullanicilar'")>-1||click.indexOf("'ayarlar'")>-1||text.indexOf('api merkezi')>-1||text.indexOf('log kayıtları')>-1;
+    var viewerBlocked=click.indexOf("'create'")>-1||click.indexOf("'optimizasyon'")>-1;
+    item.style.display=(adminOnly&&!isAdmin)||(viewerBlocked&&role==='viewer')?'none':'';
+  });
+  document.documentElement.setAttribute('data-user-role',role||'viewer');
+  var topAdminApi=document.getElementById('topAdminApi'),topLogs=document.getElementById('topSystemLogs');
+  if(topAdminApi)topAdminApi.style.display=isAdmin?'flex':'none';
+  if(topLogs)topLogs.style.display=isAdmin?'flex':'none';
+  renderTopNavigation();renderContextSidebar();
 }
 window.initUser();
 window.doLogout = function doLogout(){
@@ -521,4 +612,3 @@ window.addEventListener('resize',function(){ if(window.innerWidth>768)closeSideb
 </script>
 </body>
 </html>
-
