@@ -45,3 +45,12 @@ def test_meta_insights_attribution_windows_are_sent_as_graph_json(monkeypatch):
 
     insights_params = next(params for path, params in calls if path.endswith('/insights'))
     assert insights_params['action_attribution_windows'] == '["7d_click", "1d_view"]'
+
+
+def test_meta_sync_diagnostics_are_admin_only_and_persist_failures():
+    source = Path('meta_sync_flow.py').read_text(encoding='utf-8')
+    runtime = Path('runtime.py').read_text(encoding='utf-8')
+    assert "@app.route('/api/meta/sync-status', methods=['GET'])" in source
+    assert "denied = _admin_guard()" in source
+    assert "_record_sync_failure(get_db, account, e)" in source
+    assert "require_admin=require_admin" in runtime
