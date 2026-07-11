@@ -15,7 +15,7 @@ from flask import g, jsonify, request, session
 
 PUBLIC_PATHS = {'/', '/login', '/auth/login', '/auth/forgot-password', '/reset-password', '/runtime/health', '/theme.css'}
 PUBLIC_PREFIXES = ('/static/',)
-PROTECTED_PREFIXES = ('/api', '/ga4', '/gads', '/logs', '/claude', '/psi', '/trendyol', '/marketplace', '/onesignal', '/admin', '/proxy-xml')
+PROTECTED_PREFIXES = ('/api', '/ga4', '/gads', '/logs', '/claude', '/psi', '/trendyol', '/marketplace', '/onesignal', '/admin', '/proxy-xml', '/telegram')
 MUTATING = {'POST', 'PUT', 'PATCH', 'DELETE'}
 ROLE_PERMISSIONS = {
     'super_admin': {'*'},
@@ -165,6 +165,10 @@ def install(app, get_db):
     def mx_security_gate():
         g.request_id = request.headers.get('X-Request-ID') or str(uuid.uuid4())
         path = request.path.rstrip('/') or '/'
+        # Telegram cannot carry a browser session. The webhook performs its own
+        # constant-time secret-token verification inside telegram_flow.py.
+        if path == '/telegram/webhook':
+            return None
         is_public = path in PUBLIC_PATHS or any(path.startswith(p) for p in PUBLIC_PREFIXES)
         if path.startswith('/modules/') or path.endswith(('.css', '.js', '.png', '.svg', '.ico')):
             is_public = True
@@ -196,7 +200,10 @@ def install(app, get_db):
         response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
         if request.is_secure:
             response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-        if request.method in MUTATING:
+        # telegram_flow writes a purpose-built audit event without message text.
+        # Skipping the generic body audit prevents credentials sent during the
+        # Phase 1 link flow from ever reaching mx_audit_logs.
+        if request.method in MUTATING and request.path != '/telegram/webhook':
             action = 'auth.login' if request.path == '/auth/login' else 'http.' + request.method.lower()
             audit(action, resource_type='endpoint', resource_id=request.path,
                   new_value=_safe_details(), result='success' if response.status_code < 400 else 'failure',
