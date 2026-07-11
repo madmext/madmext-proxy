@@ -33,6 +33,7 @@ meta_sync_flow.install(
     get_db=get_db,
     read_logs=read_logs,
     write_logs=write_logs,
+    require_admin=require_admin,
 )
 
 onesignal_flow.install(
