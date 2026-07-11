@@ -1,6 +1,8 @@
 import telegram_flow
 import runtime
-from telegram_ai_engine import TelegramAIEngine, split_telegram_message
+from datetime import date
+
+from telegram_ai_engine import TelegramAIEngine, _resolve_date_range, split_telegram_message
 
 
 HEADERS = {'X-Telegram-Bot-Api-Secret-Token': 'test-telegram-secret'}
@@ -72,3 +74,30 @@ def test_claude_tool_use_records_usage_without_real_api(monkeypatch):
     assert result['text'] == 'Kuyruk özeti hazır.'
     assert engine.memory_usage[0]['tokens_in'] == 150
     assert engine.memory_usage[0]['tokens_out'] == 50
+
+
+def test_resolve_today_and_yesterday_ranges():
+    today = date(2026, 7, 11)
+    assert _resolve_date_range({'period': 'today'}, today) == (today, today)
+    yesterday = date(2026, 7, 10)
+    assert _resolve_date_range({'period': 'yesterday'}, today) == (yesterday, yesterday)
+
+
+def test_resolve_explicit_and_last_n_day_ranges():
+    today = date(2026, 7, 11)
+    assert _resolve_date_range({'date_from': '2026-07-01', 'date_to': '2026-07-05'}, today) == (date(2026, 7, 1), date(2026, 7, 5))
+    assert _resolve_date_range({'days': 7}, today) == (date(2026, 7, 5), today)
+
+
+def test_resolve_date_range_rejects_invalid_ranges():
+    today = date(2026, 7, 11)
+    for args in (
+        {'date_from': '2026-07-01'},
+        {'date_from': '2026-07-12', 'date_to': '2026-07-12'},
+        {'date_from': '2026-07-05', 'date_to': '2026-07-01'},
+    ):
+        try:
+            _resolve_date_range(args, today)
+            assert False, args
+        except ValueError:
+            pass

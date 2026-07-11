@@ -4,16 +4,25 @@ import json
 import os
 import time
 from collections import defaultdict, deque
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 import requests
 
 
+DATE_PROPERTIES = {
+    'days': {'type': 'integer', 'minimum': 1, 'maximum': 90,
+             'description': 'Tarih belirtilmediyse son N gün.'},
+    'period': {'type': 'string', 'enum': ['today', 'yesterday', 'last_n_days'],
+               'description': 'Bugün, dün veya son N gün seçimi.'},
+    'date_from': {'type': 'string', 'description': 'YYYY-MM-DD başlangıç tarihi.'},
+    'date_to': {'type': 'string', 'description': 'YYYY-MM-DD bitiş tarihi.'},
+}
+
 TOOLS = [
-    {'name': 'get_campaign_performance', 'description': 'Meta ve Google reklam kampanyalarının son performansını getirir.', 'input_schema': {'type': 'object', 'properties': {'days': {'type': 'integer', 'minimum': 1, 'maximum': 90}}}},
-    {'name': 'get_ga4_summary', 'description': 'GA4 trafik özetini getirir.', 'input_schema': {'type': 'object', 'properties': {'days': {'type': 'integer', 'minimum': 1, 'maximum': 90}}}},
-    {'name': 'get_trendyol_summary', 'description': 'Trendyol satış ve ürün performansı özetini getirir.', 'input_schema': {'type': 'object', 'properties': {'days': {'type': 'integer', 'minimum': 1, 'maximum': 90}}}},
+    {'name': 'get_campaign_performance', 'description': 'Meta ve Google reklam kampanyalarının istenen tarih aralığındaki performansını getirir.', 'input_schema': {'type': 'object', 'properties': dict(DATE_PROPERTIES)}},
+    {'name': 'get_ga4_summary', 'description': 'GA4 trafik özetini istenen tarih aralığında getirir.', 'input_schema': {'type': 'object', 'properties': dict(DATE_PROPERTIES)}},
+    {'name': 'get_trendyol_summary', 'description': 'Trendyol satış ve ürün performansını istenen tarih aralığında getirir.', 'input_schema': {'type': 'object', 'properties': dict(DATE_PROPERTIES)}},
     {'name': 'get_decision_queue', 'description': 'Salt okunur karar ve öneri kuyruğunu getirir.', 'input_schema': {'type': 'object', 'properties': {'status': {'type': 'string'}}}},
 ]
 
@@ -33,6 +42,35 @@ def _number_text(value):
         text = text.replace(',', '.')
     try: return float(text.replace('%', ''))
     except ValueError: return 0.0
+
+
+def _resolve_date_range(args, today=None):
+    args = args or {}
+    today = today or date.today()
+    date_from, date_to = args.get('date_from'), args.get('date_to')
+    if date_from or date_to:
+        if not date_from or not date_to:
+            raise ValueError('date_from ve date_to birlikte verilmelidir.')
+        try:
+            start = datetime.strptime(str(date_from), '%Y-%m-%d').date()
+            end = datetime.strptime(str(date_to), '%Y-%m-%d').date()
+        except ValueError:
+            raise ValueError('Tarih YYYY-MM-DD biçiminde olmalıdır.')
+    elif args.get('period') == 'today':
+        start = end = today
+    elif args.get('period') == 'yesterday':
+        start = end = today - timedelta(days=1)
+    else:
+        days = min(max(int(args.get('days', 7)), 1), 90)
+        end = today
+        start = end - timedelta(days=days - 1)
+    if start > end:
+        raise ValueError('Başlangıç tarihi bitiş tarihinden sonra olamaz.')
+    if end > today:
+        raise ValueError('Gelecek tarihli performans verisi sorgulanamaz.')
+    if (end - start).days + 1 > 90:
+        raise ValueError('En fazla 90 günlük tarih aralığı sorgulanabilir.')
+    return start, end
 
 
 def split_telegram_message(text, limit=4096):
@@ -105,7 +143,12 @@ class TelegramAIEngine:
 
     def run_tool(self, name, args, role):
         if not self._allowed(role): return {'error': 'Bu veri için data.read yetkisi gerekli.'}
-        days = min(max(int((args or {}).get('days', 7)), 1), 90)
+        try:
+            date_from, date_to = _resolve_date_range(args)
+        except (TypeError, ValueError) as exc:
+            return {'error': str(exc)}
+        days = (date_to - date_from).days + 1
+        requested_range = {'date_from': date_from.isoformat(), 'date_to': date_to.isoformat()}
         if name == 'get_campaign_performance':
             limit = 20 if role in ('admin','super_admin','editor') else 10
             meta_rows = self._query("""SELECT meta_campaign_id AS campaign_id,
@@ -113,31 +156,31 @@ class TelegramAIEngine:
                 SUM(clicks) AS clicks,SUM(purchases) AS orders,SUM(purchase_value) AS revenue,
                 CASE WHEN SUM(spend)>0 THEN SUM(purchase_value)/SUM(spend) ELSE 0 END AS roas,
                 MAX(last_synced_at) AS last_synced_at
-                FROM meta_ad_insights WHERE date_start>=CURRENT_DATE-%s
-                GROUP BY meta_campaign_id ORDER BY spend DESC LIMIT %s""", (days, limit))
+                FROM meta_ad_insights WHERE date_start BETWEEN %s AND %s
+                GROUP BY meta_campaign_id ORDER BY spend DESC LIMIT %s""", (date_from, date_to, limit))
             sync_row = self._query('SELECT MAX(last_synced_at) AS last_synced_at FROM meta_ad_insights')
             last_sync = sync_row[0].get('last_synced_at') if sync_row else None
-            today = date.today()
-            google_range = {'date_from': (today - timedelta(days=days - 1)).isoformat(), 'date_to': today.isoformat()}
+            google_range = dict(requested_range)
             google = self.gads_campaign_fetcher(google_range) if self.gads_campaign_fetcher else {'error':'Google Ads okuyucu bağlı değil'}
             return {
                 'meta_ads': {'source_table':'meta_ad_insights', 'last_synced_at':last_sync,
                              'freshness_note': ('Meta verileri en son %s zamanında çekildi.' % last_sync) if last_sync else 'Meta verisi henüz senkronize edilmedi.',
                              'campaigns':meta_rows},
                 'google_ads': {'source_function':'gads_campaign_rows', **google},
+                'requested_range': requested_range,
             }
         if name == 'get_ga4_summary':
             if self.ga4_token_getter and os.environ.get('GA4_PROPERTY_ID'):
                 token = self.ga4_token_getter()
                 if token:
                     response = requests.post('https://analyticsdata.googleapis.com/v1beta/properties/%s:runReport' % os.environ['GA4_PROPERTY_ID'],
-                        headers={'Authorization':'Bearer '+token}, json={'dateRanges':[{'startDate':'%sdaysAgo' % days,'endDate':'today'}],
+                        headers={'Authorization':'Bearer '+token}, json={'dateRanges':[{'startDate':date_from.isoformat(),'endDate':date_to.isoformat()}],
                         'dimensions':[{'name':'sessionSourceMedium'}],
                         'metrics':[{'name':'sessions'},{'name':'totalUsers'},{'name':'purchaseRevenue'},{'name':'conversions'}], 'limit':10}, timeout=30)
                     response.raise_for_status(); return response.json()
             return self._query("""SELECT captured_at,name,spend,revenue,orders,clicks,roas
-                FROM mx_normalized_metrics WHERE marketplace_key='ga4' AND captured_at>=NOW()-(%s||' days')::interval
-                ORDER BY captured_at DESC LIMIT %s""", (days, 20 if role in ('admin','super_admin') else 10))
+                FROM mx_normalized_metrics WHERE marketplace_key='ga4' AND captured_at::date BETWEEN %s AND %s
+                ORDER BY captured_at DESC LIMIT %s""", (date_from, date_to, 20 if role in ('admin','super_admin') else 10))
         if name == 'get_trendyol_summary':
             limit = 100 if role in ('admin','super_admin') else 50
             rows = self._query("""SELECT * FROM (
@@ -146,7 +189,7 @@ class TelegramAIEngine:
                 UNION ALL SELECT 'ty_magaza',ad,statu,harcama,goruntulenme,tiklanma,toplam_satis,toplam_ciro,roas,created_at FROM ty_magaza
                 UNION ALL SELECT 'ty_influencer',ad,statu,odeme,'0',ziyaret,satis,ciro,'0',created_at FROM ty_influencer
                 UNION ALL SELECT 'ty_meta',ad,statu,harcama,goruntulenme,tiklanma,satis,ciro,roas,created_at FROM ty_meta
-                ) t WHERE created_at>=NOW()-(%s||' days')::interval ORDER BY created_at DESC LIMIT %s""", (days, limit))
+                ) t WHERE created_at::date BETWEEN %s AND %s ORDER BY created_at DESC LIMIT %s""", (date_from, date_to, limit))
             totals = {'spend':0.0,'revenue':0.0,'orders':0.0,'clicks':0.0,'impressions':0.0}
             sources = {}
             for row in rows:
@@ -155,7 +198,7 @@ class TelegramAIEngine:
                 for key in ('spend','revenue','orders','clicks','impressions','roas'): row[key] = _number_text(row.get(key))
             totals['roas'] = totals['revenue'] / totals['spend'] if totals['spend'] else 0.0
             return {'source_tables':['ty_urun','ty_urun_detay','ty_magaza','ty_influencer','ty_meta'],
-                    'source_counts':sources,'totals':totals,'rows':rows}
+                    'source_counts':sources,'totals':totals,'rows':rows,'requested_range':requested_range}
         if name == 'get_decision_queue':
             status = str((args or {}).get('status') or 'proposed')
             return self._query("""SELECT id,decision_date,marketplace_key,entity_name,decision_type,reason,priority,risk_level,status,
@@ -180,7 +223,7 @@ class TelegramAIEngine:
         if not self._allowed(role): return {'text': 'Bu veriyi analiz etmek için yetkiniz yok.', 'usage': {}}
         if not self.api_key: return {'text': 'Analiz motoru henüz yapılandırılmadı (ANTHROPIC_KEY eksik).', 'usage': {}}
         system = ('Madmext Ads salt-okunur analiz asistanısın. Yalnızca verilen araç sonuçlarına dayan. '
-                  'Meta sonucunda last_synced_at veya freshness_note varsa kullanıcıya verinin en son ne zaman çekildiğini açıkça söyle. '
+                  'Meta sonucunda last_synced_at veya freshness_note varsa kullanıcıya verinin en son ne zaman çekildiğini açıkça söyle. Kullanıcı bugün, dün veya belirli tarih aralığı isterse araçlara period ya da date_from/date_to alanlarını eksiksiz aktar ve yanıtta kullanılan tarih aralığını belirt. '
                   'Bütçe, rol veya yetki değiştirme; böyle bir istek gelirse admin paneline yönlendir. Türkçe ve kısa yanıt ver.')
         payload = {'model': self.model, 'max_tokens': 1200, 'system': system, 'tools': TOOLS,
                    'messages': [{'role':'user','content':question}]}
