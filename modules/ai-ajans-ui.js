@@ -72,6 +72,12 @@
 
   function patchSelect(){if(window.__mxAgencyUiSelectPatched)return;window.__mxAgencyUiSelectPatched=true;var old=window.selectAgent||selectAgent;window.selectAgent=function(k){old(k);setTimeout(function(){renderGroupPanel();renderAgents()},80)}}
 
-  function init(){if(!ready())return setTimeout(init,350);injectLayout();patchRenderAgents();patchSelect();addWorkGroupPanel();renderGroupPanel();renderAgents()}
+  function init(){
+    // ai-ajans-gpt.html already contains the complete groups/permissions/tasks UI.
+    // Loading this legacy enhancer remains harmless and preserves compatibility.
+    if(document.querySelector('.mxai')){window.__mxAgencyUiLoaded=true;return}
+    if(!ready())return setTimeout(init,350);
+    injectLayout();patchRenderAgents();patchSelect();addWorkGroupPanel();renderGroupPanel();renderAgents()
+  }
   init();
 })();
