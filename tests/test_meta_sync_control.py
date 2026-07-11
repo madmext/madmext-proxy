@@ -24,3 +24,10 @@ def test_sync_control_is_not_duplicated():
     once = meta_sync_flow._inject_meta_module(html)
     twice = meta_sync_flow._inject_meta_module(once)
     assert twice.count('id="mxMetaSyncBtn"') == 1
+
+
+def test_shared_bootstrap_exposes_meta_account_before_dynamic_modules_load():
+    shared = Path('modules/shared.js').read_text(encoding='utf-8')
+    aid_declaration = shared.index("const AID='act_1346348685568168';")
+    aid_export = shared.index('window.AID = AID;')
+    assert aid_declaration < aid_export

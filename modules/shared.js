@@ -1,6 +1,8 @@
 // ── MADMEXT SHARED.JS ────────────────────────────────────────────────────
 window.MX = window.MX || {campStore:[],adsetStore:[],adStore:[],campRaw:[],adsetRaw:[],adRaw:[],budgetLog:[],taskLog:[],actionLog:[],systemLogs:[],pending:null,chatH:{},sortSt:{}};
 const AID='act_1346348685568168';
+// Dinamik modüller ve Meta senkron kontrolü aynı hesap kimliğini kullanır.
+window.AID = AID;
 const ATTR='["7d_click","1d_view"]';
 const CF='campaign_id,campaign_name,spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values';
 const AF='campaign_id,campaign_name,adset_id,adset_name,spend,impressions,clicks,ctr,cpc,cpp,reach,frequency,purchase_roas,actions,action_values';
