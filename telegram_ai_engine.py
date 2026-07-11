@@ -4,6 +4,7 @@ import json
 import os
 import time
 from collections import defaultdict, deque
+from datetime import date, timedelta
 from decimal import Decimal
 
 import requests
@@ -23,6 +24,17 @@ def _json(value):
     return str(value)
 
 
+def _number_text(value):
+    text = str(value or '').strip().replace('₺', '').replace('TL', '').replace(' ', '')
+    if not text: return 0.0
+    if ',' in text and '.' in text:
+        text = text.replace('.', '').replace(',', '.')
+    elif ',' in text:
+        text = text.replace(',', '.')
+    try: return float(text.replace('%', ''))
+    except ValueError: return 0.0
+
+
 def split_telegram_message(text, limit=4096):
     text = str(text or '')
     if len(text) <= limit: return [text]
@@ -38,11 +50,13 @@ def split_telegram_message(text, limit=4096):
 
 
 class TelegramAIEngine:
-    def __init__(self, app, get_db, http_post=None, clock=None, ga4_token_getter=None):
+    def __init__(self, app, get_db, http_post=None, clock=None, ga4_token_getter=None,
+                 gads_campaign_fetcher=None):
         self.app, self.get_db = app, get_db
         self.http_post = http_post or requests.post
         self.clock = clock or time.time
         self.ga4_token_getter = ga4_token_getter
+        self.gads_campaign_fetcher = gads_campaign_fetcher
         self.memory_rate = defaultdict(deque)
         self.memory_usage = []
         self.api_key = (os.environ.get('ANTHROPIC_KEY') or os.environ.get('ANTHROPIC_API_KEY') or '').strip()
@@ -93,12 +107,25 @@ class TelegramAIEngine:
         if not self._allowed(role): return {'error': 'Bu veri için data.read yetkisi gerekli.'}
         days = min(max(int((args or {}).get('days', 7)), 1), 90)
         if name == 'get_campaign_performance':
-            return self._query("""SELECT marketplace_key AS channel,external_id AS campaign_id,MAX(name) AS name,
-                SUM(spend) AS spend,SUM(clicks) AS clicks,SUM(orders) AS orders,SUM(revenue) AS revenue,
-                CASE WHEN SUM(spend)>0 THEN SUM(revenue)/SUM(spend) ELSE 0 END AS roas
-                FROM mx_normalized_metrics WHERE marketplace_key IN('meta','google','google_ads')
-                AND captured_at>=NOW()-(%s||' days')::interval GROUP BY marketplace_key,external_id
-                ORDER BY spend DESC LIMIT %s""", (days, 20 if role in ('admin','super_admin','editor') else 10))
+            limit = 20 if role in ('admin','super_admin','editor') else 10
+            meta_rows = self._query("""SELECT meta_campaign_id AS campaign_id,
+                COALESCE(MAX(raw_data->>'campaign_name'),'') AS name,SUM(spend) AS spend,
+                SUM(clicks) AS clicks,SUM(purchases) AS orders,SUM(purchase_value) AS revenue,
+                CASE WHEN SUM(spend)>0 THEN SUM(purchase_value)/SUM(spend) ELSE 0 END AS roas,
+                MAX(last_synced_at) AS last_synced_at
+                FROM meta_ad_insights WHERE date_start>=CURRENT_DATE-%s
+                GROUP BY meta_campaign_id ORDER BY spend DESC LIMIT %s""", (days, limit))
+            sync_row = self._query('SELECT MAX(last_synced_at) AS last_synced_at FROM meta_ad_insights')
+            last_sync = sync_row[0].get('last_synced_at') if sync_row else None
+            today = date.today()
+            google_range = {'date_from': (today - timedelta(days=days - 1)).isoformat(), 'date_to': today.isoformat()}
+            google = self.gads_campaign_fetcher(google_range) if self.gads_campaign_fetcher else {'error':'Google Ads okuyucu bağlı değil'}
+            return {
+                'meta_ads': {'source_table':'meta_ad_insights', 'last_synced_at':last_sync,
+                             'freshness_note': ('Meta verileri en son %s zamanında çekildi.' % last_sync) if last_sync else 'Meta verisi henüz senkronize edilmedi.',
+                             'campaigns':meta_rows},
+                'google_ads': {'source_function':'gads_campaign_rows', **google},
+            }
         if name == 'get_ga4_summary':
             if self.ga4_token_getter and os.environ.get('GA4_PROPERTY_ID'):
                 token = self.ga4_token_getter()
@@ -112,9 +139,23 @@ class TelegramAIEngine:
                 FROM mx_normalized_metrics WHERE marketplace_key='ga4' AND captured_at>=NOW()-(%s||' days')::interval
                 ORDER BY captured_at DESC LIMIT %s""", (days, 20 if role in ('admin','super_admin') else 10))
         if name == 'get_trendyol_summary':
-            return self._query("""SELECT captured_at,name,spend,revenue,orders,clicks,roas
-                FROM mx_normalized_metrics WHERE marketplace_key='trendyol' AND captured_at>=NOW()-(%s||' days')::interval
-                ORDER BY captured_at DESC LIMIT %s""", (days, 20 if role in ('admin','super_admin') else 10))
+            limit = 100 if role in ('admin','super_admin') else 50
+            rows = self._query("""SELECT * FROM (
+                SELECT 'ty_urun' source,ad name,statu status,harcama spend,goruntulenme impressions,tiklanma clicks,toplam_satis orders,toplam_ciro revenue,roas,created_at FROM ty_urun
+                UNION ALL SELECT 'ty_urun_detay',kampanya||' / '||urun_adi,'',harcama,goruntulenme,tiklanma,toplam_satis,toplam_ciro,roas,created_at FROM ty_urun_detay
+                UNION ALL SELECT 'ty_magaza',ad,statu,harcama,goruntulenme,tiklanma,toplam_satis,toplam_ciro,roas,created_at FROM ty_magaza
+                UNION ALL SELECT 'ty_influencer',ad,statu,odeme,'0',ziyaret,satis,ciro,'0',created_at FROM ty_influencer
+                UNION ALL SELECT 'ty_meta',ad,statu,harcama,goruntulenme,tiklanma,satis,ciro,roas,created_at FROM ty_meta
+                ) t WHERE created_at>=NOW()-(%s||' days')::interval ORDER BY created_at DESC LIMIT %s""", (days, limit))
+            totals = {'spend':0.0,'revenue':0.0,'orders':0.0,'clicks':0.0,'impressions':0.0}
+            sources = {}
+            for row in rows:
+                sources[row['source']] = sources.get(row['source'], 0) + 1
+                for key in totals: totals[key] += _number_text(row.get(key))
+                for key in ('spend','revenue','orders','clicks','impressions','roas'): row[key] = _number_text(row.get(key))
+            totals['roas'] = totals['revenue'] / totals['spend'] if totals['spend'] else 0.0
+            return {'source_tables':['ty_urun','ty_urun_detay','ty_magaza','ty_influencer','ty_meta'],
+                    'source_counts':sources,'totals':totals,'rows':rows}
         if name == 'get_decision_queue':
             status = str((args or {}).get('status') or 'proposed')
             return self._query("""SELECT id,decision_date,marketplace_key,entity_name,decision_type,reason,priority,risk_level,status,
@@ -139,6 +180,7 @@ class TelegramAIEngine:
         if not self._allowed(role): return {'text': 'Bu veriyi analiz etmek için yetkiniz yok.', 'usage': {}}
         if not self.api_key: return {'text': 'Analiz motoru henüz yapılandırılmadı (ANTHROPIC_KEY eksik).', 'usage': {}}
         system = ('Madmext Ads salt-okunur analiz asistanısın. Yalnızca verilen araç sonuçlarına dayan. '
+                  'Meta sonucunda last_synced_at veya freshness_note varsa kullanıcıya verinin en son ne zaman çekildiğini açıkça söyle. '
                   'Bütçe, rol veya yetki değiştirme; böyle bir istek gelirse admin paneline yönlendir. Türkçe ve kısa yanıt ver.')
         payload = {'model': self.model, 'max_tokens': 1200, 'system': system, 'tools': TOOLS,
                    'messages': [{'role':'user','content':question}]}
