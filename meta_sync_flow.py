@@ -375,18 +375,21 @@ def _inject_meta_module(html):
 .mx-sync-last{font-size:11px;color:var(--m);font-family:'DM Mono',monospace}
 .mx-sync-btn{display:inline-flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--b2);color:var(--t);padding:5px 10px;font-family:'DM Mono',monospace;font-size:11px;border-radius:5px;cursor:pointer;transition:all .15s}
 .mx-sync-btn:hover{border-color:var(--a);color:#fff;background:#202d44}.mx-sync-btn:disabled{opacity:.55;cursor:not-allowed}.mx-sync-spin{display:inline-block;transition:transform .2s}.mx-sync-btn.loading .mx-sync-spin{animation:mxSpin 1s linear infinite}@keyframes mxSpin{to{transform:rotate(360deg)}}
+.mx-sync-error{color:var(--r)!important;max-width:420px;white-space:normal}
 """
     if '</style>' in html:
         html = html.replace('</style>', css + '\n</style>', 1)
 
     button = """
-  <div class="ma-sep"></div>
   <div class="mx-sync-wrap">
     <span class="mx-sync-last" id="mxMetaSyncLast">Güncelleme: henüz yapılmadı</span>
     <button class="mx-sync-btn" id="mxMetaSyncBtn" onclick="mxMetaSyncLatestChanges()"><span class="mx-sync-spin">↻</span><span>Meta’daki Son Değişiklikleri Al</span></button>
   </div>
 """
-    if '<span id="mStatus"' in html:
+    row_one_marker = '</button>\n</div>\n\n<!-- Satır 2: Filtreler -->'
+    if row_one_marker in html:
+        html = html.replace(row_one_marker, '</button>\n' + button + '</div>\n\n<!-- Satır 2: Filtreler -->', 1)
+    elif '<span id="mStatus"' in html:
         html = html.replace('<span id="mStatus"', button + '  <span id="mStatus"', 1)
     elif '</div>\n\n<!-- Hidden inputs' in html:
         html = html.replace('</div>\n\n<!-- Hidden inputs', button + '</div>\n\n<!-- Hidden inputs', 1)
@@ -398,27 +401,29 @@ def _inject_meta_module(html):
     var preset=(document.getElementById('mPreset')||{}).value||'last_7d';
     var from=(document.getElementById('mFrom')||{}).value||'';
     var to=(document.getElementById('mTo')||{}).value||'';
-    var payload={adAccountId:(typeof AID!=='undefined'?AID:''),datePreset:preset};
+    var payload={adAccountId:String(window.AID||'').trim(),datePreset:preset};
     if(preset==='custom'&&from&&to){payload.dateRange={since:from,until:to};}
     return payload;
   }
-  function setMsg(txt){var el=document.getElementById('mxMetaSyncLast');if(el)el.textContent=txt;}
+  function setMsg(txt,isError){var el=document.getElementById('mxMetaSyncLast');if(el){el.textContent=txt;el.classList.toggle('mx-sync-error',!!isError);}}
   window.mxMetaSyncLatestChanges=async function(){
     var btn=document.getElementById('mxMetaSyncBtn');
     if(btn&&btn.disabled)return;
     try{
       if(btn){btn.disabled=true;btn.classList.add('loading');}
-      setMsg('Güncelleme: Meta verileri alınıyor...');
+      setMsg('Güncelleme: Meta verileri alınıyor...',false);
+      var payload=metaDatePayload();
+      if(!payload.adAccountId)throw new Error('Meta reklam hesabı bulunamadı');
       var base=(typeof px==='function'?px():'');
-      var r=await fetch(base+'/api/meta/sync-latest',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(metaDatePayload())});
+      var r=await fetch(base+'/api/meta/sync-latest',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(payload)});
       var d=await r.json();
       if(!r.ok||!d.success)throw new Error((d&&d.message)||'Meta güncelleme başarısız');
       var s=d.summary||{};
-      setMsg('Güncelleme: az önce — '+(s.campaignsUpdated||0)+' kampanya, '+(s.adsetsUpdated||0)+' set, '+(s.adsUpdated||0)+' reklam');
+      setMsg('Güncelleme: az önce — '+(s.campaignsUpdated||0)+' kampanya, '+(s.adsetsUpdated||0)+' set, '+(s.adsUpdated||0)+' reklam, '+(s.insightsUpdated||0)+' performans kaydı',false);
       if(typeof toast==='function')toast('Meta’daki son değişiklikler Madmext Ads’e uygulandı');
       if(typeof mLoad==='function')setTimeout(mLoad,250);
     }catch(e){
-      setMsg('Güncelleme başarısız');
+      setMsg('Güncelleme başarısız: '+e.message,true);
       if(typeof toast==='function')toast('Meta güncelleme hatası: '+e.message);
     }finally{
       if(btn){setTimeout(function(){btn.disabled=false;btn.classList.remove('loading');},1500);}
