@@ -38,16 +38,20 @@ def mx_meta_module_response():
 
 @app.after_request
 def mx_notification_menu_injection(response):
-    """Inject the OneSignal menu loader without coupling it to index.html releases."""
+    """Inject the OneSignal menu loader into the panel shell."""
     try:
         content_type = response.headers.get('Content-Type', '')
-        if 'text/html' not in content_type or response.direct_passthrough:
+        if 'text/html' not in content_type:
             return response
+        response.direct_passthrough = False
         html = response.get_data(as_text=True)
         if 'id="mainContent"' not in html or '/modules/bildirim-menu.js' in html:
             return response
-        tag = '<script src="/modules/bildirim-menu.js?v=20260711-1"></script>'
-        html = html.replace('</body>', tag + '</body>')
+        tag = '<script src="/modules/bildirim-menu.js?v=20260711-2"></script>'
+        if '</body>' in html:
+            html = html.replace('</body>', tag + '</body>')
+        else:
+            html += tag
         response.set_data(html)
         response.headers['Content-Length'] = str(len(response.get_data()))
     except Exception as e:
