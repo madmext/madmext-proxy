@@ -45,3 +45,27 @@ def test_meta_insights_attribution_windows_are_sent_as_graph_json(monkeypatch):
 
     insights_params = next(params for path, params in calls if path.endswith('/insights'))
     assert insights_params['action_attribution_windows'] == '["7d_click", "1d_view"]'
+
+
+def test_meta_insights_falls_back_to_campaign_level_on_volume_error(monkeypatch):
+    insight_levels = []
+
+    def fake_all_pages(path, params=None, max_pages=20):
+        if path.endswith('/insights'):
+            insight_levels.append(params['level'])
+            if params['level'] == 'ad':
+                raise RuntimeError("Please reduce the amount of data you're asking for, then retry your request")
+            return [{'campaign_id': 'cmp_1', 'campaign_name': 'Campaign 1',
+                     'date_start': '2026-07-05', 'date_stop': '2026-07-11'}]
+        return []
+
+    monkeypatch.setattr(meta_sync_flow, '_all_pages', fake_all_pages)
+    _, _, _, insights = meta_sync_flow._meta_fetch_all('act_123')
+    assert insight_levels == ['ad', 'campaign']
+    assert insights[0]['ad_id'] == 'campaign:cmp_1'
+    assert insights[0]['sync_granularity'] == 'campaign'
+
+
+def test_meta_insights_uses_smaller_ad_level_pages():
+    source = Path('meta_sync_flow.py').read_text(encoding='utf-8')
+    assert "'level': 'ad',\n        'limit': 100" in source
