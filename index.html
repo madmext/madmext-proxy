@@ -152,6 +152,7 @@ tr:last-child td{border-bottom:none}tr:hover td{background:var(--s2)}
 .mdet{background:var(--bg);border-radius:6px;padding:13px;margin-bottom:14px;font-size:13px;line-height:1.9;font-family:'DM Mono',monospace}
 .mdet strong{color:var(--y)}.mbtns{display:flex;gap:10px;justify-content:flex-end}
 .module-loading{display:flex;align-items:center;justify-content:center;height:200px;color:var(--m);font-size:13px}
+.mx-module-frame{display:block;width:100%;height:calc(100vh - 92px);min-height:620px;border:0;background:#0f1011;border-radius:12px}
 @media(max-width:600px){
   .conn-label-text{ display:none !important; }
   #connEdit input{ width:120px !important; }
@@ -291,7 +292,7 @@ const PAGES = {
   trendyol:      {title:'Trendyol Reklamları', sub:'Ürün reklam performansı', module:'trendyol'},
   dosyalar:      {title:'Dosya Yönetimi', sub:'Platform reklam dosyalarını yükle ve yönet', module:'dosyalar'},
   kampanyalar:   {title:'Kampanya Merkezi', sub:'Kampanya planlama, kanal ve görev takibi', module:'kampanyalar'},
-  'ai-ajans':    {title:'AI Ajans Merkezi', sub:'Uzman AI ajanları, araştırma ve ortak raporlar', module:'ai-ajans'},
+  'ai-ajans':    {title:'AI Ajans Merkezi', sub:'Çalışma grupları, yetkili ajanlar, toplantılar ve görevler', module:'ai-ajans-gpt', iframe:true},
   'pazaryeri-merkezi': {title:'Pazaryeri Merkezi', sub:'API, dosya ve XML veri kaynakları', module:'pazaryeri-merkezi'},
   'yetki-yonetimi': {title:'Yetki Yönetimi', sub:'Dinamik roller ve modül yetkileri', module:'yetki-yonetimi'},
 };
@@ -384,6 +385,18 @@ async function loadModule(page) {
   }
   var meta = PAGES[page];
   if(!meta){ el.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Sayfa bulunamadı</div>'; return; }
+  if(meta.iframe){
+    var section=window._moduleSection||'agents';
+    var frameResponse=await fetch('/modules/'+meta.module+'.html?v=2026.4');
+    if(!frameResponse.ok)throw new Error('HTTP '+frameResponse.status);
+    var frame=document.createElement('iframe');
+    frame.className='mx-module-frame';
+    frame.title=meta.title;
+    frame.dataset.section=section;
+    frame.srcdoc=await frameResponse.text();
+    el.replaceChildren(frame);
+    return;
+  }
   el.innerHTML = '<div class="module-loading">⏳ Yükleniyor...</div>';
   try {
     var r = await fetch('/modules/' + meta.module + '.html?v=2026.4');
