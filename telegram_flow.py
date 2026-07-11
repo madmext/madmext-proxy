@@ -54,7 +54,7 @@ def _ensure_schema(conn):
     cur.close()
 
 
-def install(app, get_db, get_users, hash_pw, verify_pw, save_users):
+def install(app, get_db, get_users, hash_pw, verify_pw, save_users, ai_engine=None):
     webhook_secret = os.environ.get('TELEGRAM_WEBHOOK_SECRET', '').strip()
     bot_token = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
 
@@ -82,12 +82,14 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users):
         return True
 
     def respond(chat_id, text, status=200, **extra):
+        chunks = ai_engine.split_message(text) if ai_engine and hasattr(ai_engine, 'split_message') else [text]
         try:
-            send_message(chat_id, text)
+            for chunk in chunks:
+                send_message(chat_id, chunk)
         except Exception as exc:
             audit('telegram.delivery_failed', resource_type='telegram_chat',
                   resource_id=str(chat_id), result='failure', error_message=str(exc)[:500])
-        return jsonify({'ok': True, 'reply': text, **extra}), status
+        return jsonify({'ok': True, 'reply': text, 'chunks': chunks, **extra}), status
 
     def find_user(email):
         email = (email or '').strip().lower()
@@ -315,13 +317,25 @@ def install(app, get_db, get_users, hash_pw, verify_pw, save_users):
         if not link:
             return respond(chat_id, 'Önce admin tarafından oluşturulan davet linkiyle hesabını bağlamalısın.', linked=False)
 
-        # Faz 1 only: data queries and all mutations remain unavailable.
+        if not ai_engine:
+            return respond(chat_id, 'Analiz motoru kullanılamıyor.', linked=True, role=link.get('role_snapshot'))
+        if not ai_engine.check_rate_limit(chat_id):
+            audit('telegram.rate_limited', actor_email=actor_email, actor_role=link.get('role_snapshot'),
+                  resource_type='telegram_chat', resource_id=str(chat_id), result='blocked', status_code=429)
+            return respond(chat_id, 'Dakikada en fazla 6 mesaj gönderebilirsiniz. Lütfen biraz bekleyin.',
+                           status=429, linked=True, rate_limited=True)
+        # Para ve yetki mutasyonları Faz 4'e kadar Claude'a dahi gönderilmez.
         if any(word in text.lower() for word in ('admin yap', 'rol değiştir', 'bütçe', 'budget')):
             audit('telegram.forbidden_request', actor_email=actor_email,
                   actor_role=link.get('role_snapshot'), reason='Phase 4 required', result='blocked')
             return respond(chat_id, 'Bu işlem Telegram üzerinden yapılamaz; yalnızca admin panelinden yönetilebilir.',
                            linked=True, role=link.get('role_snapshot'))
-        return respond(chat_id, 'Hesabın bağlı. Analiz ve soru-cevap motoru Faz 2 onayından sonra açılacak.',
+        result = ai_engine.answer(text, chat_id, actor_email, link.get('role_snapshot') or 'viewer')
+        audit('telegram.analysis_completed', actor_email=actor_email, actor_role=link.get('role_snapshot'),
+              resource_type='telegram_chat', resource_id=str(chat_id), result='success',
+              metadata={'tokens_in': (result.get('usage') or {}).get('input_tokens', 0),
+                        'tokens_out': (result.get('usage') or {}).get('output_tokens', 0)})
+        return respond(chat_id, result.get('text') or 'Analiz sonucu üretilemedi.',
                        linked=True, role=link.get('role_snapshot'))
 
     app.extensions['mx_telegram'] = {'get_link': get_link, 'get_invite': get_invite}
