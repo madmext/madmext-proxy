@@ -11,6 +11,7 @@ from flask import Response, jsonify, request, send_from_directory, session
 from server import app
 from app import gads_campaign_rows, get_db, get_ga4_token, get_users, hash_pw, read_logs, require_admin, save_users, verify_pw, write_logs
 
+import clarity_flow
 import meta_sync_flow
 import onesignal_flow
 import telegram_flow
@@ -26,6 +27,7 @@ security_core.install(app, get_db=get_db)
 operations_core.install(app)
 marketplace_core.install(app, get_db=get_db)
 decision_core.install(app, get_db=get_db)
+clarity_flow.install(app, get_db=get_db, require_admin=require_admin)
 
 
 meta_sync_flow.install(
@@ -104,4 +106,5 @@ def runtime_health():
         'ok': True,
         'runtime': 'runtime.py',
         'onesignal_routes': True,
+        'clarity_routes': True,
     }
