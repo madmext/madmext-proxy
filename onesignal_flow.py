@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 import psycopg2.extras
 import requests
-from flask import jsonify, request, Response
+from flask import Response, jsonify, request, session
 
 
 def _now_iso():
@@ -19,10 +19,13 @@ def _ts(value):
     try:
         return datetime.fromtimestamp(float(value), tz=timezone.utc)
     except (TypeError, ValueError, OSError):
-        return None
+        try:
+            return datetime.fromisoformat(str(value).replace('Z', '+00:00'))
+        except (TypeError, ValueError):
+            return None
 
 
-def _pick_locale(value):
+def _locale(value):
     if isinstance(value, str):
         return value
     if not isinstance(value, dict):
@@ -31,6 +34,10 @@ def _pick_locale(value):
 
 
 def install(app, get_db, require_admin=None):
+    if getattr(app, '_onesignal_flow_installed', False):
+        return
+    app._onesignal_flow_installed = True
+
     app_id = os.environ.get('ONESIGNAL_APP_ID', '').strip()
     api_key = os.environ.get('ONESIGNAL_REST_API_KEY', '').strip()
     base_url = os.environ.get('ONESIGNAL_API_BASE', 'https://api.onesignal.com').rstrip('/')
@@ -38,8 +45,20 @@ def install(app, get_db, require_admin=None):
     def configured():
         return bool(app_id and api_key)
 
-    def auth_headers():
+    def headers():
         return {'Authorization': 'Key ' + api_key, 'Accept': 'application/json'}
+
+    def api_get(path, params=None):
+        if not configured():
+            raise RuntimeError('ONESIGNAL_APP_ID ve ONESIGNAL_REST_API_KEY tanımlı değil.')
+        response = requests.get(base_url + path, params=params or {}, headers=headers(), timeout=40)
+        if not response.ok:
+            try:
+                detail = response.json()
+            except Exception:
+                detail = response.text[:800]
+            raise RuntimeError('OneSignal API HTTP %s: %s' % (response.status_code, detail))
+        return response.json()
 
     def ensure_schema(conn):
         cur = conn.cursor()
@@ -78,10 +97,14 @@ def install(app, get_db, require_admin=None):
                 status TEXT NOT NULL DEFAULT 'running',
                 fetched_count INTEGER DEFAULT 0,
                 upserted_count INTEGER DEFAULT 0,
+                total_count INTEGER,
+                pages INTEGER DEFAULT 0,
                 error_text TEXT,
                 triggered_by TEXT
             )
         ''')
+        cur.execute('ALTER TABLE onesignal_sync_runs ADD COLUMN IF NOT EXISTS total_count INTEGER')
+        cur.execute('ALTER TABLE onesignal_sync_runs ADD COLUMN IF NOT EXISTS pages INTEGER DEFAULT 0')
         conn.commit()
         cur.close()
 
@@ -92,55 +115,36 @@ def install(app, get_db, require_admin=None):
         ensure_schema(conn)
         return conn, None
 
-    def onesignal_get(path, params=None):
-        if not configured():
-            raise RuntimeError('ONESIGNAL_APP_ID ve ONESIGNAL_REST_API_KEY tanımlı değil.')
-        response = requests.get(base_url + path, params=params or {}, headers=auth_headers(), timeout=30)
-        if not response.ok:
-            try:
-                detail = response.json()
-            except Exception:
-                detail = response.text[:500]
-            raise RuntimeError('OneSignal API HTTP %s: %s' % (response.status_code, detail))
-        return response.json()
-
-    def upsert_messages(conn, notifications):
+    def upsert(conn, notifications):
         sql = '''
             INSERT INTO onesignal_messages (
-                message_id, app_id, name, heading, content, url,
-                included_segments, excluded_segments, queued_at, send_after, completed_at,
-                successful, received, converted, failed, errored, remaining, canceled,
-                platform_delivery_stats, outcomes, raw_payload, synced_at
-            ) VALUES (
-                %s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s,%s,%s,
-                %s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb,NOW()
-            )
+                message_id,app_id,name,heading,content,url,included_segments,excluded_segments,
+                queued_at,send_after,completed_at,successful,received,converted,failed,errored,
+                remaining,canceled,platform_delivery_stats,outcomes,raw_payload,synced_at
+            ) VALUES (%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,%s::jsonb,NOW())
             ON CONFLICT (message_id) DO UPDATE SET
-                name=EXCLUDED.name, heading=EXCLUDED.heading, content=EXCLUDED.content,
-                url=EXCLUDED.url, included_segments=EXCLUDED.included_segments,
-                excluded_segments=EXCLUDED.excluded_segments, queued_at=EXCLUDED.queued_at,
-                send_after=EXCLUDED.send_after, completed_at=EXCLUDED.completed_at,
-                successful=EXCLUDED.successful, received=EXCLUDED.received,
-                converted=EXCLUDED.converted, failed=EXCLUDED.failed,
-                errored=EXCLUDED.errored, remaining=EXCLUDED.remaining,
-                canceled=EXCLUDED.canceled,
-                platform_delivery_stats=EXCLUDED.platform_delivery_stats,
-                outcomes=EXCLUDED.outcomes, raw_payload=EXCLUDED.raw_payload, synced_at=NOW()
+                name=EXCLUDED.name,heading=EXCLUDED.heading,content=EXCLUDED.content,url=EXCLUDED.url,
+                included_segments=EXCLUDED.included_segments,excluded_segments=EXCLUDED.excluded_segments,
+                queued_at=EXCLUDED.queued_at,send_after=EXCLUDED.send_after,completed_at=EXCLUDED.completed_at,
+                successful=EXCLUDED.successful,received=EXCLUDED.received,converted=EXCLUDED.converted,
+                failed=EXCLUDED.failed,errored=EXCLUDED.errored,remaining=EXCLUDED.remaining,
+                canceled=EXCLUDED.canceled,platform_delivery_stats=EXCLUDED.platform_delivery_stats,
+                outcomes=EXCLUDED.outcomes,raw_payload=EXCLUDED.raw_payload,synced_at=NOW()
         '''
         rows = []
         for n in notifications:
+            message_id = n.get('id')
+            if not message_id:
+                continue
             rows.append((
-                n.get('id'), n.get('app_id') or app_id, n.get('name') or '',
-                _pick_locale(n.get('headings')), _pick_locale(n.get('contents')),
-                n.get('url') or n.get('web_url') or n.get('app_url') or '',
-                json.dumps(n.get('included_segments') or []),
-                json.dumps(n.get('excluded_segments') or []),
-                _ts(n.get('queued_at')), _ts(n.get('send_after')), _ts(n.get('completed_at')),
-                int(n.get('successful') or 0), int(n.get('received') or 0),
-                int(n.get('converted') or 0), int(n.get('failed') or 0),
-                int(n.get('errored') or 0), int(n.get('remaining') or 0),
-                bool(n.get('canceled')), json.dumps(n.get('platform_delivery_stats') or {}),
-                json.dumps(n.get('outcomes') or {}), json.dumps(n)
+                message_id,n.get('app_id') or app_id,n.get('name') or '',_locale(n.get('headings')),
+                _locale(n.get('contents')),n.get('url') or n.get('web_url') or n.get('app_url') or '',
+                json.dumps(n.get('included_segments') or []),json.dumps(n.get('excluded_segments') or []),
+                _ts(n.get('queued_at')),_ts(n.get('send_after')),_ts(n.get('completed_at')),
+                int(n.get('successful') or 0),int(n.get('received') or 0),int(n.get('converted') or 0),
+                int(n.get('failed') or 0),int(n.get('errored') or 0),int(n.get('remaining') or 0),
+                bool(n.get('canceled')),json.dumps(n.get('platform_delivery_stats') or {}),
+                json.dumps(n.get('outcomes') or {}),json.dumps(n)
             ))
         if rows:
             cur = conn.cursor()
@@ -149,28 +153,81 @@ def install(app, get_db, require_admin=None):
             cur.close()
         return len(rows)
 
-    @app.route('/onesignal/status', methods=['GET'])
+    def fetch_all_messages(max_messages=5000):
+        all_rows = []
+        offset = 0
+        total_count = None
+        pages = 0
+        while len(all_rows) < max_messages:
+            payload = api_get('/notifications', {'app_id': app_id, 'limit': 50, 'offset': offset})
+            page = payload.get('notifications') or []
+            total_count = int(payload.get('total_count') or len(page))
+            pages += 1
+            all_rows.extend(page)
+            if not page or len(page) < 50 or len(all_rows) >= total_count:
+                break
+            offset += len(page)
+        return all_rows[:max_messages], total_count, pages
+
+    def last_run(conn):
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute('''SELECT id,started_at,finished_at,status,fetched_count,upserted_count,total_count,pages,error_text,triggered_by
+                       FROM onesignal_sync_runs ORDER BY id DESC LIMIT 1''')
+        row = cur.fetchone()
+        cur.close()
+        if not row:
+            return None
+        result = dict(row)
+        for key in ('started_at', 'finished_at'):
+            if result.get(key):
+                result[key] = result[key].isoformat()
+        return result
+
+    @app.get('/onesignal/status')
     def onesignal_status():
         conn = get_db()
         db_ok = bool(conn)
         count = 0
         last_sync = None
+        run = None
         if conn:
             try:
                 ensure_schema(conn)
                 cur = conn.cursor()
-                cur.execute('SELECT COUNT(*), MAX(synced_at) FROM onesignal_messages')
+                cur.execute('SELECT COUNT(*),MAX(synced_at) FROM onesignal_messages')
                 count, last_sync = cur.fetchone()
                 cur.close()
+                run = last_run(conn)
             finally:
                 conn.close()
         return jsonify({
-            'configured': configured(), 'app_id_set': bool(app_id), 'api_key_set': bool(api_key),
-            'database_ok': db_ok, 'message_count': count or 0,
-            'last_sync_at': last_sync.isoformat() if last_sync else None
+            'configured': configured(),'app_id_set': bool(app_id),'api_key_set': bool(api_key),
+            'database_ok': db_ok,'message_count': count or 0,
+            'last_sync_at': last_sync.isoformat() if last_sync else None,'last_run': run
         })
 
-    @app.route('/onesignal/sync', methods=['POST'])
+    @app.get('/onesignal/diagnostics')
+    def onesignal_diagnostics():
+        result = {'checked_at': _now_iso(),'configured': configured(),'database_ok': False,'api_ok': False}
+        conn = get_db()
+        if conn:
+            try:
+                ensure_schema(conn)
+                result['database_ok'] = True
+                result['last_run'] = last_run(conn)
+            finally:
+                conn.close()
+        if configured():
+            try:
+                payload = api_get('/notifications', {'app_id': app_id, 'limit': 1, 'offset': 0})
+                result['api_ok'] = True
+                result['remote_total_count'] = int(payload.get('total_count') or 0)
+                result['sample_count'] = len(payload.get('notifications') or [])
+            except Exception as exc:
+                result['api_error'] = str(exc)
+        return jsonify(result), (200 if result['api_ok'] and result['database_ok'] else 503)
+
+    @app.post('/onesignal/sync')
     def onesignal_sync():
         if require_admin:
             denied = require_admin()
@@ -183,109 +240,117 @@ def install(app, get_db, require_admin=None):
         try:
             cur = conn.cursor()
             cur.execute('INSERT INTO onesignal_sync_runs(triggered_by) VALUES(%s) RETURNING id',
-                        (request.environ.get('REMOTE_USER') or 'panel',))
+                        (session.get('user_email') or 'panel',))
             run_id = cur.fetchone()[0]
             conn.commit(); cur.close()
-            payload = onesignal_get('/notifications', {'app_id': app_id, 'limit': 50, 'offset': 0})
-            notifications = payload.get('notifications') or []
-            count = upsert_messages(conn, notifications)
+            requested_max = int((request.get_json(silent=True) or {}).get('max_messages') or 5000)
+            max_messages = max(50, min(requested_max, 20000))
+            notifications, total_count, pages = fetch_all_messages(max_messages)
+            count = upsert(conn, notifications)
             cur = conn.cursor()
-            cur.execute('UPDATE onesignal_sync_runs SET finished_at=NOW(),status=%s,fetched_count=%s,upserted_count=%s WHERE id=%s',
-                        ('success', len(notifications), count, run_id))
+            cur.execute('''UPDATE onesignal_sync_runs SET finished_at=NOW(),status='success',fetched_count=%s,
+                           upserted_count=%s,total_count=%s,pages=%s WHERE id=%s''',
+                        (len(notifications), count, total_count, pages, run_id))
             conn.commit(); cur.close()
-            return jsonify({'ok': True, 'fetched': len(notifications), 'upserted': count,
-                            'total_count': payload.get('total_count'), 'synced_at': _now_iso()})
+            return jsonify({'ok': True,'fetched': len(notifications),'upserted': count,
+                            'total_count': total_count,'pages': pages,'synced_at': _now_iso()})
         except Exception as exc:
             if run_id:
                 try:
                     cur = conn.cursor()
-                    cur.execute('UPDATE onesignal_sync_runs SET finished_at=NOW(),status=%s,error_text=%s WHERE id=%s',
-                                ('error', str(exc)[:2000], run_id))
+                    cur.execute("UPDATE onesignal_sync_runs SET finished_at=NOW(),status='error',error_text=%s WHERE id=%s",
+                                (str(exc)[:3000], run_id))
                     conn.commit(); cur.close()
                 except Exception:
                     conn.rollback()
-            return jsonify({'error': str(exc)}), 502
+            return jsonify({'error': str(exc),'run_id': run_id}), 502
         finally:
             conn.close()
 
-    @app.route('/onesignal/dashboard', methods=['GET'])
+    @app.get('/onesignal/dashboard')
     def onesignal_dashboard():
         conn, error = db_or_error()
         if error:
             return error
-        days = max(1, min(int(request.args.get('days', 30)), 3650))
+        days = max(1, min(int(request.args.get('days', 36500)), 36500))
         try:
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            cur.execute('''
-                SELECT COUNT(*) AS messages,
-                       COALESCE(SUM(successful),0) AS sent,
-                       COALESCE(SUM(received),0) AS received,
-                       COALESCE(SUM(converted),0) AS clicks,
-                       COALESCE(SUM(failed),0) AS failed,
-                       COALESCE(SUM(errored),0) AS errored
-                FROM onesignal_messages
-                WHERE COALESCE(queued_at, synced_at) >= NOW() - (%s || ' days')::interval
-            ''', (days,))
+            cur.execute('''SELECT COUNT(*) messages,COALESCE(SUM(successful),0) sent,COALESCE(SUM(received),0) received,
+                                  COALESCE(SUM(converted),0) clicks,COALESCE(SUM(failed),0) failed,COALESCE(SUM(errored),0) errored
+                           FROM onesignal_messages WHERE COALESCE(queued_at,synced_at)>=NOW()-(%s||' days')::interval''',(days,))
             summary = dict(cur.fetchone())
-            sent = int(summary.get('sent') or 0)
-            received = int(summary.get('received') or 0)
-            clicks = int(summary.get('clicks') or 0)
-            summary['ctr'] = round((clicks / sent * 100), 2) if sent else 0
-            summary['delivery_rate'] = round((received / sent * 100), 2) if sent else 0
-            cur.execute('''
-                SELECT TO_CHAR(DATE_TRUNC('day', COALESCE(queued_at,synced_at)), 'YYYY-MM-DD') AS day,
-                       COUNT(*) AS messages, COALESCE(SUM(successful),0) AS sent,
-                       COALESCE(SUM(received),0) AS received, COALESCE(SUM(converted),0) AS clicks
-                FROM onesignal_messages
-                WHERE COALESCE(queued_at, synced_at) >= NOW() - (%s || ' days')::interval
-                GROUP BY 1 ORDER BY 1
-            ''', (days,))
+            sent, received, clicks = int(summary['sent'] or 0), int(summary['received'] or 0), int(summary['clicks'] or 0)
+            summary['ctr'] = round(clicks / sent * 100, 2) if sent else 0
+            summary['delivery_rate'] = round(received / sent * 100, 2) if sent else 0
+            cur.execute('''SELECT TO_CHAR(DATE_TRUNC('day',COALESCE(queued_at,synced_at)),'YYYY-MM-DD') day,
+                                  COUNT(*) messages,COALESCE(SUM(successful),0) sent,
+                                  COALESCE(SUM(received),0) received,COALESCE(SUM(converted),0) clicks
+                           FROM onesignal_messages WHERE COALESCE(queued_at,synced_at)>=NOW()-(%s||' days')::interval
+                           GROUP BY 1 ORDER BY 1''',(days,))
             trend = [dict(r) for r in cur.fetchall()]
-            cur.execute('SELECT MAX(synced_at) AS last_sync_at FROM onesignal_messages')
+            cur.execute('SELECT MAX(synced_at) last_sync_at FROM onesignal_messages')
             last_sync = cur.fetchone()['last_sync_at']
             cur.close()
-            return jsonify({'summary': summary, 'trend': trend, 'days': days,
+            return jsonify({'summary': summary,'trend': trend,'days': days,
                             'last_sync_at': last_sync.isoformat() if last_sync else None})
         finally:
             conn.close()
 
-    @app.route('/onesignal/messages', methods=['GET'])
+    @app.get('/onesignal/messages')
     def onesignal_messages():
         conn, error = db_or_error()
         if error:
             return error
-        days = max(1, min(int(request.args.get('days', 30)), 3650))
-        limit = max(1, min(int(request.args.get('limit', 100)), 1000))
+        days = max(1, min(int(request.args.get('days', 36500)), 36500))
+        limit = max(1, min(int(request.args.get('limit', 500)), 5000))
         search = (request.args.get('q') or '').strip()
         try:
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-            where = "COALESCE(queued_at,synced_at) >= NOW() - (%s || ' days')::interval"
+            where = "COALESCE(queued_at,synced_at)>=NOW()-(%s||' days')::interval"
             params = [days]
             if search:
-                where += " AND (COALESCE(name,'') ILIKE %s OR COALESCE(heading,'') ILIKE %s OR COALESCE(content,'') ILIKE %s)"
                 token = '%' + search + '%'
-                params.extend([token, token, token])
+                where += " AND (COALESCE(name,'') ILIKE %s OR COALESCE(heading,'') ILIKE %s OR COALESCE(content,'') ILIKE %s)"
+                params += [token, token, token]
             params.append(limit)
-            cur.execute('''
-                SELECT message_id,name,heading,content,url,included_segments,queued_at,completed_at,
-                       successful,received,converted,failed,errored,remaining,canceled
-                FROM onesignal_messages WHERE ''' + where + '''
-                ORDER BY COALESCE(queued_at,synced_at) DESC LIMIT %s
-            ''', params)
+            cur.execute('''SELECT message_id,name,heading,content,url,included_segments,excluded_segments,queued_at,
+                                  completed_at,successful,received,converted,failed,errored,remaining,canceled,
+                                  platform_delivery_stats,outcomes
+                           FROM onesignal_messages WHERE '''+where+''' ORDER BY COALESCE(queued_at,synced_at) DESC LIMIT %s''',params)
             rows = []
             for row in cur.fetchall():
                 item = dict(row)
-                for key in ('queued_at', 'completed_at'):
+                for key in ('queued_at','completed_at'):
                     if item.get(key): item[key] = item[key].isoformat()
                 sent = int(item.get('successful') or 0)
                 item['ctr'] = round(int(item.get('converted') or 0) / sent * 100, 2) if sent else 0
                 rows.append(item)
             cur.close()
-            return jsonify({'messages': rows, 'count': len(rows)})
+            return jsonify({'messages': rows,'count': len(rows)})
         finally:
             conn.close()
 
-    @app.route('/onesignal/export.csv', methods=['GET'])
+    @app.get('/onesignal/sync-runs')
+    def onesignal_sync_runs():
+        conn, error = db_or_error()
+        if error:
+            return error
+        try:
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+            cur.execute('''SELECT id,started_at,finished_at,status,fetched_count,upserted_count,total_count,pages,error_text,triggered_by
+                           FROM onesignal_sync_runs ORDER BY id DESC LIMIT 100''')
+            rows = []
+            for row in cur.fetchall():
+                item = dict(row)
+                for key in ('started_at','finished_at'):
+                    if item.get(key): item[key] = item[key].isoformat()
+                rows.append(item)
+            cur.close()
+            return jsonify({'runs': rows})
+        finally:
+            conn.close()
+
+    @app.get('/onesignal/export.csv')
     def onesignal_export():
         conn, error = db_or_error()
         if error:
@@ -294,14 +359,10 @@ def install(app, get_db, require_admin=None):
             cur = conn.cursor()
             cur.execute('''SELECT message_id,name,heading,content,queued_at,successful,received,converted,failed,errored
                            FROM onesignal_messages ORDER BY COALESCE(queued_at,synced_at) DESC''')
-            output = io.StringIO()
-            writer = csv.writer(output)
+            output = io.StringIO(); writer = csv.writer(output)
             writer.writerow(['message_id','name','heading','content','queued_at','successful','received','converted','failed','errored'])
-            for row in cur.fetchall():
-                writer.writerow(row)
-            cur.close()
-            csv_text = '\ufeff' + output.getvalue()
-            return Response(csv_text, mimetype='text/csv; charset=utf-8',
-                            headers={'Content-Disposition': 'attachment; filename=onesignal-bildirimler.csv'})
+            writer.writerows(cur.fetchall()); cur.close()
+            return Response('\ufeff'+output.getvalue(),mimetype='text/csv; charset=utf-8',
+                            headers={'Content-Disposition':'attachment; filename=onesignal-bildirimler.csv'})
         finally:
             conn.close()
