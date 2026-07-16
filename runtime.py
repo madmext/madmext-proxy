@@ -76,6 +76,26 @@ def mx_meta_module_response():
     return Response(html, mimetype='text/html; charset=utf-8')
 
 
+@app.after_request
+def mx_inject_clarity_navigation(response):
+    """Add the Clarity navigation extension to the authenticated SPA shell."""
+    if request.path.startswith('/modules/') or request.path.startswith('/api/'):
+        return response
+    content_type = response.headers.get('Content-Type', '')
+    if 'text/html' not in content_type:
+        return response
+    try:
+        html = response.get_data(as_text=True)
+        marker = '<script src="/modules/clarity-menu.js?v=2026.1"></script>'
+        if 'Madmext Ads' in html and marker not in html and '</body>' in html:
+            html = html.replace('</body>', marker + '\n</body>')
+            response.set_data(html)
+            response.headers['Content-Length'] = str(len(response.get_data()))
+    except Exception as exc:
+        print('mx clarity navigation:', exc)
+    return response
+
+
 _RESERVED_PREFIXES = (
     'api', 'auth', 'admin', 'ga4', 'gads', 'logs', 'psi', 'claude',
     'proxy-xml', 'trendyol', 'onesignal', 'marketplace', 'telegram', 'runtime',
@@ -107,4 +127,5 @@ def runtime_health():
         'runtime': 'runtime.py',
         'onesignal_routes': True,
         'clarity_routes': True,
+        'clarity_navigation': True,
     }
