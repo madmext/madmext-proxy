@@ -78,7 +78,7 @@ def mx_meta_module_response():
 
 @app.after_request
 def mx_inject_clarity_navigation(response):
-    """Add the Clarity navigation extension to the authenticated SPA shell."""
+    """Attach Clarity directly to the authenticated SPA shell."""
     if request.path.startswith('/modules/') or request.path.startswith('/api/'):
         return response
     content_type = response.headers.get('Content-Type', '')
@@ -86,11 +86,14 @@ def mx_inject_clarity_navigation(response):
         return response
     try:
         html = response.get_data(as_text=True)
-        marker = '<script src="/modules/clarity-menu.js?v=2026.1"></script>'
-        if 'Madmext Ads' in html and marker not in html and '</body>' in html:
+        marker = '<script src="/modules/clarity-menu.js?v=2026.2"></script>'
+        if 'Madmext Ads' in html and 'clarity-menu.js' not in html and '</body>' in html:
             html = html.replace('</body>', marker + '\n</body>')
             response.set_data(html)
             response.headers['Content-Length'] = str(len(response.get_data()))
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
     except Exception as exc:
         print('mx clarity navigation:', exc)
     return response
@@ -128,4 +131,5 @@ def runtime_health():
         'onesignal_routes': True,
         'clarity_routes': True,
         'clarity_navigation': True,
+        'clarity_navigation_version': '2026.2',
     }
