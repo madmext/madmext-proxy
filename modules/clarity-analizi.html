@@ -1,0 +1,36 @@
+<style>
+.cl-wrap{display:flex;flex-direction:column;gap:14px}.cl-toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.cl-status{margin-left:auto;font:11px 'DM Mono',monospace;color:var(--m)}.cl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.cl-card{background:var(--s);border:1px solid var(--b);border-radius:8px;padding:14px}.cl-label{font-size:10px;color:var(--m);text-transform:uppercase;letter-spacing:.8px}.cl-value{font:22px 'DM Mono',monospace;margin-top:5px}.cl-note{font-size:11px;color:var(--m);line-height:1.6;margin-top:5px}.cl-tabs{display:flex;gap:6px;overflow:auto;padding-bottom:2px}.cl-tab{border:1px solid var(--b);background:var(--s);color:var(--m);padding:7px 10px;border-radius:6px;white-space:nowrap;cursor:pointer;font-size:11px}.cl-tab.active,.cl-tab:hover{color:var(--t);border-color:var(--a)}.cl-table{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;max-height:520px}.cl-empty{padding:30px;text-align:center;color:var(--m)}.cl-pill{display:inline-block;padding:2px 6px;border-radius:4px;background:var(--s2);border:1px solid var(--b);font:10px 'DM Mono',monospace}.cl-error{color:var(--r)}.cl-ok{color:var(--g)}
+</style>
+<div class="cl-wrap">
+  <div class="cl-toolbar">
+    <select id="clDays"><option value="3">Son 3 gün</option><option value="2">Son 2 gün</option><option value="1">Son 1 gün</option></select>
+    <button class="btn sm" id="clRefresh">↻ Veriyi Yenile</button>
+    <button class="btn sm sec" id="clSync">Clarity'den Tam Senkronizasyon</button>
+    <span class="cl-status" id="clStatusText">Durum kontrol ediliyor…</span>
+  </div>
+  <div class="cl-tabs" id="clTabs"></div>
+  <div class="cl-grid" id="clCards"></div>
+  <div class="cl-table" id="clTable"><div class="cl-empty">Clarity verileri yükleniyor…</div></div>
+</div>
+<script>
+(function(){
+var sections={overview:'Genel Bakış',friction:'Etkileşim Sorunları',pages:'Sayfa & URL Analizi',traffic:'Trafik Kaynakları',technology:'Cihaz & Teknoloji',geography:'Ülke & Bölge',campaigns:'Kampanya Analizi',raw:'Ham Veri Gezgini',sync:'Senkronizasyon',health:'Veri Sağlığı'};
+var sectionDimensions={pages:'URL',traffic:'Source',technology:'Device',geography:'Country/Region',campaigns:'Campaign'};
+var state={status:null,rows:[]};
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function section(){return window._moduleSection||'overview'}
+function metricNumber(obj,names){for(var i=0;i<names.length;i++){var v=obj&&obj[names[i]];if(v!==undefined&&v!==null&&!isNaN(Number(v)))return Number(v)}return 0}
+function renderTabs(){var el=document.getElementById('clTabs');el.innerHTML=Object.keys(sections).map(function(k){return '<button class="cl-tab '+(section()===k?'active':'')+'" data-s="'+k+'">'+sections[k]+'</button>'}).join('');el.querySelectorAll('button').forEach(function(b){b.onclick=function(){nav('clarity-analizi',null,b.dataset.s)}})}
+function renderStatus(){var s=state.status||{};document.getElementById('clStatusText').innerHTML=s.ok?'<span class="cl-ok">● Bağlı</span> · Kota '+(s.used_today||0)+'/'+(s.daily_limit||10)+' · Son: '+esc(s.last_run&&s.last_run.completed_at||'Henüz yok'):'<span class="cl-error">● Bağlantı sorunu</span>'}
+function renderCards(){var rows=state.rows,total=rows.length,metricSet={},dimSet={};rows.forEach(function(r){metricSet[r.metric_name]=1;if(r.dimension1)dimSet[r.dimension1]=1});var s=state.status||{};var cards=[['Alınan Satır',total],['Metrik Türü',Object.keys(metricSet).length],['Boyut Türü',Object.keys(dimSet).length],['Kalan Günlük Kota',s.remaining_today==null?'—':s.remaining_today]];document.getElementById('clCards').innerHTML=cards.map(function(c){return '<div class="cl-card"><div class="cl-label">'+c[0]+'</div><div class="cl-value">'+c[1]+'</div></div>'}).join('')}
+function filteredRows(){var d=sectionDimensions[section()];if(!d)return state.rows;return state.rows.filter(function(r){return r.dimension1===d})}
+function renderTable(){var sec=section(),rows=filteredRows();if(sec==='health'||sec==='sync'){var s=state.status||{};document.getElementById('clTable').innerHTML='<div style="padding:18px"><div class="stl">'+sections[sec]+'</div><div class="channel-row"><span>Entegrasyon</span><span>'+esc(s.configured?'Yapılandırıldı':'Eksik')+'</span></div><div class="channel-row"><span>Senkronizasyon</span><span>'+esc(s.enabled?'Aktif':'Kapalı')+'</span></div><div class="channel-row"><span>Günlük kota</span><span>'+esc((s.used_today||0)+' / '+(s.daily_limit||10))+'</span></div><div class="channel-row"><span>Yayımlanmış boyutlar</span><span>'+esc((s.published_dimensions||[]).join(', '))+'</span></div><div class="channel-row"><span>Son çalışma</span><span>'+esc(s.last_run&&s.last_run.status||'Henüz yok')+'</span></div></div>';return}
+if(!rows.length){document.getElementById('clTable').innerHTML='<div class="cl-empty">Bu bölüm için henüz veri yok. Tam senkronizasyonu çalıştırın.</div>';return}
+var head='<table><thead><tr><th>Tarih</th><th>Metrik</th><th>Boyut</th><th>Boyut Değeri</th><th>Metrikler</th></tr></thead><tbody>';
+var body=rows.slice(0,500).map(function(r){var vals=r.dimension_values||{};return '<tr><td>'+esc(r.request_date)+'</td><td>'+esc(r.metric_name)+'</td><td><span class="cl-pill">'+esc(r.dimension1||'Genel')+'</span></td><td>'+esc(JSON.stringify(vals))+'</td><td>'+esc(JSON.stringify(r.metrics||{}))+'</td></tr>'}).join('');
+document.getElementById('clTable').innerHTML=head+body+'</tbody></table>'}
+async function load(){renderTabs();document.getElementById('clTable').innerHTML='<div class="cl-empty">Yükleniyor…</div>';try{var sr=await fetch('/api/clarity/status',{credentials:'include'});state.status=await sr.json();var dim=sectionDimensions[section()]||'';var url='/api/clarity/metrics?limit=2000'+(dim?'&dimension='+encodeURIComponent(dim):'');var mr=await fetch(url,{credentials:'include'});var md=await mr.json();state.rows=md.rows||[];renderStatus();renderCards();renderTable()}catch(e){document.getElementById('clTable').innerHTML='<div class="cl-empty cl-error">'+esc(e.message)+'</div>'}}
+async function sync(){var b=document.getElementById('clSync'),old=b.textContent;b.disabled=true;b.textContent='Senkronize ediliyor…';try{var r=await fetch('/api/clarity/sync',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({num_days:Number(document.getElementById('clDays').value)})});var d=await r.json();if(!r.ok)throw new Error(d.error||'Senkronizasyon başarısız');toast('Clarity tam senkronizasyon tamamlandı');await load()}catch(e){toast('Clarity: '+e.message)}finally{b.disabled=false;b.textContent=old}}
+document.getElementById('clRefresh').onclick=load;document.getElementById('clSync').onclick=sync;window.addEventListener('mx:section-change',function(e){if(e.detail&&e.detail.page==='clarity-analizi')load()});load();
+})();
+</script>
