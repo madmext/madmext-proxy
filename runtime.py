@@ -6,6 +6,7 @@ starts serving requests. This prevents frontend/backend route drift.
 
 import os
 
+import psycopg2.extras
 from flask import Response, jsonify, request, send_from_directory, session
 
 from server import app
@@ -57,6 +58,74 @@ telegram_flow.install(
     save_users=save_users,
     ai_engine=telegram_engine,
 )
+
+
+@app.before_request
+def mx_onesignal_dashboard_override():
+    """Serve the OneSignal dashboard with PostgreSQL-safe aliases."""
+    if request.path.rstrip('/') != '/onesignal/dashboard' or request.method != 'GET':
+        return None
+    conn = get_db()
+    if not conn:
+        return jsonify({'error': 'Veritabanı bağlantısı yok. DATABASE_URL kontrol edin.'}), 503
+    try:
+        days = max(1, min(int(request.args.get('days', 36500)), 36500))
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        cur.execute(
+            """
+            SELECT
+                COUNT(*) AS messages,
+                COALESCE(SUM(successful), 0) AS sent,
+                COALESCE(SUM(received), 0) AS received,
+                COALESCE(SUM(converted), 0) AS clicks,
+                COALESCE(SUM(failed), 0) AS failed,
+                COALESCE(SUM(errored), 0) AS errored
+            FROM onesignal_messages
+            WHERE COALESCE(queued_at, synced_at) >= NOW() - (%s * INTERVAL '1 day')
+            """,
+            (days,),
+        )
+        summary = dict(cur.fetchone())
+        sent = int(summary.get('sent') or 0)
+        received = int(summary.get('received') or 0)
+        clicks = int(summary.get('clicks') or 0)
+        summary['ctr'] = round(clicks / sent * 100, 2) if sent else 0
+        summary['delivery_rate'] = round(received / sent * 100, 2) if sent else 0
+
+        cur.execute(
+            """
+            SELECT
+                TO_CHAR(DATE_TRUNC('day', COALESCE(queued_at, synced_at)), 'YYYY-MM-DD') AS trend_date,
+                COUNT(*) AS messages,
+                COALESCE(SUM(successful), 0) AS sent,
+                COALESCE(SUM(received), 0) AS received,
+                COALESCE(SUM(converted), 0) AS clicks
+            FROM onesignal_messages
+            WHERE COALESCE(queued_at, synced_at) >= NOW() - (%s * INTERVAL '1 day')
+            GROUP BY DATE_TRUNC('day', COALESCE(queued_at, synced_at))
+            ORDER BY DATE_TRUNC('day', COALESCE(queued_at, synced_at))
+            """,
+            (days,),
+        )
+        trend = []
+        for row in cur.fetchall():
+            item = dict(row)
+            item['day'] = item.pop('trend_date', None)
+            trend.append(item)
+
+        cur.execute('SELECT MAX(synced_at) AS last_sync_at FROM onesignal_messages')
+        last_sync = cur.fetchone().get('last_sync_at')
+        cur.close()
+        return jsonify({
+            'summary': summary,
+            'trend': trend,
+            'days': days,
+            'last_sync_at': last_sync.isoformat() if last_sync else None,
+        })
+    except Exception as exc:
+        return jsonify({'error': str(exc)}), 500
+    finally:
+        conn.close()
 
 
 @app.before_request
@@ -129,6 +198,7 @@ def runtime_health():
         'ok': True,
         'runtime': 'runtime.py',
         'onesignal_routes': True,
+        'onesignal_dashboard_override': True,
         'clarity_routes': True,
         'clarity_navigation': True,
         'clarity_navigation_version': '2026.2',
