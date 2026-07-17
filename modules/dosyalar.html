@@ -31,6 +31,30 @@
     </div>
   </div>
 
+  <div class="df-platform" id="plt-clarity">
+    <div class="df-platform-header" onclick="dfToggle('clarity')">
+      <span class="df-platform-icon">🧭</span><div style="flex:1"><div class="df-platform-name">Microsoft Clarity</div><div style="font-size:10px;color:var(--m);margin-top:1px">Panelden indirilen CSV / PNG / PDF dosyaları</div></div><span class="df-platform-meta" id="dfMeta-clarity">—</span><span class="df-chevron" id="dfChev-clarity">▼</span>
+    </div>
+    <div class="df-platform-body" id="dfBody-clarity">
+      <div class="df-note">Clarity panelindeki "Download CSV / PNG" seçeneğiyle indirdiğin dosyayı buraya yükle. CSV içeriği otomatik ayrıştırılıp Clarity Analizi sayfasındaki verilerle aynı yere işlenir (API senkronizasyonuyla aynı tabloyu paylaşır). PNG ve PDF dosyaları şimdilik olduğu gibi saklanır, otomatik ayrıştırılmaz. Her yükleme <b>dosya adı, yükleme zamanı, tarih aralığı ve satır sayısıyla</b> kayıt altına alınır.</div>
+      <div class="df-kpi"><div class="df-kcard"><div class="df-klabel">Toplam Yükleme</div><div class="df-kval" id="k-clarity-upload">0</div></div><div class="df-kcard"><div class="df-klabel">Son Eklenen Dosya</div><div class="df-kval" id="k-clarity-last" style="font-size:12px;word-break:break-all">—</div></div><div class="df-kcard"><div class="df-klabel">Son Güncelleme</div><div class="df-kval" id="k-clarity-updated" style="font-size:12px">—</div></div></div>
+      <div class="df-subtypes">
+        <div class="df-subtype" id="sub-cl-csv"><div class="df-subtype-name">🧾 CSV (Tablo Verisi)</div><div class="df-subtype-desc">Otomatik ayrıştırılıp veri tabanına işlenir</div><span class="df-subtype-count" id="cnt-cl-csv">0</span></div>
+        <div class="df-subtype" id="sub-cl-png"><div class="df-subtype-name">🖼 PNG / Görsel</div><div class="df-subtype-desc">Heatmap görselleri, olduğu gibi saklanır</div><span class="df-subtype-count" id="cnt-cl-png">0</span></div>
+        <div class="df-subtype" id="sub-cl-pdf"><div class="df-subtype-name">📄 PDF</div><div class="df-subtype-desc">Rapor/doküman, olduğu gibi saklanır</div><span class="df-subtype-count" id="cnt-cl-pdf">0</span></div>
+      </div>
+      <label style="display:block"><div class="df-upload-area" id="dfZone-clarity" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="event.preventDefault();this.classList.remove('drag');dfClarityHandleDrop(event)"><div style="font-size:32px;margin-bottom:8px">📤</div><div style="font-size:13px;font-weight:700;margin-bottom:4px;color:var(--t)">Clarity dosyalarını buraya sürükle veya tıkla</div><div style="font-size:11px;color:var(--m)">.csv, .png, .jpg, .pdf desteklenir</div><div class="df-progress" id="dfProg-clarity"><div class="df-progress-bar" id="dfProgBar-clarity"></div></div></div><input type="file" id="dfFile-clarity" accept=".csv,.png,.jpg,.jpeg,.pdf" multiple style="display:none" onchange="dfClarityUpload(this)"></label>
+      <div class="df-filter-row" style="margin-top:0">
+        <input type="date" id="dfClarityFrom" title="Başlangıç tarihi (opsiyonel)">
+        <span style="color:var(--m);font-size:11px">→</span>
+        <input type="date" id="dfClarityTo" title="Bitiş tarihi (opsiyonel)">
+        <span style="font-size:10px;color:var(--m)">Yüklenen dosyadaki tarihleri bu aralıkla karşılaştırıp aralık dışı satırları uyarır (opsiyonel)</span>
+      </div>
+      <div id="dfLog-clarity" class="df-log"></div>
+      <div class="df-history"><div class="df-history-head"><div class="df-history-title">Yüklenen Dosyalar Geçmişi</div></div><div class="df-table-wrap"><table class="df-table"><thead><tr><th>Yüklenme</th><th>Dosya</th><th>Tür</th><th>Tarih Aralığı</th><th>Satır</th><th>Uyarı</th><th>Yükleyen</th><th></th></tr></thead><tbody id="dfClarityRows"><tr><td colspan="8"><div class="df-empty">Henüz yüklenen dosya yok</div></td></tr></tbody></table></div></div>
+    </div>
+  </div>
+
   <div class="df-platform" id="plt-meta"><div class="df-platform-header" onclick="dfToggle('meta')"><span class="df-platform-icon">📘</span><div style="flex:1"><div class="df-platform-name">Meta Ads</div><div style="font-size:10px;color:var(--m);margin-top:1px">Facebook & Instagram kampanyaları</div></div><span class="df-platform-meta">API bağlantısı aktif</span><span class="df-chevron" id="dfChev-meta">▼</span></div><div class="df-platform-body" id="dfBody-meta"><div class="df-note">✅ Meta Ads verisi API üzerinden otomatik çekiliyor.</div></div></div>
   <div class="df-platform" id="plt-google"><div class="df-platform-header" onclick="dfToggle('google')"><span class="df-platform-icon">🟢</span><div style="flex:1"><div class="df-platform-name">Google Ads</div><div style="font-size:10px;color:var(--m);margin-top:1px">Search, Display, Shopping, PMax</div></div><span class="df-platform-meta">API yetkisi bekleniyor</span><span class="df-chevron" id="dfChev-google">▼</span></div><div class="df-platform-body" id="dfBody-google"><div class="df-note">⏳ Google Ads teknik bağlantı hazır, hesap yetkisi çözülünce veriler API’den çekilecek.</div></div></div>
   <div class="df-platform" id="plt-ga4"><div class="df-platform-header" onclick="dfToggle('ga4')"><span class="df-platform-icon">📊</span><div style="flex:1"><div class="df-platform-name">Google Analytics 4</div><div style="font-size:10px;color:var(--m);margin-top:1px">Site trafiği ve dönüşüm verileri</div></div><span class="df-platform-meta">API bağlantısı aktif</span><span class="df-chevron" id="dfChev-ga4">▼</span></div><div class="df-platform-body" id="dfBody-ga4"><div class="df-note">✅ GA4 verisi API üzerinden otomatik çekiliyor.</div></div></div>
@@ -48,6 +72,58 @@ window.dfLoadStats=async function(){try{var r=await fetch('/trendyol/data',{cred
 async function loadUploads(){try{var r=await fetch('/trendyol/uploads',{credentials:'include'});if(!r.ok){_uploads=[];renderUploads();return}var d=await r.json();_uploads=d.uploads||[];setText('k-upload',_uploads.length);setText('k-last',_uploads[0]?_uploads[0].dosya_adi:'—');renderUploads()}catch(e){_uploads=[];renderUploads()}}
 window.renderUploads=function(){var q=(document.getElementById('dfSearch')?.value||'').toLowerCase(), f=document.getElementById('dfDupFilter')?.value||'all';var rows=_uploads.filter(function(u){var s=((u.dosya_adi||'')+' '+(u.dosya_tipi||'')+' '+(u.yukleyen_kullanici||'')).toLowerCase();if(q&&s.indexOf(q)===-1)return false;var dup=(parseInt(u.duplicate_seen_count||0)>0);if(f==='unique'&&dup)return false;if(f==='dups'&&!dup)return false;return true});var el=document.getElementById('dfUploadRows');if(!el)return;if(!rows.length){el.innerHTML='<tr><td colspan="8"><div class="df-empty">Kayıt yok</div></td></tr>';return}el.innerHTML=rows.map(function(u){var dup=parseInt(u.duplicate_seen_count||0);return '<tr><td>'+fmtDate(u.yukleme_tarihi)+'</td><td title="'+esc(u.dosya_adi)+'">'+esc(short(u.dosya_adi,34))+'</td><td>'+esc(u.dosya_tipi||'—')+'</td><td>'+esc(u.satir_sayisi||0)+'</td><td>'+esc(u.tekil_eklenen||0)+'</td><td title="'+esc(u.checksum||'')+'">'+esc(u.checksum_short||'—')+'</td><td>'+esc(u.yukleyen_kullanici||'—')+'</td><td>'+(dup?'<span class="df-pill warn">'+dup+' tekrar</span>':'<span class="df-pill ok">Tekil</span>')+'</td></tr>'}).join('')}
 function setText(id,v){var el=document.getElementById(id);if(el)el.textContent=v}function setCount(id,n){var el=document.getElementById(id);if(el){el.textContent=n;el.style.background=n>0?'rgba(66,183,42,.8)':'var(--b2)'}}function highlightSub(id,n){var el=document.getElementById(id);if(el)el.className='df-subtype'+(n>0?' selected':'')}function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}function short(s,n){s=String(s||'');return s.length>n?s.slice(0,n-1)+'…':s}function fmtDate(s){try{return new Date(s).toLocaleString('tr-TR')}catch(e){return s||'—'}}
-dfToggle('trendyol');dfLoadStats();
+window.dfClarityUpload=async function(input){var files=Array.from(input.files);if(!files.length)return;await _clarityUploadFiles(files);input.value=''};
+window.dfClarityHandleDrop=async function(event){var files=Array.from(event.dataTransfer.files).filter(function(f){return /\.(csv|png|jpe?g|pdf)$/i.test(f.name)});if(!files.length){dfLog('clarity','⚠️ Sadece .csv, .png, .jpg veya .pdf dosyaları kabul edilir');return}await _clarityUploadFiles(files)};
+async function _clarityUploadFiles(files){
+  var logEl=document.getElementById('dfLog-clarity'),progBar=document.getElementById('dfProgBar-clarity'),results=[];
+  var from=document.getElementById('dfClarityFrom').value,to=document.getElementById('dfClarityTo').value;
+  for(var i=0;i<files.length;i++){
+    if(progBar)progBar.style.width=Math.round((i/files.length)*100)+'%';
+    if(logEl)logEl.textContent='⏳ '+(i+1)+'/'+files.length+' yükleniyor: '+files[i].name;
+    var fd=new FormData();fd.append('file',files[i]);if(from)fd.append('date_from',from);if(to)fd.append('date_to',to);
+    try{
+      var r=await fetch('/api/clarity/upload',{method:'POST',credentials:'include',body:fd});
+      var res=await r.json();
+      if(res.ok){
+        var msg='✓ '+files[i].name+' · '+res.upload_type.toUpperCase();
+        if(res.row_count)msg+=' · '+res.row_count+' satır işlendi';
+        if(res.notes)msg+=' · ⚠ '+res.notes;
+        results.push(msg);
+      }else results.push('⚠️ '+files[i].name+': '+(res.error||'Hata'));
+    }catch(e){results.push('⚠️ '+files[i].name+': '+e.message)}
+  }
+  if(progBar)progBar.style.width='100%';
+  setTimeout(function(){if(progBar)progBar.style.width='0'},1500);
+  if(logEl)logEl.innerHTML=results.map(function(r){return '<span style="display:block;padding:2px 0">'+esc(r)+'</span>'}).join('');
+  await dfClarityLoadStats();
+}
+window.dfClarityLoadStats=async function(){
+  try{
+    var r=await fetch('/api/clarity/uploads',{credentials:'include',cache:'no-store'});
+    var d=await r.json();
+    var uploads=(d.ok&&d.uploads)||[];
+    setText('k-clarity-upload',uploads.length);
+    setText('dfMeta-clarity',uploads.length>0?uploads.length+' dosya':'Henüz yüklenmedi');
+    if(uploads.length){
+      setText('k-clarity-last',uploads[0].filename);
+      setText('k-clarity-updated',fmtDate(uploads[0].uploaded_at));
+    }else{
+      setText('k-clarity-last','—');setText('k-clarity-updated','—');
+    }
+    var counts={csv:0,png:0,pdf:0};
+    uploads.forEach(function(u){var t=(u.upload_type||'').toLowerCase();if(t==='jpg'||t==='jpeg')t='png';if(counts[t]!=null)counts[t]++});
+    setCount('cnt-cl-csv',counts.csv);setCount('cnt-cl-png',counts.png);setCount('cnt-cl-pdf',counts.pdf);
+    highlightSub('sub-cl-csv',counts.csv);highlightSub('sub-cl-png',counts.png);highlightSub('sub-cl-pdf',counts.pdf);
+    var el=document.getElementById('dfClarityRows');
+    if(!el)return;
+    if(!uploads.length){el.innerHTML='<tr><td colspan="8"><div class="df-empty">Henüz yüklenen dosya yok</div></td></tr>';return}
+    el.innerHTML=uploads.map(function(u){
+      var range=(u.date_from||u.date_to)?(esc(u.date_from||'—')+' → '+esc(u.date_to||'—')):'—';
+      var warn=u.out_of_range_rows?('<span class="df-pill warn">'+u.out_of_range_rows+' aralık dışı</span>'):(u.notes?'<span class="df-pill warn" title="'+esc(u.notes)+'">not</span>':'<span class="df-pill ok">Temiz</span>');
+      return '<tr><td>'+fmtDate(u.uploaded_at)+'</td><td title="'+esc(u.filename)+'">'+esc(short(u.filename,30))+'</td><td>'+esc((u.upload_type||'').toUpperCase())+'</td><td>'+range+'</td><td>'+esc(u.row_count||0)+'</td><td>'+warn+'</td><td>'+esc(u.uploaded_by||'—')+'</td><td><a href="/api/clarity/uploads/'+u.id+'/file" target="_blank" rel="noopener">Görüntüle</a></td></tr>';
+    }).join('');
+  }catch(e){console.error('dfClarityLoadStats:',e)}
+};
+dfToggle('trendyol');dfLoadStats();dfClarityLoadStats();
 })();
 </script>
