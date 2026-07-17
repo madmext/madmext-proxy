@@ -11,17 +11,30 @@
   <div class="cl-tabs" id="clTabs"></div>
   <div class="cl-grid" id="clCards"></div>
   <div class="cl-panel" id="clInsightPanel"></div>
-  <div class="cl-panel cl-filter">
+  <div class="cl-panel cl-filter" id="clFilterPanel">
     <input id="clSearch" placeholder="Metrik, URL, kaynak, kampanya veya cihaz ara…">
     <select id="clMetricFilter"><option value="">Tüm metrikler</option></select>
     <button class="btn sm sec" id="clClear">Temizle</button>
     <span class="cl-status" id="clResultCount"></span>
   </div>
   <div class="cl-table" id="clTable"><div class="cl-empty">Clarity verileri yükleniyor…</div></div>
+  <div class="cl-panel" id="clUploadPanel" style="display:none">
+    <div class="stl">Clarity Panelinden Manuel Dosya Yükle</div>
+    <div class="cl-note" style="margin-bottom:12px">Clarity panelindeki "Download CSV / PNG" seçeneğiyle indirdiğin dosyayı buradan yükle. CSV içeriği otomatik olarak diğer verilerle aynı tabloya işlenir; PNG ve PDF dosyaları ise ilerideki inceleme için olduğu gibi saklanır (şu an otomatik metin/tablo çıkarımı yapılmıyor).</div>
+    <div class="cform" style="max-width:560px">
+      <div class="fg full"><label>Dosya (CSV, PNG, JPG veya PDF)</label><input type="file" id="clUploadFile" accept=".csv,.png,.jpg,.jpeg,.pdf"></div>
+      <div class="fg"><label>Başlangıç Tarihi (opsiyonel)</label><input type="date" id="clUploadFrom"></div>
+      <div class="fg"><label>Bitiş Tarihi (opsiyonel)</label><input type="date" id="clUploadTo"></div>
+      <div class="fg full"><button class="btn" id="clUploadBtn">Yükle</button></div>
+      <div class="fg full" id="clUploadResult"></div>
+    </div>
+    <div class="stl" style="margin-top:18px">Geçmiş Yüklemeler</div>
+    <div class="cl-table" id="clUploadHistory"><div class="cl-empty">Yükleniyor…</div></div>
+  </div>
 </div>
 <script>
 (function(){
-var sections={overview:'Genel Bakış',friction:'Etkileşim Sorunları',pages:'Sayfa & URL Analizi',traffic:'Trafik Kaynakları',technology:'Cihaz & Teknoloji',geography:'Ülke & Bölge',campaigns:'Kampanya Analizi',raw:'Ham Veri Gezgini',sync:'Senkronizasyon',health:'Veri Sağlığı'};
+var sections={overview:'Genel Bakış',friction:'Etkileşim Sorunları',pages:'Sayfa & URL Analizi',traffic:'Trafik Kaynakları',technology:'Cihaz & Teknoloji',geography:'Ülke & Bölge',campaigns:'Kampanya Analizi',raw:'Ham Veri Gezgini',sync:'Senkronizasyon',health:'Veri Sağlığı',upload:'Dosya Yükle'};
 var sectionDimensions={pages:'URL',traffic:'Source',technology:'Device',geography:'Country/Region',campaigns:'Campaign'};
 var state={status:null,rows:[],visible:[]};
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -39,8 +52,54 @@ function renderInsights(){var rows=baseRows(),html=[];var rage=sum(['Rage Clicks
 function renderTable(){var section=sec(),rows=state.visible;if(section==='health'||section==='sync'){var s=state.status||{};document.getElementById('clTable').innerHTML='<div style="padding:18px"><div class="stl">'+sections[section]+'</div><div class="channel-row"><span>Entegrasyon</span><span>'+esc(s.configured?'Yapılandırıldı':'Eksik')+'</span></div><div class="channel-row"><span>Senkronizasyon</span><span>'+esc(s.enabled?'Aktif':'Kapalı')+'</span></div><div class="channel-row"><span>Günlük kota</span><span>'+esc((s.used_today||0)+' / '+(s.daily_limit||10))+'</span></div><div class="channel-row"><span>Kalan kota</span><span>'+esc(s.remaining_today==null?'—':s.remaining_today)+'</span></div><div class="channel-row"><span>Boyutlar</span><span>'+esc((s.published_dimensions||[]).join(', '))+'</span></div><div class="channel-row"><span>Son çalışma</span><span>'+esc(s.last_run&&s.last_run.status||'Henüz yok')+'</span></div></div>';return}
 if(!rows.length){document.getElementById('clTable').innerHTML='<div class="cl-empty">Bu bölüm için veri yok. Senkronizasyonu çalıştırın veya filtreleri temizleyin.</div>';return}
 var body=rows.slice(0,1000).map(function(r){return '<tr><td>'+esc(r.request_date)+'</td><td>'+esc(r.metric_name)+'</td><td><span class="cl-pill">'+esc(r.dimension1||'Genel')+'</span></td><td>'+esc(JSON.stringify(r.dimension_values||{}))+'</td><td>'+esc(JSON.stringify(r.metrics||{}))+'</td></tr>'}).join('');document.getElementById('clTable').innerHTML='<table><thead><tr><th>Tarih</th><th>Metrik</th><th>Boyut</th><th>Boyut Değeri</th><th>Metrikler</th></tr></thead><tbody>'+body+'</tbody></table>'}
-async function load(){renderTabs();document.getElementById('clTable').innerHTML='<div class="cl-empty">Yükleniyor…</div>';try{var sr=await fetch('/api/clarity/status',{credentials:'include',cache:'no-store'});state.status=await sr.json();var dim=sectionDimensions[sec()]||'';var url='/api/clarity/metrics?limit=2000'+(dim?'&dimension='+encodeURIComponent(dim):'');var mr=await fetch(url,{credentials:'include',cache:'no-store'});var md=await mr.json();if(!mr.ok)throw new Error(md.error||'Veri alınamadı');state.rows=md.rows||[];renderStatus();renderMetricOptions();renderCards();renderInsights();applyFilters()}catch(e){document.getElementById('clTable').innerHTML='<div class="cl-empty cl-error">'+esc(e.message)+'</div>'}}
+function togglePanels(mode){
+  var showNormal=mode!=='upload';
+  ['clCards','clInsightPanel','clFilterPanel','clTable'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display=showNormal?'':'none'});
+  var up=document.getElementById('clUploadPanel');if(up)up.style.display=showNormal?'none':''
+}
+function esc2(v){return esc(v)}
+async function loadUploadHistory(){
+  var el=document.getElementById('clUploadHistory');if(!el)return;
+  el.innerHTML='<div class="cl-empty">Yükleniyor…</div>';
+  try{
+    var r=await fetch('/api/clarity/uploads',{credentials:'include',cache:'no-store'});
+    var d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.error||'Liste alınamadı');
+    var rows=d.uploads||[];
+    if(!rows.length){el.innerHTML='<div class="cl-empty">Henüz dosya yüklenmemiş.</div>';return}
+    var body=rows.map(function(u){
+      var range=(u.date_from||u.date_to)?(esc(u.date_from||'—')+' → '+esc(u.date_to||'—')):'—';
+      var warn=u.out_of_range_rows?('<span class="cl-warn">'+u.out_of_range_rows+' satır aralık dışı</span>'):'';
+      return '<tr><td>'+esc(u.filename)+'</td><td><span class="cl-pill">'+esc(u.upload_type)+'</span></td><td>'+range+'</td><td>'+(u.row_count||0)+'</td><td>'+warn+'</td><td>'+esc(u.uploaded_by||'—')+'</td><td>'+esc((u.uploaded_at||'').slice(0,16).replace('T',' '))+'</td><td><a href="/api/clarity/uploads/'+u.id+'/file" target="_blank" rel="noopener">Görüntüle</a></td></tr>'
+    }).join('');
+    el.innerHTML='<table><thead><tr><th>Dosya</th><th>Tür</th><th>Tarih Aralığı</th><th>Satır</th><th>Uyarı</th><th>Yükleyen</th><th>Yüklendi</th><th></th></tr></thead><tbody>'+body+'</tbody></table>';
+  }catch(e){el.innerHTML='<div class="cl-empty cl-error">'+esc(e.message)+'</div>'}
+}
+async function uploadClarityFile(){
+  var fileInput=document.getElementById('clUploadFile'),btn=document.getElementById('clUploadBtn'),resultEl=document.getElementById('clUploadResult');
+  var file=fileInput&&fileInput.files&&fileInput.files[0];
+  if(!file){toast('Bir dosya seçin');return}
+  var from=document.getElementById('clUploadFrom').value,to=document.getElementById('clUploadTo').value;
+  if(from&&to&&from>to){toast('Bitiş tarihi başlangıçtan önce olamaz');return}
+  var old=btn.textContent;btn.disabled=true;btn.textContent='Yükleniyor…';resultEl.innerHTML='';
+  try{
+    var fd=new FormData();fd.append('file',file);if(from)fd.append('date_from',from);if(to)fd.append('date_to',to);
+    var r=await fetch('/api/clarity/upload',{method:'POST',credentials:'include',body:fd});
+    var d=await r.json();
+    if(!r.ok||!d.ok)throw new Error(d.error||'Yükleme başarısız');
+    var msg='Yüklendi: '+esc(file.name)+' · '+(d.row_count||0)+' satır işlendi';
+    if(d.notes)msg+='<br><span class="cl-warn">'+esc(d.notes)+'</span>';
+    resultEl.innerHTML='<div class="cl-insight"><strong>Başarılı</strong><p>'+msg+'</p></div>';
+    toast('Clarity dosyası yüklendi');
+    fileInput.value='';
+    await loadUploadHistory();
+  }catch(e){
+    resultEl.innerHTML='<div class="cl-insight bad"><strong>Hata</strong><p>'+esc(e.message)+'</p></div>';
+    toast('Yükleme hatası: '+e.message);
+  }finally{btn.disabled=false;btn.textContent=old}
+}
+async function load(){renderTabs();togglePanels(sec());if(sec()==='upload'){await loadUploadHistory();return}document.getElementById('clTable').innerHTML='<div class="cl-empty">Yükleniyor…</div>';try{var sr=await fetch('/api/clarity/status',{credentials:'include',cache:'no-store'});state.status=await sr.json();var dim=sectionDimensions[sec()]||'';var url='/api/clarity/metrics?limit=2000'+(dim?'&dimension='+encodeURIComponent(dim):'');var mr=await fetch(url,{credentials:'include',cache:'no-store'});var md=await mr.json();if(!mr.ok)throw new Error(md.error||'Veri alınamadı');state.rows=md.rows||[];renderStatus();renderMetricOptions();renderCards();renderInsights();applyFilters()}catch(e){document.getElementById('clTable').innerHTML='<div class="cl-empty cl-error">'+esc(e.message)+'</div>'}}
 async function sync(){var b=document.getElementById('clSync'),old=b.textContent;b.disabled=true;b.textContent='Senkronize ediliyor…';try{var r=await fetch('/api/clarity/sync',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({num_days:Number(document.getElementById('clDays').value)})});var d=await r.json();if(!r.ok)throw new Error(d.error||'Senkronizasyon başarısız');toast('Clarity tam senkronizasyon tamamlandı');await load()}catch(e){toast('Clarity: '+e.message)}finally{b.disabled=false;b.textContent=old}}
-document.getElementById('clRefresh').onclick=load;document.getElementById('clSync').onclick=sync;document.getElementById('clSearch').oninput=applyFilters;document.getElementById('clMetricFilter').onchange=applyFilters;document.getElementById('clClear').onclick=function(){document.getElementById('clSearch').value='';document.getElementById('clMetricFilter').value='';applyFilters()};window.addEventListener('mx:section-change',function(e){if(e.detail&&e.detail.page==='clarity-analizi')load()});load();
+document.getElementById('clRefresh').onclick=load;document.getElementById('clSync').onclick=sync;document.getElementById('clSearch').oninput=applyFilters;document.getElementById('clMetricFilter').onchange=applyFilters;document.getElementById('clClear').onclick=function(){document.getElementById('clSearch').value='';document.getElementById('clMetricFilter').value='';applyFilters()};var clUploadBtnEl=document.getElementById('clUploadBtn');if(clUploadBtnEl)clUploadBtnEl.onclick=uploadClarityFile;window.addEventListener('mx:section-change',function(e){if(e.detail&&e.detail.page==='clarity-analizi')load()});load();
 })();
 </script>
