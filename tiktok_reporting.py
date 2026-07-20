@@ -336,6 +336,103 @@ def get_campaign_report(get_db, start_date: date, end_date: date) -> dict:
     }
 
 
+def _redact_debug_payload(value: Any) -> Any:
+    """Defensively remove credentials if a provider ever echoes them."""
+    sensitive = {
+        "access_token",
+        "access-token",
+        "refresh_token",
+        "client_secret",
+        "secret",
+        "authorization",
+    }
+    if isinstance(value, dict):
+        return {
+            key: ("[REDACTED]" if key.lower() in sensitive else _redact_debug_payload(item))
+            for key, item in value.items()
+        }
+    if isinstance(value, list):
+        return [_redact_debug_payload(item) for item in value]
+    return value
+
+
+def _raw_provider_response(response: requests.Response) -> dict:
+    try:
+        payload = response.json()
+    except ValueError:
+        payload = {"non_json_body": (response.text or "")[:2000]}
+    return {
+        "http_status": response.status_code,
+        "body": _redact_debug_payload(payload),
+    }
+
+
+def get_raw_debug_report(get_db, start_date: date, end_date: date) -> dict:
+    account = _active_accounts(get_db)[0]
+    advertiser_id = str(account["advertiser_id"])
+    access_token = account["access_token"]
+
+    campaign_params = {
+        "advertiser_id": advertiser_id,
+        "page": 1,
+        "page_size": 20,
+    }
+    report_params = {
+        "advertiser_id": advertiser_id,
+        "service_type": "AUCTION",
+        "report_type": "BASIC",
+        "data_level": "AUCTION_CAMPAIGN",
+        "dimensions": json.dumps(["campaign_id"]),
+        "metrics": json.dumps(list(WEB_COMMERCE_METRICS)),
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "page": 1,
+        "page_size": 20,
+        "query_mode": "REGULAR",
+    }
+
+    campaign_response = requests.get(
+        _endpoint(CAMPAIGN_PATH),
+        params=campaign_params,
+        headers={"Access-Token": access_token},
+        timeout=HTTP_TIMEOUT_SECONDS,
+    )
+    report_response = requests.get(
+        _endpoint(REPORT_PATH),
+        params=report_params,
+        headers={"Access-Token": access_token},
+        timeout=HTTP_TIMEOUT_SECONDS,
+    )
+
+    return {
+        "ok": True,
+        "debug": True,
+        "read_only": True,
+        "warning": "Temporary admin-only raw TikTok response; contains no credentials.",
+        "advertiser_id": advertiser_id,
+        "date_range": {
+            "start_date": start_date.isoformat(),
+            "end_date": end_date.isoformat(),
+        },
+        "campaign_get": {
+            "request": {
+                "method": "GET",
+                "path": CAMPAIGN_PATH,
+                "params": campaign_params,
+            },
+            "response": _raw_provider_response(campaign_response),
+        },
+        "report_integrated_get": {
+            "request": {
+                "method": "GET",
+                "path": REPORT_PATH,
+                "params": report_params,
+            },
+            "response": _raw_provider_response(report_response),
+        },
+    }
+
+
 def install(app, *, get_db, require_admin) -> None:
     @app.get("/api/tiktok/campaigns")
     def tiktok_campaigns():
@@ -356,6 +453,26 @@ def install(app, *, get_db, require_admin) -> None:
                     "error": str(exc),
                     "connect_url": "/api/integrations/tiktok/connect",
                 }
+            ), 409
+        except (
+            TikTokReportingError,
+            tiktok_oauth.TikTokConfigurationError,
+        ) as exc:
+            return jsonify({"ok": False, "error": str(exc)}), 502
+
+    @app.get("/api/tiktok/debug/raw-report")
+    def tiktok_raw_debug_report():
+        denied = require_admin()
+        if denied:
+            return denied
+        try:
+            start_date, end_date = _date_range(request.args)
+            return jsonify(get_raw_debug_report(get_db, start_date, end_date))
+        except ValueError as exc:
+            return jsonify({"ok": False, "error": str(exc)}), 400
+        except TikTokNotConnectedError as exc:
+            return jsonify(
+                {"ok": False, "connected": False, "error": str(exc)}
             ), 409
         except (
             TikTokReportingError,
