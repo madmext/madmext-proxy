@@ -18,6 +18,7 @@ import onesignal_flow
 import telegram_flow
 import telegram_ai_engine
 import tiktok_oauth
+import tiktok_reporting
 import security_core
 import rbac_core
 import marketplace_core
@@ -31,6 +32,7 @@ marketplace_core.install(app, get_db=get_db)
 decision_core.install(app, get_db=get_db)
 clarity_flow.install(app, get_db=get_db, require_admin=require_admin)
 tiktok_oauth.install(app, get_db=get_db, require_admin=require_admin)
+tiktok_reporting.install(app, get_db=get_db, require_admin=require_admin)
 
 
 meta_sync_flow.install(
@@ -180,6 +182,7 @@ def runtime_health():
         'onesignal_dashboard_override': True,
         'clarity_routes': True,
         'tiktok_oauth_routes': True,
+        'tiktok_reporting_routes': True,
         'clarity_navigation': True,
         'clarity_navigation_version': '2026.3-native',
     }

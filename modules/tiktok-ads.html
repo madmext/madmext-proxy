@@ -1,0 +1,137 @@
+<style>
+/* TikTok Ads follows the same compact card/table rhythm as Meta Ads. */
+.tt-wrap{display:flex;flex-direction:column;height:calc(100vh - 52px);overflow:hidden}
+.tt-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+.tt-title{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700}
+.tt-mark{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:#050505;color:#25f4ee;border:1px solid #2d2e30;font-weight:800}
+.tt-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.tt-summary{display:grid;grid-template-columns:repeat(8,1fr);gap:8px;margin-bottom:10px}
+.tt-card{background:var(--s);border:1px solid var(--b);border-radius:7px;padding:10px 12px;position:relative;overflow:hidden}
+.tt-card:before{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,#25f4ee,#fe2c55)}
+.tt-label{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px}
+.tt-value{font:600 16px 'DM Mono',monospace}
+.tt-table-wrap{background:var(--s);border:1px solid var(--b);border-radius:8px;overflow:auto;flex:1;min-height:0}
+.tt-table{width:100%;border-collapse:collapse;font-size:11px}
+.tt-table th{background:#111;padding:9px 10px;text-align:left;color:var(--m);font-size:9px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--b);position:sticky;top:0;z-index:2;white-space:nowrap}
+.tt-table td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap}
+.tt-table tr:hover td{background:rgba(255,255,255,.025)}
+.tt-name{font:500 12px Inter,sans-serif;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.tt-sub{font-size:9px;color:var(--m);margin-top:2px}
+.tt-badge{display:inline-flex;padding:2px 7px;border-radius:10px;font:600 9px 'DM Mono',monospace;border:1px solid var(--b2);color:var(--m)}
+.tt-badge.on{color:var(--g);border-color:rgba(66,183,42,.35);background:rgba(66,183,42,.1)}
+.tt-empty{display:none;flex:1;min-height:280px;align-items:center;justify-content:center;text-align:center;background:var(--s);border:1px dashed var(--b2);border-radius:8px}
+.tt-empty-card{max-width:460px;padding:32px}
+.tt-empty-icon{font-size:42px;margin-bottom:12px}.tt-empty h3{font-size:17px;margin-bottom:7px}.tt-empty p{color:var(--m);line-height:1.6;margin-bottom:17px}
+.tt-error{display:none;color:#ff8b8b;background:rgba(250,62,62,.08);border:1px solid rgba(250,62,62,.22);padding:9px 12px;border-radius:6px;margin-bottom:10px}
+@media(max-width:1000px){.tt-summary{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:620px){.tt-summary{grid-template-columns:repeat(2,1fr)}.tt-head{align-items:flex-start;flex-direction:column}}
+</style>
+
+<div class="tt-wrap">
+  <div class="tt-head">
+    <div class="tt-title"><span class="tt-mark">♪</span><span>TikTok Ads <small style="display:block;color:var(--m);font-size:10px;font-weight:400">Salt okunur kampanya performansı</small></span></div>
+    <div class="tt-actions">
+      <select id="ttRange" onchange="tiktokLoad()">
+        <option value="7">Son 7 gün</option>
+        <option value="30" selected>Son 30 gün</option>
+        <option value="90">Son 90 gün</option>
+      </select>
+      <button class="btn sm sec" type="button" onclick="tiktokLoad()">↻ Yenile</button>
+    </div>
+  </div>
+
+  <div id="ttError" class="tt-error"></div>
+
+  <div id="ttDashboard">
+    <div class="tt-summary">
+      <div class="tt-card"><div class="tt-label">Harcama</div><div class="tt-value" id="ttSpend">—</div></div>
+      <div class="tt-card"><div class="tt-label">Gelir</div><div class="tt-value" id="ttRevenue" style="color:var(--g)">—</div></div>
+      <div class="tt-card"><div class="tt-label">ROAS</div><div class="tt-value" id="ttRoas">—</div></div>
+      <div class="tt-card"><div class="tt-label">Satın Alma</div><div class="tt-value" id="ttPurchases">—</div></div>
+      <div class="tt-card"><div class="tt-label">Gösterim</div><div class="tt-value" id="ttImpressions">—</div></div>
+      <div class="tt-card"><div class="tt-label">Tıklama</div><div class="tt-value" id="ttClicks">—</div></div>
+      <div class="tt-card"><div class="tt-label">CTR</div><div class="tt-value" id="ttCtr">—</div></div>
+      <div class="tt-card"><div class="tt-label">CPC</div><div class="tt-value" id="ttCpc">—</div></div>
+    </div>
+
+    <div class="tt-table-wrap">
+      <table class="tt-table">
+        <thead><tr>
+          <th>Kampanya</th><th>Durum</th><th>Harcama</th><th>Gelir</th><th>ROAS</th>
+          <th>Satın Alma</th><th>Gösterim</th><th>Tıklama</th><th>CTR</th><th>CPC</th>
+        </tr></thead>
+        <tbody id="ttCampaignBody"><tr><td colspan="10" style="text-align:center;padding:32px;color:var(--m)">⏳ TikTok verileri yükleniyor…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="ttConnectState" class="tt-empty">
+    <div class="tt-empty-card">
+      <div class="tt-empty-icon">♪</div>
+      <h3>TikTok Ads hesabı bağlı değil</h3>
+      <p>Kampanya harcaması, satın alma ve ROAS verisini görmek için TikTok reklam hesabınızı güvenli OAuth akışıyla bağlayın.</p>
+      <button class="btn" type="button" onclick="location.href='/api/integrations/tiktok/connect'">TikTok Ads hesabını bağla</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function esc(value){
+    return String(value == null ? '' : value).replace(/[&<>"']/g,function(ch){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+    });
+  }
+  function money(value){return Number(value||0).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₺'}
+  function integer(value){return Number(value||0).toLocaleString('tr-TR')}
+  function dates(days){
+    var end=new Date(),start=new Date();start.setDate(end.getDate()-days+1);
+    return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)};
+  }
+  function setText(id,value){var node=document.getElementById(id);if(node)node.textContent=value}
+  function showConnect(){
+    document.getElementById('ttDashboard').style.display='none';
+    document.getElementById('ttConnectState').style.display='flex';
+  }
+  function showDashboard(){
+    document.getElementById('ttDashboard').style.display='block';
+    document.getElementById('ttConnectState').style.display='none';
+  }
+  function render(payload){
+    var s=payload.summary||{},rows=payload.campaigns||[];
+    setText('ttSpend',money(s.spend));setText('ttRevenue',money(s.revenue));
+    setText('ttRoas',Number(s.roas||0).toFixed(2)+'x');setText('ttPurchases',integer(s.purchases));
+    setText('ttImpressions',integer(s.impressions));setText('ttClicks',integer(s.clicks));
+    setText('ttCtr',Number(s.ctr||0).toFixed(2)+'%');setText('ttCpc',money(s.cpc));
+    var body=document.getElementById('ttCampaignBody');
+    if(!rows.length){
+      body.innerHTML='<tr><td colspan="10" style="text-align:center;padding:34px;color:var(--m)">Seçili tarih aralığında kampanya verisi bulunamadı.</td></tr>';
+      return;
+    }
+    body.innerHTML=rows.map(function(row){
+      var active=/ENABLE|ACTIVE|DELIVERY_OK/i.test(row.status||'');
+      return '<tr><td><div class="tt-name">'+esc(row.campaign_name)+'</div><div class="tt-sub">'+esc(row.campaign_id)+'</div></td>'
+        +'<td><span class="tt-badge '+(active?'on':'')+'">'+esc(row.status)+'</span></td>'
+        +'<td>'+money(row.spend)+'</td><td>'+money(row.revenue)+'</td><td>'+Number(row.roas||0).toFixed(2)+'x</td>'
+        +'<td>'+integer(row.purchases)+'</td><td>'+integer(row.impressions)+'</td><td>'+integer(row.clicks)+'</td>'
+        +'<td>'+Number(row.ctr||0).toFixed(2)+'%</td><td>'+money(row.cpc)+'</td></tr>';
+    }).join('');
+  }
+
+  window.tiktokLoad=async function(){
+    var err=document.getElementById('ttError');err.style.display='none';
+    var range=Number((document.getElementById('ttRange')||{}).value||30),d=dates(range);
+    try{
+      var response=await fetch('/api/tiktok/campaigns?start_date='+d.start+'&end_date='+d.end,{credentials:'same-origin'});
+      var payload=await response.json();
+      if(response.status===409 && payload.connected===false){showConnect();return}
+      if(!response.ok||payload.ok===false)throw new Error(payload.error||'TikTok verisi alınamadı');
+      showDashboard();render(payload);
+    }catch(error){
+      showDashboard();err.textContent='TikTok verisi yüklenemedi: '+error.message;err.style.display='block';
+      document.getElementById('ttCampaignBody').innerHTML='<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--m)">Veri yüklenemedi.</td></tr>';
+    }
+  };
+  tiktokLoad();
+})();
+</script>
