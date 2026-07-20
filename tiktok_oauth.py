@@ -69,10 +69,10 @@ def _endpoint(config: dict[str, str], path: str) -> str:
 
 
 def _fernet() -> Fernet:
-    secret_key = _env("TOKEN_ENCRYPTION_KEY") or _env("SECRET_KEY")
+    secret_key = _env("TOKEN_ENCRYPTION_KEY")
     if not secret_key:
         raise TikTokConfigurationError(
-            "TOKEN_ENCRYPTION_KEY veya SECRET_KEY tanımlı olmalı"
+            "TOKEN_ENCRYPTION_KEY ortam değişkeni zorunlu"
         )
     derived = hashlib.sha256(
         ("madmext:tiktok:v1:" + secret_key).encode("utf-8")
@@ -107,6 +107,26 @@ def _expires_at(seconds: object) -> datetime | None:
     except (TypeError, ValueError):
         return None
     return _utcnow() + timedelta(seconds=value) if value > 0 else None
+
+
+def _validate_oauth_state(
+    expected_state: str | None,
+    received_state: str | None,
+    created_at: object,
+    *,
+    now_timestamp: int | None = None,
+) -> bool:
+    expected = (expected_state or "").strip()
+    received = (received_state or "").strip()
+    if not expected or not received:
+        return False
+    try:
+        created = int(created_at)
+    except (TypeError, ValueError):
+        return False
+    now = int(_utcnow().timestamp()) if now_timestamp is None else int(now_timestamp)
+    age = now - created
+    return 0 <= age <= STATE_TTL_SECONDS and hmac.compare_digest(expected, received)
 
 
 def _api_payload(response: requests.Response) -> dict:
@@ -252,13 +272,24 @@ def _log(get_db, event_type: str, status: str, message: str = "",
         conn.close()
 
 
-def _upsert_account(get_db, advertiser_id: str, token_data: dict) -> None:
+def _upsert_account(get_db, advertiser_id: str, token_data: dict) -> str | None:
+    """Upsert one advertiser and return its previous owner, if any.
+
+    advertiser_id is intentionally the primary key: reconnecting the same ad
+    account transfers the active connection to the admin completing OAuth.
+    """
     conn = get_db()
     if not conn:
         raise RuntimeError("Veritabanı bağlantısı yok")
     cur = None
     try:
         cur = conn.cursor()
+        cur.execute(
+            "SELECT authorized_by FROM tiktok_ad_accounts WHERE advertiser_id=%s FOR UPDATE",
+            (advertiser_id,),
+        )
+        existing = cur.fetchone()
+        previous_authorized_by = existing[0] if existing else None
         cur.execute(
             """
             INSERT INTO tiktok_ad_accounts (
@@ -300,6 +331,7 @@ def _upsert_account(get_db, advertiser_id: str, token_data: dict) -> None:
             ),
         )
         conn.commit()
+        return previous_authorized_by
     except Exception:
         conn.rollback()
         raise
@@ -379,13 +411,10 @@ def install(app, *, get_db, require_admin) -> None:
         expected_state = session.pop("tiktok_oauth_state", "")
         created_at = session.pop("tiktok_oauth_state_created_at", 0)
         received_state = (request.args.get("state") or "").strip()
-        now = int(_utcnow().timestamp())
-        if (
-            not expected_state
-            or not received_state
-            or not hmac.compare_digest(expected_state, received_state)
-            or not created_at
-            or now - int(created_at) > STATE_TTL_SECONDS
+        if not _validate_oauth_state(
+            expected_state,
+            received_state,
+            created_at,
         ):
             _log(get_db, "oauth_callback", "failed", "Geçersiz veya süresi dolmuş state")
             return jsonify({"ok": False, "error": "Geçersiz veya süresi dolmuş OAuth state"}), 400
@@ -418,7 +447,20 @@ def install(app, *, get_db, require_admin) -> None:
                 raise TikTokAPIError("Yetkilendirilmiş reklam hesabı bulunamadı")
 
             for advertiser_id in advertisers:
-                _upsert_account(get_db, advertiser_id, token_data)
+                previous_owner = _upsert_account(get_db, advertiser_id, token_data)
+                current_owner = session.get("user_email")
+                if (
+                    previous_owner
+                    and current_owner
+                    and previous_owner.lower() != current_owner.lower()
+                ):
+                    _log(
+                        get_db,
+                        "account_owner_changed",
+                        "success",
+                        f"Hesap sahibi değişti: {previous_owner} -> {current_owner}",
+                        advertiser_id,
+                    )
                 _log(get_db, "oauth_callback", "success", "Hesap bağlandı", advertiser_id)
 
             return jsonify(
