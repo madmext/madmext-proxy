@@ -47,6 +47,7 @@ def _config() -> dict[str, str]:
         "api_base_url": _env("TIKTOK_API_BASE_URL") or DEFAULT_API_BASE_URL,
         "auth_url": _env("TIKTOK_AUTH_URL") or DEFAULT_AUTH_URL,
         "scopes": _env("TIKTOK_SCOPES"),
+        "token_encryption_key": _env("TOKEN_ENCRYPTION_KEY"),
     }
     missing = [
         env_name
@@ -54,6 +55,7 @@ def _config() -> dict[str, str]:
             ("TIKTOK_CLIENT_KEY", "client_key"),
             ("TIKTOK_CLIENT_SECRET", "client_secret"),
             ("TIKTOK_REDIRECT_URI", "redirect_uri"),
+            ("TOKEN_ENCRYPTION_KEY", "token_encryption_key"),
         )
         if not config[key]
     ]
