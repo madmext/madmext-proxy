@@ -64,6 +64,7 @@
     wrapFunction('mxAffUpdateSelected','affiliate_program','affiliate_application','Affiliate süreç güncelleme');
     wrapFunction('mxAffMarkLive','affiliate_program','affiliate_content','Affiliate yayın takibi');
     wrapFunction('mxAffMarkPaid','affiliate_program','affiliate_payment','Affiliate hakediş ödeme');
+    wrapFunction('mxAffUxSave','affiliate_program','affiliate_application','Affiliate pop-up süreç güncelleme');
   }
   setInterval(function(){installWrappers();checkKnownKeys();},3000);
   setTimeout(function(){installWrappers();checkKnownKeys();},1200);
@@ -90,6 +91,14 @@
     el.innerHTML=tmp.innerHTML;
     return scripts.reduce(function(p,item){return p.then(function(){return new Promise(function(resolve){var s=document.createElement('script'); if(item.src){s.src=item.src;s.onload=resolve;s.onerror=resolve;}else{s.textContent=item.code;resolve();}document.body.appendChild(s);});});},Promise.resolve());
   }
+  function loadAffiliateUx(){
+    try{
+      var old=document.getElementById('mxAffiliateUxFix'); if(old)old.remove();
+      var s=document.createElement('script'); s.id='mxAffiliateUxFix'; s.src='/modules/affiliate-program-ux-fix.js?v=20260724-5';
+      s.onload=function(){if(window.mxAffUxInit)window.mxAffUxInit()};
+      document.body.appendChild(s);
+    }catch(e){console.warn('Affiliate UX yardımcı script yüklenemedi:',e)}
+  }
   window.openAffiliateProgram=async function(activeItem,section){
     try{
       section=section||new URLSearchParams(location.search).get('tab')||'dashboard';
@@ -106,9 +115,10 @@
       if(sub)sub.textContent=meta[1];
       if(el)el.innerHTML='<div class="module-loading">⏳ Madmext Affiliate Programı yükleniyor...</div>';
       history.pushState({page:'affiliate-program',section:section},'','/ai-ajans/affiliate-program?tab='+encodeURIComponent(section));
-      var r=await fetch('/modules/affiliate-program.html?v=20260724-2');
+      var r=await fetch('/modules/affiliate-program.html?v=20260724-4');
       if(!r.ok)throw new Error('HTTP '+r.status);
       await loadIntoMain(await r.text());
+      loadAffiliateUx();
     }catch(e){var box=document.getElementById('mainContent');if(box)box.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Affiliate Programı yüklenemedi: '+e.message+'</div>'}
   };
   function installNav(){
