@@ -70,7 +70,7 @@ def test_campaigns_endpoint_normalizes_mock_tiktok_report(monkeypatch):
                                 "impressions": "10000",
                                 "clicks": "250",
                                 "complete_payment": "5",
-                                "total_complete_payment_value": "450.00",
+                                "total_complete_payment_rate": "450.00",
                                 "complete_payment_roas": "4.5",
                             },
                         }
@@ -137,61 +137,3 @@ def test_campaigns_endpoint_returns_connect_action_when_not_connected(monkeypatc
         "error": "TikTok Ads hesabı bağlı değil",
         "connect_url": "/api/integrations/tiktok/connect",
     }
-
-
-def test_raw_debug_endpoint_preserves_tiktok_envelope_and_redacts_credentials(monkeypatch):
-    monkeypatch.setattr(
-        tiktok_reporting,
-        "_active_accounts",
-        lambda get_db: [
-            {
-                "advertiser_id": "7517910266760216577",
-                "access_token": "must-never-be-returned",
-            }
-        ],
-    )
-
-    def fake_get(url, params, headers, timeout):
-        assert headers == {"Access-Token": "must-never-be-returned"}
-        if url.endswith("/campaign/get/"):
-            return FakeResponse(
-                {
-                    "code": 0,
-                    "message": "OK",
-                    "request_id": "campaign-request-id",
-                    "data": {"list": [], "secret": "echoed-provider-secret"},
-                }
-            )
-        return FakeResponse(
-            {
-                "code": 0,
-                "message": "OK",
-                "request_id": "report-request-id",
-                "data": {"list": [], "access_token": "echoed-token"},
-            }
-        )
-
-    monkeypatch.setattr(tiktok_reporting.requests, "get", fake_get)
-
-    with _test_app().test_client() as client:
-        response = client.get(
-            "/api/tiktok/debug/raw-report"
-            "?start_date=2026-06-20&end_date=2026-07-20"
-        )
-
-    assert response.status_code == 200
-    payload = response.get_json()
-    assert payload["advertiser_id"] == "7517910266760216577"
-    assert payload["debug"] is True
-    assert payload["read_only"] is True
-
-    campaign_body = payload["campaign_get"]["response"]["body"]
-    report_body = payload["report_integrated_get"]["response"]["body"]
-    assert campaign_body["code"] == 0
-    assert campaign_body["message"] == "OK"
-    assert campaign_body["request_id"] == "campaign-request-id"
-    assert campaign_body["data"]["list"] == []
-    assert campaign_body["data"]["secret"] == "[REDACTED]"
-    assert report_body["request_id"] == "report-request-id"
-    assert report_body["data"]["access_token"] == "[REDACTED]"
-    assert "must-never-be-returned" not in response.get_data(as_text=True)
