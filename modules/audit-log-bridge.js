@@ -32,7 +32,7 @@
         var action=s.count>old.count?'created':s.count<old.count?'deleted':'updated';
         var desc=meta.name+' verisi güncellendi: '+key;
         if(meta.module==='ai_agency')desc='AI Ajans Merkezi ajan verisi güncellendi: '+key;
-        if(meta.module==='affiliate_program')desc='Madmext Affiliate Programı başvuru verisi güncellendi.';
+        if(meta.module==='affiliate_program')desc='Madmext Affiliate Programı başvuru / süreç verisi güncellendi.';
         writeLog({module:meta.module,action:action,entityType:meta.entityType,entityId:key,entityName:meta.name,description:desc,oldData:{key:key,count:old.count},newData:{key:key,count:s.count,value:s.value},changedFields:{count:{old:old.count,new:s.count}},source:'known-local-watch'});
         lastSnapshots[key]=s;
       }
@@ -42,7 +42,7 @@
   function wrapFunction(name,module,entityType,label){
     var fn=window[name]; if(typeof fn!=='function'||fn.__mxAuditWrapped)return;
     window[name]=function(){
-      var args=[].slice.call(arguments);var before={};knownKeys.forEach(function(k){before[k]=snapshotKey(k)});
+      var args=[].slice.call(arguments);
       var result=fn.apply(this,arguments);
       Promise.resolve(result).then(function(){setTimeout(function(){checkKnownKeys();writeLog({module:module,action:'updated',entityType:entityType,entityId:name,entityName:label,description:label+' işlemi çalıştırıldı.',newData:{functionName:name,args:args.map(function(a){return typeof a==='object'?'[object]':String(a).slice(0,80)})},source:'function-wrap'});},300)});
       return result;
@@ -62,14 +62,27 @@
     wrapFunction('saveServerLogs','tasks','task_log','Görev/Bütçe log kaydetme');
     wrapFunction('mxAffSaveSnapshot','affiliate_program','affiliate_application','Affiliate başvuru kaydetme');
     wrapFunction('mxAffUpdateSelected','affiliate_program','affiliate_application','Affiliate süreç güncelleme');
+    wrapFunction('mxAffMarkLive','affiliate_program','affiliate_content','Affiliate yayın takibi');
+    wrapFunction('mxAffMarkPaid','affiliate_program','affiliate_payment','Affiliate hakediş ödeme');
   }
   setInterval(function(){installWrappers();checkKnownKeys();},3000);
   setTimeout(function(){installWrappers();checkKnownKeys();},1200);
 })();
 
-// ── Madmext Affiliate Programı: AI Ajans Merkezi yanında başvuru takip modülü ──
+// ── Madmext Affiliate Programı: AI Ajans Merkezi yanında operasyon modülü ──
 (function(){
   if(window.__mxAffiliateMenuInjected)return; window.__mxAffiliateMenuInjected=true;
+  var AFF_SECTIONS={
+    dashboard:['Madmext Affiliate Programı','Operasyon merkezi, açık işler ve günlük takip'],
+    upload:['Affiliate Excel Yükle','Ticimax başvuru listesini içe aktar'],
+    applications:['Başvuru Havuzu','Başvuruları skorla, ele ve sorumlu ata'],
+    pipeline:['Süreç Pipeline','Başvuru aşamalarını kanban yapısında takip et'],
+    content:['İçerik & Yayın Takibi','Brief, ürün, yayın tarihi ve canlı linkleri takip et'],
+    active:['Yayında Olanlar','Canlı linki olan influencer / affiliate listesi'],
+    earnings:['Hakedişler','Satış, komisyon, fatura ve ödeme takibi'],
+    todos:['To-do Operasyon','Tüm açık işleri kişi bazında takip et'],
+    logs:['Notlar & Loglar','Tüm görüşme, süreç ve ödeme kayıtları']
+  };
   function loadIntoMain(html){
     var el=document.getElementById('mainContent'); if(!el)return Promise.resolve();
     var tmp=document.createElement('div'); tmp.innerHTML=html;
@@ -79,6 +92,8 @@
   }
   window.openAffiliateProgram=async function(activeItem,section){
     try{
+      section=section||new URLSearchParams(location.search).get('tab')||'dashboard';
+      window._affiliateSection=section;
       document.querySelectorAll('.nav-item,.mx-context-item,.mx-context-child').forEach(function(n){n.classList.remove('active')});
       if(activeItem&&activeItem.classList)activeItem.classList.add('active');
       if(typeof closeSidebar==='function')closeSidebar();
@@ -86,24 +101,25 @@
       if(typeof renderTopNavigation==='function')renderTopNavigation();
       if(typeof renderContextSidebar==='function')renderContextSidebar();
       var title=document.getElementById('pageTitle'), sub=document.getElementById('pageSub'), el=document.getElementById('mainContent');
-      if(title)title.textContent='Madmext Affiliate Programı';
-      if(sub)sub.textContent='Başvuru Excel yükleme, süreç takibi, to-do, not ve log kayıtları';
+      var meta=AFF_SECTIONS[section]||AFF_SECTIONS.dashboard;
+      if(title)title.textContent=meta[0];
+      if(sub)sub.textContent=meta[1];
       if(el)el.innerHTML='<div class="module-loading">⏳ Madmext Affiliate Programı yükleniyor...</div>';
-      history.pushState({page:'affiliate-program',section:section||''},'','/ai-ajans/affiliate-program');
-      var r=await fetch('/modules/affiliate-program.html?v=20260724-1');
+      history.pushState({page:'affiliate-program',section:section},'','/ai-ajans/affiliate-program?tab='+encodeURIComponent(section));
+      var r=await fetch('/modules/affiliate-program.html?v=20260724-2');
       if(!r.ok)throw new Error('HTTP '+r.status);
       await loadIntoMain(await r.text());
     }catch(e){var box=document.getElementById('mainContent');if(box)box.innerHTML='<div class="module-loading" style="color:var(--r)">❌ Affiliate Programı yüklenemedi: '+e.message+'</div>'}
   };
   function installNav(){
     try{
-      if(window.PAGES){PAGES['affiliate-program']={title:'Madmext Affiliate Programı',sub:'Başvuru ve süreç yönetimi',module:'affiliate-program'}}
+      if(window.PAGES){PAGES['affiliate-program']={title:'Madmext Affiliate Programı',sub:'Affiliate operasyon yönetimi',module:'affiliate-program'}}
       if(window.PAGE_URLS){PAGE_URLS['affiliate-program']='/ai-ajans/affiliate-program'}
       if(window.MX_PAGE_CATEGORY){MX_PAGE_CATEGORY['affiliate-program']='affiliate'}
       if(typeof window.urlToPage==='function'&&!window.__mxAffUrl){window.__mxAffUrl=true;var oldUrlToPage=window.urlToPage;window.urlToPage=function(path){if(path==='/ai-ajans/affiliate-program'||path==='/affiliate-program'||path==='/affiliate')return'affiliate-program';return oldUrlToPage(path)}}
-      if(typeof window.runContextItem==='function'&&!window.__mxAffRunCtx){window.__mxAffRunCtx=true;var oldRun=window.runContextItem;window.runContextItem=function(item){if(item&&item[2]==='@affiliate'){window.openAffiliateProgram(null,item[4]||'');return}return oldRun(item)}}
+      if(typeof window.runContextItem==='function'&&!window.__mxAffRunCtx){window.__mxAffRunCtx=true;var oldRun=window.runContextItem;window.runContextItem=function(item){if(item&&item[2]==='@affiliate'){window.openAffiliateProgram(null,item[4]||'dashboard');return}return oldRun(item)}}
       if(Array.isArray(window.MX_NAVIGATION)&&!window.MX_NAVIGATION.some(function(g){return g.id==='affiliate'})){
-        var group={id:'affiliate',label:'Madmext Affiliate Programı',items:[['🤝','Affiliate Başvuruları','@affiliate',null,'overview',false,[['⬆','Excel Yükle','@affiliate','upload'],['📋','Başvuru Listesi','@affiliate','list'],['✓','To-do & Süreç','@affiliate','tasks'],['🧾','Notlar ve Loglar','@affiliate','logs']]]]} ;
+        var group={id:'affiliate',label:'Madmext Affiliate Programı',items:[['🤝','Affiliate Operasyonu','@affiliate',null,'dashboard',false,[['📌','Operasyon Merkezi','@affiliate',null,'dashboard'],['⬆','Excel Yükle','@affiliate',null,'upload'],['📋','Başvuru Havuzu','@affiliate',null,'applications'],['🔁','Süreç Pipeline','@affiliate',null,'pipeline'],['🎬','İçerik & Yayın','@affiliate',null,'content'],['🟢','Yayında Olanlar','@affiliate',null,'active'],['💸','Hakedişler','@affiliate',null,'earnings'],['✓','To-do Operasyon','@affiliate',null,'todos'],['🧾','Notlar & Loglar','@affiliate',null,'logs']]]]} ;
         var agencyIdx=window.MX_NAVIGATION.findIndex(function(g){return g.id==='agency'});
         if(agencyIdx>-1)window.MX_NAVIGATION.splice(agencyIdx+1,0,group);else window.MX_NAVIGATION.push(group);
         if(typeof renderTopNavigation==='function')renderTopNavigation();
@@ -112,10 +128,10 @@
       var staticSidebar=document.querySelector('.sidebar');
       if(staticSidebar&&!document.getElementById('navAffiliateProgramStatic')){
         var ai=document.getElementById('navAiAjansMerkezi');
-        var item=document.createElement('div'); item.className='nav-item'; item.id='navAffiliateProgramStatic'; item.innerHTML='<span class="nav-icon">🤝</span><span>Madmext Affiliate Programı</span><span class="nav-ai">Yeni</span>'; item.onclick=function(){window.openAffiliateProgram(item)};
+        var item=document.createElement('div'); item.className='nav-item'; item.id='navAffiliateProgramStatic'; item.innerHTML='<span class="nav-icon">🤝</span><span>Madmext Affiliate Programı</span><span class="nav-ai">Yeni</span>'; item.onclick=function(){window.openAffiliateProgram(item,'dashboard')};
         if(ai)ai.insertAdjacentElement('afterend',item); else staticSidebar.appendChild(item);
       }
-      if(location.pathname==='/ai-ajans/affiliate-program'||location.pathname==='/affiliate-program'||location.pathname==='/affiliate')setTimeout(function(){window.openAffiliateProgram(null)},80);
+      if(location.pathname==='/ai-ajans/affiliate-program'||location.pathname==='/affiliate-program'||location.pathname==='/affiliate')setTimeout(function(){window.openAffiliateProgram(null,new URLSearchParams(location.search).get('tab')||'dashboard')},80);
     }catch(e){console.warn('Affiliate Programı menü eklenemedi:',e)}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installNav);else setTimeout(installNav,150);
