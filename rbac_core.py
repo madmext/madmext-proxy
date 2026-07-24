@@ -12,13 +12,19 @@ DEFAULT_PERMISSIONS = {
  'marketing.write':'Kampanya ve pazarlama işlemleri','ai.use':'AI araçlarını kullanma',
  'ai.manage':'AI ajanlarını yönetme','users.manage':'Kullanıcı yönetimi',
  'roles.manage':'Rol ve yetki yönetimi','logs.view':'Log merkezini görüntüleme',
- 'integrations.manage':'API ve entegrasyon yönetimi','settings.manage':'Sistem ayarları yönetimi'
+ 'integrations.manage':'API ve entegrasyon yönetimi','settings.manage':'Sistem ayarları yönetimi',
+ 'affiliate.view':'Affiliate Programı görüntüleme',
+ 'affiliate.write':'Affiliate başvuru ve süreç düzenleme',
+ 'affiliate.upload':'Affiliate Excel / CSV yükleme',
+ 'affiliate.content':'Affiliate içerik ve yayın takibi',
+ 'affiliate.earnings':'Affiliate hakediş ve ödeme yönetimi',
+ 'affiliate.logs':'Affiliate not ve log kayıtlarını yönetme'
 }
 DEFAULT_ROLES = {
  'super_admin':('Ana Admin',True,list(DEFAULT_PERMISSIONS)),
  'admin':('Admin',True,list(DEFAULT_PERMISSIONS)),
- 'editor':('Editör',True,['data.read','decision.review','report.export','dashboard.view','ads.view','ads.write','reports.view','reports.export','marketplace.view','marketplace.write','design.write','marketing.write','ai.use']),
- 'viewer':('Görüntüleyici',True,['data.read','dashboard.view','ads.view','reports.view','marketplace.view'])
+ 'editor':('Editör',True,['data.read','decision.review','report.export','dashboard.view','ads.view','ads.write','reports.view','reports.export','marketplace.view','marketplace.write','design.write','marketing.write','ai.use','affiliate.view','affiliate.write','affiliate.upload','affiliate.content','affiliate.earnings','affiliate.logs']),
+ 'viewer':('Görüntüleyici',True,['data.read','dashboard.view','ads.view','reports.view','marketplace.view','affiliate.view'])
 }
 
 def install(app,get_db):
